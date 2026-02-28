@@ -277,8 +277,7 @@ Expected output format: Just the raw console output, one line per console.log st
                 className="space-y-6"
               >
                 {/* Explanation */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
-                  <h2 className="text-xl font-bold mb-5">{activeLesson.title}</h2>
+                <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-10">
                   <LessonExplanation
                     explanation={activeLesson.explanation || ""}
                     concept={activeLesson.concept}
