@@ -188,7 +188,7 @@ export default function LessonExplanation({ explanation, concept }) {
             <ol className="list-decimal ml-6 my-3 space-y-1.5">{children}</ol>
           ),
           li: ({ children }) => (
-            <li className="text-gray-800 text-base leading-relaxed">{children}</li>
+            <li className="text-gray-800 text-base leading-relaxed">{processChildren(children)}</li>
           ),
           strong: ({ children }) => (
             <strong className="font-semibold text-gray-900">{children}</strong>
