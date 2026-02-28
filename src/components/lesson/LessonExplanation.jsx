@@ -50,10 +50,25 @@ function processChildren(children) {
   return children;
 }
 
+function parseAnnotations(code) {
+  // Extract inline comments as annotations: { lineIndex, comment }
+  const lines = code.split("\n");
+  const annotations = [];
+  lines.forEach((line, i) => {
+    const match = line.match(/\/\/\s*(.+)$/);
+    if (match) {
+      annotations.push({ line: i + 1, text: match[1].trim() });
+    }
+  });
+  return annotations;
+}
+
 function CodeBlock({ children, className }) {
   const [copied, setCopied] = useState(false);
   const lang = className?.replace("language-", "").toUpperCase() || "JS";
   const code = String(children).replace(/\n$/, "");
+  const lines = code.split("\n");
+  const annotations = parseAnnotations(code);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -61,40 +76,59 @@ function CodeBlock({ children, className }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Add line numbers
-  const lines = code.split("\n");
-
   return (
-    <div className="my-5 rounded-md overflow-hidden border border-[#3a3a4a] bg-[#1E1E2E]">
-      <div className="flex items-center justify-between px-4 py-2 bg-[#252535] border-b border-[#3a3a4a]">
-        <div className="flex gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-          <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-          <span className="w-3 h-3 rounded-full bg-[#28C840]" />
+    <div className="my-5">
+      {/* Code block */}
+      <div className="rounded-md overflow-hidden border border-[#3a3a4a] bg-[#1E1E2E]">
+        <div className="flex items-center justify-between px-4 py-2 bg-[#252535] border-b border-[#3a3a4a]">
+          <div className="flex gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+            <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+            <span className="w-3 h-3 rounded-full bg-[#28C840]" />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/10"
+            >
+              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              {copied ? "Copied" : "Copy"}
+            </button>
+            <span className="text-xs font-bold text-white bg-[#6C5CE7] px-2 py-0.5 rounded">{lang}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/10"
-          >
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-            {copied ? "Copied" : "Copy"}
-          </button>
-          <span className="text-xs font-bold text-white bg-[#6C5CE7] px-2 py-0.5 rounded">{lang}</span>
-        </div>
+        <pre className="overflow-x-auto p-4">
+          <code className="font-mono text-sm leading-relaxed">
+            {lines.map((line, i) => (
+              <div key={i} className="flex">
+                <span className="select-none text-gray-600 w-7 flex-shrink-0 text-right mr-4 text-xs leading-6">
+                  {i + 1}
+                </span>
+                <span className="text-[#CDD6F4] leading-6">{line || " "}</span>
+              </div>
+            ))}
+          </code>
+        </pre>
       </div>
-      <pre className="overflow-x-auto p-4">
-        <code className="font-mono text-sm leading-relaxed">
-          {lines.map((line, i) => (
-            <div key={i} className="flex">
-              <span className="select-none text-gray-600 w-7 flex-shrink-0 text-right mr-4 text-xs leading-6">
-                {i + 1}
-              </span>
-              <span className="text-[#CDD6F4] leading-6">{line || " "}</span>
-            </div>
-          ))}
-        </code>
-      </pre>
+
+      {/* Line-by-line breakdown */}
+      {annotations.length > 0 && (
+        <div className="mt-2 border border-gray-200 rounded-md overflow-hidden">
+          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Code Breakdown</span>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {annotations.map((ann, i) => (
+              <div key={i} className="flex items-start gap-3 px-4 py-3">
+                <span className="flex-shrink-0 mt-0.5 w-6 h-6 rounded bg-[#6C5CE7]/10 text-[#6C5CE7] text-xs font-bold flex items-center justify-center">
+                  {ann.line}
+                </span>
+                <p className="text-sm text-gray-700 leading-relaxed">{ann.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
