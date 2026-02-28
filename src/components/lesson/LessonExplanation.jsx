@@ -2,6 +2,54 @@ import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Copy, Check } from "lucide-react";
 
+// Keywords to auto-bold in paragraph text
+const KEYWORDS = [
+  "variable", "variables", "function", "functions", "array", "arrays",
+  "loop", "loops", "object", "objects", "string", "strings", "integer", "integers",
+  "boolean", "booleans", "class", "classes", "method", "methods", "parameter", "parameters",
+  "argument", "arguments", "return", "returns", "constant", "constants",
+  "algorithm", "algorithms", "data structure", "data structures", "recursion", "recursive",
+  "iteration", "iterative", "conditional", "conditionals", "operator", "operators",
+  "index", "indices", "element", "elements", "syntax", "statement", "statements",
+  "expression", "expressions", "value", "values", "type", "types", "scope",
+  "callback", "promise", "async", "await", "event", "events", "DOM",
+  "component", "components", "state", "props", "hook", "hooks",
+  "pointer", "pointers", "memory", "stack", "queue", "tree", "graph",
+  "node", "nodes", "edge", "edges", "vertex", "vertices",
+  "input", "output", "console", "terminal", "compiler", "interpreter",
+  "binary", "hexadecimal", "decimal", "null", "undefined", "exception", "error",
+];
+
+const KEYWORD_REGEX = new RegExp(
+  `\\b(${KEYWORDS.map(k => k.replace(/\s+/g, "\\s+")).join("|")})\\b`,
+  "gi"
+);
+
+function BoldKeywords({ children }) {
+  if (typeof children !== "string") return <>{children}</>;
+  const parts = children.split(KEYWORD_REGEX);
+  return (
+    <>
+      {parts.map((part, i) =>
+        KEYWORD_REGEX.test(part) ? (
+          <strong key={i} className="font-semibold text-gray-900">{part}</strong>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
+function processChildren(children) {
+  if (!children) return children;
+  if (typeof children === "string") return <BoldKeywords>{children}</BoldKeywords>;
+  if (Array.isArray(children)) return children.map((child, i) => 
+    typeof child === "string" ? <BoldKeywords key={i}>{child}</BoldKeywords> : child
+  );
+  return children;
+}
+
 function CodeBlock({ children, className }) {
   const [copied, setCopied] = useState(false);
   const lang = className?.replace("language-", "").toUpperCase() || "JS";
