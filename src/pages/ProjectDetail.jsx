@@ -278,15 +278,11 @@ Expected output format: Just the raw console output, one line per console.log st
               >
                 {/* Explanation */}
                 <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
-                  <h2 className="text-xl font-bold mb-1">{activeLesson.title}</h2>
-                  {activeLesson.concept && (
-                    <Badge variant="outline" className="mb-4 text-xs text-gray-500">
-                      Concept: {activeLesson.concept}
-                    </Badge>
-                  )}
-                  <div className="prose prose-gray prose-sm max-w-none">
-                    <ReactMarkdown>{activeLesson.explanation || ""}</ReactMarkdown>
-                  </div>
+                  <h2 className="text-xl font-bold mb-5">{activeLesson.title}</h2>
+                  <LessonExplanation
+                    explanation={activeLesson.explanation || ""}
+                    concept={activeLesson.concept}
+                  />
                 </div>
 
                 {/* Code Editor */}
