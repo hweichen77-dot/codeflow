@@ -65,7 +65,7 @@ export default function FeaturesSection() {
           viewport={{ once: true }}
           className="mb-20"
         >
-          <p className="text-xs text-gray-600 uppercase tracking-widest mb-4 font-medium">
+          <p className="text-xs text-gray-400 uppercase tracking-widest mb-4 font-medium">
             How it works
           </p>
           <h2 className="text-4xl sm:text-5xl font-black text-white tracking-[-0.03em] leading-[1.05] max-w-lg">
@@ -90,7 +90,7 @@ export default function FeaturesSection() {
                 <h3 className="text-xl font-bold text-white mb-4 leading-snug tracking-tight">
                   {step.title}
                 </h3>
-                <p className="text-gray-500 text-sm leading-relaxed font-light max-w-sm">
+                <p className="text-gray-300 text-sm leading-relaxed font-light max-w-sm">
                   {step.description}
                 </p>
               </div>
@@ -135,7 +135,7 @@ export default function FeaturesSection() {
           ].map(({ value, label }) => (
             <div key={label}>
               <div className="text-3xl font-black text-white tracking-tight">{value}</div>
-              <div className="text-xs text-gray-600 mt-1">{label}</div>
+              <div className="text-xs text-gray-400 mt-1">{label}</div>
             </div>
           ))}
         </motion.div>

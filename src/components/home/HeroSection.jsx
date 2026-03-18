@@ -69,7 +69,7 @@ export default function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 mb-10">
               <span className="w-1.5 h-1.5 rounded-full bg-[#5B4FE9]" />
-              <span className="text-xs font-medium text-gray-600 tracking-widest uppercase">
+              <span className="text-xs font-medium text-gray-400 tracking-widest uppercase">
                 Free forever · No credit card
               </span>
             </div>
@@ -93,7 +93,7 @@ export default function HeroSection() {
               </span>
             </h1>
 
-            <p className="text-[1.05rem] text-gray-500 font-light leading-relaxed mb-10 max-w-sm">
+            <p className="text-[1.05rem] text-gray-300 font-light leading-relaxed mb-10 max-w-sm">
               Real coding skills come from building real stuff. Jump into hands-on projects, not endless videos.
             </p>
 
@@ -125,7 +125,7 @@ export default function HeroSection() {
                     </div>
                   ))}
                 </div>
-                <span className="text-sm text-gray-600">1,000+ learners</span>
+                <span className="text-sm text-gray-400">1,000+ learners</span>
               </div>
 
               <div className="w-px h-4 bg-white/10" />
@@ -141,9 +141,9 @@ export default function HeroSection() {
                     </svg>
                   ))}
                 </div>
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-gray-400">
                   4.9 ·{" "}
-                  <span className="italic text-gray-500">"Best way to actually learn to code"</span>
+                  <span className="italic text-gray-400">"Best way to actually learn to code"</span>
                 </span>
               </div>
             </div>

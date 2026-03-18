@@ -30,7 +30,7 @@ export default function CTASection() {
             </span>
           </h2>
 
-          <p className="text-gray-500 font-light text-base leading-relaxed mb-10 max-w-sm">
+          <p className="text-gray-300 font-light text-base leading-relaxed mb-10 max-w-sm">
             Your first project is one click away. No credit card, no email verification, no friction.
           </p>
 
@@ -53,14 +53,14 @@ export default function CTASection() {
             {["100% Free", "No Signup Needed", "Start in 30 Seconds"].map((item) => (
               <div key={item} className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#5B4FE9]" />
-                <span className="text-xs text-gray-600">{item}</span>
+                <span className="text-xs text-gray-400">{item}</span>
               </div>
             ))}
           </div>
 
           {/* Testimonial */}
           <div className="p-5 rounded-lg bg-[#111118] border border-white/[0.06] max-w-md">
-            <p className="text-gray-400 text-sm italic leading-relaxed mb-4">
+            <p className="text-gray-300 text-sm italic leading-relaxed mb-4">
               "I went from zero coding knowledge to building my own portfolio site in 2 weeks. This is exactly what I needed."
             </p>
             <div className="flex items-center gap-3">
@@ -69,7 +69,7 @@ export default function CTASection() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-white">Sarah Chen</div>
-                <div className="text-xs text-gray-600">Career Switcher</div>
+                <div className="text-xs text-gray-400">Career Switcher</div>
               </div>
             </div>
           </div>
