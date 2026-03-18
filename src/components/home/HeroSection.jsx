@@ -1,209 +1,227 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../../utils";
-import { Button } from "@/components/ui/button";
-import { ChevronRight, Play } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+
+const MONOGRAMS = [
+  { initials: "SC", bg: "#221a3d" },
+  { initials: "AJ", bg: "#1a3226" },
+  { initials: "MR", bg: "#3a1e1e" },
+];
+
+const CODE_LINES = [
+  { ln: 1, tokens: [{ c: "text-purple-400", t: "const " }, { c: "text-[#7dd3fc]", t: "skills" }, { c: "text-gray-500", t: " = [" }] },
+  { ln: 2, tokens: [{ c: "text-gray-700 pl-8", t: "" }, { c: "text-green-400", t: '"HTML"' }, { c: "text-gray-600", t: ", " }, { c: "text-green-400", t: '"CSS"' }, { c: "text-gray-600", t: "," }] },
+  { ln: 3, tokens: [{ c: "text-gray-700 pl-8", t: "" }, { c: "text-green-400", t: '"JavaScript"' }, { c: "text-gray-600", t: ", " }, { c: "text-green-400", t: '"React"' }] },
+  { ln: 4, tokens: [{ c: "text-gray-500", t: "];" }] },
+  { ln: 5, tokens: [] },
+  { ln: 6, tokens: [{ c: "text-purple-400", t: "function " }, { c: "text-yellow-300", t: "buildProject" }, { c: "text-gray-500", t: "(" }, { c: "text-orange-300", t: "name" }, { c: "text-gray-500", t: ") {" }] },
+  { ln: 7, tokens: [{ c: "text-purple-400 pl-8", t: "return " }, { c: "text-gray-500", t: "{" }] },
+  { ln: 8, tokens: [{ c: "text-[#7dd3fc] pl-16", t: "name" }, { c: "text-gray-600", t: "," }] },
+  { ln: 9, tokens: [{ c: "text-[#7dd3fc] pl-16", t: "skills" }, { c: "text-gray-600", t: "," }] },
+  { ln: 10, tokens: [{ c: "text-[#7dd3fc] pl-16", t: "deployed" }, { c: "text-gray-500", t: ": " }, { c: "text-purple-400", t: "true" }] },
+  { ln: 11, tokens: [{ c: "text-gray-500 pl-8", t: "}" }] },
+  { ln: 12, tokens: [{ c: "text-gray-500", t: "}" }] },
+  { ln: 13, tokens: [] },
+  { ln: 14, tokens: [{ c: "text-[#7dd3fc]", t: "buildProject" }, { c: "text-gray-500", t: "(" }, { c: "text-green-400", t: '"My Portfolio"' }, { c: "text-gray-500", t: ");" }] },
+];
 
 export default function HeroSection() {
   const [typedText, setTypedText] = useState("");
-  const [isTyping, setIsTyping] = useState(true);
   const fullText = "CodeFlow learner";
-  
+
   useEffect(() => {
-    if (!isTyping) return;
     if (typedText.length < fullText.length) {
-      const timeout = setTimeout(() => {
-        setTypedText(fullText.slice(0, typedText.length + 1));
-      }, 100);
-      return () => clearTimeout(timeout);
-    } else {
-      setTimeout(() => setIsTyping(false), 1000);
+      const t = setTimeout(() => setTypedText(fullText.slice(0, typedText.length + 1)), 80);
+      return () => clearTimeout(t);
     }
-  }, [typedText, isTyping]);
+  }, [typedText]);
 
   return (
-    <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-36">
-      {/* Animated grid background */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(to right, #6C5CE7 1px, transparent 1px),
-            linear-gradient(to bottom, #6C5CE7 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px'
-        }} />
-      </div>
+    <section className="relative overflow-hidden min-h-screen flex items-center">
+      {/* Dot pattern */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
+      {/* Radial purple ambient */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse 70% 55% at 65% 50%, rgba(91,79,233,0.09) 0%, transparent 70%)",
+        }}
+      />
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0f0f0f] to-transparent pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left content */}
-          <div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="inline-block mb-4">
-                <span className="px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">
-                  100% Free • No Credit Card
-                </span>
-              </div>
-              
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1]">
-                Don't just
-                <br />
-                <span className="relative inline-block">
-                  watch.
-                  <svg className="absolute -bottom-2 left-0 w-full" height="12" viewBox="0 0 200 12" fill="none">
-                    <path d="M2 10C60 2 140 2 198 10" stroke="#6C5CE7" strokeWidth="3" strokeLinecap="round"/>
-                  </svg>
-                </span>
-                <br />
-                <span className="text-[#6C5CE7]">Build.</span>
-              </h1>
-
-              <p className="text-xl text-gray-600 leading-relaxed mb-8 max-w-lg">
-                Real coding skills come from building real stuff. Jump into hands-on projects, 
-                not endless videos.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 mb-8">
-                <Link to={createPageUrl("Projects")}>
-                  <Button 
-                    size="lg" 
-                    className="bg-[#6C5CE7] hover:bg-[#5A4BD1] text-white h-14 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all group"
-                  >
-                    Start Building
-                    <ChevronRight className="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-                <Link to={createPageUrl("Challenges")}>
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="h-14 px-6 text-base font-medium rounded-2xl border-2 border-gray-300 hover:border-[#6C5CE7] hover:bg-[#6C5CE7]/5 transition-all"
-                  >
-                    <Play className="w-4 h-4 mr-2 fill-current" />
-                    Quick Challenge
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-6 text-sm text-gray-500">
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white" />
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 border-2 border-white" />
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-400 border-2 border-white" />
-                  </div>
-                  <span className="font-medium">1000+ learners</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-yellow-500">★★★★★</span>
-                  <span className="font-medium ml-1">4.9/5</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right - Interactive code demo */}
+      <div className="relative w-full max-w-7xl mx-auto px-6 lg:px-8 py-24">
+        <div className="grid lg:grid-cols-[1fr_1.35fr] gap-16 items-center">
+          {/* Left */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <div className="bg-[#0D1117] rounded-3xl shadow-2xl border border-gray-800 overflow-hidden">
-              {/* Terminal header */}
-              <div className="bg-[#161B22] px-4 py-3 flex items-center justify-between border-b border-gray-800">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                </div>
-                <span className="text-xs text-gray-500 font-mono">hello.js</span>
-                <div className="w-16" />
-              </div>
-              
-              {/* Code content */}
-              <div className="p-6 font-mono text-sm leading-loose">
-                <div className="mb-3">
-                  <span className="text-gray-500">1</span>
-                  <span className="ml-4 text-purple-400">const</span>
-                  <span className="text-blue-300"> greet</span>
-                  <span className="text-gray-400"> = (</span>
-                  <span className="text-orange-300">name</span>
-                  <span className="text-gray-400">) =&gt; {"{"}</span>
-                </div>
-                <div className="mb-3 pl-8">
-                  <span className="text-gray-500">2</span>
-                  <span className="ml-4 text-purple-400">return</span>
-                  <span className="text-green-400"> `Hello, </span>
-                  <span className="text-gray-400">${"{"}</span>
-                  <span className="text-orange-300">name</span>
-                  <span className="text-gray-400">{"}"}</span>
-                  <span className="text-green-400">!`</span>
-                  <span className="text-gray-400">;</span>
-                </div>
-                <div className="mb-4">
-                  <span className="text-gray-500">3</span>
-                  <span className="ml-4 text-gray-400">{"}"};</span>
-                </div>
-                <div className="mb-4">
-                  <span className="text-gray-500">4</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">5</span>
-                  <span className="ml-4 text-blue-300">greet</span>
-                  <span className="text-gray-400">(</span>
-                  <span className="text-green-400">"</span>
-                  <motion.span 
-                    className="text-green-400"
-                    animate={{ opacity: [1, 1, 0.3, 1] }}
-                    transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-                  >
-                    {typedText}
-                    <span className="animate-pulse">|</span>
-                  </motion.span>
-                  <span className="text-green-400">"</span>
-                  <span className="text-gray-400">);</span>
-                </div>
-                
-                {/* Output */}
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.5 }}
-                  className="mt-6 p-3 bg-[#161B22] rounded-lg border border-gray-800"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-xs text-gray-400">Output:</span>
-                  </div>
-                  <div className="text-green-400">
-                    Hello, {typedText || "CodeFlow learner"}!
-                  </div>
-                </motion.div>
-              </div>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 mb-10">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#5B4FE9]" />
+              <span className="text-xs font-medium text-gray-600 tracking-widest uppercase">
+                Free forever · No credit card
+              </span>
             </div>
 
-            {/* Floating elements */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="absolute -top-6 -right-6 bg-white rounded-2xl shadow-xl p-4 border border-gray-100"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                  <span className="text-green-600 font-bold">✓</span>
+            <h1 className="font-black leading-[0.93] tracking-[-0.03em] mb-8">
+              <span className="text-white block" style={{ fontSize: "clamp(3.5rem, 8vw, 6.5rem)" }}>
+                Don't just
+              </span>
+              <span className="text-white block" style={{ fontSize: "clamp(3.5rem, 8vw, 6.5rem)" }}>
+                watch.
+              </span>
+              <span
+                className="block"
+                style={{
+                  fontSize: "clamp(3.5rem, 8vw, 6.5rem)",
+                  WebkitTextStroke: "2px #5B4FE9",
+                  color: "transparent",
+                }}
+              >
+                Build.
+              </span>
+            </h1>
+
+            <p className="text-[1.05rem] text-gray-500 font-light leading-relaxed mb-10 max-w-sm">
+              Real coding skills come from building real stuff. Jump into hands-on projects, not endless videos.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 mb-12">
+              <Link to={createPageUrl("Projects")}>
+                <button className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#5B4FE9] text-white text-sm font-semibold rounded-[4px] border border-[#7066f5]/40 hover:bg-[#4d42d4] transition-colors">
+                  Start Building
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </Link>
+              <Link to={createPageUrl("Challenges")}>
+                <button className="inline-flex items-center gap-2 px-6 py-2.5 text-gray-400 text-sm font-medium rounded-[4px] border border-white/10 hover:border-white/20 hover:text-gray-200 transition-colors">
+                  Quick Challenge
+                </button>
+              </Link>
+            </div>
+
+            {/* Social proof */}
+            <div className="flex flex-wrap items-center gap-5">
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  {MONOGRAMS.map(({ initials, bg }) => (
+                    <div
+                      key={initials}
+                      className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[10px] font-bold text-white"
+                      style={{ backgroundColor: bg }}
+                    >
+                      {initials}
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <div className="text-xs font-semibold text-gray-900">Code runs!</div>
-                  <div className="text-xs text-gray-500">Live preview</div>
+                <span className="text-sm text-gray-600">1,000+ learners</span>
+              </div>
+
+              <div className="w-px h-4 bg-white/10" />
+
+              <div className="flex items-center gap-2">
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} width="12" height="12" viewBox="0 0 14 14" fill="none">
+                      <path
+                        d="M7 1L8.8 5.2L13.4 5.6L10.1 8.5L11.1 13L7 10.5L2.9 13L3.9 8.5L0.6 5.6L5.2 5.2L7 1Z"
+                        fill="#5B4FE9"
+                      />
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-xs text-gray-600">
+                  4.9 ·{" "}
+                  <span className="italic text-gray-500">"Best way to actually learn to code"</span>
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right: code editor */}
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="relative lg:mr-[-3rem] xl:mr-[-6rem]"
+          >
+            {/* Glow */}
+            <div
+              className="absolute inset-0 rounded-xl pointer-events-none"
+              style={{ boxShadow: "0 0 80px 16px rgba(91,79,233,0.18)" }}
+            />
+
+            <div className="relative bg-[#0c0c13] rounded-xl border border-white/[0.07] overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 bg-[#0f0f18] border-b border-white/[0.05]">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+                  <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+                  <div className="w-3 h-3 rounded-full bg-[#28C840]" />
+                </div>
+                <span className="text-xs text-gray-600 font-mono">project.js</span>
+                <div className="w-16" />
+              </div>
+
+              {/* Code lines */}
+              <div className="p-5 font-mono text-[13px] leading-[1.75]">
+                {CODE_LINES.map(({ ln, tokens }) => (
+                  <div key={ln} className="flex gap-4">
+                    <span className="select-none text-gray-700 text-[11px] w-4 flex-shrink-0 leading-[1.75]">
+                      {ln}
+                    </span>
+                    <span className="leading-[1.75]">
+                      {tokens.length === 0 ? (
+                        "\u00a0"
+                      ) : (
+                        tokens.map((tok, j) => (
+                          <span key={j} className={tok.c}>
+                            {tok.t}
+                          </span>
+                        ))
+                      )}
+                    </span>
+                  </div>
+                ))}
+
+                {/* Output */}
+                <div className="mt-4 pt-4 border-t border-white/[0.05]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[11px] text-gray-600 font-mono">Output</span>
+                  </div>
+                  <div className="font-mono text-xs text-gray-500 leading-[1.7]">
+                    <div className="text-gray-500">{"{"}</div>
+                    <div className="pl-4">
+                      <span className="text-gray-600">name: </span>
+                      <span className="text-green-400">"My Portfolio"</span>
+                      <span className="text-gray-700">,</span>
+                    </div>
+                    <div className="pl-4">
+                      <span className="text-gray-600">skills: </span>
+                      <span className="text-green-400">["HTML", "CSS", ...]</span>
+                      <span className="text-gray-700">,</span>
+                    </div>
+                    <div className="pl-4">
+                      <span className="text-gray-600">deployed: </span>
+                      <span className="text-purple-400">true</span>
+                    </div>
+                    <div className="text-gray-500">{"}"}</div>
+                  </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         </div>
       </div>

@@ -22,7 +22,7 @@ export default function Layout({ children, currentPageName }) {
   const isActive = (page) => currentPageName === page;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-gray-900 font-[Inter,system-ui,sans-serif]">
+    <div className="min-h-screen bg-[#0f0f0f] text-gray-100 font-[Inter,system-ui,sans-serif]">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
         :root {
