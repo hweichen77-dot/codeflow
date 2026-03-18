@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { api } from "@/api/apiClient";
 import { Code2, Menu, X, User, LogOut, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
@@ -24,32 +23,27 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-gray-100 font-[Inter,system-ui,sans-serif]">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
         :root {
-          --cf-accent: #6C5CE7;
-          --cf-accent-light: #A29BFE;
-          --cf-accent-dark: #5A4BD1;
-          --cf-surface: #FFFFFF;
-          --cf-bg: #FAFAFA;
-          --cf-success: #00B894;
-          --cf-warning: #FDCB6E;
-          --cf-danger: #FF7675;
+          --cf-accent: #5B4FE9;
+          --cf-surface: #111118;
+          --cf-bg: #0f0f0f;
         }
         * { font-family: 'Inter', system-ui, sans-serif; }
         code, pre, .font-mono { font-family: 'JetBrains Mono', monospace !important; }
       `}</style>
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+      <nav className="sticky top-0 z-50 bg-[#0f0f0f]/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14">
             {/* Logo */}
             <Link to={createPageUrl("Home")} className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] flex items-center justify-center shadow-lg shadow-purple-200/50 group-hover:shadow-purple-300/60 transition-shadow">
-                <Code2 className="w-5 h-5 text-white" />
+              <div className="w-7 h-7 rounded-md bg-[#5B4FE9] flex items-center justify-center">
+                <Code2 className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight">
-                Code<span className="text-[#6C5CE7]">Flow</span>
+              <span className="text-sm font-bold tracking-tight text-white">
+                Code<span className="text-[#5B4FE9]">Flow</span>
               </span>
             </Link>
 
@@ -59,13 +53,16 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.page}
                   to={createPageUrl(item.page)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`px-3 py-1.5 text-sm font-medium transition-all duration-200 relative ${
                     isActive(item.page)
-                      ? "bg-[#6C5CE7]/10 text-[#6C5CE7]"
-                      : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                      ? "text-white"
+                      : "text-gray-500 hover:text-gray-300"
                   }`}
                 >
                   {item.name}
+                  {isActive(item.page) && (
+                    <span className="absolute -bottom-[1px] left-0 right-0 h-px bg-[#5B4FE9]" />
+                  )}
                 </Link>
               ))}
             </div>
@@ -75,34 +72,32 @@ export default function Layout({ children, currentPageName }) {
               {user ? (
                 <div className="flex items-center gap-3">
                   <Link to={createPageUrl("Dashboard")}>
-                    <Button variant="ghost" size="sm" className="text-gray-600 gap-2">
-                      <User className="w-4 h-4" />
+                    <button className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-200 transition-colors">
+                      <User className="w-3.5 h-3.5" />
                       {user.full_name || "Dashboard"}
-                    </Button>
+                    </button>
                   </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-400 hover:text-gray-600"
+                  <button
+                    className="text-gray-600 hover:text-gray-400 transition-colors"
                     onClick={() => api.auth.logout()}
                   >
                     <LogOut className="w-4 h-4" />
-                  </Button>
+                  </button>
                 </div>
               ) : (
-                <Button
+                <button
                   onClick={() => api.auth.redirectToLogin()}
-                  className="bg-[#6C5CE7] hover:bg-[#5A4BD1] text-white rounded-lg px-5 h-9 text-sm font-medium shadow-lg shadow-purple-200/40"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#5B4FE9] text-white text-sm font-medium rounded-[4px] border border-[#7066f5]/40 hover:bg-[#4d42d4] transition-colors"
                 >
                   Get Started
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               )}
             </div>
 
             {/* Mobile menu toggle */}
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+              className="md:hidden p-2 text-gray-500 hover:text-gray-200"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -112,45 +107,45 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 space-y-1">
+          <div className="md:hidden border-t border-white/[0.06] bg-[#0f0f0f] px-4 py-4 space-y-1">
             {navItems.map((item) => (
               <Link
                 key={item.page}
                 to={createPageUrl(item.page)}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`block px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${
                   isActive(item.page)
-                    ? "bg-[#6C5CE7]/10 text-[#6C5CE7]"
-                    : "text-gray-600 hover:bg-gray-50"
+                    ? "text-white bg-[#5B4FE9]/10"
+                    : "text-gray-500 hover:text-gray-200 hover:bg-white/5"
                 }`}
               >
                 {item.name}
               </Link>
             ))}
-            <div className="pt-3 border-t border-gray-100 mt-3">
+            <div className="pt-3 border-t border-white/[0.06] mt-3">
               {user ? (
                 <>
                   <Link
                     to={createPageUrl("Dashboard")}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                    className="block px-4 py-2.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-200"
                   >
                     Dashboard
                   </Link>
                   <button
                     onClick={() => api.auth.logout()}
-                    className="block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-gray-600"
+                    className="block w-full text-left px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 hover:text-gray-400"
                   >
                     Log out
                   </button>
                 </>
               ) : (
-                <Button
+                <button
                   onClick={() => api.auth.redirectToLogin()}
-                  className="w-full bg-[#6C5CE7] hover:bg-[#5A4BD1] text-white"
+                  className="w-full px-4 py-2.5 bg-[#5B4FE9] text-white text-sm font-medium rounded-[4px] hover:bg-[#4d42d4] transition-colors"
                 >
                   Get Started
-                </Button>
+                </button>
               )}
             </div>
           </div>
@@ -162,18 +157,18 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Footer */}
       {currentPageName === "Home" && (
-        <footer className="border-t border-gray-100 bg-white mt-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <footer className="border-t border-white/[0.06] bg-[#0f0f0f]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] flex items-center justify-center">
-                  <Code2 className="w-4 h-4 text-white" />
+                <div className="w-6 h-6 rounded-md bg-[#5B4FE9] flex items-center justify-center">
+                  <Code2 className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="text-lg font-bold tracking-tight">
-                  Code<span className="text-[#6C5CE7]">Flow</span>
+                <span className="text-sm font-bold tracking-tight text-white">
+                  Code<span className="text-[#5B4FE9]">Flow</span>
                 </span>
               </div>
-              <p className="text-sm text-gray-400">
+              <p className="text-xs text-gray-700">
                 © 2026 CodeFlow. Learn to code by building real projects.
               </p>
             </div>
