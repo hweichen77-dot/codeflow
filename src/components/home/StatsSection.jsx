@@ -40,13 +40,13 @@ export default function StatsSection() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <p className="text-xs text-gray-600 uppercase tracking-widest mb-4 font-medium">
+          <p className="text-xs text-gray-400 uppercase tracking-widest mb-4 font-medium">
             Learning paths
           </p>
           <h2 className="text-4xl sm:text-5xl font-black text-white tracking-[-0.03em] leading-[1.05]">
             Pick your path.
           </h2>
-          <p className="text-gray-500 font-light mt-4 text-sm">
+          <p className="text-gray-300 font-light mt-4 text-sm">
             Everyone starts somewhere. Where are you?
           </p>
         </motion.div>
@@ -79,7 +79,7 @@ export default function StatsSection() {
               <h3 className="text-base font-bold text-white mb-1 tracking-tight">
                 {path.title}
               </h3>
-              <p className="text-sm text-gray-500 mb-6 font-light">{path.description}</p>
+              <p className="text-sm text-gray-300 mb-6 font-light">{path.description}</p>
 
               <div className="space-y-2.5 mb-6">
                 {path.projects.map((project) => (
@@ -89,14 +89,14 @@ export default function StatsSection() {
                         selected === path.id ? "bg-[#5B4FE9]" : "bg-gray-700"
                       }`}
                     />
-                    <span className="text-sm text-gray-400">{project}</span>
+                    <span className="text-sm text-gray-300">{project}</span>
                   </div>
                 ))}
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-white/[0.05]">
-                <span className="text-xs text-gray-600">Est. time</span>
-                <span className="text-xs font-mono text-gray-400">{path.time}</span>
+                <span className="text-xs text-gray-400">Est. time</span>
+                <span className="text-xs font-mono text-gray-300">{path.time}</span>
               </div>
 
               {selected === path.id && (
@@ -110,7 +110,7 @@ export default function StatsSection() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-xs text-gray-600 mt-8"
+          className="text-xs text-gray-400 mt-8"
         >
           Not sure? Browse all projects and pick what interests you.
         </motion.p>
