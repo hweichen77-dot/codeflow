@@ -3,11 +3,12 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { ArrowLeft, Lightbulb, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
 import LessonExplanation from "../components/lesson/LessonExplanation";
+
+const DIFFICULTY_NUM = { beginner: "00", intermediate: "01", advanced: "02" };
 
 export default function ProjectDetail() {
   const params = new URLSearchParams(window.location.search);
@@ -44,8 +45,7 @@ export default function ProjectDetail() {
 
   const { data: progress = [] } = useQuery({
     queryKey: ["user-progress", projectId, user?.email],
-    queryFn: () =>
-      base44.entities.UserProgress.filter({ user_email: user.email, project_id: projectId }),
+    queryFn: () => base44.entities.UserProgress.filter({ user_email: user.email, project_id: projectId }),
     enabled: !!user && !!projectId,
   });
 
@@ -91,14 +91,7 @@ export default function ProjectDetail() {
     setIsRunning(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a JavaScript code executor simulator. Execute the following JavaScript code and return ONLY the console output. If there are errors, show the error message. Do not explain anything, just show what would appear in the console.
-
-Code:
-\`\`\`javascript
-${code}
-\`\`\`
-
-Expected output format: Just the raw console output, one line per console.log statement. If there's an error, prefix with "Error: "`,
+        prompt: `You are a JavaScript code executor simulator. Execute the following JavaScript code and return ONLY the console output. If there are errors, show the error message. Do not explain anything, just show what would appear in the console.\n\nCode:\n\`\`\`javascript\n${code}\n\`\`\`\n\nExpected output format: Just the raw console output, one line per console.log statement. If there's an error, prefix with "Error: "`,
       });
       setOutput(result || "No output");
     } catch {
@@ -122,10 +115,12 @@ Expected output format: Just the raw console output, one line per console.log st
 
   if (loadingProject || loadingLessons) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0a0a" }}>
-        <div className="font-mono text-sm" style={{ color: "#333" }}>
-          <span className="animate-pulse">loading module</span>
-          <span className="cursor-blink">_</span>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "#0a0a0a" }}
+      >
+        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#333" }}>
+          Loading module...
         </div>
       </div>
     );
@@ -133,273 +128,240 @@ Expected output format: Just the raw console output, one line per console.log st
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0a0a" }}>
-        <div className="text-center">
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#333" }}>
-            404
-          </div>
-          <Link to={createPageUrl("Projects")}>
-            <button
-              className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
-              style={{ border: "1px solid #1e1e1e", color: "#555" }}
-            >
-              ← Back to Projects
-            </button>
-          </Link>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#0a0a0a" }}>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#444" }}>404 — NOT FOUND</div>
+        <Link to={createPageUrl("Projects")}>
+          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#b8ff00", border: "1px solid #b8ff0033" }}>
+            ← Back to Projects
+          </button>
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
-      {/* Top bar */}
+    <div style={{ background: "#0a0a0a", minHeight: "100vh" }}>
+      {/* Project header — full width banner */}
       <div
-        className="sticky top-0 z-20 flex items-center justify-between px-8 lg:px-16 py-4"
-        style={{ background: "#0a0a0a", borderBottom: "1px solid #1a1a1a" }}
+        className="relative pt-20"
+        style={{ borderBottom: "1px solid #1a1a1a" }}
       >
-        <div className="flex items-center gap-6">
+        {/* Top accent */}
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }} />
+
+        <div className="max-w-7xl mx-auto px-8 lg:px-16 py-10">
           <Link
             to={createPageUrl("Projects")}
-            className="font-mono text-xs tracking-widest uppercase transition-all duration-150"
+            className="font-mono text-xs tracking-widest uppercase mb-6 inline-block transition-colors duration-150"
             style={{ color: "#333" }}
-            onMouseEnter={e => e.currentTarget.style.color = "#888"}
+            onMouseEnter={e => e.currentTarget.style.color = "#b8ff00"}
             onMouseLeave={e => e.currentTarget.style.color = "#333"}
           >
             ← Projects
           </Link>
-          <div className="w-px h-4" style={{ background: "#1e1e1e" }} />
-          <span className="font-display font-bold text-sm" style={{ color: "#666", letterSpacing: "-0.01em" }}>
-            {project.title}
-          </span>
-        </div>
 
-        {/* Progress indicator — dot trail */}
-        <div className="hidden md:flex items-center gap-2">
-          {lessons.map((l, i) => {
-            const done = isCompleted(l.id);
-            const active = l.id === activeLessonId;
-            return (
-              <button
-                key={l.id}
-                onClick={() => setActiveLessonId(l.id)}
-                className="transition-all duration-150"
-                title={l.title}
-                style={{
-                  width: active ? "1.5rem" : "0.4rem",
-                  height: "0.4rem",
-                  background: active ? "#b8ff00" : done ? "#b8ff0066" : "#1e1e1e",
-                  boxShadow: active ? "0 0 8px rgba(184,255,0,0.4)" : "none",
-                }}
-              />
-            );
-          })}
-          <span className="font-mono text-xs ml-3" style={{ color: "#333" }}>
-            {completedCount}/{totalLessons}
-          </span>
+          <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-end">
+            <div>
+              <div className="flex items-center gap-4 mb-3">
+                <span
+                  className="font-mono font-bold"
+                  style={{ fontSize: "4rem", lineHeight: 1, color: "#1a1a1a", letterSpacing: "-0.05em" }}
+                >
+                  {DIFFICULTY_NUM[project.difficulty] || "00"}
+                </span>
+                <div>
+                  <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#b8ff00" }}>
+                    {project.difficulty} · {project.category?.replace("_", "/")}
+                  </div>
+                  <h1
+                    className="font-display font-black leading-tight"
+                    style={{ fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+                  >
+                    {project.title}
+                  </h1>
+                </div>
+              </div>
+              <p className="font-display text-sm leading-relaxed" style={{ color: "#555", fontWeight: 400, maxWidth: "55ch" }}>
+                {project.description}
+              </p>
+            </div>
+
+            {/* Progress indicator — dot trail */}
+            <div className="flex flex-col items-end gap-3">
+              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#333" }}>
+                {completedCount}/{totalLessons} complete
+              </div>
+              <div className="flex gap-1.5">
+                {lessons.map((l, i) => (
+                  <button
+                    key={l.id}
+                    onClick={() => setActiveLessonId(l.id)}
+                    title={`Lesson ${i + 1}: ${l.title}`}
+                    className="transition-all duration-200"
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      background: isCompleted(l.id)
+                        ? "#b8ff00"
+                        : l.id === activeLessonId
+                        ? "#888"
+                        : "#1e1e1e",
+                      border: l.id === activeLessonId ? "1px solid #888" : "1px solid transparent",
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="font-mono text-xs" style={{ color: "#222" }}>
+                {project.estimated_time ? `~${project.estimated_time}min` : ""}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Main layout */}
-      <div className="flex min-h-[calc(100vh-57px)]">
-        {/* Sidebar — lesson list */}
-        <div
-          className="hidden lg:flex flex-col flex-shrink-0"
-          style={{
-            width: "280px",
-            borderRight: "1px solid #1a1a1a",
-            background: "#080808",
-            position: "sticky",
-            top: "57px",
-            height: "calc(100vh - 57px)",
-            overflowY: "auto",
-          }}
-        >
-          {/* Sidebar header */}
-          <div
-            className="px-6 py-5"
-            style={{ borderBottom: "1px solid #1a1a1a" }}
-          >
-            <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#b8ff00" }}>
-              Module
-            </div>
+      <div className="max-w-7xl mx-auto px-8 lg:px-16 py-10">
+        <div className="grid lg:grid-cols-[220px_1fr] gap-10">
+
+          {/* Sidebar — notebook spine */}
+          <div className="relative">
             <div
-              className="font-display font-bold text-sm leading-snug"
-              style={{ color: "#888", letterSpacing: "-0.02em" }}
+              className="sticky top-20"
+              style={{ borderLeft: "1px solid #1a1a1a", paddingLeft: "1.25rem" }}
             >
-              {project.title}
+              {/* Vertical label */}
+              <div
+                className="font-mono text-xs tracking-widest uppercase mb-5"
+                style={{ color: "#2a2a2a" }}
+              >
+                LESSONS
+              </div>
+
+              <div className="space-y-0">
+                {lessons.map((lesson, i) => {
+                  const completed = isCompleted(lesson.id);
+                  const active = lesson.id === activeLessonId;
+                  return (
+                    <button
+                      key={lesson.id}
+                      onClick={() => setActiveLessonId(lesson.id)}
+                      className="w-full text-left py-3 transition-all duration-150 group relative"
+                      style={{ borderBottom: "1px solid #111" }}
+                    >
+                      {/* Active left accent */}
+                      {active && (
+                        <div
+                          className="absolute left-[-1.25rem] top-0 bottom-0 w-px"
+                          style={{ background: "#b8ff00" }}
+                        />
+                      )}
+                      <div className="flex items-start gap-3">
+                        <span
+                          className="font-mono text-xs flex-shrink-0 mt-0.5"
+                          style={{ color: completed ? "#b8ff00" : active ? "#555" : "#222" }}
+                        >
+                          {completed ? "✓" : String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span
+                          className="font-display text-xs leading-snug transition-colors duration-150"
+                          style={{
+                            color: active ? "#e8e8e8" : completed ? "#666" : "#333",
+                            fontWeight: active ? 600 : 400,
+                          }}
+                        >
+                          {lesson.title}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Lesson list */}
-          <div className="flex-1 py-2">
-            {lessons.map((lesson, i) => {
-              const done = isCompleted(lesson.id);
-              const active = lesson.id === activeLessonId;
-              return (
-                <button
-                  key={lesson.id}
-                  onClick={() => setActiveLessonId(lesson.id)}
-                  className="w-full text-left px-6 py-4 transition-all duration-150 relative group"
-                  style={{
-                    background: active ? "#0d0d0d" : "transparent",
-                    borderBottom: "1px solid #0f0f0f",
-                  }}
+          {/* Main content */}
+          <div>
+            <AnimatePresence mode="wait">
+              {activeLesson && (
+                <motion.div
+                  key={activeLesson.id}
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -12 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-8"
                 >
-                  {active && (
-                    <div
-                      className="absolute left-0 top-0 bottom-0 w-px"
-                      style={{ background: "#b8ff00" }}
-                    />
-                  )}
-                  <div className="flex items-start gap-3">
-                    {/* Number */}
-                    <span
-                      className="font-mono text-xs flex-shrink-0 mt-0.5"
-                      style={{ color: active ? "#b8ff00" : done ? "#b8ff0044" : "#2a2a2a" }}
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div
-                        className="font-display text-sm font-medium leading-snug truncate"
-                        style={{
-                          color: active ? "#e8e8e8" : done ? "#555" : "#444",
-                          letterSpacing: "-0.01em",
-                        }}
-                      >
-                        {lesson.title}
-                      </div>
-                      {lesson.concept && (
-                        <div className="font-mono text-xs mt-1" style={{ color: "#2a2a2a" }}>
-                          {lesson.concept}
-                        </div>
-                      )}
-                    </div>
-                    {done && (
+                  {/* Lesson header */}
+                  <div style={{ borderBottom: "1px solid #1a1a1a", paddingBottom: "2rem" }}>
+                    <div className="flex items-center gap-4 mb-4">
                       <span
-                        className="flex-shrink-0 w-1.5 h-1.5 mt-1.5"
-                        style={{ background: "#b8ff0066" }}
-                      />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Main content */}
-        <div className="flex-1 min-w-0">
-          <AnimatePresence mode="wait">
-            {activeLesson && (
-              <motion.div
-                key={activeLesson.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {/* Lesson header */}
-                <div
-                  className="px-8 lg:px-16 py-12"
-                  style={{ borderBottom: "1px solid #1a1a1a" }}
-                >
-                  <div className="flex items-start gap-8 max-w-4xl">
-                    {/* Big lesson number */}
-                    <div
-                      className="font-mono font-bold flex-shrink-0 leading-none"
-                      style={{
-                        fontSize: "5rem",
-                        color: "#141414",
-                        letterSpacing: "-0.05em",
-                        lineHeight: 1,
-                        marginTop: "-0.5rem",
-                      }}
-                    >
-                      {String(activeLessonIndex + 1).padStart(2, "0")}
-                    </div>
-                    <div>
-                      {activeLesson.concept && (
-                        <div
-                          className="font-mono text-xs tracking-widest uppercase mb-3"
-                          style={{ color: "#b8ff00" }}
-                        >
-                          {activeLesson.concept}
-                        </div>
-                      )}
-                      <h2
-                        className="font-display font-black leading-none"
-                        style={{
-                          fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
-                          color: "#e8e8e8",
-                          letterSpacing: "-0.03em",
-                        }}
+                        className="font-mono font-bold"
+                        style={{ fontSize: "3rem", lineHeight: 1, color: "#141414", letterSpacing: "-0.05em" }}
                       >
-                        {activeLesson.title}
-                      </h2>
+                        {String(activeLessonIndex + 1).padStart(2, "0")}
+                      </span>
+                      <div>
+                        {activeLesson.concept && (
+                          <div
+                            className="font-mono text-xs tracking-widest uppercase mb-1"
+                            style={{ color: "#b8ff00" }}
+                          >
+                            {activeLesson.concept}
+                          </div>
+                        )}
+                        <h2
+                          className="font-display font-black leading-tight"
+                          style={{ fontSize: "clamp(1.5rem, 3vw, 2.25rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+                        >
+                          {activeLesson.title}
+                        </h2>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Content */}
-                <div className="px-8 lg:px-16 py-12 max-w-4xl">
-
-                  {/* Lesson explanation */}
-                  {activeLesson.explanation && (
-                    <div className="mb-12">
-                      <LessonExplanation
-                        explanation={activeLesson.explanation}
-                        concept={null}
-                      />
-                    </div>
-                  )}
+                  {/* Explanation */}
+                  <div className="py-2">
+                    <LessonExplanation
+                      explanation={activeLesson.explanation || ""}
+                      concept={null}
+                    />
+                  </div>
 
                   {/* Code editor */}
-                  <div className="mb-8">
-                    <div
-                      className="font-mono text-xs tracking-widest uppercase mb-4"
-                      style={{ color: "#333" }}
-                    >
-                      Your workspace
-                    </div>
-                    <CodeEditor
-                      code={code}
-                      onChange={setCode}
-                      onRun={handleRun}
-                      output={output}
-                      isRunning={isRunning}
-                      filename={`lesson_${String(activeLessonIndex + 1).padStart(2, "0")}.js`}
-                    />
-                  </div>
+                  <CodeEditor
+                    code={code}
+                    onChange={setCode}
+                    onRun={handleRun}
+                    output={output}
+                    isRunning={isRunning}
+                    filename={`lesson_${String(activeLessonIndex + 1).padStart(2, "0")}.js`}
+                  />
 
                   {/* Action row */}
-                  <div className="flex flex-wrap items-center gap-3 mb-8">
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
                     {activeLesson.hints && activeLesson.hints.length > 0 && (
                       <button
                         onClick={() => setShowHints(!showHints)}
-                        className="font-mono text-xs tracking-widest uppercase px-5 py-3 transition-all duration-150"
+                        className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                         style={{
-                          border: `1px solid ${showHints ? "#b8ff0033" : "#1e1e1e"}`,
                           color: showHints ? "#b8ff00" : "#444",
+                          border: `1px solid ${showHints ? "#b8ff0033" : "#1e1e1e"}`,
                           background: showHints ? "#b8ff0010" : "transparent",
                         }}
                       >
-                        {showHints ? "hide hints" : "/ hints"}
+                        {showHints ? "— Hints" : "+ Hints"}
                       </button>
                     )}
-
                     {activeLesson.solution_code && (
                       <button
                         onClick={() => setShowSolution(!showSolution)}
-                        className="font-mono text-xs tracking-widest uppercase px-5 py-3 transition-all duration-150"
+                        className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                         style={{
-                          border: `1px solid ${showSolution ? "#b8ff0033" : "#1e1e1e"}`,
-                          color: showSolution ? "#b8ff00" : "#444",
-                          background: showSolution ? "#b8ff0010" : "transparent",
+                          color: showSolution ? "#888" : "#333",
+                          border: `1px solid ${showSolution ? "#2a2a2a" : "#1a1a1a"}`,
                         }}
                       >
-                        {showSolution ? "hide solution" : "/ solution"}
+                        {showSolution ? "— Solution" : "Show Solution"}
                       </button>
                     )}
 
@@ -408,54 +370,35 @@ Expected output format: Just the raw console output, one line per console.log st
                     {user && !isCompleted(activeLesson.id) && (
                       <button
                         onClick={handleComplete}
-                        className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all duration-150"
-                        style={{
-                          border: "1px solid #1e1e1e",
-                          color: "#666",
-                          background: "transparent",
-                        }}
+                        className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 transition-all duration-150"
+                        style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
                         onMouseEnter={e => {
-                          e.currentTarget.style.borderColor = "#b8ff0033";
-                          e.currentTarget.style.color = "#b8ff00";
-                          e.currentTarget.style.background = "#b8ff0010";
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.borderColor = "#1e1e1e";
-                          e.currentTarget.style.color = "#666";
-                          e.currentTarget.style.background = "transparent";
-                        }}
-                      >
-                        ✓ mark complete
-                      </button>
-                    )}
-
-                    {isCompleted(activeLesson.id) && (
-                      <span className="font-mono text-xs tracking-widest uppercase px-4 py-2"
-                        style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
-                        ✓ complete
-                      </span>
-                    )}
-
-                    {activeLessonIndex < lessons.length - 1 && (
-                      <button
-                        onClick={goToNextLesson}
-                        className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all duration-150"
-                        style={{
-                          background: "#b8ff00",
-                          color: "#0a0a0a",
-                          border: "1px solid #b8ff00",
-                          fontWeight: 700,
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.boxShadow = "0 0 20px rgba(184,255,0,0.2)";
+                          e.currentTarget.style.background = "#b8ff0020";
                           e.currentTarget.style.transform = "translateY(-1px)";
                         }}
                         onMouseLeave={e => {
-                          e.currentTarget.style.boxShadow = "";
+                          e.currentTarget.style.background = "#b8ff0010";
                           e.currentTarget.style.transform = "";
                         }}
                       >
-                        Next lesson →
+                        ✓ Mark Complete
+                      </button>
+                    )}
+                    {activeLessonIndex < lessons.length - 1 && (
+                      <button
+                        onClick={goToNextLesson}
+                        className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 transition-all duration-150"
+                        style={{ color: "#0a0a0a", background: "#b8ff00", border: "1px solid #b8ff00", fontWeight: 700 }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.transform = "translateY(-1px)";
+                          e.currentTarget.style.boxShadow = "0 6px 24px rgba(184,255,0,0.2)";
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.transform = "";
+                          e.currentTarget.style.boxShadow = "";
+                        }}
+                      >
+                        Next →
                       </button>
                     )}
                   </div>
@@ -467,22 +410,21 @@ Expected output format: Just the raw console output, one line per console.log st
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="mb-6 overflow-hidden"
+                        className="overflow-hidden"
                       >
-                        <div style={{ border: "1px solid #1e1e1e", borderLeft: "2px solid #b8ff00" }}>
-                          <div
-                            className="px-6 py-3 font-mono text-xs tracking-widest uppercase"
-                            style={{ borderBottom: "1px solid #1a1a1a", color: "#b8ff00", background: "#0d0d0d" }}
-                          >
-                            hints
+                        <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
+                          <div className="px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
+                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#b8ff00" }}>
+                              Hints
+                            </span>
                           </div>
-                          <div className="px-6 py-5 space-y-3">
+                          <div className="px-5 py-4 space-y-3">
                             {activeLesson.hints.map((hint, i) => (
-                              <div key={i} className="flex gap-4">
+                              <div key={i} className="flex items-start gap-3">
                                 <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#333" }}>
                                   {String(i + 1).padStart(2, "0")}
                                 </span>
-                                <p className="font-display text-sm" style={{ color: "#666", fontWeight: 400 }}>
+                                <p className="font-display text-sm leading-relaxed" style={{ color: "#666", fontWeight: 400 }}>
                                   {hint}
                                 </p>
                               </div>
@@ -500,23 +442,20 @@ Expected output format: Just the raw console output, one line per console.log st
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="mb-6 overflow-hidden"
+                        className="overflow-hidden"
                       >
-                        <div style={{ border: "1px solid #1e1e1e" }}>
-                          <div
-                            className="px-5 py-3 flex items-center gap-3"
-                            style={{ borderBottom: "1px solid #1a1a1a", background: "#0a0a0a" }}
-                          >
-                            <div className="flex gap-1.5">
-                              <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
-                              <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
-                              <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
-                            </div>
-                            <span className="font-mono text-xs" style={{ color: "#333" }}>solution.js</span>
+                        <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
+                          <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
+                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#555" }}>
+                              Solution
+                            </span>
+                            <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
+                              JS
+                            </span>
                           </div>
                           <pre
-                            className="font-mono overflow-x-auto py-5 px-6"
-                            style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#888", background: "#0d0d0d" }}
+                            className="font-mono overflow-x-auto p-5"
+                            style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#888" }}
                           >
                             {activeLesson.solution_code}
                           </pre>
@@ -524,10 +463,10 @@ Expected output format: Just the raw console output, one line per console.log st
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
