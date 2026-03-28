@@ -2,73 +2,11 @@ import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Copy, Check } from "lucide-react";
 
-// Keywords to auto-bold in paragraph text
-const KEYWORDS = [
-  "variable", "variables", "function", "functions", "array", "arrays",
-  "loop", "loops", "object", "objects", "string", "strings", "integer", "integers",
-  "boolean", "booleans", "class", "classes", "method", "methods", "parameter", "parameters",
-  "argument", "arguments", "return", "returns", "constant", "constants",
-  "algorithm", "algorithms", "data structure", "data structures", "recursion", "recursive",
-  "iteration", "iterative", "conditional", "conditionals", "operator", "operators",
-  "index", "indices", "element", "elements", "syntax", "statement", "statements",
-  "expression", "expressions", "value", "values", "type", "types", "scope",
-  "callback", "promise", "async", "await", "event", "events", "DOM",
-  "component", "components", "state", "props", "hook", "hooks",
-  "pointer", "pointers", "memory", "stack", "queue", "tree", "graph",
-  "node", "nodes", "edge", "edges", "vertex", "vertices",
-  "input", "output", "console", "terminal", "compiler", "interpreter",
-  "binary", "hexadecimal", "decimal", "null", "undefined", "exception", "error",
-];
-
-const KEYWORD_REGEX = new RegExp(
-  `\\b(${KEYWORDS.map(k => k.replace(/\s+/g, "\\s+")).join("|")})\\b`,
-  "gi"
-);
-
-function BoldKeywords({ children }) {
-  if (typeof children !== "string") return <>{children}</>;
-  const parts = children.split(KEYWORD_REGEX);
-  return (
-    <>
-      {parts.map((part, i) =>
-        KEYWORD_REGEX.test(part) ? (
-          <strong key={i} className="font-semibold text-gray-900">{part}</strong>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
-    </>
-  );
-}
-
-function processChildren(children) {
-  if (!children) return children;
-  if (typeof children === "string") return <BoldKeywords>{children}</BoldKeywords>;
-  if (Array.isArray(children)) return children.map((child, i) => 
-    typeof child === "string" ? <BoldKeywords key={i}>{child}</BoldKeywords> : child
-  );
-  return children;
-}
-
-function parseAnnotations(code) {
-  // Extract inline comments as annotations: { lineIndex, comment }
-  const lines = code.split("\n");
-  const annotations = [];
-  lines.forEach((line, i) => {
-    const match = line.match(/\/\/\s*(.+)$/);
-    if (match) {
-      annotations.push({ line: i + 1, text: match[1].trim() });
-    }
-  });
-  return annotations;
-}
-
 function CodeBlock({ children, className }) {
   const [copied, setCopied] = useState(false);
   const lang = className?.replace("language-", "").toUpperCase() || "JS";
   const code = String(children).replace(/\n$/, "");
   const lines = code.split("\n");
-  const annotations = parseAnnotations(code);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -77,58 +15,58 @@ function CodeBlock({ children, className }) {
   };
 
   return (
-    <div className="my-5">
-      {/* Code block */}
-      <div className="rounded-md overflow-hidden border border-[#3a3a4a] bg-[#1E1E2E]">
-        <div className="flex items-center justify-between px-4 py-2 bg-[#252535] border-b border-[#3a3a4a]">
+    <div className="my-6" style={{ border: "1px solid #1e1e1e" }}>
+      {/* Code block header */}
+      <div
+        className="flex items-center justify-between px-5 py-3"
+        style={{ background: "#0a0a0a", borderBottom: "1px solid #1a1a1a" }}
+      >
+        <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-            <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-            <span className="w-3 h-3 rounded-full bg-[#28C840]" />
+            <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
+            <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
+            <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/10"
-            >
-              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-              {copied ? "Copied" : "Copy"}
-            </button>
-            <span className="text-xs font-bold text-white bg-[#6C5CE7] px-2 py-0.5 rounded">{lang}</span>
-          </div>
+          <span className="font-mono text-xs" style={{ color: "#333" }}>code.{lang.toLowerCase()}</span>
         </div>
-        <pre className="overflow-x-auto p-4">
-          <code className="font-mono text-sm leading-relaxed">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCopy}
+            className="font-mono text-xs px-3 py-1 transition-all duration-150"
+            style={{
+              color: copied ? "#b8ff00" : "#333",
+              border: `1px solid ${copied ? "#b8ff0033" : "#1e1e1e"}`,
+              background: copied ? "#b8ff0010" : "transparent",
+            }}
+          >
+            {copied ? "copied!" : "copy"}
+          </button>
+          <span
+            className="font-mono text-xs px-2 py-1"
+            style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
+          >
+            {lang}
+          </span>
+        </div>
+      </div>
+      {/* Code content */}
+      <div style={{ background: "#0d0d0d" }}>
+        <pre className="overflow-x-auto py-5 px-0">
+          <code className="font-mono" style={{ fontSize: "0.75rem", lineHeight: "1.7" }}>
             {lines.map((line, i) => (
-              <div key={i} className="flex">
-                <span className="select-none text-gray-600 w-7 flex-shrink-0 text-right mr-4 text-xs leading-6">
+              <div key={i} className="flex px-5">
+                <span
+                  className="select-none flex-shrink-0 text-right w-8 mr-5"
+                  style={{ color: "#2a2a2a", fontSize: "0.7rem" }}
+                >
                   {i + 1}
                 </span>
-                <span className="text-[#CDD6F4] leading-6">{line || " "}</span>
+                <span style={{ color: "#aaaaaa" }}>{line || " "}</span>
               </div>
             ))}
           </code>
         </pre>
       </div>
-
-      {/* Line-by-line breakdown */}
-      {annotations.length > 0 && (
-        <div className="mt-2 border border-gray-200 rounded-md overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Code Breakdown</span>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {annotations.map((ann, i) => (
-              <div key={i} className="flex items-start gap-3 px-4 py-3">
-                <span className="flex-shrink-0 mt-0.5 w-6 h-6 rounded bg-[#6C5CE7]/10 text-[#6C5CE7] text-xs font-bold flex items-center justify-center">
-                  {ann.line}
-                </span>
-                <p className="text-sm text-gray-700 leading-relaxed">{ann.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -137,61 +75,92 @@ export default function LessonExplanation({ explanation, concept }) {
   if (!explanation) return null;
 
   return (
-    <div className="lesson-content">
+    <div className="lesson-prose">
       <style>{`
-        .lesson-content {
-          font-family: 'Inter', system-ui, sans-serif;
-          color: #1a1a2e;
-          line-height: 1.8;
+        .lesson-prose { color: #888; line-height: 1.8; }
+        .lesson-prose h2 {
+          font-family: 'Syne', sans-serif;
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: #e8e8e8;
+          letter-spacing: -0.03em;
+          margin-top: 2.5rem;
+          margin-bottom: 1rem;
+          border: none;
+          padding-bottom: 0;
         }
-        .lesson-content h2 {
-          font-size: 1.6rem;
+        .lesson-prose h2:first-child { margin-top: 0; }
+        .lesson-prose h3 {
+          font-family: 'Syne', sans-serif;
+          font-size: 1.1rem;
           font-weight: 700;
-          color: #111;
+          color: #cccccc;
+          letter-spacing: -0.02em;
           margin-top: 2rem;
-          margin-bottom: 0.75rem;
-          border-bottom: none;
-        }
-        .lesson-content h3 {
-          font-size: 1.15rem;
-          font-weight: 600;
-          color: #222;
-          margin-top: 1.5rem;
           margin-bottom: 0.5rem;
         }
-        .lesson-content p {
-          font-size: 1rem;
-          color: #2d2d2d;
+        .lesson-prose p {
+          font-family: 'Syne', sans-serif;
+          font-size: 0.9375rem;
+          color: #777;
           margin-bottom: 1rem;
           line-height: 1.85;
+          font-weight: 400;
         }
-        .lesson-content ul, .lesson-content ol {
-          margin: 0.75rem 0 1rem 1.5rem;
+        .lesson-prose ul, .lesson-prose ol {
+          margin: 0.75rem 0 1rem 0;
+          padding-left: 0;
+          list-style: none;
         }
-        .lesson-content li {
-          margin-bottom: 0.35rem;
-          color: #2d2d2d;
-          font-size: 1rem;
+        .lesson-prose li {
+          font-family: 'Syne', sans-serif;
+          font-size: 0.9375rem;
+          color: #666;
+          margin-bottom: 0.5rem;
+          padding-left: 1.5rem;
+          position: relative;
+          line-height: 1.7;
+          font-weight: 400;
         }
-        .lesson-content strong {
-          font-weight: 600;
-          color: #111;
+        .lesson-prose li::before {
+          content: '—';
+          position: absolute;
+          left: 0;
+          color: #333;
+          font-family: 'Space Mono', monospace;
         }
-        .lesson-content .inline-code {
-          font-family: 'JetBrains Mono', 'Fira Code', monospace;
-          font-size: 0.82em;
-          background: #e8e6f0;
-          color: #4a4080;
-          padding: 0.1em 0.45em;
-          border-radius: 4px;
-          border: 1px solid #d0cce8;
-          white-space: nowrap;
+        .lesson-prose strong {
+          font-weight: 700;
+          color: #aaa;
+        }
+        .lesson-prose blockquote {
+          border-left: 2px solid #b8ff00;
+          padding-left: 1.25rem;
+          margin: 1.5rem 0;
+          color: #555;
+          font-style: normal;
+        }
+        .lesson-prose hr {
+          border: none;
+          border-top: 1px solid #1a1a1a;
+          margin: 2rem 0;
+        }
+        .lesson-mono {
+          font-family: 'Space Mono', monospace;
+          font-size: 0.75em;
+          background: #111;
+          color: #b8ff00;
+          padding: 0.15em 0.4em;
+          border: 1px solid #1e1e1e;
         }
       `}</style>
 
       {concept && (
-        <div className="mb-4">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#6C5CE7] bg-[#6C5CE7]/10 px-3 py-1.5 rounded-full border border-[#6C5CE7]/20">
+        <div className="mb-6">
+          <span
+            className="font-mono text-xs tracking-widest uppercase px-3 py-1.5"
+            style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
+          >
             {concept}
           </span>
         </div>
@@ -200,38 +169,27 @@ export default function LessonExplanation({ explanation, concept }) {
       <ReactMarkdown
         components={{
           h2: ({ children }) => (
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-3 first:mt-0">{children}</h2>
+            <h2>{children}</h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-2">{children}</h3>
+            <h3>{children}</h3>
           ),
           p: ({ children }) => (
-            <p className="text-gray-800 text-base leading-[1.85] mb-4">{processChildren(children)}</p>
+            <p>{children}</p>
           ),
           code: ({ inline, className, children }) =>
             inline ? (
-              <code className="inline-code font-semibold">{children}</code>
+              <code className="lesson-mono">{children}</code>
             ) : (
               <CodeBlock className={className}>{children}</CodeBlock>
             ),
           pre: ({ children }) => <>{children}</>,
-          ul: ({ children }) => (
-            <ul className="list-disc ml-6 my-3 space-y-1.5">{children}</ul>
-          ),
-          ol: ({ children }) => (
-            <ol className="list-decimal ml-6 my-3 space-y-1.5">{children}</ol>
-          ),
-          li: ({ children }) => (
-            <li className="text-gray-800 text-base leading-relaxed">{processChildren(children)}</li>
-          ),
-          strong: ({ children }) => (
-            <strong className="font-semibold text-gray-900">{children}</strong>
-          ),
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-[#6C5CE7] pl-4 my-4 italic text-gray-600">
-              {children}
-            </blockquote>
-          ),
+          ul: ({ children }) => <ul>{children}</ul>,
+          ol: ({ children }) => <ol>{children}</ol>,
+          li: ({ children }) => <li>{children}</li>,
+          strong: ({ children }) => <strong>{children}</strong>,
+          blockquote: ({ children }) => <blockquote>{children}</blockquote>,
+          hr: () => <hr />,
         }}
       >
         {explanation}

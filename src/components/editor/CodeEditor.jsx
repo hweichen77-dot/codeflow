@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Play, RotateCcw, Copy, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useRef } from "react";
+import { Play, RotateCcw, Copy, Check, Loader2 } from "lucide-react";
 
-export default function CodeEditor({ code, onChange, onRun, output, isRunning }) {
+export default function CodeEditor({ code, onChange, onRun, output, isRunning, filename = "exercise.js" }) {
   const [copied, setCopied] = useState(false);
   const textareaRef = useRef(null);
   const lineNumbersRef = useRef(null);
@@ -35,50 +34,95 @@ export default function CodeEditor({ code, onChange, onRun, output, isRunning })
   };
 
   return (
-    <div className="bg-[#1E1E2E] rounded-2xl overflow-hidden shadow-xl border border-gray-800">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[#181825] border-b border-gray-800/60">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-          <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-          <div className="w-3 h-3 rounded-full bg-[#28C840]" />
-          <span className="ml-3 text-xs text-gray-500 font-mono">editor.js</span>
+    <div
+      className="overflow-hidden"
+      style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}
+    >
+      {/* Terminal header */}
+      <div
+        className="flex items-center justify-between px-5 py-3"
+        style={{ borderBottom: "1px solid #1a1a1a", background: "#0a0a0a" }}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
+          </div>
+          <span className="font-mono text-xs" style={{ color: "#333" }}>
+            ~/codeflow/{filename}
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white h-7 px-2"
+          <button
             onClick={handleCopy}
+            className="font-mono text-xs px-3 py-1.5 transition-all duration-150"
+            style={{
+              color: copied ? "#b8ff00" : "#444",
+              border: `1px solid ${copied ? "#b8ff0033" : "#1e1e1e"}`,
+              background: copied ? "#b8ff0010" : "transparent",
+            }}
           >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white h-7 px-2"
+            {copied ? "copied!" : "copy"}
+          </button>
+          <button
             onClick={() => onChange("")}
+            className="font-mono text-xs px-3 py-1.5 transition-all duration-150"
+            style={{ color: "#333", border: "1px solid #1e1e1e" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "#888"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#333"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            size="sm"
-            className="bg-[#00B894] hover:bg-[#00A383] text-white h-7 px-3 text-xs font-medium rounded-lg gap-1.5"
+            reset
+          </button>
+          <button
             onClick={onRun}
             disabled={isRunning}
+            className="font-mono text-xs tracking-widest uppercase px-5 py-1.5 transition-all duration-150 disabled:opacity-50"
+            style={{
+              background: "#b8ff00",
+              color: "#0a0a0a",
+              fontWeight: 700,
+              border: "1px solid #b8ff00",
+            }}
+            onMouseEnter={e => {
+              if (!isRunning) {
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(184,255,0,0.2)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.boxShadow = "";
+              e.currentTarget.style.transform = "";
+            }}
           >
-            <Play className="w-3 h-3" />
-            Run
-          </Button>
+            {isRunning ? (
+              <span className="flex items-center gap-2">
+                <span
+                  className="inline-block w-2 h-2 rounded-full animate-pulse"
+                  style={{ background: "#0a0a0a" }}
+                />
+                running
+              </span>
+            ) : (
+              "▶ run"
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Editor Area */}
-      <div className="flex relative min-h-[280px] max-h-[500px]">
-        {/* Line Numbers */}
+      {/* Editor area */}
+      <div className="flex relative" style={{ minHeight: "280px", maxHeight: "500px" }}>
+        {/* Line numbers */}
         <div
           ref={lineNumbersRef}
-          className="py-4 px-3 text-right text-gray-600 text-sm font-mono select-none overflow-hidden leading-6 flex-shrink-0"
+          className="font-mono text-right select-none overflow-hidden flex-shrink-0 py-5 px-4"
+          style={{
+            fontSize: "0.75rem",
+            lineHeight: "1.6rem",
+            color: "#2a2a2a",
+            borderRight: "1px solid #1a1a1a",
+            width: "3rem",
+          }}
         >
           {lines.map((_, i) => (
             <div key={i}>{i + 1}</div>
@@ -92,7 +136,13 @@ export default function CodeEditor({ code, onChange, onRun, output, isRunning })
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onScroll={handleScroll}
-          className="flex-1 bg-transparent text-[#CDD6F4] font-mono text-sm p-4 pl-2 resize-none outline-none leading-6 overflow-auto"
+          className="flex-1 bg-transparent font-mono py-5 pl-4 pr-5 resize-none outline-none overflow-auto"
+          style={{
+            fontSize: "0.8125rem",
+            lineHeight: "1.6rem",
+            color: "#c8c8c8",
+            caretColor: "#b8ff00",
+          }}
           spellCheck={false}
           autoComplete="off"
           autoCorrect="off"
@@ -100,19 +150,36 @@ export default function CodeEditor({ code, onChange, onRun, output, isRunning })
         />
       </div>
 
-      {/* Output Panel */}
+      {/* Output panel */}
       {output !== undefined && output !== null && (
-        <div className="border-t border-gray-800/60">
-          <div className="px-4 py-2 bg-[#181825] text-xs text-gray-500 font-medium uppercase tracking-wider">
-            Output
+        <div style={{ borderTop: "1px solid #1a1a1a" }}>
+          {/* Output header */}
+          <div
+            className="flex items-center gap-3 px-5 py-2.5"
+            style={{ background: "#0a0a0a", borderBottom: "1px solid #1a1a1a" }}
+          >
+            <div
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: "#b8ff00" }}
+            />
+            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#333" }}>
+              output
+            </span>
           </div>
-          <div className="p-4 font-mono text-sm min-h-[60px] max-h-[200px] overflow-auto">
+          <div
+            className="font-mono py-5 px-5 overflow-auto"
+            style={{ fontSize: "0.75rem", lineHeight: "1.6", minHeight: "60px", maxHeight: "180px", background: "#080808" }}
+          >
             {output.split("\n").map((line, i) => (
               <div
                 key={i}
-                className={line.startsWith("Error") || line.startsWith("❌") ? "text-[#FF7675]" : "text-[#00B894]"}
+                style={{
+                  color: line.startsWith("Error") || line.startsWith("❌")
+                    ? "#ff6b6b"
+                    : "#b8ff00",
+                }}
               >
-                {line}
+                {line || "\u00a0"}
               </div>
             ))}
           </div>

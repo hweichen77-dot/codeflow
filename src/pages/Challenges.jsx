@@ -1,22 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Zap, Search, Trophy, ArrowRight } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
 
-const difficultyColors = {
-  easy: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  medium: "bg-amber-50 text-amber-700 border-amber-200",
-  hard: "bg-red-50 text-red-700 border-red-200",
-};
+const DIFFICULTY_MARK = { easy: "▲", medium: "▲▲", hard: "▲▲▲" };
+const DIFFICULTY_COLOR = { easy: "#b8ff00", medium: "#ffb300", hard: "#ff5555" };
 
-const categoryLabels = {
-  html_css: "HTML & CSS",
+const CATEGORY_LABELS = {
+  html_css: "HTML/CSS",
   javascript: "JavaScript",
   react: "React",
   python: "Python",
@@ -33,108 +25,148 @@ export default function Challenges() {
   });
 
   const filtered = challenges.filter((c) => {
-    const matchSearch =
-      !search || c.title?.toLowerCase().includes(search.toLowerCase());
-    const matchDifficulty =
-      difficulty === "all" || c.difficulty === difficulty;
-    return matchSearch && matchDifficulty;
+    const matchSearch = !search || c.title?.toLowerCase().includes(search.toLowerCase());
+    const matchDiff = difficulty === "all" || c.difficulty === difficulty;
+    return matchSearch && matchDiff;
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-      {/* Header */}
-      <div className="mb-10">
-        <div className="flex items-center gap-2 mb-2">
-          <Zap className="w-5 h-5 text-[#6C5CE7]" />
-          <span className="text-sm font-medium text-[#6C5CE7]">Practice makes perfect</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Challenges</h1>
-        <p className="text-gray-500 text-lg max-w-lg">
-          Sharpen your skills with focused coding challenges.
-        </p>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search challenges..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 h-10 rounded-xl border-gray-200"
-          />
-        </div>
-        <div className="flex gap-2">
-          {["all", "easy", "medium", "hard"].map((d) => (
-            <button
-              key={d}
-              onClick={() => setDifficulty(d)}
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all capitalize ${
-                difficulty === d
-                  ? "bg-[#6C5CE7] text-white shadow-md shadow-purple-200/50"
-                  : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              {d === "all" ? "All" : d}
-            </button>
-          ))}
+    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
+      {/* Page header */}
+      <div
+        className="relative px-8 lg:px-16 pt-28 pb-16"
+        style={{ borderBottom: "1px solid #1a1a1a" }}
+      >
+        <div
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }}
+        />
+        <div className="max-w-7xl mx-auto">
+          <span className="font-mono text-xs tracking-widest" style={{ color: "#2a2a2a" }}>§ CHALLENGES</span>
+          <h1
+            className="font-display font-black leading-none mb-4 mt-2"
+            style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "-0.04em", color: "#e8e8e8" }}
+          >
+            Daily reps.
+          </h1>
+          <p className="font-display text-base" style={{ color: "#555", fontWeight: 400 }}>
+            Short, focused coding exercises. Sharpen a specific skill in 15–30 minutes.
+          </p>
         </div>
       </div>
 
-      {/* List */}
-      {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-24 rounded-2xl" />
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20">
-          <Trophy className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No challenges found</p>
-          <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((challenge, i) => (
-            <motion.div
-              key={challenge.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
+      <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-4 mb-12">
+          <div className="relative flex-1 min-w-48 max-w-xs">
+            <span
+              className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs pointer-events-none"
+              style={{ color: "#444" }}
             >
-              <Link to={createPageUrl(`ChallengeDetail?id=${challenge.id}`)}>
-                <div className="group bg-white rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-lg hover:shadow-gray-100/80 transition-all duration-300 p-5 flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6C5CE7]/10 to-[#A29BFE]/10 flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-5 h-5 text-[#6C5CE7]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold group-hover:text-[#6C5CE7] transition-colors truncate">
+              /search
+            </span>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="filter challenges..."
+              className="w-full font-mono text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
+              style={{ border: "1px solid #1e1e1e", color: "#e8e8e8", caretColor: "#b8ff00" }}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            {["all", "easy", "medium", "hard"].map(d => (
+              <button
+                key={d}
+                onClick={() => setDifficulty(d)}
+                className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                style={{
+                  border: `1px solid ${difficulty === d ? (DIFFICULTY_COLOR[d] || "#b8ff00") : "#1e1e1e"}`,
+                  color: difficulty === d ? (DIFFICULTY_COLOR[d] || "#b8ff00") : "#444",
+                  background: difficulty === d ? `${(DIFFICULTY_COLOR[d] || "#b8ff00")}10` : "transparent",
+                }}
+              >
+                {d === "all" ? "all" : DIFFICULTY_MARK[d]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Challenge list */}
+        {isLoading ? (
+          <div className="space-y-px">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-20 animate-pulse" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }} />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-24">
+            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#2a2a2a" }}>
+              NO RESULTS
+            </div>
+          </div>
+        ) : (
+          <div>
+            {/* Headers */}
+            <div
+              className="hidden md:grid grid-cols-[2.5rem_1fr_auto_auto_auto] gap-8 px-6 py-3 mb-px"
+              style={{ borderBottom: "1px solid #1a1a1a" }}
+            >
+              {["#", "CHALLENGE", "CATEGORY", "DIFF", "XP"].map(h => (
+                <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#2a2a2a" }}>
+                  {h}
+                </div>
+              ))}
+            </div>
+
+            {filtered.map((challenge, i) => (
+              <Link
+                key={challenge.id}
+                to={createPageUrl(`ChallengeDetail?id=${challenge.id}`)}
+                className="group block"
+              >
+                <div
+                  className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[2.5rem_1fr_auto_auto_auto] gap-4 md:gap-8 px-6 py-5 transition-all duration-200"
+                  style={{ borderBottom: "1px solid #1a1a1a" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#0d0d0d"; e.currentTarget.style.paddingLeft = "1.75rem"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; }}
+                >
+                  <span className="font-mono text-xs" style={{ color: "#2a2a2a" }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <div
+                      className="font-display font-bold text-base leading-snug mb-1 transition-colors group-hover:text-white"
+                      style={{ color: "#aaa", letterSpacing: "-0.02em" }}
+                    >
                       {challenge.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 truncate">{challenge.description}</p>
-                  </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <Badge variant="outline" className="text-xs text-gray-500 hidden sm:inline-flex">
-                      {categoryLabels[challenge.category] || challenge.category}
-                    </Badge>
-                    <Badge className={`${difficultyColors[challenge.difficulty]} border text-xs`}>
-                      {challenge.difficulty}
-                    </Badge>
-                    {challenge.xp_reward && (
-                      <span className="text-xs font-medium text-[#6C5CE7]">
-                        +{challenge.xp_reward} XP
-                      </span>
+                    </div>
+                    {challenge.description && (
+                      <div className="font-display text-xs line-clamp-1" style={{ color: "#444" }}>
+                        {challenge.description}
+                      </div>
                     )}
-                    <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#6C5CE7] group-hover:translate-x-1 transition-all" />
+                  </div>
+                  <div className="hidden md:block font-mono text-xs tracking-widest uppercase text-right" style={{ color: "#333" }}>
+                    {CATEGORY_LABELS[challenge.category] || challenge.category}
+                  </div>
+                  <div className="hidden md:block text-right">
+                    <span
+                      className="font-mono text-xs"
+                      style={{ color: DIFFICULTY_COLOR[challenge.difficulty] || "#888" }}
+                    >
+                      {DIFFICULTY_MARK[challenge.difficulty] || "—"}
+                    </span>
+                  </div>
+                  <div className="hidden md:block text-right font-mono text-xs" style={{ color: "#333" }}>
+                    {challenge.xp_reward ? `+${challenge.xp_reward}` : "—"}
                   </div>
                 </div>
               </Link>
-            </motion.div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

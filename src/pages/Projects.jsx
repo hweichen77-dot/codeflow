@@ -3,23 +3,20 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { CheckCircle2, Circle, Clock, ChevronRight, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const SECTIONS = [
-  { key: "beginner", label: "Beginner", color: "text-green-700", bg: "bg-green-50", border: "border-green-200", dot: "bg-green-500" },
-  { key: "intermediate", label: "Intermediate", color: "text-yellow-700", bg: "bg-yellow-50", border: "border-yellow-200", dot: "bg-yellow-500" },
-  { key: "advanced", label: "Advanced", color: "text-red-700", bg: "bg-red-50", border: "border-red-200", dot: "bg-red-500" },
-];
 
 const CATEGORIES = [
-  { value: "all", label: "All Topics" },
-  { value: "html_css", label: "HTML & CSS" },
+  { value: "all", label: "All" },
+  { value: "html_css", label: "HTML/CSS" },
   { value: "javascript", label: "JavaScript" },
   { value: "react", label: "React" },
   { value: "python", label: "Python" },
 ];
+
+const DIFFICULTY_LABEL = {
+  beginner: "00",
+  intermediate: "01",
+  advanced: "02",
+};
 
 export default function Projects() {
   const [search, setSearch] = useState("");
@@ -48,139 +45,246 @@ export default function Projects() {
     return "in_progress";
   };
 
+  const getProgress = (project) => {
+    const pp = progress.filter((p) => p.project_id === project.id);
+    return project.lessons_count ? Math.round((pp.length / project.lessons_count) * 100) : 0;
+  };
+
   const filtered = projects.filter((p) => {
     const matchSearch = !search || p.title?.toLowerCase().includes(search.toLowerCase());
     const matchCat = category === "all" || p.category === category;
     return matchSearch && matchCat;
   });
 
-  const statusIcon = (status) => {
-    if (status === "completed") return <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />;
-    if (status === "in_progress") return <Circle className="w-4 h-4 text-yellow-500 flex-shrink-0" />;
-    return <Circle className="w-4 h-4 text-gray-300 flex-shrink-0" />;
-  };
-
   return (
-    <div className="flex min-h-screen bg-[#f7f8fa]">
-      {/* Left sidebar */}
-      <aside className="hidden lg:flex flex-col w-56 xl:w-64 flex-shrink-0 border-r border-gray-200 bg-white sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-        <div className="p-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Topics</p>
-          <div className="space-y-0.5">
-            {CATEGORIES.map((cat) => (
+    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
+      {/* Page header */}
+      <div
+        className="relative px-8 lg:px-16 pt-28 pb-16"
+        style={{ borderBottom: "1px solid #1a1a1a" }}
+      >
+        {/* Horizontal accent */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }}
+        />
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-baseline gap-6 mb-2">
+            <span className="font-mono text-xs tracking-widest" style={{ color: "#2a2a2a" }}>§ PROJECTS</span>
+          </div>
+          <h1
+            className="font-display font-black leading-none mb-4"
+            style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "-0.04em", color: "#e8e8e8" }}
+          >
+            Choose your module.
+          </h1>
+          <p className="font-display text-base" style={{ color: "#555", fontWeight: 400 }}>
+            Each project is a chapter. Work through them in order, or jump to what interests you.
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
+        {/* Filters row */}
+        <div className="flex flex-wrap items-center gap-4 mb-12">
+          {/* Search */}
+          <div className="relative flex-1 min-w-48 max-w-xs">
+            <span
+              className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs pointer-events-none"
+              style={{ color: "#444" }}
+            >
+              /search
+            </span>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="filter projects..."
+              className="w-full font-mono text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
+              style={{
+                border: "1px solid #1e1e1e",
+                color: "#e8e8e8",
+                caretColor: "#b8ff00",
+              }}
+            />
+          </div>
+
+          {/* Category pills */}
+          <div className="flex gap-2 flex-wrap">
+            {CATEGORIES.map(cat => (
               <button
                 key={cat.value}
                 onClick={() => setCategory(cat.value)}
-                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all ${
-                  category === cat.value
-                    ? "bg-[#6C5CE7]/10 text-[#6C5CE7] font-medium"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
+                className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                style={{
+                  border: `1px solid ${category === cat.value ? "#b8ff00" : "#1e1e1e"}`,
+                  color: category === cat.value ? "#b8ff00" : "#444",
+                  background: category === cat.value ? "#b8ff0010" : "transparent",
+                }}
               >
                 {cat.label}
               </button>
             ))}
           </div>
+        </div>
 
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2 mt-6">Difficulty</p>
-          <div className="space-y-0.5">
-            {SECTIONS.map((s) => (
-              <a key={s.key} href={`#section-${s.key}`} className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
-                {s.label}
-              </a>
+        {/* Project list */}
+        {isLoading ? (
+          <div className="space-y-px">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div
+                key={i}
+                className="h-24 animate-pulse"
+                style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}
+              />
             ))}
           </div>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 px-4 sm:px-8 py-8 max-w-4xl">
-        {/* Search */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Projects</h1>
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search projects..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-9 rounded-md border-gray-200 bg-white text-sm"
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-2">
-            {[1,2,3,4,5].map((i) => <Skeleton key={i} className="h-14 w-full rounded-md" />)}
-          </div>
         ) : (
-          <div className="space-y-10">
-            {SECTIONS.map((section) => {
-              const sectionProjects = filtered.filter((p) => p.difficulty === section.key);
-              if (sectionProjects.length === 0) return null;
-              return (
-                <div key={section.key} id={`section-${section.key}`}>
-                  {/* Section header */}
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3 ${section.bg} ${section.color} border ${section.border}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${section.dot}`} />
-                    {section.label}
-                  </div>
-
-                  {/* Project rows */}
-                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-100">
-                    {sectionProjects.map((project) => {
-                      const status = getStatus(project);
-                      const pp = progress.filter((p) => p.project_id === project.id);
-                      const pct = project.lessons_count ? Math.round((pp.length / project.lessons_count) * 100) : 0;
-                      return (
-                        <Link
-                          key={project.id}
-                          to={createPageUrl(`ProjectDetail?id=${project.id}`)}
-                          className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors group"
-                        >
-                          {statusIcon(status)}
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm font-medium text-gray-900 group-hover:text-[#6C5CE7] transition-colors">
-                              {project.title}
-                            </span>
-                            {status === "in_progress" && (
-                              <div className="mt-1 flex items-center gap-2">
-                                <div className="h-1 w-24 bg-gray-100 rounded-full overflow-hidden">
-                                  <div className="h-full bg-[#6C5CE7] rounded-full" style={{ width: `${pct}%` }} />
-                                </div>
-                                <span className="text-xs text-gray-400">{pct}%</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 flex-shrink-0">
-                            {project.estimated_time && (
-                              <span className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
-                                <Clock className="w-3 h-3" /> {project.estimated_time}m
-                              </span>
-                            )}
-                            {project.lessons_count && (
-                              <span className="text-xs text-gray-400">{project.lessons_count} lessons</span>
-                            )}
-                            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
+          <div>
+            {/* Column headers */}
+            <div
+              className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-3 mb-px"
+              style={{ borderBottom: "1px solid #1a1a1a" }}
+            >
+              {["LVL", "PROJECT", "LESSONS", "STATUS"].map(h => (
+                <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#2a2a2a" }}>
+                  {h}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            <div>
+              {filtered.map((project, i) => {
+                const status = getStatus(project);
+                const pct = getProgress(project);
+
+                return (
+                  <Link
+                    key={project.id}
+                    to={createPageUrl(`ProjectDetail?id=${project.id}`)}
+                    className="group block"
+                  >
+                    <div
+                      className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-6 transition-all duration-200"
+                      style={{ borderBottom: "1px solid #1a1a1a" }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = "#0d0d0d";
+                        e.currentTarget.style.paddingLeft = "1.75rem";
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = "";
+                        e.currentTarget.style.paddingLeft = "1.5rem";
+                      }}
+                    >
+                      {/* Level */}
+                      <div
+                        className="font-mono font-bold"
+                        style={{
+                          fontSize: "1.5rem",
+                          color: "#1e1e1e",
+                          letterSpacing: "-0.05em",
+                        }}
+                      >
+                        {DIFFICULTY_LABEL[project.difficulty] || "00"}
+                      </div>
+
+                      {/* Title + meta */}
+                      <div>
+                        <div
+                          className="font-display font-bold text-lg leading-snug mb-1 transition-colors duration-200 group-hover:text-white"
+                          style={{ color: "#cccccc", letterSpacing: "-0.02em" }}
+                        >
+                          {project.title}
+                        </div>
+                        {project.description && (
+                          <div
+                            className="font-display text-sm line-clamp-1"
+                            style={{ color: "#444", fontWeight: 400 }}
+                          >
+                            {project.description}
+                          </div>
+                        )}
+                        {status === "in_progress" && (
+                          <div className="flex items-center gap-3 mt-2">
+                            <div className="flex gap-1">
+                              {Array.from({ length: 10 }).map((_, di) => (
+                                <div
+                                  key={di}
+                                  className="w-1.5 h-1.5 transition-all duration-200"
+                                  style={{
+                                    background: di < Math.round(pct / 10) ? "#b8ff00" : "#1e1e1e",
+                                  }}
+                                />
+                              ))}
+                            </div>
+                            <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>
+                              {pct}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Lessons count */}
+                      <div
+                        className="font-mono text-sm text-right"
+                        style={{ color: "#333" }}
+                      >
+                        {project.lessons_count ? `${project.lessons_count}` : "—"}
+                        {project.estimated_time ? (
+                          <div className="font-mono text-xs" style={{ color: "#2a2a2a" }}>
+                            {project.estimated_time}min
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {/* Status */}
+                      <div>
+                        {status === "completed" && (
+                          <span
+                            className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                            style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
+                          >
+                            DONE
+                          </span>
+                        )}
+                        {status === "in_progress" && (
+                          <span
+                            className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                            style={{ color: "#888", border: "1px solid #2a2a2a", background: "#0d0d0d" }}
+                          >
+                            ACTIVE
+                          </span>
+                        )}
+                        {status === "not_started" && (
+                          <span
+                            className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                            style={{ color: "#333", border: "1px solid #1e1e1e" }}
+                          >
+                            START
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
 
             {filtered.length === 0 && (
-              <div className="text-center py-16 text-gray-400">
-                <Search className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                <p>No projects found</p>
+              <div className="text-center py-24">
+                <div
+                  className="font-mono text-xs tracking-widest uppercase mb-4"
+                  style={{ color: "#2a2a2a" }}
+                >
+                  NO RESULTS
+                </div>
+                <p className="font-display text-base" style={{ color: "#444" }}>
+                  No projects match your filter.
+                </p>
               </div>
             )}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

@@ -1,119 +1,168 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 
-const paths = [
+const PATHS = [
   {
-    id: 1,
-    tag: "Beginner",
-    title: "Complete Beginner",
-    description: "Never written a line of code? Start here.",
-    projects: ["Your First Website", "Interactive Quiz", "Todo App"],
-    time: "2–3 weeks",
+    level: "00",
+    label: "BEGINNER",
+    title: "From nothing to functional",
+    desc: "HTML, CSS, and vanilla JavaScript. Build a portfolio site and a working calculator from scratch.",
+    projects: ["Portfolio Site", "JavaScript Calculator", "Weather App"],
+    time: "~4 weeks",
+    accent: "#b8ff00",
   },
   {
-    id: 2,
-    tag: "Intermediate",
-    title: "Some Experience",
-    description: "Know the basics? Build something cooler.",
-    projects: ["Weather Dashboard", "Recipe Finder", "Task Manager"],
-    time: "3–4 weeks",
+    level: "01",
+    label: "INTERMEDIATE",
+    title: "Components and state",
+    desc: "React fundamentals, hooks, and state management. Build a full Todo app with persistent storage.",
+    projects: ["React Todo App", "CSS Animation Lab"],
+    time: "~3 weeks",
+    accent: "#b8ff00",
   },
   {
-    id: 3,
-    tag: "Advanced",
-    title: "Ready for Challenges",
-    description: "Test your skills with harder problems.",
-    projects: ["E-commerce Store", "Social App", "Game Engine"],
-    time: "4–6 weeks",
+    level: "02",
+    label: "ADVANCED",
+    title: "Production-quality code",
+    desc: "Async JavaScript, APIs, and real-world patterns. Connect to live data sources and deploy.",
+    projects: ["Quiz Platform", "API-powered app"],
+    time: "~4 weeks",
+    accent: "#b8ff00",
   },
 ];
 
 export default function StatsSection() {
-  const [selected, setSelected] = useState(1);
+  const [active, setActive] = useState(0);
 
   return (
-    <section className="py-32 border-t border-white/[0.04]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-16"
-        >
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-4 font-medium">
-            Learning paths
-          </p>
-          <h2 className="text-4xl sm:text-5xl font-black text-white tracking-[-0.03em] leading-[1.05]">
-            Pick your path.
-          </h2>
-          <p className="text-gray-300 font-light mt-4 text-sm">
-            Everyone starts somewhere. Where are you?
-          </p>
-        </motion.div>
+    <section className="relative py-32" style={{ background: "#080808", borderTop: "1px solid #1a1a1a" }}>
+      <div className="max-w-7xl mx-auto px-8 lg:px-16">
 
-        <div className="grid md:grid-cols-3 gap-3">
-          {paths.map((path, i) => (
-            <motion.div
-              key={path.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              onClick={() => setSelected(path.id)}
-              className={`relative p-6 rounded-lg border cursor-pointer transition-all duration-200 ${
-                selected === path.id
-                  ? "border-[#5B4FE9]/50 bg-[#5B4FE9]/[0.05]"
-                  : "border-white/[0.06] bg-[#111118] hover:border-white/[0.12]"
-              }`}
+        {/* Header */}
+        <div className="flex items-start gap-8 mb-20">
+          <div
+            className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
+            style={{ color: "#2a2a2a", width: "4rem" }}
+          >
+            § 02
+          </div>
+          <div>
+            <h2
+              className="font-display font-black leading-none mb-4"
+              style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
             >
-              <div
-                className={`inline-block text-[11px] font-mono px-2 py-0.5 rounded mb-5 ${
-                  selected === path.id
-                    ? "bg-[#5B4FE9]/20 text-[#9B91F5]"
-                    : "bg-white/5 text-gray-600"
-                }`}
+              Learning paths
+            </h2>
+            <p className="font-display text-base" style={{ color: "#555" }}>
+              Pick your level. Every path ends with something deployed.
+            </p>
+          </div>
+        </div>
+
+        {/* Path selector */}
+        <div className="grid lg:grid-cols-[1fr_1.4fr] gap-0" style={{ border: "1px solid #1a1a1a" }}>
+          {/* Left: level tabs */}
+          <div style={{ borderRight: "1px solid #1a1a1a" }}>
+            {PATHS.map((path, i) => (
+              <button
+                key={path.level}
+                onClick={() => setActive(i)}
+                className="w-full text-left p-8 transition-all duration-200 relative group"
+                style={{
+                  background: active === i ? "#0d0d0d" : "transparent",
+                  borderBottom: i < PATHS.length - 1 ? "1px solid #1a1a1a" : "none",
+                }}
               >
-                {path.tag}
-              </div>
+                {/* Active accent bar */}
+                {active === i && (
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-px"
+                    style={{ background: "#b8ff00" }}
+                  />
+                )}
 
-              <h3 className="text-base font-bold text-white mb-1 tracking-tight">
-                {path.title}
-              </h3>
-              <p className="text-sm text-gray-300 mb-6 font-light">{path.description}</p>
-
-              <div className="space-y-2.5 mb-6">
-                {path.projects.map((project) => (
-                  <div key={project} className="flex items-center gap-2.5">
+                <div className="flex items-start gap-5">
+                  <span
+                    className="font-mono font-bold text-4xl leading-none flex-shrink-0"
+                    style={{
+                      color: active === i ? "#1e1e1e" : "#141414",
+                      letterSpacing: "-0.05em",
+                    }}
+                  >
+                    {path.level}
+                  </span>
+                  <div>
                     <div
-                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                        selected === path.id ? "bg-[#5B4FE9]" : "bg-gray-700"
-                      }`}
-                    />
-                    <span className="text-sm text-gray-300">{project}</span>
+                      className="font-mono text-xs tracking-widest uppercase mb-1"
+                      style={{ color: active === i ? "#b8ff00" : "#333" }}
+                    >
+                      {path.label}
+                    </div>
+                    <div
+                      className="font-display font-bold text-lg leading-snug"
+                      style={{ color: active === i ? "#e8e8e8" : "#3a3a3a", letterSpacing: "-0.02em" }}
+                    >
+                      {path.title}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Right: detail panel */}
+          <div className="p-10" style={{ background: "#0d0d0d" }}>
+            <div
+              className="font-mono text-xs tracking-widest uppercase mb-6"
+              style={{ color: "#b8ff00" }}
+            >
+              PATH {PATHS[active].level} — {PATHS[active].label}
+            </div>
+
+            <p
+              className="font-display text-lg leading-relaxed mb-10"
+              style={{ color: "#888", fontWeight: 400 }}
+            >
+              {PATHS[active].desc}
+            </p>
+
+            {/* Projects list */}
+            <div className="mb-8">
+              <div
+                className="font-mono text-xs tracking-widest uppercase mb-4"
+                style={{ color: "#333" }}
+              >
+                INCLUDED PROJECTS
+              </div>
+              <div className="space-y-2">
+                {PATHS[active].projects.map((project, i) => (
+                  <div key={project} className="flex items-center gap-4">
+                    <span className="font-mono text-xs" style={{ color: "#444" }}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: "#1e1e1e" }} />
+                    <span
+                      className="font-display text-sm font-medium"
+                      style={{ color: "#e8e8e8" }}
+                    >
+                      {project}
+                    </span>
                   </div>
                 ))}
               </div>
+            </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-white/[0.05]">
-                <span className="text-xs text-gray-400">Est. time</span>
-                <span className="text-xs font-mono text-gray-300">{path.time}</span>
-              </div>
-
-              {selected === path.id && (
-                <div className="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-[#5B4FE9]" />
-              )}
-            </motion.div>
-          ))}
+            {/* Time estimate */}
+            <div
+              className="inline-flex items-center gap-3 px-4 py-2"
+              style={{ border: "1px solid #1e1e1e", background: "#0a0a0a" }}
+            >
+              <span className="font-mono text-xs" style={{ color: "#444" }}>EST. DURATION</span>
+              <span className="font-mono text-sm font-bold" style={{ color: "#b8ff00" }}>
+                {PATHS[active].time}
+              </span>
+            </div>
+          </div>
         </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-xs text-gray-400 mt-8"
-        >
-          Not sure? Browse all projects and pick what interests you.
-        </motion.p>
       </div>
     </section>
   );
