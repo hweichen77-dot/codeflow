@@ -1,79 +1,118 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../../utils";
-import { ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
 
 export default function CTASection() {
   return (
-    <section className="py-32 border-t border-white/[0.04]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-2xl"
+    <section
+      className="relative py-40 overflow-hidden"
+      style={{ borderTop: "1px solid #1a1a1a", background: "#0a0a0a" }}
+    >
+      {/* Large background text */}
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+        style={{
+          fontSize: "clamp(8rem, 20vw, 20rem)",
+          fontFamily: "'Syne', sans-serif",
+          fontWeight: 900,
+          color: "transparent",
+          WebkitTextStroke: "1px #1a1a1a",
+          letterSpacing: "-0.05em",
+          lineHeight: 1,
+        }}
+      >
+        CODE
+      </div>
+
+      {/* Horizontal accent line */}
+      <div
+        className="absolute left-16 right-16 top-1/2 -translate-y-1/2 h-px pointer-events-none"
+        style={{ background: "linear-gradient(90deg, transparent, #b8ff0020, transparent)" }}
+      />
+
+      <div className="relative max-w-7xl mx-auto px-8 lg:px-16 text-center">
+        <div
+          className="font-mono text-xs tracking-widest uppercase mb-8"
+          style={{ color: "#b8ff00" }}
         >
-          <h2
-            className="font-black text-white tracking-[-0.03em] leading-[0.93] mb-8"
-            style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)" }}
-          >
-            Stop thinking<br />about it.
-            <br />
-            <span
+          § 03 — START NOW
+        </div>
+
+        <h2
+          className="font-display font-black leading-none mb-8 mx-auto"
+          style={{
+            fontSize: "clamp(3rem, 7vw, 6rem)",
+            letterSpacing: "-0.04em",
+            color: "#e8e8e8",
+            maxWidth: "14ch",
+          }}
+        >
+          Stop watching.<br />
+          <span style={{ WebkitTextStroke: "1.5px #b8ff00", color: "transparent" }}>
+            Start building.
+          </span>
+        </h2>
+
+        <p
+          className="font-display text-lg mb-14 mx-auto"
+          style={{ color: "#555", maxWidth: "40ch", fontWeight: 400 }}
+        >
+          Free forever. No setup. Open your first lesson in under 30 seconds.
+        </p>
+
+        <div className="flex flex-wrap items-center justify-center gap-5">
+          <Link to={createPageUrl("Projects")}>
+            <button
+              className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{
-                WebkitTextStroke: "2px #5B4FE9",
-                color: "transparent",
+                background: "#b8ff00",
+                color: "#0a0a0a",
+                border: "1px solid #b8ff00",
+                fontWeight: 700,
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = "translateY(-3px)";
+                e.currentTarget.style.boxShadow = "0 12px 40px rgba(184,255,0,0.3)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.boxShadow = "";
               }}
             >
-              Start building.
-            </span>
-          </h2>
+              Browse Projects →
+            </button>
+          </Link>
+          <Link to={createPageUrl("Challenges")}>
+            <button
+              className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
+              style={{
+                background: "transparent",
+                color: "#555",
+                border: "1px solid #1e1e1e",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = "#333";
+                e.currentTarget.style.color = "#e8e8e8";
+                e.currentTarget.style.transform = "translateY(-3px)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = "#1e1e1e";
+                e.currentTarget.style.color = "#555";
+                e.currentTarget.style.transform = "";
+              }}
+            >
+              Daily Challenges
+            </button>
+          </Link>
+        </div>
 
-          <p className="text-gray-300 font-light text-base leading-relaxed mb-10 max-w-sm">
-            Your first project is one click away. No credit card, no email verification, no friction.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3 mb-12">
-            <Link to={createPageUrl("Projects")}>
-              <button className="inline-flex items-center gap-2 px-7 py-3 bg-[#5B4FE9] text-white text-sm font-semibold rounded-[4px] border border-[#7066f5]/40 hover:bg-[#4d42d4] transition-colors">
-                Browse Projects
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </Link>
-            <Link to={createPageUrl("Challenges")}>
-              <button className="inline-flex items-center px-7 py-3 text-gray-400 text-sm font-medium rounded-[4px] border border-white/10 hover:border-white/20 hover:text-gray-200 transition-colors">
-                Try a quick challenge
-              </button>
-            </Link>
-          </div>
-
-          {/* Trust pills */}
-          <div className="flex flex-wrap gap-6 mb-16">
-            {["100% Free", "No Signup Needed", "Start in 30 Seconds"].map((item) => (
-              <div key={item} className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#5B4FE9]" />
-                <span className="text-xs text-gray-400">{item}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Testimonial */}
-          <div className="p-5 rounded-lg bg-[#111118] border border-white/[0.06] max-w-md">
-            <p className="text-gray-300 text-sm italic leading-relaxed mb-4">
-              "I went from zero coding knowledge to building my own portfolio site in 2 weeks. This is exactly what I needed."
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#221a3d] flex items-center justify-center text-[10px] font-bold text-[#9B91F5] border border-white/10">
-                SC
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-white">Sarah Chen</div>
-                <div className="text-xs text-gray-400">Career Switcher</div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        {/* Footer note */}
+        <div
+          className="mt-20 font-mono text-xs tracking-widest uppercase"
+          style={{ color: "#222" }}
+        >
+          © 2026 CodeFlow &nbsp;·&nbsp; Learn to build &nbsp;·&nbsp; Free forever
+        </div>
       </div>
     </section>
   );

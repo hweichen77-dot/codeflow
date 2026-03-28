@@ -1,144 +1,119 @@
 import React from "react";
-import { motion } from "framer-motion";
 
-const steps = [
+const FEATURES = [
   {
-    number: "01",
-    title: "Pick a project, not a tutorial",
-    description:
-      "Browse real projects — a portfolio site, a quiz app, a weather dashboard. You decide what to build. The lessons are woven around your goal, not the other way around.",
-    snippet: {
-      filename: "projects.js",
-      lines: [
-        { num: 1, tokens: [{ c: "text-gray-600", t: "// Choose what you want to build" }] },
-        { num: 2, tokens: [{ c: "text-purple-400", t: "const " }, { c: "text-[#7dd3fc]", t: "goal" }, { c: "text-gray-500", t: " = " }, { c: "text-green-400", t: '"Portfolio Website"' }, { c: "text-gray-600", t: ";" }] },
-        { num: 3, tokens: [] },
-        { num: 4, tokens: [{ c: "text-[#7dd3fc]", t: "codeflow" }, { c: "text-gray-500", t: "." }, { c: "text-yellow-300", t: "start" }, { c: "text-gray-500", t: "(" }, { c: "text-[#7dd3fc]", t: "goal" }, { c: "text-gray-500", t: ");" }] },
-        { num: 5, tokens: [{ c: "text-gray-600", t: "// → Lesson 1: HTML structure" }] },
-        { num: 6, tokens: [{ c: "text-gray-600", t: "// → Lesson 2: CSS styling" }] },
-        { num: 7, tokens: [{ c: "text-gray-600", t: "// → Lesson 3: Deploy it" }] },
-      ],
-    },
+    num: "01",
+    title: "Learn by building real projects",
+    body: "No passive videos. Every lesson is a hands-on coding module with a real codebase attached. You ship something every session.",
+    tag: "PROJECTS",
   },
   {
-    number: "02",
-    title: "Write code, see it run instantly",
-    description:
-      "No setup. No terminal rabbit holes. No mysterious 'module not found' errors. Write code in the browser, hit run, see output. Learning shouldn't have a barrier to entry.",
-    snippet: {
-      filename: "terminal",
-      lines: [
-        { num: 1, tokens: [{ c: "text-gray-600", t: "$ " }, { c: "text-gray-300", t: "run script.js" }] },
-        { num: 2, tokens: [] },
-        { num: 3, tokens: [{ c: "text-green-400", t: "✓ " }, { c: "text-gray-400", t: "Executing..." }] },
-        { num: 4, tokens: [{ c: "text-[#7dd3fc]", t: "> " }, { c: "text-gray-300", t: "Hello, World!" }] },
-        { num: 5, tokens: [] },
-        { num: 6, tokens: [{ c: "text-green-400", t: "✓ " }, { c: "text-gray-500", t: "Done in 12ms" }] },
-      ],
-    },
+    num: "02",
+    title: "Instant feedback on every line",
+    body: "Run your code directly in the browser. See output, catch errors, understand what happened — without leaving the lesson.",
+    tag: "EXECUTION",
   },
   {
-    number: "03",
-    title: "Get unstuck without losing momentum",
-    description:
-      "Contextual hints appear exactly when you need them. Step-by-step breakdowns. Peek at the solution when you're truly stuck. Keep moving — getting stuck shouldn't mean giving up.",
-    snippet: {
-      filename: "hint.js",
-      lines: [
-        { num: 1, tokens: [{ c: "text-gray-600", t: "// Hint 1: Use the + operator" }] },
-        { num: 2, tokens: [{ c: "text-purple-400", t: "let " }, { c: "text-[#7dd3fc]", t: "result" }, { c: "text-gray-500", t: " = " }, { c: "text-orange-300", t: "a" }, { c: "text-gray-500", t: " + " }, { c: "text-orange-300", t: "b" }, { c: "text-gray-600", t: ";" }] },
-        { num: 3, tokens: [] },
-        { num: 4, tokens: [{ c: "text-[#7dd3fc]", t: "console" }, { c: "text-gray-500", t: "." }, { c: "text-yellow-300", t: "log" }, { c: "text-gray-500", t: "(" }, { c: "text-[#7dd3fc]", t: "result" }, { c: "text-gray-500", t: ");" }] },
-        { num: 5, tokens: [{ c: "text-gray-600", t: "// → 15 ✓" }] },
-      ],
-    },
+    num: "03",
+    title: "An AI tutor that actually explains",
+    body: "Ask questions in plain English. Get precise answers in context of the exact lesson you're on — not generic documentation.",
+    tag: "AI TOOLS",
+  },
+  {
+    num: "04",
+    title: "From zero to deployed in weeks",
+    body: "A structured path from HTML basics to React apps, guided by actual milestones — not just a list of topics.",
+    tag: "CURRICULUM",
   },
 ];
 
 export default function FeaturesSection() {
   return (
-    <section className="py-32 border-t border-white/[0.04]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-20"
-        >
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-4 font-medium">
-            How it works
-          </p>
-          <h2 className="text-4xl sm:text-5xl font-black text-white tracking-[-0.03em] leading-[1.05] max-w-lg">
-            Learn by doing,<br />not watching.
-          </h2>
-        </motion.div>
+    <section className="relative py-32" style={{ background: "#0a0a0a" }}>
+      {/* Left spine */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-px"
+        style={{ background: "#1a1a1a" }}
+      />
 
-        <div className="divide-y divide-white/[0.04]">
-          {steps.map((step, i) => (
-            <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className="grid md:grid-cols-[1fr_1fr] gap-12 py-14 items-center"
+      <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        {/* Section header */}
+        <div className="flex items-start gap-8 mb-20">
+          <div
+            className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
+            style={{ color: "#2a2a2a", width: "4rem" }}
+          >
+            § 01
+          </div>
+          <div>
+            <h2
+              className="font-display font-black leading-none mb-4"
+              style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
             >
-              <div>
-                <div className="text-xs font-mono text-[#5B4FE9] mb-4 tracking-widest">
-                  {step.number}
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4 leading-snug tracking-tight">
-                  {step.title}
-                </h3>
-                <p className="text-gray-300 text-sm leading-relaxed font-light max-w-sm">
-                  {step.description}
-                </p>
-              </div>
+              How it works
+            </h2>
+            <p className="font-display text-base" style={{ color: "#555" }}>
+              Four principles. One outcome: you can actually code.
+            </p>
+          </div>
+        </div>
 
-              <div className="bg-[#0d0d14] rounded-lg border border-white/[0.06] overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.05] bg-[#111118]">
-                  <div className="w-2 h-2 rounded-full bg-white/10" />
-                  <span className="text-xs font-mono text-gray-600">{step.snippet.filename}</span>
+        {/* Features grid — asymmetric */}
+        <div className="grid lg:grid-cols-2 gap-0">
+          {FEATURES.map((f, i) => (
+            <div
+              key={f.num}
+              className="relative p-10 group transition-colors duration-300"
+              style={{
+                borderTop: "1px solid #1a1a1a",
+                borderRight: i % 2 === 0 ? "1px solid #1a1a1a" : "none",
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "#0d0d0d"}
+              onMouseLeave={e => e.currentTarget.style.background = ""}
+            >
+              {/* Accent line on hover */}
+              <div
+                className="absolute left-0 top-0 bottom-0 w-px transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+                style={{ background: "#b8ff00" }}
+              />
+
+              <div className="flex items-start gap-6">
+                {/* Number */}
+                <div
+                  className="font-mono font-bold flex-shrink-0"
+                  style={{ fontSize: "3rem", lineHeight: 1, color: "#1e1e1e", letterSpacing: "-0.05em" }}
+                >
+                  {f.num}
                 </div>
-                <div className="p-4 font-mono text-xs leading-[1.8]">
-                  {step.snippet.lines.map(({ num, tokens }) => (
-                    <div key={num} className="flex gap-3">
-                      <span className="text-gray-700 select-none w-3 flex-shrink-0">{num}</span>
-                      <span>
-                        {tokens.length === 0
-                          ? "\u00a0"
-                          : tokens.map((tok, j) => (
-                              <span key={j} className={tok.c}>
-                                {tok.t}
-                              </span>
-                            ))}
-                      </span>
-                    </div>
-                  ))}
+
+                <div>
+                  {/* Tag */}
+                  <div
+                    className="font-mono text-xs tracking-widest uppercase mb-4"
+                    style={{ color: "#b8ff00" }}
+                  >
+                    {f.tag}
+                  </div>
+                  <h3
+                    className="font-display font-bold text-xl mb-3 leading-snug"
+                    style={{ color: "#e8e8e8", letterSpacing: "-0.02em" }}
+                  >
+                    {f.title}
+                  </h3>
+                  <p
+                    className="font-display text-sm leading-relaxed"
+                    style={{ color: "#666", fontWeight: 400 }}
+                  >
+                    {f.body}
+                  </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
-        {/* Stats row */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="flex flex-wrap gap-10 pt-14 border-t border-white/[0.04] mt-4"
-        >
-          {[
-            { value: "5min", label: "To your first project" },
-            { value: "$0", label: "Forever free" },
-            { value: "0", label: "Setup required" },
-          ].map(({ value, label }) => (
-            <div key={label}>
-              <div className="text-3xl font-black text-white tracking-tight">{value}</div>
-              <div className="text-xs text-gray-400 mt-1">{label}</div>
-            </div>
-          ))}
-        </motion.div>
+        {/* Bottom rule */}
+        <div className="mt-0" style={{ borderTop: "1px solid #1a1a1a" }} />
       </div>
     </section>
   );

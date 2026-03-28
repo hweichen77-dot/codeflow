@@ -1,230 +1,302 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../../utils";
-import { ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
 
-const MONOGRAMS = [
-  { initials: "SC", bg: "#221a3d" },
-  { initials: "AJ", bg: "#1a3226" },
-  { initials: "MR", bg: "#3a1e1e" },
-];
-
-const CODE_LINES = [
-  { ln: 1, tokens: [{ c: "text-purple-400", t: "const " }, { c: "text-[#7dd3fc]", t: "skills" }, { c: "text-gray-500", t: " = [" }] },
-  { ln: 2, tokens: [{ c: "text-gray-700 pl-8", t: "" }, { c: "text-green-400", t: '"HTML"' }, { c: "text-gray-600", t: ", " }, { c: "text-green-400", t: '"CSS"' }, { c: "text-gray-600", t: "," }] },
-  { ln: 3, tokens: [{ c: "text-gray-700 pl-8", t: "" }, { c: "text-green-400", t: '"JavaScript"' }, { c: "text-gray-600", t: ", " }, { c: "text-green-400", t: '"React"' }] },
-  { ln: 4, tokens: [{ c: "text-gray-500", t: "];" }] },
-  { ln: 5, tokens: [] },
-  { ln: 6, tokens: [{ c: "text-purple-400", t: "function " }, { c: "text-yellow-300", t: "buildProject" }, { c: "text-gray-500", t: "(" }, { c: "text-orange-300", t: "name" }, { c: "text-gray-500", t: ") {" }] },
-  { ln: 7, tokens: [{ c: "text-purple-400 pl-8", t: "return " }, { c: "text-gray-500", t: "{" }] },
-  { ln: 8, tokens: [{ c: "text-[#7dd3fc] pl-16", t: "name" }, { c: "text-gray-600", t: "," }] },
-  { ln: 9, tokens: [{ c: "text-[#7dd3fc] pl-16", t: "skills" }, { c: "text-gray-600", t: "," }] },
-  { ln: 10, tokens: [{ c: "text-[#7dd3fc] pl-16", t: "deployed" }, { c: "text-gray-500", t: ": " }, { c: "text-purple-400", t: "true" }] },
-  { ln: 11, tokens: [{ c: "text-gray-500 pl-8", t: "}" }] },
-  { ln: 12, tokens: [{ c: "text-gray-500", t: "}" }] },
-  { ln: 13, tokens: [] },
-  { ln: 14, tokens: [{ c: "text-[#7dd3fc]", t: "buildProject" }, { c: "text-gray-500", t: "(" }, { c: "text-green-400", t: '"My Portfolio"' }, { c: "text-gray-500", t: ");" }] },
-];
+const FULL_HEADLINE = "Build things\nthat matter.";
+const TAGLINE = "A coding environment built for people who learn by doing — not watching.";
 
 export default function HeroSection() {
-  const [typedText, setTypedText] = useState("");
-  const fullText = "CodeFlow learner";
+  const [typed, setTyped] = useState("");
+  const [showCursor, setShowCursor] = useState(true);
 
   useEffect(() => {
-    if (typedText.length < fullText.length) {
-      const t = setTimeout(() => setTypedText(fullText.slice(0, typedText.length + 1)), 80);
+    if (typed.length < FULL_HEADLINE.length) {
+      const delay = FULL_HEADLINE[typed.length] === "\n" ? 200 : 60;
+      const t = setTimeout(() => setTyped(FULL_HEADLINE.slice(0, typed.length + 1)), delay);
       return () => clearTimeout(t);
     }
-  }, [typedText]);
+  }, [typed]);
+
+  const lines = typed.split("\n");
 
   return (
-    <section className="relative overflow-hidden min-h-screen flex items-center">
-      {/* Dot pattern */}
+    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
+      {/* Left vertical spine */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
+        className="absolute left-0 top-0 bottom-0 w-px"
+        style={{ background: "linear-gradient(to bottom, transparent, #1e1e1e 20%, #1e1e1e 80%, transparent)" }}
       />
-      {/* Radial purple ambient */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse 70% 55% at 65% 50%, rgba(91,79,233,0.09) 0%, transparent 70%)",
-        }}
-      />
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0f0f0f] to-transparent pointer-events-none" />
 
-      <div className="relative w-full max-w-7xl mx-auto px-6 lg:px-8 py-24">
-        <div className="grid lg:grid-cols-[1fr_1.35fr] gap-16 items-center">
-          {/* Left */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 mb-10">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#5B4FE9]" />
-              <span className="text-xs font-medium text-gray-400 tracking-widest uppercase">
-                Free forever · No credit card
+      {/* Section number */}
+      <div
+        className="absolute left-8 top-1/2 -translate-y-1/2 -translate-x-1/2 rotate-90 font-mono text-xs tracking-widest"
+        style={{ color: "#2a2a2a", whiteSpace: "nowrap" }}
+      >
+        § 00 — INTRO
+      </div>
+
+      {/* Background grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)
+          `,
+          backgroundSize: "80px 80px",
+        }}
+      />
+
+      {/* Accent horizontal rule */}
+      <div
+        className="absolute top-0 left-0 right-0 h-px"
+        style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }}
+      />
+
+      <div className="relative max-w-7xl mx-auto px-8 lg:px-16 w-full pt-32 pb-24">
+        <div className="grid lg:grid-cols-[1fr_1fr] gap-20 items-start">
+
+          {/* Left col */}
+          <div>
+            {/* Label */}
+            <div className="flex items-center gap-3 mb-12">
+              <span className="font-mono text-xs tracking-[0.25em] uppercase" style={{ color: "#b8ff00" }}>
+                CodeFlow
+              </span>
+              <span className="font-mono text-xs" style={{ color: "#2a2a2a" }}>///</span>
+              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#444" }}>
+                Learn by building
               </span>
             </div>
 
-            <h1 className="font-black leading-[0.93] tracking-[-0.03em] mb-8">
-              <span className="text-white block" style={{ fontSize: "clamp(3.5rem, 8vw, 6.5rem)" }}>
-                Don't just
-              </span>
-              <span className="text-white block" style={{ fontSize: "clamp(3.5rem, 8vw, 6.5rem)" }}>
-                watch.
-              </span>
-              <span
-                className="block"
-                style={{
-                  fontSize: "clamp(3.5rem, 8vw, 6.5rem)",
-                  WebkitTextStroke: "2px #5B4FE9",
-                  color: "transparent",
-                }}
-              >
-                Build.
-              </span>
+            {/* Headline with typewriter */}
+            <h1
+              className="font-display font-black leading-none mb-10"
+              style={{ fontSize: "clamp(3.5rem, 7vw, 6rem)", letterSpacing: "-0.04em", color: "#e8e8e8" }}
+            >
+              {lines.map((line, i) => (
+                <div key={i} className={i === 1 ? "relative" : ""}>
+                  {i === 1 ? (
+                    <>
+                      <span style={{ WebkitTextStroke: "1.5px #b8ff00", color: "transparent" }}>
+                        {line || "\u00a0"}
+                      </span>
+                      {typed.length < FULL_HEADLINE.length || showCursor ? (
+                        <span
+                          className="cursor-blink inline-block w-0.5 h-[0.85em] ml-1 align-middle"
+                          style={{ background: "#b8ff00", verticalAlign: "middle" }}
+                        />
+                      ) : null}
+                    </>
+                  ) : (
+                    line || "\u00a0"
+                  )}
+                </div>
+              ))}
             </h1>
 
-            <p className="text-[1.05rem] text-gray-300 font-light leading-relaxed mb-10 max-w-sm">
-              Real coding skills come from building real stuff. Jump into hands-on projects, not endless videos.
+            <p
+              className="font-display text-lg leading-relaxed mb-12 max-w-sm"
+              style={{ color: "#888", fontWeight: 400 }}
+            >
+              {TAGLINE}
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 mb-12">
+            {/* CTA buttons */}
+            <div className="flex flex-wrap gap-4 mb-16">
               <Link to={createPageUrl("Projects")}>
-                <button className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#5B4FE9] text-white text-sm font-semibold rounded-[4px] border border-[#7066f5]/40 hover:bg-[#4d42d4] transition-colors">
-                  Start Building
-                  <ChevronRight className="w-4 h-4" />
+                <button
+                  className="font-mono text-sm tracking-widest uppercase px-8 py-4 transition-all duration-200"
+                  style={{
+                    background: "#b8ff00",
+                    color: "#0a0a0a",
+                    border: "1px solid #b8ff00",
+                    fontWeight: 700,
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 8px 32px rgba(184,255,0,0.25)";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
+                >
+                  Start Building →
                 </button>
               </Link>
               <Link to={createPageUrl("Challenges")}>
-                <button className="inline-flex items-center gap-2 px-6 py-2.5 text-gray-400 text-sm font-medium rounded-[4px] border border-white/10 hover:border-white/20 hover:text-gray-200 transition-colors">
-                  Quick Challenge
+                <button
+                  className="font-mono text-sm tracking-widest uppercase px-8 py-4 transition-all duration-200"
+                  style={{
+                    background: "transparent",
+                    color: "#888",
+                    border: "1px solid #2a2a2a",
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = "#444";
+                    e.currentTarget.style.color = "#e8e8e8";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = "#2a2a2a";
+                    e.currentTarget.style.color = "#888";
+                    e.currentTarget.style.transform = "";
+                  }}
+                >
+                  Try a Challenge
                 </button>
               </Link>
             </div>
 
-            {/* Social proof */}
-            <div className="flex flex-wrap items-center gap-5">
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {MONOGRAMS.map(({ initials, bg }) => (
+            {/* Stats row */}
+            <div className="flex items-center gap-8">
+              {[
+                { val: "1K+", label: "Learners" },
+                { val: "6", label: "Projects" },
+                { val: "Free", label: "Forever" },
+              ].map((stat, i) => (
+                <React.Fragment key={stat.label}>
+                  {i > 0 && <div className="w-px h-8" style={{ background: "#1e1e1e" }} />}
+                  <div>
                     <div
-                      key={initials}
-                      className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[10px] font-bold text-white"
-                      style={{ backgroundColor: bg }}
+                      className="font-display font-black text-2xl leading-none mb-1"
+                      style={{ color: "#e8e8e8" }}
                     >
-                      {initials}
+                      {stat.val}
                     </div>
-                  ))}
-                </div>
-                <span className="text-sm text-gray-400">1,000+ learners</span>
-              </div>
-
-              <div className="w-px h-4 bg-white/10" />
-
-              <div className="flex items-center gap-2">
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} width="12" height="12" viewBox="0 0 14 14" fill="none">
-                      <path
-                        d="M7 1L8.8 5.2L13.4 5.6L10.1 8.5L11.1 13L7 10.5L2.9 13L3.9 8.5L0.6 5.6L5.2 5.2L7 1Z"
-                        fill="#5B4FE9"
-                      />
-                    </svg>
-                  ))}
-                </div>
-                <span className="text-xs text-gray-400">
-                  4.9 ·{" "}
-                  <span className="italic text-gray-400">"Best way to actually learn to code"</span>
-                </span>
-              </div>
+                    <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#444" }}>
+                      {stat.label}
+                    </div>
+                  </div>
+                </React.Fragment>
+              ))}
             </div>
-          </motion.div>
+          </div>
 
-          {/* Right: code editor */}
-          <motion.div
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative lg:mr-[-3rem] xl:mr-[-6rem]"
-          >
+          {/* Right col — terminal mockup */}
+          <div className="relative lg:mt-8">
             {/* Glow */}
             <div
-              className="absolute inset-0 rounded-xl pointer-events-none"
-              style={{ boxShadow: "0 0 80px 16px rgba(91,79,233,0.18)" }}
+              className="absolute -inset-4 pointer-events-none"
+              style={{
+                background: "radial-gradient(ellipse at center, rgba(184,255,0,0.04) 0%, transparent 70%)",
+              }}
             />
 
-            <div className="relative bg-[#0c0c13] rounded-xl border border-white/[0.07] overflow-hidden">
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 bg-[#0f0f18] border-b border-white/[0.05]">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-                  <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-                  <div className="w-3 h-3 rounded-full bg-[#28C840]" />
+            {/* Terminal window */}
+            <div
+              className="relative"
+              style={{
+                border: "1px solid #1e1e1e",
+                background: "#0d0d0d",
+              }}
+            >
+              {/* Terminal header */}
+              <div
+                className="flex items-center justify-between px-5 py-3"
+                style={{ borderBottom: "1px solid #1a1a1a", background: "#111" }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full" style={{ background: "#3a3a3a" }} />
+                    <div className="w-3 h-3 rounded-full" style={{ background: "#3a3a3a" }} />
+                    <div className="w-3 h-3 rounded-full" style={{ background: "#3a3a3a" }} />
+                  </div>
+                  <span className="font-mono text-xs" style={{ color: "#444" }}>~/codeflow/lesson_01.js</span>
                 </div>
-                <span className="text-xs text-gray-600 font-mono">project.js</span>
-                <div className="w-16" />
+                <span
+                  className="font-mono text-xs px-2 py-0.5"
+                  style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
+                >
+                  JS
+                </span>
               </div>
 
-              {/* Code lines */}
-              <div className="p-5 font-mono text-[13px] leading-[1.75]">
-                {CODE_LINES.map(({ ln, tokens }) => (
-                  <div key={ln} className="flex gap-4">
-                    <span className="select-none text-gray-700 text-[11px] w-4 flex-shrink-0 leading-[1.75]">
-                      {ln}
-                    </span>
-                    <span className="leading-[1.75]">
-                      {tokens.length === 0 ? (
-                        "\u00a0"
-                      ) : (
-                        tokens.map((tok, j) => (
-                          <span key={j} className={tok.c}>
-                            {tok.t}
-                          </span>
-                        ))
-                      )}
-                    </span>
+              {/* Code body */}
+              <div className="p-6 font-mono text-sm leading-7">
+                <div>
+                  <span style={{ color: "#555" }}>01</span>
+                  <span style={{ color: "#555" }}> &nbsp; </span>
+                  <span style={{ color: "#b8ff00" }}>const</span>
+                  <span style={{ color: "#e8e8e8" }}> skills </span>
+                  <span style={{ color: "#555" }}>= [</span>
+                </div>
+                {["'HTML & CSS'", "'JavaScript'", "'React'", "'AI Tools'"].map((s, i) => (
+                  <div key={s}>
+                    <span style={{ color: "#555" }}>0{i + 2}</span>
+                    <span style={{ color: "#555" }}> &nbsp;&nbsp;&nbsp; </span>
+                    <span style={{ color: "#b8ff0099" }}>{s}</span>
+                    <span style={{ color: "#444" }}>,</span>
                   </div>
                 ))}
+                <div>
+                  <span style={{ color: "#555" }}>06</span>
+                  <span style={{ color: "#555" }}> &nbsp; </span>
+                  <span style={{ color: "#555" }}>];</span>
+                </div>
+                <div><span style={{ color: "#333" }}>07</span></div>
+                <div>
+                  <span style={{ color: "#555" }}>08</span>
+                  <span style={{ color: "#555" }}> &nbsp; </span>
+                  <span style={{ color: "#b8ff00" }}>function</span>
+                  <span style={{ color: "#e8e8e8" }}> build</span>
+                  <span style={{ color: "#555" }}>(</span>
+                  <span style={{ color: "#888" }}>skill</span>
+                  <span style={{ color: "#555" }}>) &#123;</span>
+                </div>
+                <div>
+                  <span style={{ color: "#555" }}>09</span>
+                  <span style={{ color: "#555" }}> &nbsp;&nbsp;&nbsp; </span>
+                  <span style={{ color: "#b8ff00" }}>return</span>
+                  <span style={{ color: "#e8e8e8" }}> launch</span>
+                  <span style={{ color: "#555" }}>(</span>
+                  <span style={{ color: "#888" }}>skill</span>
+                  <span style={{ color: "#555" }}>);</span>
+                </div>
+                <div>
+                  <span style={{ color: "#555" }}>10</span>
+                  <span style={{ color: "#555" }}> &nbsp; </span>
+                  <span style={{ color: "#555" }}>&#125;</span>
+                </div>
+              </div>
 
-                {/* Output */}
-                <div className="mt-4 pt-4 border-t border-white/[0.05]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[11px] text-gray-600 font-mono">Output</span>
-                  </div>
-                  <div className="font-mono text-xs text-gray-500 leading-[1.7]">
-                    <div className="text-gray-500">{"{"}</div>
-                    <div className="pl-4">
-                      <span className="text-gray-600">name: </span>
-                      <span className="text-green-400">"My Portfolio"</span>
-                      <span className="text-gray-700">,</span>
-                    </div>
-                    <div className="pl-4">
-                      <span className="text-gray-600">skills: </span>
-                      <span className="text-green-400">["HTML", "CSS", ...]</span>
-                      <span className="text-gray-700">,</span>
-                    </div>
-                    <div className="pl-4">
-                      <span className="text-gray-600">deployed: </span>
-                      <span className="text-purple-400">true</span>
-                    </div>
-                    <div className="text-gray-500">{"}"}</div>
-                  </div>
+              {/* Output bar */}
+              <div
+                className="px-6 py-4"
+                style={{ borderTop: "1px solid #1a1a1a", background: "#0a0a0a" }}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div
+                    className="w-1.5 h-1.5 rounded-full animate-pulse"
+                    style={{ background: "#b8ff00" }}
+                  />
+                  <span className="font-mono text-xs" style={{ color: "#555" }}>output</span>
+                </div>
+                <div className="font-mono text-xs leading-6" style={{ color: "#b8ff0099" }}>
+                  <div>✓ skill acquired: 'JavaScript'</div>
+                  <div>✓ project deployed: true</div>
+                  <div style={{ color: "#444" }}>▶ next: lesson 02<span className="cursor-blink">_</span></div>
                 </div>
               </div>
             </div>
-          </motion.div>
+
+            {/* Floating annotation */}
+            <div
+              className="absolute -right-4 top-1/3 font-mono text-xs rotate-90 origin-right"
+              style={{ color: "#2a2a2a", whiteSpace: "nowrap" }}
+            >
+              lesson_01.js — 10 lines
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Bottom rule */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-px"
+        style={{ background: "#1a1a1a" }}
+      />
     </section>
   );
 }
