@@ -319,8 +319,11 @@ export default function ProjectDetail() {
                     </div>
                   </div>
 
-                  {/* Explanation */}
-                  <div className="py-2">
+                  {/* Explanation — document style */}
+                  <div
+                    className="rounded px-8 py-8"
+                    style={{ background: "#ffffff", border: "1px solid #e5e5e5" }}
+                  >
                     <LessonExplanation
                       explanation={activeLesson.explanation || ""}
                       concept={null}

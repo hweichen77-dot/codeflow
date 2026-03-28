@@ -4,7 +4,7 @@ import { Copy, Check } from "lucide-react";
 
 function CodeBlock({ children, className }) {
   const [copied, setCopied] = useState(false);
-  const lang = className?.replace("language-", "").toUpperCase() || "JS";
+  const lang = className?.replace("language-", "") || "js";
   const code = String(children).replace(/\n$/, "");
   const lines = code.split("\n");
 
@@ -15,58 +15,36 @@ function CodeBlock({ children, className }) {
   };
 
   return (
-    <div className="my-6" style={{ border: "1px solid #1e1e1e" }}>
-      {/* Code block header */}
+    <div className="my-5 rounded" style={{ border: "1px solid #e0e0e0", background: "#f8f8f8" }}>
       <div
-        className="flex items-center justify-between px-5 py-3"
-        style={{ background: "#0a0a0a", borderBottom: "1px solid #1a1a1a" }}
+        className="flex items-center justify-between px-4 py-2"
+        style={{ borderBottom: "1px solid #e0e0e0", background: "#f0f0f0" }}
       >
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1.5">
-            <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
-            <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
-            <span className="w-2 h-2 rounded-full" style={{ background: "#2a2a2a" }} />
-          </div>
-          <span className="font-mono text-xs" style={{ color: "#333" }}>code.{lang.toLowerCase()}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleCopy}
-            className="font-mono text-xs px-3 py-1 transition-all duration-150"
-            style={{
-              color: copied ? "#b8ff00" : "#333",
-              border: `1px solid ${copied ? "#b8ff0033" : "#1e1e1e"}`,
-              background: copied ? "#b8ff0010" : "transparent",
-            }}
-          >
-            {copied ? "copied!" : "copy"}
-          </button>
-          <span
-            className="font-mono text-xs px-2 py-1"
-            style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
-          >
-            {lang}
-          </span>
-        </div>
+        <span className="font-mono text-xs" style={{ color: "#999" }}>{lang}</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 font-mono text-xs transition-colors"
+          style={{ color: copied ? "#2d8a4e" : "#999" }}
+        >
+          {copied ? <Check size={11} /> : <Copy size={11} />}
+          {copied ? "copied" : "copy"}
+        </button>
       </div>
-      {/* Code content */}
-      <div style={{ background: "#0d0d0d" }}>
-        <pre className="overflow-x-auto py-5 px-0">
-          <code className="font-mono" style={{ fontSize: "0.75rem", lineHeight: "1.7" }}>
-            {lines.map((line, i) => (
-              <div key={i} className="flex px-5">
-                <span
-                  className="select-none flex-shrink-0 text-right w-8 mr-5"
-                  style={{ color: "#2a2a2a", fontSize: "0.7rem" }}
-                >
-                  {i + 1}
-                </span>
-                <span style={{ color: "#aaaaaa" }}>{line || " "}</span>
-              </div>
-            ))}
-          </code>
-        </pre>
-      </div>
+      <pre className="overflow-x-auto py-4 px-0">
+        <code className="font-mono" style={{ fontSize: "0.8rem", lineHeight: "1.65" }}>
+          {lines.map((line, i) => (
+            <div key={i} className="flex px-4">
+              <span
+                className="select-none flex-shrink-0 text-right w-6 mr-4"
+                style={{ color: "#ccc", fontSize: "0.7rem" }}
+              >
+                {i + 1}
+              </span>
+              <span style={{ color: "#333" }}>{line || " "}</span>
+            </div>
+          ))}
+        </code>
+      </pre>
     </div>
   );
 }
@@ -75,111 +53,125 @@ export default function LessonExplanation({ explanation, concept }) {
   if (!explanation) return null;
 
   return (
-    <div className="lesson-prose">
+    <div className="lesson-doc">
       <style>{`
-        .lesson-prose { color: #888; line-height: 1.8; }
-        .lesson-prose h2 {
-          font-family: 'Syne', sans-serif;
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: #e8e8e8;
-          letter-spacing: -0.03em;
-          margin-top: 2.5rem;
-          margin-bottom: 1rem;
-          border: none;
-          padding-bottom: 0;
+        .lesson-doc {
+          color: #1a1a1a;
+          line-height: 1.75;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-        .lesson-prose h2:first-child { margin-top: 0; }
-        .lesson-prose h3 {
-          font-family: 'Syne', sans-serif;
-          font-size: 1.1rem;
+        .lesson-doc h1 {
+          font-size: 1.6rem;
           font-weight: 700;
-          color: #cccccc;
-          letter-spacing: -0.02em;
-          margin-top: 2rem;
-          margin-bottom: 0.5rem;
+          color: #111;
+          margin-bottom: 1.25rem;
+          margin-top: 0;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
         }
-        .lesson-prose p {
-          font-family: 'Syne', sans-serif;
+        .lesson-doc h2 {
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: #111;
+          margin-top: 2rem;
+          margin-bottom: 0.6rem;
+          letter-spacing: 0;
+          line-height: 1.4;
+        }
+        .lesson-doc h2:first-child { margin-top: 0; }
+        .lesson-doc h3 {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #222;
+          margin-top: 1.5rem;
+          margin-bottom: 0.4rem;
+        }
+        .lesson-doc p {
           font-size: 0.9375rem;
-          color: #777;
-          margin-bottom: 1rem;
-          line-height: 1.85;
+          color: #222;
+          margin-bottom: 0.85rem;
+          line-height: 1.75;
           font-weight: 400;
         }
-        .lesson-prose ul, .lesson-prose ol {
-          margin: 0.75rem 0 1rem 0;
+        .lesson-doc ul {
+          margin: 0.5rem 0 1rem 1.25rem;
           padding-left: 0;
-          list-style: none;
+          list-style: disc;
         }
-        .lesson-prose li {
-          font-family: 'Syne', sans-serif;
+        .lesson-doc ol {
+          margin: 0.5rem 0 1rem 1.25rem;
+          padding-left: 0;
+          list-style: decimal;
+        }
+        .lesson-doc li {
           font-size: 0.9375rem;
-          color: #666;
-          margin-bottom: 0.5rem;
-          padding-left: 1.5rem;
+          color: #222;
+          margin-bottom: 0.3rem;
+          padding-left: 0;
           position: relative;
           line-height: 1.7;
           font-weight: 400;
         }
-        .lesson-prose li::before {
-          content: '—';
-          position: absolute;
-          left: 0;
-          color: #333;
-          font-family: 'Space Mono', monospace;
-        }
-        .lesson-prose strong {
+        .lesson-doc strong, .lesson-doc b {
           font-weight: 700;
-          color: #aaa;
+          color: #111;
         }
-        .lesson-prose blockquote {
-          border-left: 2px solid #b8ff00;
-          padding-left: 1.25rem;
-          margin: 1.5rem 0;
-          color: #555;
+        .lesson-doc em {
+          font-style: italic;
+        }
+        .lesson-doc code {
+          font-family: 'Space Mono', 'Courier New', monospace;
+          font-size: 0.8em;
+          background: #f0f0f0;
+          color: #c7254e;
+          padding: 0.1em 0.35em;
+          border-radius: 3px;
+          border: 1px solid #e0e0e0;
+        }
+        .lesson-doc blockquote {
+          border-left: 3px solid #cf6a2f;
+          padding: 0.75rem 1.25rem;
+          margin: 1.25rem 0;
+          background: #fdf8f4;
+          color: #444;
           font-style: normal;
         }
-        .lesson-prose hr {
+        .lesson-doc blockquote p { margin-bottom: 0; color: #444; }
+        .lesson-doc hr {
           border: none;
-          border-top: 1px solid #1a1a1a;
-          margin: 2rem 0;
+          border-top: 1px solid #e5e5e5;
+          margin: 1.75rem 0;
         }
-        .lesson-mono {
-          font-family: 'Space Mono', monospace;
-          font-size: 0.75em;
-          background: #111;
-          color: #b8ff00;
-          padding: 0.15em 0.4em;
-          border: 1px solid #1e1e1e;
+        .lesson-doc table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 1rem 0 1.25rem;
+          font-size: 0.875rem;
+        }
+        .lesson-doc th {
+          background: #f5f5f5;
+          border: 1px solid #ddd;
+          padding: 0.5rem 0.75rem;
+          font-weight: 700;
+          text-align: left;
+          color: #111;
+        }
+        .lesson-doc td {
+          border: 1px solid #ddd;
+          padding: 0.45rem 0.75rem;
+          color: #333;
         }
       `}</style>
 
-      {concept && (
-        <div className="mb-6">
-          <span
-            className="font-mono text-xs tracking-widest uppercase px-3 py-1.5"
-            style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
-          >
-            {concept}
-          </span>
-        </div>
-      )}
-
       <ReactMarkdown
         components={{
-          h2: ({ children }) => (
-            <h2>{children}</h2>
-          ),
-          h3: ({ children }) => (
-            <h3>{children}</h3>
-          ),
-          p: ({ children }) => (
-            <p>{children}</p>
-          ),
+          h1: ({ children }) => <h1>{children}</h1>,
+          h2: ({ children }) => <h2>{children}</h2>,
+          h3: ({ children }) => <h3>{children}</h3>,
+          p: ({ children }) => <p>{children}</p>,
           code: ({ inline, className, children }) =>
             inline ? (
-              <code className="lesson-mono">{children}</code>
+              <code>{children}</code>
             ) : (
               <CodeBlock className={className}>{children}</CodeBlock>
             ),
@@ -188,6 +180,7 @@ export default function LessonExplanation({ explanation, concept }) {
           ol: ({ children }) => <ol>{children}</ol>,
           li: ({ children }) => <li>{children}</li>,
           strong: ({ children }) => <strong>{children}</strong>,
+          em: ({ children }) => <em>{children}</em>,
           blockquote: ({ children }) => <blockquote>{children}</blockquote>,
           hr: () => <hr />,
         }}
