@@ -63,6 +63,12 @@
     font-family: 'Syne', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-stretch: normal;
+  }
+
+  /* Tighter tracking for display headings */
+  .font-display {
+    letter-spacing: -0.01em;
   }
 
   /* Custom scrollbar */

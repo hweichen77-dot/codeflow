@@ -72,7 +72,7 @@ export default function HeroSection() {
             {/* Headline with typewriter */}
             <h1
               className="font-display font-black leading-none mb-10"
-              style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", letterSpacing: "-0.04em", color: "#e8e8e8" }}
+              style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", letterSpacing: "-0.02em", lineHeight: 1.05, color: "#e8e8e8" }}
             >
               {lines.map((line, i) => (
                 <div key={i} className={i === 1 ? "relative" : ""}>

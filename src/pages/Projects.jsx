@@ -74,7 +74,7 @@ export default function Projects() {
           </div>
           <h1
             className="font-display font-black leading-none mb-4"
-            style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "-0.04em", color: "#e8e8e8" }}
+            style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "-0.02em", lineHeight: 1.05, color: "#e8e8e8" }}
           >
             Choose your module.
           </h1>

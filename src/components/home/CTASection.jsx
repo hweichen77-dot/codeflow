@@ -42,7 +42,7 @@ export default function CTASection() {
           className="font-display font-black leading-none mb-8 mx-auto"
           style={{
             fontSize: "clamp(2rem, 4vw, 3.5rem)",
-            letterSpacing: "-0.04em",
+            letterSpacing: "-0.02em",
             color: "#e8e8e8",
             maxWidth: "14ch",
           }}
