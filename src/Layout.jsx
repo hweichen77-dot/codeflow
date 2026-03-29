@@ -19,6 +19,7 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   const navLinks = [
+    { label: "AI Track", page: "AITrack" },
     { label: "Projects", page: "Projects" },
     { label: "Challenges", page: "Challenges" },
     { label: "Dashboard", page: "Dashboard" },
@@ -93,6 +94,15 @@ export default function Layout({ children, currentPageName }) {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
+                <Link
+                  to={createPageUrl("Portfolio")}
+                  className="font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all duration-150"
+                  style={{ color: isActive("Portfolio") ? "#b8ff00" : "#333" }}
+                  onMouseEnter={e => { if (!isActive("Portfolio")) e.currentTarget.style.color = "#888"; }}
+                  onMouseLeave={e => { if (!isActive("Portfolio")) e.currentTarget.style.color = "#333"; }}
+                >
+                  Portfolio
+                </Link>
                 <span className="font-mono text-xs" style={{ color: "#333" }}>
                   {user.full_name?.split(" ")[0] || user.email?.split("@")[0]}
                 </span>
@@ -154,6 +164,15 @@ export default function Layout({ children, currentPageName }) {
             ))}
             <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "0.75rem", marginTop: "0.75rem" }}>
               {user ? (
+                <>
+                <Link
+                  to={createPageUrl("Portfolio")}
+                  onClick={() => setMobileOpen(false)}
+                  className="block font-mono text-xs tracking-widest uppercase px-4 py-3 transition-colors"
+                  style={{ color: "#555" }}
+                >
+                  Portfolio
+                </Link>
                 <button
                   onClick={() => api.auth.logout()}
                   className="font-mono text-xs tracking-widest uppercase w-full text-left px-4 py-3"
@@ -161,6 +180,7 @@ export default function Layout({ children, currentPageName }) {
                 >
                   Sign Out
                 </button>
+                </>
               ) : (
                 <button
                   onClick={() => api.auth.redirectToLogin()}

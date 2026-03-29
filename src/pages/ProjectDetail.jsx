@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { api } from "@/api/apiClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -9,6 +9,7 @@ import AIChatbot from "../components/chat/AIChatbot";
 import LessonExplanation from "../components/lesson/LessonExplanation";
 import LessonQuiz from "../components/lesson/LessonQuiz";
 import LessonChallenge from "../components/lesson/LessonChallenge";
+import { runCodeInSandbox } from "../lib/codeRunner";
 
 const DIFFICULTY_NUM = { beginner: "00", intermediate: "01", advanced: "02" };
 
@@ -23,6 +24,8 @@ export default function ProjectDetail() {
   const [showHints, setShowHints] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const lessonStartTime = useRef(Date.now());
+  const wrongAttempts = useRef(0);
 
   const queryClient = useQueryClient();
 
@@ -67,6 +70,8 @@ export default function ProjectDetail() {
       setOutput(null);
       setShowHints(false);
       setShowSolution(false);
+      lessonStartTime.current = Date.now();
+      wrongAttempts.current = 0;
     }
   }, [activeLessonId, activeLesson?.id]);
 
@@ -74,15 +79,22 @@ export default function ProjectDetail() {
 
   const completeMutation = useMutation({
     mutationFn: async (lessonId) => {
+      const timeSpent = Math.round((Date.now() - lessonStartTime.current) / 1000);
       const existing = progress.find((p) => p.lesson_id === lessonId);
+      const progressData = {
+        completed: true,
+        user_code: code,
+        completed_date: new Date().toISOString(),
+        wrong_attempts: wrongAttempts.current,
+        hints_used: showHints ? (activeLesson?.hints?.length || 0) : 0,
+        solution_viewed: showSolution,
+        time_spent_seconds: timeSpent,
+      };
       if (existing) {
-        await api.entities.UserProgress.update(existing.id, {
-          completed: true, user_code: code, completed_date: new Date().toISOString(),
-        });
+        await api.entities.UserProgress.update(existing.id, progressData);
       } else {
         await api.entities.UserProgress.create({
-          user_email: user.email, lesson_id: lessonId, project_id: projectId,
-          completed: true, user_code: code, completed_date: new Date().toISOString(),
+          user_email: user.email, lesson_id: lessonId, project_id: projectId, ...progressData,
         });
       }
     },
@@ -91,14 +103,9 @@ export default function ProjectDetail() {
 
   const handleRun = async () => {
     setIsRunning(true);
-    try {
-      const result = await api.integrations.Core.InvokeLLM({
-        prompt: `You are a JavaScript code executor simulator. Execute the following JavaScript code and return ONLY the console output. If there are errors, show the error message. Do not explain anything, just show what would appear in the console.\n\nCode:\n\`\`\`javascript\n${code}\n\`\`\`\n\nExpected output format: Just the raw console output, one line per console.log statement. If there's an error, prefix with "Error: "`,
-      });
-      setOutput(result || "No output");
-    } catch {
-      setOutput("Error: Could not run code. Please try again.");
-    }
+    const { output: result, isError } = await runCodeInSandbox(code);
+    if (isError) wrongAttempts.current += 1;
+    setOutput(result);
     setIsRunning(false);
   };
 
@@ -348,6 +355,9 @@ export default function ProjectDetail() {
                     output={output}
                     isRunning={isRunning}
                     filename={`lesson_${String(activeLessonIndex + 1).padStart(2, "0")}.js`}
+                    lessonTitle={activeLesson.title}
+                    solutionCode={activeLesson.solution_code || ""}
+                    enableAIAnalysis={!!activeLesson.solution_code}
                   />
 
                   {/* Action row */}
@@ -487,6 +497,9 @@ export default function ProjectDetail() {
       <AIChatbot
         context={activeLesson?.explanation || ""}
         lessonTitle={activeLesson?.title || project.title}
+        lessonId={activeLesson?.id || ""}
+        currentCode={code}
+        lastOutput={output || ""}
       />
     </div>
   );

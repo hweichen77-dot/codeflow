@@ -53,6 +53,8 @@ import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import ProjectDetail from './pages/ProjectDetail';
 import Projects from './pages/Projects';
+import Portfolio from './pages/Portfolio';
+import AITrack from './pages/AITrack';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +65,8 @@ export const PAGES = {
     "Home": Home,
     "ProjectDetail": ProjectDetail,
     "Projects": Projects,
+    "Portfolio": Portfolio,
+    "AITrack": AITrack,
 }
 
 export const pagesConfig = {

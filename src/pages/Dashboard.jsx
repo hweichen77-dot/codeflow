@@ -79,6 +79,14 @@ export default function Dashboard() {
   const totalAvailableLessons = projects.reduce((s, p) => s + (p.lessons_count || 0), 0);
   const overallPct = totalAvailableLessons ? Math.round((completedLessons / totalAvailableLessons) * 100) : 0;
 
+  // Struggle signals: lessons where student viewed solution or had many wrong attempts
+  const struggledLessons = completedProgress.filter(
+    (p) => p.solution_viewed || (p.wrong_attempts && p.wrong_attempts >= 3)
+  ).length;
+  const totalTimeMinutes = Math.round(
+    completedProgress.reduce((s, p) => s + (p.time_spent_seconds || 0), 0) / 60
+  );
+
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
       {/* Page header */}
@@ -105,8 +113,8 @@ export default function Dashboard() {
           {[
             { val: completedLessons, label: "Lessons Done" },
             { val: completedProjects.length, label: "Projects Complete" },
-            { val: inProgressProjects.length, label: "In Progress" },
             { val: `${overallPct}%`, label: "Overall Progress" },
+            { val: `${totalTimeMinutes}m`, label: "Time Invested" },
           ].map((stat, i) => (
             <div
               key={stat.label}
@@ -125,6 +133,28 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+
+        {/* Struggle signals */}
+        {struggledLessons > 0 && (
+          <div>
+            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#2a2a2a" }}>
+              AI INSIGHTS
+            </div>
+            <div className="px-6 py-5" style={{ border: "1px solid #1a1a1a", background: "#0d0d0d", borderLeft: "2px solid #ffb300" }}>
+              <div className="flex items-start gap-4">
+                <span className="font-mono text-xs mt-0.5" style={{ color: "#ffb300" }}>AI</span>
+                <div>
+                  <p className="font-display text-sm mb-1" style={{ color: "#888", fontWeight: 400 }}>
+                    You viewed solutions or had repeated errors on <span style={{ color: "#e8e8e8" }}>{struggledLessons} lesson{struggledLessons > 1 ? "s" : ""}</span>.
+                  </p>
+                  <p className="font-display text-xs" style={{ color: "#444", fontWeight: 400 }}>
+                    Revisit those lessons — the concepts they cover are worth reinforcing before moving on.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Activity heatmap */}
         <div>

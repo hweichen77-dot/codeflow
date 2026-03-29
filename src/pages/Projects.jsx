@@ -6,6 +6,7 @@ import { createPageUrl } from "../utils";
 
 const CATEGORIES = [
   { value: "all", label: "All" },
+  { value: "ai_ml", label: "AI/ML" },
   { value: "html_css", label: "HTML/CSS" },
   { value: "javascript", label: "JavaScript" },
   { value: "react", label: "React" },
