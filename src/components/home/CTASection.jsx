@@ -105,10 +105,23 @@ export default function CTASection() {
         </div>
 
         <div
-          className="mt-20 font-mono text-xs tracking-widest uppercase"
+          className="mt-20 font-mono text-xs tracking-widest"
           style={{ color: "#222" }}
         >
-          © 2026 CodeFlow &nbsp;·&nbsp; Learn to build &nbsp;·&nbsp; Free forever
+          © 2026 codeflow &nbsp;·&nbsp; crafted with insomnia and strong opinions
+          <span
+            className="ml-4 cursor-pointer select-none transition-all duration-500"
+            style={{ color: "#1a1a1a" }}
+            title="you found it"
+            onMouseEnter={e => {
+              e.currentTarget.style.color = "#b8ff00";
+              e.currentTarget.style.letterSpacing = "0.4em";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = "#1a1a1a";
+              e.currentTarget.style.letterSpacing = "";
+            }}
+          >▸</span>
         </div>
       </div>
     </section>

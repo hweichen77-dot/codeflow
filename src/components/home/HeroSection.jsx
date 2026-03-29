@@ -141,7 +141,8 @@ export default function HeroSection() {
               </Link>
             </div>
 
-            <div className="flex items-center gap-8">
+            {/* intentionally nudged 3px off-grid — live with it */}
+            <div className="flex items-center gap-8" style={{ marginLeft: "3px" }}>
               {[
                 { val: "1K+", label: "Learners" },
                 { val: "6", label: "Projects" },
@@ -190,7 +191,7 @@ export default function HeroSection() {
                     <div className="w-3 h-3 rounded-full" style={{ background: "#3a3a3a" }} />
                     <div className="w-3 h-3 rounded-full" style={{ background: "#3a3a3a" }} />
                   </div>
-                  <span className="font-mono text-xs" style={{ color: "#444" }}>~/codeflow/lesson_01.js</span>
+                  <span className="font-mono text-xs" style={{ color: "#444" }}>~/projects/lesson_01.js</span>
                 </div>
                 <span
                   className="font-mono text-xs px-2 py-0.5"
@@ -260,7 +261,8 @@ export default function HeroSection() {
                 </div>
                 <div className="font-mono text-xs leading-6" style={{ color: "#b8ff0099" }}>
                   <div>skill acquired: 'JavaScript'</div>
-                  <div>project deployed: true</div>
+                  <div>project deployed: <span style={{ color: "#b8ff00" }}>true</span></div>
+                  <div style={{ color: "#555" }}>// took 47 mins. not bad.</div>
                   <div style={{ color: "#444" }}>▶ next: lesson 02<span className="cursor-blink">_</span></div>
                 </div>
               </div>
