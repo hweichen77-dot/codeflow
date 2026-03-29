@@ -30,14 +30,12 @@ const FEATURES = [
 export default function FeaturesSection() {
   return (
     <section className="relative py-32" style={{ background: "#0a0a0a" }}>
-      {/* Left spine */}
       <div
         className="absolute left-0 top-0 bottom-0 w-px"
         style={{ background: "#1a1a1a" }}
       />
 
       <div className="max-w-7xl mx-auto px-8 lg:px-16">
-        {/* Section header */}
         <div className="flex items-start gap-8 mb-20">
           <div
             className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
@@ -58,7 +56,6 @@ export default function FeaturesSection() {
           </div>
         </div>
 
-        {/* Features grid — asymmetric */}
         <div className="grid lg:grid-cols-2 gap-0">
           {FEATURES.map((f, i) => (
             <div
@@ -71,14 +68,12 @@ export default function FeaturesSection() {
               onMouseEnter={e => e.currentTarget.style.background = "#0d0d0d"}
               onMouseLeave={e => e.currentTarget.style.background = ""}
             >
-              {/* Accent line on hover */}
               <div
                 className="absolute left-0 top-0 bottom-0 w-px transition-opacity duration-300 opacity-0 group-hover:opacity-100"
                 style={{ background: "#b8ff00" }}
               />
 
               <div className="flex items-start gap-6">
-                {/* Number */}
                 <div
                   className="font-mono font-bold flex-shrink-0"
                   style={{ fontSize: "3rem", lineHeight: 1, color: "#1e1e1e", letterSpacing: "-0.05em" }}
@@ -87,7 +82,6 @@ export default function FeaturesSection() {
                 </div>
 
                 <div>
-                  {/* Tag */}
                   <div
                     className="font-mono text-xs tracking-widest uppercase mb-4"
                     style={{ color: "#b8ff00" }}
@@ -112,7 +106,6 @@ export default function FeaturesSection() {
           ))}
         </div>
 
-        {/* Bottom rule */}
         <div className="mt-0" style={{ borderTop: "1px solid #1a1a1a" }} />
       </div>
     </section>

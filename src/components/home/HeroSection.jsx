@@ -21,13 +21,11 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Left vertical spine */}
       <div
         className="absolute left-0 top-0 bottom-0 w-px"
         style={{ background: "linear-gradient(to bottom, transparent, #1e1e1e 20%, #1e1e1e 80%, transparent)" }}
       />
 
-      {/* Section number */}
       <div
         className="absolute left-8 top-1/2 -translate-y-1/2 -translate-x-1/2 rotate-90 font-mono text-xs tracking-widest"
         style={{ color: "#2a2a2a", whiteSpace: "nowrap" }}
@@ -35,7 +33,6 @@ export default function HeroSection() {
         § 00 — INTRO
       </div>
 
-      {/* Background grid */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -47,7 +44,6 @@ export default function HeroSection() {
         }}
       />
 
-      {/* Accent horizontal rule */}
       <div
         className="absolute top-0 left-0 right-0 h-px"
         style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }}
@@ -56,9 +52,7 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-8 lg:px-16 w-full pt-32 pb-24">
         <div className="grid lg:grid-cols-[1fr_1fr] gap-20 items-start">
 
-          {/* Left col */}
           <div>
-            {/* Label */}
             <div className="flex items-center gap-3 mb-12">
               <span className="font-mono text-xs tracking-[0.25em] uppercase" style={{ color: "#b8ff00" }}>
                 CodeFlow
@@ -69,7 +63,6 @@ export default function HeroSection() {
               </span>
             </div>
 
-            {/* Headline with typewriter */}
             <h1
               className="font-display font-black leading-none mb-10"
               style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", letterSpacing: "-0.02em", lineHeight: 1.05, color: "#e8e8e8" }}
@@ -102,7 +95,6 @@ export default function HeroSection() {
               {TAGLINE}
             </p>
 
-            {/* CTA buttons */}
             <div className="flex flex-wrap gap-4 mb-16">
               <Link to={createPageUrl("Projects")}>
                 <button
@@ -149,7 +141,6 @@ export default function HeroSection() {
               </Link>
             </div>
 
-            {/* Stats row */}
             <div className="flex items-center gap-8">
               {[
                 { val: "1K+", label: "Learners" },
@@ -174,9 +165,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right col — terminal mockup */}
           <div className="relative lg:mt-8">
-            {/* Glow */}
             <div
               className="absolute -inset-4 pointer-events-none"
               style={{
@@ -184,7 +173,6 @@ export default function HeroSection() {
               }}
             />
 
-            {/* Terminal window */}
             <div
               className="relative"
               style={{
@@ -192,7 +180,6 @@ export default function HeroSection() {
                 background: "#0d0d0d",
               }}
             >
-              {/* Terminal header */}
               <div
                 className="flex items-center justify-between px-5 py-3"
                 style={{ borderBottom: "1px solid #1a1a1a", background: "#111" }}
@@ -213,7 +200,6 @@ export default function HeroSection() {
                 </span>
               </div>
 
-              {/* Code body */}
               <div className="p-6 font-mono text-sm leading-7">
                 <div>
                   <span style={{ color: "#555" }}>01</span>
@@ -261,7 +247,6 @@ export default function HeroSection() {
                 </div>
               </div>
 
-              {/* Output bar */}
               <div
                 className="px-6 py-4"
                 style={{ borderTop: "1px solid #1a1a1a", background: "#0a0a0a" }}
@@ -274,14 +259,13 @@ export default function HeroSection() {
                   <span className="font-mono text-xs" style={{ color: "#555" }}>output</span>
                 </div>
                 <div className="font-mono text-xs leading-6" style={{ color: "#b8ff0099" }}>
-                  <div>✓ skill acquired: 'JavaScript'</div>
-                  <div>✓ project deployed: true</div>
+                  <div>skill acquired: 'JavaScript'</div>
+                  <div>project deployed: true</div>
                   <div style={{ color: "#444" }}>▶ next: lesson 02<span className="cursor-blink">_</span></div>
                 </div>
               </div>
             </div>
 
-            {/* Floating annotation */}
             <div
               className="absolute -right-4 top-1/3 font-mono text-xs rotate-90 origin-right"
               style={{ color: "#2a2a2a", whiteSpace: "nowrap" }}
@@ -292,7 +276,6 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Bottom rule */}
       <div
         className="absolute bottom-0 left-0 right-0 h-px"
         style={{ background: "#1a1a1a" }}

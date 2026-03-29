@@ -37,7 +37,6 @@ export default function StatsSection() {
     <section className="relative py-32" style={{ background: "#080808", borderTop: "1px solid #1a1a1a" }}>
       <div className="max-w-7xl mx-auto px-8 lg:px-16">
 
-        {/* Header */}
         <div className="flex items-start gap-8 mb-20">
           <div
             className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
@@ -58,9 +57,7 @@ export default function StatsSection() {
           </div>
         </div>
 
-        {/* Path selector */}
         <div className="grid lg:grid-cols-[1fr_1.4fr] gap-0" style={{ border: "1px solid #1a1a1a" }}>
-          {/* Left: level tabs */}
           <div style={{ borderRight: "1px solid #1a1a1a" }}>
             {PATHS.map((path, i) => (
               <button
@@ -72,7 +69,6 @@ export default function StatsSection() {
                   borderBottom: i < PATHS.length - 1 ? "1px solid #1a1a1a" : "none",
                 }}
               >
-                {/* Active accent bar */}
                 {active === i && (
                   <div
                     className="absolute left-0 top-0 bottom-0 w-px"
@@ -109,7 +105,6 @@ export default function StatsSection() {
             ))}
           </div>
 
-          {/* Right: detail panel */}
           <div className="p-10" style={{ background: "#0d0d0d" }}>
             <div
               className="font-mono text-xs tracking-widest uppercase mb-6"
@@ -125,7 +120,6 @@ export default function StatsSection() {
               {PATHS[active].desc}
             </p>
 
-            {/* Projects list */}
             <div className="mb-8">
               <div
                 className="font-mono text-xs tracking-widest uppercase mb-4"
@@ -151,7 +145,6 @@ export default function StatsSection() {
               </div>
             </div>
 
-            {/* Time estimate */}
             <div
               className="inline-flex items-center gap-3 px-4 py-2"
               style={{ border: "1px solid #1e1e1e", background: "#0a0a0a" }}

@@ -8,7 +8,6 @@ export default function CTASection() {
       className="relative py-40 overflow-hidden"
       style={{ borderTop: "1px solid #1a1a1a", background: "#0a0a0a" }}
     >
-      {/* Large background text */}
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
         style={{
@@ -24,7 +23,6 @@ export default function CTASection() {
         CODE
       </div>
 
-      {/* Horizontal accent line */}
       <div
         className="absolute left-16 right-16 top-1/2 -translate-y-1/2 h-px pointer-events-none"
         style={{ background: "linear-gradient(90deg, transparent, #b8ff0020, transparent)" }}
@@ -106,7 +104,6 @@ export default function CTASection() {
           </Link>
         </div>
 
-        {/* Footer note */}
         <div
           className="mt-20 font-mono text-xs tracking-widest uppercase"
           style={{ color: "#222" }}
