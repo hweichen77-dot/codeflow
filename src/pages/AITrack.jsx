@@ -11,6 +11,7 @@ const TRACK = [
     description: "Models, training vs inference, what a prediction actually is. The mental model before touching any API.",
     concepts: ["Neural networks", "Training data", "Inference"],
     type: "project",
+    projectId: "69c9b0173a255fc470d7c5bc",
   },
   {
     number: "02",
@@ -20,6 +21,7 @@ const TRACK = [
     description: "What an API is, JSON, API keys, rate limits. Build a Python script that calls an AI model.",
     concepts: ["REST APIs", "JSON", "Authentication"],
     type: "project",
+    projectId: "69c9b0173a255fc470d7c5bd",
   },
   {
     number: "03",
@@ -29,6 +31,7 @@ const TRACK = [
     description: "System prompts, temperature, tokens, few-shot prompting. The marketable skill most CS courses skip.",
     concepts: ["System prompts", "Temperature", "Few-shot"],
     type: "project",
+    projectId: "69c9b0173a255fc470d7c5be",
   },
   {
     number: "04",
@@ -38,6 +41,7 @@ const TRACK = [
     description: "Message history, context windows, streaming. Build a character chatbot that stays in-persona.",
     concepts: ["Context windows", "Role arrays", "Streaming"],
     type: "project",
+    projectId: "69c9b0173a255fc470d7c5bf",
   },
   {
     number: "05",
@@ -47,6 +51,7 @@ const TRACK = [
     description: "Image classification, CNNs conceptually, vision APIs. Feed images, get structure back.",
     concepts: ["Image classification", "CNNs", "Vision APIs"],
     type: "project",
+    projectId: "69c9b0173a255fc470d7c5c0",
   },
   {
     number: "06",
@@ -56,6 +61,7 @@ const TRACK = [
     description: "Vectors, cosine similarity, what embeddings capture. Build a movie recommender from scratch.",
     concepts: ["Vector embeddings", "Cosine similarity", "Semantic search"],
     type: "project",
+    projectId: "69c9b0173a255fc470d7c5c1",
   },
   {
     number: "07",
@@ -65,6 +71,7 @@ const TRACK = [
     description: "Why LLMs hallucinate, retrieval-augmented generation, chunking. Build a document Q&A tool.",
     concepts: ["RAG", "Document chunking", "Retrieval"],
     type: "capstone",
+    projectId: "69c9b0173a255fc470d7c5c2",
   },
   {
     number: "08",
@@ -74,6 +81,7 @@ const TRACK = [
     description: "When to fine-tune vs prompt, what an eval is, measuring model quality. Write a real eval suite.",
     concepts: ["Fine-tuning", "Evaluation", "Model quality"],
     type: "capstone",
+    projectId: "69c9b0173a255fc470d7c5c3",
   },
 ];
 
@@ -146,9 +154,10 @@ export default function AITrack() {
           {TRACK.map((item) => {
             const dc = DIFF_COLOR[item.difficulty];
             return (
-              <div
+              <Link
                 key={item.number}
-                className="group"
+                to={createPageUrl(`ProjectDetail?id=${item.projectId}`)}
+                className="group block"
               >
                 <div
                   className="grid gap-8 px-6 py-6 transition-all duration-200"
@@ -193,7 +202,7 @@ export default function AITrack() {
                     {item.time}
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
