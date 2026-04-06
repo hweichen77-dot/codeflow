@@ -61,6 +61,26 @@ export default function Dashboard() {
     }
   });
 
+  // XP: 10 per completed lesson + bonus from quiz scores
+  const totalXP = completedProgress.reduce((sum, p) => {
+    let xp = 10;
+    if (p.quiz_score && p.quiz_score > 0) xp += Math.round(p.quiz_score / 10);
+    return sum + xp;
+  }, 0);
+
+  // Streak: count consecutive days ending today (or yesterday) with activity
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let streak = 0;
+  let checkDate = new Date();
+  // If no activity today, start checking from yesterday
+  if (!activityMap[todayStr]) checkDate.setDate(checkDate.getDate() - 1);
+  while (true) {
+    const dateStr = checkDate.toISOString().slice(0, 10);
+    if (!activityMap[dateStr]) break;
+    streak++;
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
   const notStartedProjects = projects.filter((proj) => !progress.some((p) => p.project_id === proj.id));
   const inProgressProjects = projects
     .filter((proj) => {
@@ -109,21 +129,26 @@ export default function Dashboard() {
       <div className="max-w-5xl mx-auto px-8 lg:px-16 py-12 space-y-12">
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-0" style={{ border: "1px solid #1a1a1a" }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-0" style={{ border: "1px solid #1a1a1a" }}>
           {[
-            { val: completedLessons, label: "Lessons Done" },
-            { val: completedProjects.length, label: "Projects Complete" },
-            { val: `${overallPct}%`, label: "Overall Progress" },
-            { val: `${totalTimeMinutes}m`, label: "Time Invested" },
-          ].map((stat, i) => (
+            { val: completedLessons, label: "Lessons Done", accent: null },
+            { val: completedProjects.length, label: "Projects Done", accent: null },
+            { val: `${totalXP} XP`, label: "Total XP", accent: "#b8ff00" },
+            { val: `${streak}🔥`, label: "Day Streak", accent: streak >= 3 ? "#ff6b35" : null },
+            { val: inProgressProjects.length, label: "Active Projects", accent: null },
+            { val: `${overallPct}%`, label: "Overall Progress", accent: null },
+          ].map((stat, i, arr) => (
             <div
               key={stat.label}
               className="p-6"
-              style={{ borderRight: i < 3 ? "1px solid #1a1a1a" : "none", borderBottom: "none" }}
+              style={{
+                borderRight: i < arr.length - 1 ? "1px solid #1a1a1a" : "none",
+                borderBottom: "none",
+              }}
             >
               <div
                 className="font-display font-black leading-none mb-2"
-                style={{ fontSize: "2.5rem", color: "#e8e8e8", letterSpacing: "-0.04em" }}
+                style={{ fontSize: "2rem", color: stat.accent || "#e8e8e8", letterSpacing: "-0.04em" }}
               >
                 {stat.val}
               </div>
@@ -133,6 +158,33 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+
+        {/* Streak callout */}
+        {streak > 0 && (
+          <div
+            className="flex items-center gap-4 px-6 py-4"
+            style={{
+              border: `1px solid ${streak >= 7 ? "#ff6b3533" : "#1a1a1a"}`,
+              background: streak >= 7 ? "#ff6b3508" : "#0d0d0d",
+              borderLeft: `2px solid ${streak >= 7 ? "#ff6b35" : streak >= 3 ? "#ffb300" : "#2a2a2a"}`,
+            }}
+          >
+            <span style={{ fontSize: "1.5rem" }}>🔥</span>
+            <div>
+              <div className="font-mono text-xs tracking-widest uppercase mb-0.5" style={{ color: streak >= 7 ? "#ff6b35" : "#ffb300" }}>
+                {streak >= 7 ? "ON FIRE" : streak >= 3 ? "BUILDING MOMENTUM" : "STREAK STARTED"}
+              </div>
+              <p className="font-display text-sm" style={{ color: "#555", fontWeight: 400 }}>
+                {streak} day{streak !== 1 ? "s" : ""} in a row.{" "}
+                {streak >= 7
+                  ? "Exceptional consistency — keep it up."
+                  : streak >= 3
+                  ? "Come back tomorrow to grow your streak."
+                  : "Every day counts. See you tomorrow."}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Struggle signals */}
         {struggledLessons > 0 && (
