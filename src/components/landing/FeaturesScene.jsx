@@ -32,20 +32,17 @@ const FEATURES = [
   },
 ];
 
-// Each card occupies ~0.22 of scroll range, with generous overlap for readability
 function FeatureCard({ feature, index, scrollYProgress }) {
   const isLast = index === FEATURES.length - 1;
-  const inPoint = index * 0.22;
-  const peakStart = inPoint + 0.1;
+  const inPoint = index * 0.2;
+  const peakStart = inPoint + 0.08;
   const peakEnd = inPoint + 0.22;
-  const outPoint = inPoint + 0.32;
+  const outPoint = inPoint + 0.3;
 
   const cardOpacity = useTransform(
     scrollYProgress,
-    isLast
-      ? [inPoint, peakStart, 0.95]
-      : [inPoint, peakStart, peakEnd, outPoint],
-    isLast ? [0, 1, 1] : [0, 1, 1, 0.5]
+    isLast ? [inPoint, peakStart, 0.95] : [inPoint, peakStart, peakEnd, outPoint],
+    isLast ? [0, 1, 1] : [0, 1, 1, 0.4]
   );
   const cardY = useTransform(scrollYProgress, [inPoint, peakStart], [50, 0]);
   const cardScale = useTransform(
@@ -110,7 +107,6 @@ function FeatureCard({ feature, index, scrollYProgress }) {
           {feature.body}
         </p>
 
-        {/* Progress dots */}
         <div className="mt-10 flex items-center gap-4">
           <div className="flex gap-2">
             {FEATURES.map((_, i) => (
@@ -141,30 +137,58 @@ export default function FeaturesScene() {
   });
 
   const sceneOpacity = useTransform(scrollYProgress, [0, 0.04, 0.92, 1], [0, 1, 1, 0]);
-  // Background drifts up slower than content
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
+  const bgY2 = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
+
+  // Scroll-driven diagonal stripe animation
+  const stripeX = useTransform(scrollYProgress, [0, 1], ["-60%", "60%"]);
 
   return (
-    <div ref={ref} style={{ height: "600vh" }}>
+    <div ref={ref} style={{ height: "700vh" }}>
       <div
-        className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center px-6"
-        style={{ background: "#0a0a0a" }}
+        className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-end px-6"
+        style={{ background: "#0a0a0a", paddingBottom: "8vh" }}
       >
-        {/* Parallax bg */}
+        {/* Parallax bg glow */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 70% 50% at 50% 50%, rgba(184,255,0,0.035) 0%, transparent 60%)",
+              background: "radial-gradient(ellipse 70% 50% at 50% 55%, rgba(184,255,0,0.035) 0%, transparent 60%)",
             }}
           />
-          {/* Subtle corner accents */}
+        </motion.div>
+
+        {/* Corner accents — slower parallax */}
+        <motion.div style={{ y: bgY2 }} className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 w-64 h-64" style={{
             background: "radial-gradient(circle at 0% 0%, rgba(0,212,255,0.04) 0%, transparent 60%)"
           }} />
           <div className="absolute bottom-0 right-0 w-64 h-64" style={{
             background: "radial-gradient(circle at 100% 100%, rgba(184,255,0,0.04) 0%, transparent 60%)"
           }} />
+        </motion.div>
+
+        {/* Scroll-driven diagonal stripe */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            style={{ x: stripeX }}
+            className="absolute inset-y-0 w-px opacity-10"
+            style2={{ left: "50%", background: "linear-gradient(to bottom, transparent, #b8ff00 30%, #b8ff00 70%, transparent)" }}
+          >
+            <div className="absolute inset-y-0 left-0 w-px" style={{ background: "linear-gradient(to bottom, transparent, #b8ff00 30%, #b8ff00 70%, transparent)" }} />
+          </motion.div>
+        </div>
+
+        {/* Animated dot grid */}
+        <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none opacity-40">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(circle, rgba(184,255,0,0.12) 1px, transparent 1px)`,
+              backgroundSize: "60px 60px",
+            }}
+          />
         </motion.div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full relative z-10">

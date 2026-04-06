@@ -17,13 +17,11 @@ const BARS = [
   { label: "RAG & Embeddings", width: 62, color: "#00d4ff" },
 ];
 
-// Bar animates from 0 → target width as user scrolls in
-// Using wider input ranges so animations pace slowly
 function SkillBar({ bar, index, scrollYProgress }) {
-  const inStart = 0.08 + index * 0.045;
-  const inEnd = inStart + 0.18;
+  const inStart = 0.07 + index * 0.05;
+  const inEnd = inStart + 0.2;
   const width = useTransform(scrollYProgress, [inStart, inEnd], ["0%", `${bar.width}%`]);
-  const opacity = useTransform(scrollYProgress, [inStart - 0.04, inStart + 0.08], [0, 1]);
+  const opacity = useTransform(scrollYProgress, [inStart - 0.03, inStart + 0.09], [0, 1]);
   return (
     <motion.div style={{ opacity }}>
       <div className="flex items-center justify-between mb-2">
@@ -45,9 +43,9 @@ function SkillBar({ bar, index, scrollYProgress }) {
 }
 
 function StatCard({ stat, index, scrollYProgress }) {
-  const inStart = 0.12 + index * 0.055;
-  const opacity = useTransform(scrollYProgress, [inStart, inStart + 0.14], [0, 1]);
-  const y = useTransform(scrollYProgress, [inStart, inStart + 0.14], [24, 0]);
+  const inStart = 0.1 + index * 0.06;
+  const opacity = useTransform(scrollYProgress, [inStart, inStart + 0.15], [0, 1]);
+  const y = useTransform(scrollYProgress, [inStart, inStart + 0.15], [24, 0]);
   return (
     <motion.div
       style={{
@@ -82,21 +80,24 @@ export default function ProgressScene() {
   });
 
   const sceneOpacity = useTransform(scrollYProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
-  // Background layers parallax
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "28%"]);
-  const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const bgY2 = useTransform(scrollYProgress, [0, 1], ["0%", "45%"]);
 
-  // Heading fade in early
-  const headingOpacity = useTransform(scrollYProgress, [0.03, 0.15], [0, 1]);
-  const headingY = useTransform(scrollYProgress, [0.03, 0.15], [30, 0]);
+  // Expanding pulse ring on scroll
+  const ringScale = useTransform(scrollYProgress, [0.05, 0.6], [0.5, 2.5]);
+  const ringOpacity = useTransform(scrollYProgress, [0.05, 0.2, 0.6], [0, 0.08, 0]);
+
+  // Heading fade in
+  const headingOpacity = useTransform(scrollYProgress, [0.03, 0.14], [0, 1]);
+  const headingY = useTransform(scrollYProgress, [0.03, 0.14], [30, 0]);
 
   return (
-    <div ref={ref} style={{ height: "400vh" }}>
+    <div ref={ref} style={{ height: "500vh" }}>
       <div
-        className="sticky top-0 h-screen overflow-hidden flex items-center justify-center px-6"
-        style={{ background: "#080808" }}
+        className="sticky top-0 h-screen overflow-hidden flex items-end justify-center px-6"
+        style={{ background: "#080808", paddingBottom: "8vh" }}
       >
-        {/* Parallax background grid */}
+        {/* Parallax horizontal lines */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -107,23 +108,53 @@ export default function ProgressScene() {
           />
         </motion.div>
 
-        {/* Parallax glow — drifts at different speed */}
-        <motion.div style={{ y: glowY }} className="absolute inset-0 pointer-events-none">
+        {/* Slower glow */}
+        <motion.div style={{ y: bgY2 }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 110% 70% at 50% 110%, rgba(184,255,0,0.06) 0%, transparent 65%)",
+              background: "radial-gradient(ellipse 110% 70% at 50% 115%, rgba(184,255,0,0.07) 0%, transparent 65%)",
             }}
           />
         </motion.div>
 
-        <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto relative z-10">
+        {/* Scroll-expanding pulse ring */}
+        <motion.div
+          style={{ scale: ringScale, opacity: ringOpacity }}
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        >
+          <div
+            className="w-96 h-96 rounded-full"
+            style={{ border: "1px solid #b8ff00" }}
+          />
+        </motion.div>
+
+        {/* Floating particles */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute"
+              style={{
+                width: "2px",
+                height: "2px",
+                background: i % 2 === 0 ? "#b8ff00" : "#00d4ff",
+                left: (13 * i + 8) % 100 + "%",
+                top: (17 * i + 5) % 100 + "%",
+                borderRadius: "50%",
+              }}
+              animate={{ y: [0, -20, 0], opacity: [0.1, 0.4, 0.1] }}
+              transition={{ duration: 5 + i * 0.6, repeat: Infinity, delay: i * 0.4 }}
+            />
+          ))}
+        </div>
+
+        <div className="w-full max-w-5xl mx-auto relative z-10">
           <div className="font-mono text-xs tracking-widest uppercase mb-12 text-center" style={{ color: "#2a2a2a" }}>
             § YOUR GROWTH
           </div>
 
           <div className="grid md:grid-cols-2 gap-16">
-            {/* Left: skill bars */}
             <div>
               <motion.div style={{ opacity: headingOpacity, y: headingY }}>
                 <h2
@@ -141,14 +172,13 @@ export default function ProgressScene() {
               </div>
             </div>
 
-            {/* Right: stats */}
             <div className="grid grid-cols-2 gap-0" style={{ border: "1px solid #1a1a1a" }}>
               {STATS.map((stat, i) => (
                 <StatCard key={stat.label} stat={stat} index={i} scrollYProgress={scrollYProgress} />
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

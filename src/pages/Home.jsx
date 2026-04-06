@@ -4,6 +4,7 @@ import PathSplitScene from "../components/landing/PathSplitScene";
 import LearningScene from "../components/landing/LearningScene";
 import FeaturesScene from "../components/landing/FeaturesScene";
 import ProgressScene from "../components/landing/ProgressScene";
+import SocialProofScene from "../components/landing/SocialProofScene";
 import FinalCTAScene from "../components/landing/FinalCTAScene";
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
       <LearningScene />
       <FeaturesScene />
       <ProgressScene />
+      <SocialProofScene />
       <FinalCTAScene />
     </div>
   );

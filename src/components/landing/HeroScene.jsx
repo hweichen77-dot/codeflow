@@ -10,21 +10,25 @@ export default function HeroScene() {
     offset: ["start start", "end start"],
   });
 
-  // Content stays fully visible until 60% scroll, then fades
-  const opacity = useTransform(scrollYProgress, [0, 0.55, 0.85], [1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
-  const y = useTransform(scrollYProgress, [0, 1], [0, -40]);
+  // Content stays fully visible until 70% scroll, then fades — very slow exit
+  const opacity = useTransform(scrollYProgress, [0, 0.65, 0.9], [1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.94]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -30]);
 
-  // Background layers move at different speeds (parallax)
-  const gridY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-  const gridOpacity = useTransform(scrollYProgress, [0, 0.7], [0.5, 0]);
+  // Parallax background layers — all move at different speeds
+  const gridY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
+  const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const gridOpacity = useTransform(scrollYProgress, [0, 0.75], [0.5, 0]);
+
+  // Animated ring that expands as user scrolls
+  const ringScale = useTransform(scrollYProgress, [0, 0.5], [1, 2.2]);
+  const ringOpacity = useTransform(scrollYProgress, [0, 0.15, 0.5], [0, 0.12, 0]);
 
   return (
-    <div ref={ref} style={{ height: "280vh" }}>
+    <div ref={ref} style={{ height: "340vh" }}>
       <div
-        className="sticky top-0 h-screen overflow-hidden flex items-center justify-center"
-        style={{ background: "#080808" }}
+        className="sticky top-0 h-screen overflow-hidden flex items-end justify-center"
+        style={{ background: "#080808", paddingBottom: "12vh" }}
       >
         {/* Parallax grid layer (moves slower) */}
         <motion.div
@@ -43,6 +47,17 @@ export default function HeroScene() {
           />
         </motion.div>
 
+        {/* Expanding ring on scroll */}
+        <motion.div
+          style={{ scale: ringScale, opacity: ringOpacity }}
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        >
+          <div
+            className="w-96 h-96 rounded-full"
+            style={{ border: "1px solid #b8ff00" }}
+          />
+        </motion.div>
+
         {/* Radial glow — moves even slower */}
         <motion.div
           style={{ y: glowY }}
@@ -51,14 +66,14 @@ export default function HeroScene() {
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 100% 70% at 50% 60%, rgba(184,255,0,0.08) 0%, transparent 65%)",
+              background: "radial-gradient(ellipse 100% 70% at 50% 60%, rgba(184,255,0,0.09) 0%, transparent 65%)",
             }}
           />
         </motion.div>
 
         {/* Floating particles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(14)].map((_, i) => (
+          {[...Array(16)].map((_, i) => (
             <motion.div
               key={i}
               className="absolute rounded-full"
@@ -70,21 +85,37 @@ export default function HeroScene() {
                 top: (11 * i + 10) % 100 + "%",
                 opacity: 0.25,
               }}
-              animate={{ y: [0, -24, 0], opacity: [0.15, 0.5, 0.15] }}
+              animate={{ y: [0, -28, 0], opacity: [0.1, 0.5, 0.1] }}
               transition={{
                 duration: 4 + (i % 5) * 0.8,
                 repeat: Infinity,
                 ease: "easeInOut",
-                delay: i * 0.25,
+                delay: i * 0.22,
               }}
             />
           ))}
         </div>
 
-        {/* Content — centered, stays put until very late scroll */}
+        {/* Horizontal scan lines that drift on scroll */}
+        <motion.div style={{ y: glowY }} className="absolute inset-0 pointer-events-none">
+          {[20, 45, 68, 82].map((pct, i) => (
+            <motion.div
+              key={i}
+              className="absolute left-0 right-0 h-px"
+              style={{
+                top: `${pct}%`,
+                background: `linear-gradient(90deg, transparent, rgba(184,255,0,0.06), transparent)`,
+              }}
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 3 + i * 0.7, repeat: Infinity, delay: i * 0.5 }}
+            />
+          ))}
+        </motion.div>
+
+        {/* Content — sits lower via padding-bottom on parent */}
         <motion.div
           style={{ scale, opacity, y }}
-          className="relative z-10 text-center px-6 max-w-5xl mx-auto"
+          className="relative z-10 text-center px-6 max-w-5xl mx-auto w-full"
         >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -168,8 +199,8 @@ export default function HeroScene() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.8, duration: 1 }}
-            className="absolute bottom-[-100px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+            transition={{ delay: 2, duration: 1 }}
+            className="mt-20 flex flex-col items-center gap-2"
           >
             <span className="font-mono text-xs tracking-widest" style={{ color: "#222" }}>SCROLL</span>
             <motion.div
