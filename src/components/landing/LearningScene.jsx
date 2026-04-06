@@ -46,18 +46,12 @@ XP earned: +25`,
   },
 ];
 
-// Sub-component so hooks are called at top level, not inside .map()
+// Each step occupies 1/3 of the scroll range, but with generous overlap so content lingers
+// Step i is fully visible from i*0.3 to (i+0.7)*0.3, then fades
 function StepIndicator({ index, step, scrollYProgress }) {
-  const bg = useTransform(
-    scrollYProgress,
-    [index * 0.33 - 0.1, index * 0.33 + 0.1],
-    ["#1e1e1e", "#b8ff00"]
-  );
-  const color = useTransform(
-    scrollYProgress,
-    [index * 0.33 - 0.1, index * 0.33 + 0.1],
-    ["#333", "#0a0a0a"]
-  );
+  const start = index * 0.28;
+  const bg = useTransform(scrollYProgress, [start, start + 0.1], ["#1e1e1e", "#b8ff00"]);
+  const color = useTransform(scrollYProgress, [start, start + 0.1], ["#333", "#0a0a0a"]);
   return (
     <div className="flex items-center gap-2">
       <motion.div
@@ -66,7 +60,7 @@ function StepIndicator({ index, step, scrollYProgress }) {
       >
         {index + 1}
       </motion.div>
-      <span className="font-mono text-xs hidden sm:block" style={{ color: "#333" }}>
+      <span className="font-mono text-xs hidden sm:block" style={{ color: "#2a2a2a" }}>
         {step.label.split("—")[1]?.trim()}
       </span>
     </div>
@@ -75,34 +69,38 @@ function StepIndicator({ index, step, scrollYProgress }) {
 
 function StepCard({ index, step, scrollYProgress }) {
   const isLast = index === STEPS.length - 1;
+  // Each step has a wide visibility window — appears at index*0.28, lingers, exits late
+  const inPoint = index * 0.28;
+  const peakStart = inPoint + 0.08;
+  const peakEnd = inPoint + 0.28;
+  const outPoint = inPoint + 0.38;
+
   const opacity = useTransform(
     scrollYProgress,
-    [index * 0.33 - 0.06, index * 0.33 + 0.06, (index + 1) * 0.33 - 0.06, (index + 1) * 0.33 + 0.06],
-    [0, 1, 1, isLast ? 1 : 0]
+    isLast
+      ? [inPoint, peakStart, 0.95]
+      : [inPoint, peakStart, peakEnd, outPoint],
+    isLast ? [0, 1, 1] : [0, 1, 1, 0]
   );
-  const y = useTransform(
-    scrollYProgress,
-    [index * 0.33 - 0.06, index * 0.33 + 0.06],
-    [20, 0]
-  );
+  const y = useTransform(scrollYProgress, [inPoint, peakStart], [28, 0]);
 
   return (
     <motion.div
       style={{ opacity, y, position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none" }}
     >
-      <div className="p-6">
-        <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#b8ff00" }}>
+      <div className="p-6 md:p-8">
+        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#b8ff00" }}>
           {step.label}
         </div>
-        <div className="mb-5">
-          <h3 className="font-display font-bold text-xl mb-2" style={{ color: "#e8e8e8", letterSpacing: "-0.02em" }}>
+        <div className="mb-6">
+          <h3 className="font-display font-bold text-2xl mb-2" style={{ color: "#e8e8e8", letterSpacing: "-0.02em" }}>
             {step.title}
           </h3>
-          <p className="font-display text-sm" style={{ color: "#555", fontWeight: 400 }}>
+          <p className="font-display text-base" style={{ color: "#555", fontWeight: 400 }}>
             {step.body}
           </p>
         </div>
-        <div className="p-4 mb-4" style={{ background: "#080808", border: "1px solid #1a1a1a" }}>
+        <div className="p-5 mb-4" style={{ background: "#080808", border: "1px solid #1a1a1a" }}>
           <pre className="font-mono text-xs leading-relaxed overflow-x-auto" style={{ color: step.isResult ? "#b8ff00" : "#888" }}>
             {step.code}
           </pre>
@@ -136,21 +134,43 @@ export default function LearningScene() {
     offset: ["start start", "end start"],
   });
 
-  const sceneOpacity = useTransform(scrollYProgress, [0, 0.04, 0.88, 1], [0, 1, 1, 0]);
+  const sceneOpacity = useTransform(scrollYProgress, [0, 0.04, 0.9, 1], [0, 1, 1, 0]);
+  // Background parallax — grid drifts upward slower than scroll
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   return (
-    <div ref={ref} style={{ height: "400vh" }}>
+    <div ref={ref} style={{ height: "500vh" }}>
       <div
         className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center"
         style={{ background: "#080808" }}
       >
-        <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto px-6">
-          <div className="font-mono text-xs tracking-widest uppercase mb-8 text-center" style={{ color: "#2a2a2a" }}>
+        {/* Parallax background layer */}
+        <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(184,255,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(184,255,0,0.03) 1px, transparent 1px)
+              `,
+              backgroundSize: "100px 100px",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(ellipse 80% 50% at 50% 40%, rgba(0,212,255,0.04) 0%, transparent 65%)",
+            }}
+          />
+        </motion.div>
+
+        <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto px-6 relative z-10">
+          <div className="font-mono text-xs tracking-widest uppercase mb-10 text-center" style={{ color: "#2a2a2a" }}>
             § THE LEARNING EXPERIENCE
           </div>
 
           {/* Step indicators */}
-          <div className="flex items-center justify-center gap-8 mb-10">
+          <div className="flex items-center justify-center gap-10 mb-12">
             {STEPS.map((s, i) => (
               <StepIndicator key={i} index={i} step={s} scrollYProgress={scrollYProgress} />
             ))}
@@ -159,7 +179,7 @@ export default function LearningScene() {
           {/* Main editor frame */}
           <div
             className="relative mx-auto"
-            style={{ border: "1px solid #1e1e1e", background: "#0d0d0d", maxWidth: "680px" }}
+            style={{ border: "1px solid #1e1e1e", background: "#0d0d0d", maxWidth: "700px", boxShadow: "0 40px 80px rgba(0,0,0,0.6)" }}
           >
             <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
@@ -167,7 +187,7 @@ export default function LearningScene() {
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#b8ff00" }} />
               <span className="font-mono text-xs ml-4" style={{ color: "#2a2a2a" }}>lesson_01.py</span>
             </div>
-            <div className="relative" style={{ minHeight: "320px" }}>
+            <div className="relative" style={{ minHeight: "340px" }}>
               {STEPS.map((s, i) => (
                 <StepCard key={i} index={i} step={s} scrollYProgress={scrollYProgress} />
               ))}

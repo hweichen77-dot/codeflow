@@ -32,23 +32,26 @@ const FEATURES = [
   },
 ];
 
+// Each card occupies ~0.22 of scroll range, with generous overlap for readability
 function FeatureCard({ feature, index, scrollYProgress }) {
-  const threshold = index * 0.22;
+  const isLast = index === FEATURES.length - 1;
+  const inPoint = index * 0.22;
+  const peakStart = inPoint + 0.1;
+  const peakEnd = inPoint + 0.22;
+  const outPoint = inPoint + 0.32;
 
   const cardOpacity = useTransform(
     scrollYProgress,
-    [threshold, threshold + 0.12, threshold + 0.22 + 0.1],
-    [0, 1, index === FEATURES.length - 1 ? 1 : 0.7]
+    isLast
+      ? [inPoint, peakStart, 0.95]
+      : [inPoint, peakStart, peakEnd, outPoint],
+    isLast ? [0, 1, 1] : [0, 1, 1, 0.5]
   );
-  const cardY = useTransform(
-    scrollYProgress,
-    [threshold, threshold + 0.12],
-    [60, 0]
-  );
+  const cardY = useTransform(scrollYProgress, [inPoint, peakStart], [50, 0]);
   const cardScale = useTransform(
     scrollYProgress,
-    [threshold + 0.15, threshold + 0.22 + 0.1],
-    [1, index === FEATURES.length - 1 ? 1 : 0.95]
+    isLast ? [inPoint, peakStart] : [peakEnd, outPoint],
+    isLast ? [0.97, 1] : [1, 0.96]
   );
 
   return (
@@ -58,23 +61,24 @@ function FeatureCard({ feature, index, scrollYProgress }) {
         y: cardY,
         scale: cardScale,
         zIndex: index + 1,
+        position: "absolute",
+        left: 0,
+        right: 0,
       }}
-      className="absolute inset-x-0 mx-auto"
-      key={feature.num}
     >
       <div
-        className="max-w-2xl mx-auto p-8 md:p-12"
+        className="max-w-2xl mx-auto p-10 md:p-14"
         style={{
           background: "#0d0d0d",
           border: "1px solid #1e1e1e",
-          boxShadow: `0 0 60px rgba(0,0,0,0.6), 0 0 1px ${feature.accent}22`,
+          boxShadow: `0 0 80px rgba(0,0,0,0.7), 0 0 2px ${feature.accent}18`,
         }}
       >
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-8">
           <div>
             <div
-              className="font-mono font-bold mb-3"
-              style={{ fontSize: "3rem", color: "#1a1a1a", letterSpacing: "-0.05em", lineHeight: 1 }}
+              className="font-mono font-bold mb-4"
+              style={{ fontSize: "3.5rem", color: "#161616", letterSpacing: "-0.05em", lineHeight: 1 }}
             >
               {feature.num}
             </div>
@@ -86,35 +90,35 @@ function FeatureCard({ feature, index, scrollYProgress }) {
             </span>
           </div>
           <div
-            className="w-10 h-10 flex items-center justify-center"
+            className="w-12 h-12 flex items-center justify-center"
             style={{ border: `1px solid ${feature.accent}22` }}
           >
-            <div className="w-2 h-2" style={{ background: feature.accent }} />
+            <div className="w-2.5 h-2.5" style={{ background: feature.accent }} />
           </div>
         </div>
 
         <h3
-          className="font-display font-black mb-4"
-          style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+          className="font-display font-black mb-5"
+          style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
         >
           {feature.title}
         </h3>
         <p
-          className="font-display text-base leading-relaxed"
-          style={{ color: "#555", fontWeight: 400, maxWidth: "50ch" }}
+          className="font-display text-lg leading-relaxed"
+          style={{ color: "#555", fontWeight: 400, maxWidth: "52ch" }}
         >
           {feature.body}
         </p>
 
-        {/* Progress bar hint */}
-        <div className="mt-8 flex items-center gap-4">
-          <div className="flex gap-1">
+        {/* Progress dots */}
+        <div className="mt-10 flex items-center gap-4">
+          <div className="flex gap-2">
             {FEATURES.map((_, i) => (
               <div
                 key={i}
                 className="h-0.5 transition-all duration-500"
                 style={{
-                  width: i <= index ? "24px" : "8px",
+                  width: i <= index ? "28px" : "8px",
                   background: i <= index ? feature.accent : "#1e1e1e",
                 }}
               />
@@ -136,19 +140,38 @@ export default function FeaturesScene() {
     offset: ["start start", "end start"],
   });
 
-  const sceneOpacity = useTransform(scrollYProgress, [0, 0.04, 0.9, 1], [0, 1, 1, 0]);
+  const sceneOpacity = useTransform(scrollYProgress, [0, 0.04, 0.92, 1], [0, 1, 1, 0]);
+  // Background drifts up slower than content
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
 
   return (
-    <div ref={ref} style={{ height: "500vh" }}>
+    <div ref={ref} style={{ height: "600vh" }}>
       <div
         className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center px-6"
         style={{ background: "#0a0a0a" }}
       >
-        <motion.div style={{ opacity: sceneOpacity }} className="w-full">
-          <div className="font-mono text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#2a2a2a" }}>
+        {/* Parallax bg */}
+        <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(ellipse 70% 50% at 50% 50%, rgba(184,255,0,0.035) 0%, transparent 60%)",
+            }}
+          />
+          {/* Subtle corner accents */}
+          <div className="absolute top-0 left-0 w-64 h-64" style={{
+            background: "radial-gradient(circle at 0% 0%, rgba(0,212,255,0.04) 0%, transparent 60%)"
+          }} />
+          <div className="absolute bottom-0 right-0 w-64 h-64" style={{
+            background: "radial-gradient(circle at 100% 100%, rgba(184,255,0,0.04) 0%, transparent 60%)"
+          }} />
+        </motion.div>
+
+        <motion.div style={{ opacity: sceneOpacity }} className="w-full relative z-10">
+          <div className="font-mono text-xs tracking-widest uppercase mb-6 text-center" style={{ color: "#2a2a2a" }}>
             § WHAT YOU GET
           </div>
-          <div className="relative" style={{ minHeight: "420px" }}>
+          <div className="relative" style={{ minHeight: "460px" }}>
             {FEATURES.map((feature, i) => (
               <FeatureCard
                 key={feature.num}
