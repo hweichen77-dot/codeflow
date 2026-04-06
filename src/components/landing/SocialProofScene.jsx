@@ -106,8 +106,8 @@ export default function SocialProofScene() {
   return (
     <div ref={ref} style={{ height: "650vh" }}>
       <div
-        className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-end"
-        style={{ background: "#0a0a0a", paddingBottom: "6vh" }}
+        className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center"
+        style={{ background: "#0a0a0a", paddingTop: "8vh" }}
       >
         {/* Parallax noise/grain bg */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">

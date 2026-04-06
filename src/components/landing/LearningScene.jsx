@@ -139,8 +139,8 @@ export default function LearningScene() {
   return (
     <div ref={ref} style={{ height: "600vh" }}>
       <div
-        className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-end"
-        style={{ background: "#080808", paddingBottom: "8vh" }}
+        className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center"
+        style={{ background: "#080808", paddingTop: "8vh" }}
       >
         {/* Parallax bg grid */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">

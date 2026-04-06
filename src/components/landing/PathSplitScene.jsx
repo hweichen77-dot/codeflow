@@ -13,10 +13,9 @@ function LeftPanel({ scrollYProgress }) {
   return (
     <motion.div
       style={{ x }}
-      className="absolute top-0 left-0 w-1/2 h-full flex flex-col items-center justify-end px-12 lg:px-20"
-      style2={{ paddingBottom: "15vh" }}
+      className="absolute top-0 left-0 w-1/2 h-full flex flex-col items-center justify-center px-12 lg:px-20"
     >
-      <div style={{ paddingBottom: "15vh" }}>
+      <div style={{ paddingTop: "8vh" }}>
       <motion.div style={{ opacity }} className="relative z-10 text-left max-w-xs">
         <div
           className="absolute pointer-events-none select-none"
@@ -80,9 +79,9 @@ function RightPanel({ scrollYProgress }) {
   return (
     <motion.div
       style={{ x }}
-      className="absolute top-0 right-0 w-1/2 h-full flex flex-col items-center justify-end px-12 lg:px-20"
+      className="absolute top-0 right-0 w-1/2 h-full flex flex-col items-center justify-center px-12 lg:px-20"
     >
-      <div style={{ paddingBottom: "15vh" }}>
+      <div style={{ paddingTop: "8vh" }}>
       <motion.div style={{ opacity }} className="relative z-10 text-right max-w-xs ml-auto">
         <div
           className="absolute pointer-events-none select-none"
@@ -159,10 +158,9 @@ function IntroLabel({ scrollYProgress }) {
   return (
     <motion.div
       style={{ opacity }}
-      className="absolute inset-0 flex flex-col items-center justify-end z-10 pointer-events-none"
-      style2={{ paddingBottom: "18vh" }}
+      className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none"
     >
-      <div style={{ paddingBottom: "18vh" }}>
+      <div style={{ paddingTop: "8vh" }}>
         <div className="font-mono text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#b8ff00" }}>§ CHOOSE YOUR PATH</div>
         <h2
           className="font-display font-black text-center"

@@ -94,8 +94,8 @@ export default function ProgressScene() {
   return (
     <div ref={ref} style={{ height: "500vh" }}>
       <div
-        className="sticky top-0 h-screen overflow-hidden flex items-end justify-center px-6"
-        style={{ background: "#080808", paddingBottom: "8vh" }}
+        className="sticky top-0 h-screen overflow-hidden flex items-center justify-center px-6"
+        style={{ background: "#080808", paddingTop: "8vh" }}
       >
         {/* Parallax horizontal lines */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">

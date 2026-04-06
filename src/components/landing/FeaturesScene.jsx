@@ -146,8 +146,8 @@ export default function FeaturesScene() {
   return (
     <div ref={ref} style={{ height: "700vh" }}>
       <div
-        className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-end px-6"
-        style={{ background: "#0a0a0a", paddingBottom: "8vh" }}
+        className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center px-6"
+        style={{ background: "#0a0a0a", paddingTop: "8vh" }}
       >
         {/* Parallax bg glow */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">

@@ -27,8 +27,8 @@ export default function HeroScene() {
   return (
     <div ref={ref} style={{ height: "340vh" }}>
       <div
-        className="sticky top-0 h-screen overflow-hidden flex items-end justify-center"
-        style={{ background: "#080808", paddingBottom: "12vh" }}
+        className="sticky top-0 h-screen overflow-hidden flex items-center justify-center"
+        style={{ background: "#080808", paddingTop: "10vh" }}
       >
         {/* Parallax grid layer (moves slower) */}
         <motion.div
