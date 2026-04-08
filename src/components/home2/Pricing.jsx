@@ -17,7 +17,7 @@ const proFeatures = [
 ];
 
 function CheckIcon() {
-  return <span style={{ color: "#f59e0b", fontWeight: 700, marginRight: "10px" }}>✓</span>;
+  return <span style={{ color: "#b8ff00", fontWeight: 700, marginRight: "10px" }}>✓</span>;
 }
 
 export default function Pricing() {
@@ -85,7 +85,7 @@ export default function Pricing() {
           {/* Pro */}
           <div style={{
             background: "#111111",
-            border: "1px solid #f59e0b",
+            border: "1px solid #b8ff00",
             borderRadius: "12px",
             padding: "36px",
             position: "relative",
@@ -95,7 +95,7 @@ export default function Pricing() {
               top: "-12px",
               left: "50%",
               transform: "translateX(-50%)",
-              background: "#f59e0b",
+              background: "#b8ff00",
               color: "#0a0a0a",
               fontFamily: "monospace",
               fontSize: "10px",
@@ -107,7 +107,7 @@ export default function Pricing() {
             }}>
               Most popular
             </div>
-            <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#f59e0b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
+            <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#b8ff00", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
               Pro
             </div>
             <div style={{ color: "#f0f0f0", fontSize: "36px", fontWeight: 800, fontFamily: "Georgia, serif", letterSpacing: "-0.03em", marginBottom: "6px" }}>
@@ -123,7 +123,7 @@ export default function Pricing() {
             </div>
             <button style={{
               width: "100%",
-              background: "#f59e0b",
+              background: "#b8ff00",
               color: "#0a0a0a",
               border: "none",
               borderRadius: "8px",
@@ -133,8 +133,8 @@ export default function Pricing() {
               cursor: "pointer",
               fontFamily: "inherit",
             }}
-              onMouseEnter={e => e.currentTarget.style.background = "#fbbf24"}
-              onMouseLeave={e => e.currentTarget.style.background = "#f59e0b"}
+              onMouseEnter={e => e.currentTarget.style.background = "#caff35"}
+              onMouseLeave={e => e.currentTarget.style.background = "#b8ff00"}
             >
               Go Pro
             </button>
