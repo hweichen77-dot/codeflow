@@ -1,5 +1,4 @@
 import React from "react";
-import HomeNav from "@/components/home2/HomeNav";
 import HeroSection from "@/components/home2/HeroSection";
 import BentoGrid from "@/components/home2/BentoGrid";
 import HowItWorks from "@/components/home2/HowItWorks";
@@ -25,7 +24,6 @@ export default function Home() {
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", fontFamily: "Inter, system-ui, sans-serif" }}>
       <style>{responsiveStyles}</style>
-      <HomeNav />
       <HeroSection />
       <BentoGrid />
       <HowItWorks />
