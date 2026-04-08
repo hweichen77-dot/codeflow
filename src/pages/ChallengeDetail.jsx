@@ -97,9 +97,9 @@ export default function ChallengeDetail() {
           <Link
             to={createPageUrl("Challenges")}
             className="font-mono text-xs tracking-widest uppercase mb-8 inline-block transition-colors duration-150"
-            style={{ color: "#333" }}
+            style={{ color: "#888" }}
             onMouseEnter={e => e.currentTarget.style.color = "#b8ff00"}
-            onMouseLeave={e => e.currentTarget.style.color = "#333"}
+            onMouseLeave={e => e.currentTarget.style.color = "#888"}
           >
             ← Challenges
           </Link>
@@ -120,7 +120,7 @@ export default function ChallengeDetail() {
                   {challenge.difficulty}
                 </span>
                 {challenge.xp_reward && (
-                  <span className="font-mono text-xs" style={{ color: "#444" }}>
+                  <span className="font-mono text-xs" style={{ color: "#888" }}>
                     +{challenge.xp_reward}xp
                   </span>
                 )}
@@ -131,7 +131,7 @@ export default function ChallengeDetail() {
               >
                 {challenge.title}
               </h1>
-              <p className="font-display text-sm mt-2 leading-relaxed" style={{ color: "#555", fontWeight: 400 }}>
+              <p className="font-display text-sm mt-2 leading-relaxed" style={{ color: "#aaa", fontWeight: 400 }}>
                 {challenge.description}
               </p>
             </div>
@@ -151,10 +151,10 @@ export default function ChallengeDetail() {
             <div className="px-5 py-4 space-y-2">
               {challenge.test_cases.map((tc, i) => (
                 <div key={i} className="flex items-center gap-4 font-mono text-xs py-2" style={{ borderBottom: i < challenge.test_cases.length - 1 ? "1px solid #111" : "none" }}>
-                  <span style={{ color: "#333" }}>{String(i + 1).padStart(2, "0")}</span>
-                  <span style={{ color: "#444" }}>in: <span style={{ color: "#888" }}>{tc.input}</span></span>
-                  <span style={{ color: "#222" }}>→</span>
-                  <span style={{ color: "#555" }}>expect: <span style={{ color: "#b8ff00" }}>{tc.expected_output}</span></span>
+                  <span style={{ color: "#777" }}>{String(i + 1).padStart(2, "0")}</span>
+                  <span style={{ color: "#888" }}>in: <span style={{ color: "#ccc" }}>{tc.input}</span></span>
+                  <span style={{ color: "#666" }}>→</span>
+                  <span style={{ color: "#888" }}>expect: <span style={{ color: "#b8ff00" }}>{tc.expected_output}</span></span>
                 </div>
               ))}
             </div>
@@ -238,10 +238,10 @@ export default function ChallengeDetail() {
                 <div className="px-5 py-4 space-y-3">
                   {challenge.hints.map((hint, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#333" }}>
+                      <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#777" }}>
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <p className="font-display text-sm leading-relaxed" style={{ color: "#666", fontWeight: 400 }}>
+                      <p className="font-display text-sm leading-relaxed" style={{ color: "#bbb", fontWeight: 400 }}>
                         {hint}
                       </p>
                     </div>
@@ -263,10 +263,10 @@ export default function ChallengeDetail() {
             >
               <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
                 <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#555" }}>Solution</span>
+                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#888" }}>Solution</span>
                   <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>JS</span>
                 </div>
-                <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#888" }}>
+                <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#ccc" }}>
                   {challenge.solution_code}
                 </pre>
               </div>

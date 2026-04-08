@@ -21,7 +21,7 @@ export default function FinalCTA() {
           Ready to actually learn AI?
         </h2>
         <p style={{
-          color: "#a3a3a3",
+          color: "#c0c0c0",
           fontSize: "17px",
           lineHeight: 1.7,
           margin: "0 0 40px",

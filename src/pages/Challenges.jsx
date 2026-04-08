@@ -43,7 +43,7 @@ export default function Challenges() {
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#2a2a2a" }}>§ CHALLENGES</span>
+            <span className="font-mono text-xs tracking-widest" style={{ color: "#666" }}>§ CHALLENGES</span>
           </div>
           <h1
             className="font-display font-black leading-none mb-4"
@@ -51,7 +51,7 @@ export default function Challenges() {
           >
             Sharpen the blade.
           </h1>
-          <p className="font-display text-base" style={{ color: "#555", fontWeight: 400 }}>
+          <p className="font-display text-base" style={{ color: "#aaa", fontWeight: 400 }}>
             Focused problems. No setup. Pure coding.
           </p>
         </div>
@@ -100,7 +100,7 @@ export default function Challenges() {
             style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #1a1a1a" }}
           >
             {["LVL", "CHALLENGE", "TOPIC", "XP"].map(h => (
-              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#2a2a2a" }}>
+              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#666" }}>
                 {h}
               </div>
             ))}
@@ -116,8 +116,8 @@ export default function Challenges() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
-            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#2a2a2a" }}>NO RESULTS</div>
-            <p className="font-display text-base" style={{ color: "#444" }}>No challenges match your filter.</p>
+            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#666" }}>NO RESULTS</div>
+            <p className="font-display text-base" style={{ color: "#888" }}>No challenges match your filter.</p>
           </div>
         ) : (
           <div>
@@ -153,14 +153,14 @@ export default function Challenges() {
                     <div>
                       <div
                         className="font-display font-bold text-base leading-snug mb-0.5 transition-colors duration-150 group-hover:text-white"
-                        style={{ color: "#aaa", letterSpacing: "-0.02em" }}
+                        style={{ color: "#ccc", letterSpacing: "-0.02em" }}
                       >
                         {challenge.title}
                       </div>
                       {challenge.description && (
                         <div
                           className="font-display text-xs line-clamp-1"
-                          style={{ color: "#3a3a3a", fontWeight: 400 }}
+                          style={{ color: "#888", fontWeight: 400 }}
                         >
                           {challenge.description}
                         </div>
@@ -171,7 +171,7 @@ export default function Challenges() {
                     <div>
                       <span
                         className="font-mono text-xs tracking-widest uppercase px-2.5 py-1"
-                        style={{ color: "#444", border: "1px solid #1e1e1e" }}
+                        style={{ color: "#888", border: "1px solid #2a2a2a" }}
                       >
                         {categoryLabels[challenge.category] || challenge.category}
                       </span>
@@ -184,7 +184,7 @@ export default function Challenges() {
                           +{challenge.xp_reward}xp
                         </span>
                       ) : (
-                        <span className="font-mono text-xs" style={{ color: "#222" }}>—</span>
+                        <span className="font-mono text-xs" style={{ color: "#555" }}>—</span>
                       )}
                     </div>
                   </div>

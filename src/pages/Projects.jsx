@@ -71,7 +71,7 @@ export default function Projects() {
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#2a2a2a" }}>§ PROJECTS</span>
+            <span className="font-mono text-xs tracking-widest" style={{ color: "#666" }}>§ PROJECTS</span>
           </div>
           <h1
             className="font-display font-black leading-none mb-4"
@@ -79,7 +79,7 @@ export default function Projects() {
           >
             Choose your module.
           </h1>
-          <p className="font-display text-base" style={{ color: "#555", fontWeight: 400 }}>
+          <p className="font-display text-base" style={{ color: "#aaa", fontWeight: 400 }}>
             Each project is a chapter. Work through them in order, or jump to what interests you.
           </p>
         </div>
@@ -118,7 +118,7 @@ export default function Projects() {
                 className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                 style={{
                   border: `1px solid ${category === cat.value ? "#b8ff00" : "#1e1e1e"}`,
-                  color: category === cat.value ? "#b8ff00" : "#444",
+                  color: category === cat.value ? "#b8ff00" : "#888",
                   background: category === cat.value ? "#b8ff0010" : "transparent",
                 }}
               >
@@ -147,7 +147,7 @@ export default function Projects() {
               style={{ borderBottom: "1px solid #1a1a1a" }}
             >
               {["LVL", "PROJECT", "LESSONS", "STATUS"].map(h => (
-                <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#2a2a2a" }}>
+                <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#666" }}>
                   {h}
                 </div>
               ))}
@@ -199,7 +199,7 @@ export default function Projects() {
                         {project.description && (
                           <div
                             className="font-display text-sm line-clamp-1"
-                            style={{ color: "#444", fontWeight: 400 }}
+                            style={{ color: "#999", fontWeight: 400 }}
                           >
                             {project.description}
                           </div>
@@ -227,11 +227,11 @@ export default function Projects() {
                       {/* Lessons count */}
                       <div
                         className="font-mono text-sm text-right"
-                        style={{ color: "#333" }}
+                        style={{ color: "#888" }}
                       >
                         {project.lessons_count ? `${project.lessons_count}` : "—"}
                         {project.estimated_time ? (
-                          <div className="font-mono text-xs" style={{ color: "#2a2a2a" }}>
+                          <div className="font-mono text-xs" style={{ color: "#666" }}>
                             {project.estimated_time}min
                           </div>
                         ) : null}
@@ -258,7 +258,7 @@ export default function Projects() {
                         {status === "not_started" && (
                           <span
                             className="font-mono text-xs tracking-widest uppercase px-3 py-1"
-                            style={{ color: "#333", border: "1px solid #1e1e1e" }}
+                            style={{ color: "#777", border: "1px solid #2a2a2a" }}
                           >
                             START
                           </span>
@@ -274,11 +274,11 @@ export default function Projects() {
               <div className="text-center py-24">
                 <div
                   className="font-mono text-xs tracking-widest uppercase mb-4"
-                  style={{ color: "#2a2a2a" }}
+                  style={{ color: "#666" }}
                 >
                   NO RESULTS
                 </div>
-                <p className="font-display text-base" style={{ color: "#444" }}>
+                <p className="font-display text-base" style={{ color: "#888" }}>
                   No projects match your filter.
                 </p>
               </div>
