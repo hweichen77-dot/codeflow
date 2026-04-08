@@ -57,7 +57,7 @@ export default function HowItWorks() {
               <div style={{
                 fontFamily: "monospace",
                 fontSize: "13px",
-                color: "#f59e0b",
+                color: "#b8ff00",
                 fontWeight: 700,
                 marginBottom: "16px",
                 letterSpacing: "0.05em",

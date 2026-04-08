@@ -22,7 +22,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
-              <span style={{ color: "#f59e0b", fontSize: "16px", fontWeight: 800 }}>•</span>
+              <span style={{ color: "#b8ff00", fontSize: "16px", fontWeight: 800 }}>•</span>
               <span style={{ color: "#f0f0f0", fontSize: "16px", fontWeight: 700, letterSpacing: "-0.3px" }}>CodeFlow</span>
             </div>
             <div style={{ color: "#888888", fontSize: "13px", fontFamily: "monospace" }}>

@@ -12,7 +12,7 @@ export default function HeroSection() {
       <div style={{
         fontFamily: "monospace",
         fontSize: "12px",
-        color: "#f59e0b",
+        color: "#b8ff00",
         letterSpacing: "0.08em",
         textTransform: "uppercase",
         marginBottom: "32px",
@@ -52,7 +52,7 @@ export default function HeroSection() {
       {/* Buttons */}
       <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginBottom: "20px" }}>
         <button style={{
-          background: "#f59e0b",
+          background: "#b8ff00",
           color: "#0a0a0a",
           border: "none",
           borderRadius: "8px",
@@ -62,8 +62,8 @@ export default function HeroSection() {
           cursor: "pointer",
           fontFamily: "inherit",
         }}
-          onMouseEnter={e => e.currentTarget.style.background = "#fbbf24"}
-          onMouseLeave={e => e.currentTarget.style.background = "#f59e0b"}
+          onMouseEnter={e => e.currentTarget.style.background = "#caff35"}
+          onMouseLeave={e => e.currentTarget.style.background = "#b8ff00"}
         >
           Start for free
         </button>

@@ -3,7 +3,7 @@ import React from "react";
 export default function FinalCTA() {
   return (
     <section style={{
-      borderTop: "2px solid #f59e0b",
+      borderTop: "2px solid #b8ff00",
       background: "#0d0d0d",
       padding: "100px 2rem",
       textAlign: "center",
@@ -29,7 +29,7 @@ export default function FinalCTA() {
           Start with a free project. No setup, no friction.
         </p>
         <button style={{
-          background: "#f59e0b",
+          background: "#b8ff00",
           color: "#0a0a0a",
           border: "none",
           borderRadius: "8px",
@@ -39,8 +39,8 @@ export default function FinalCTA() {
           cursor: "pointer",
           fontFamily: "inherit",
         }}
-          onMouseEnter={e => e.currentTarget.style.background = "#fbbf24"}
-          onMouseLeave={e => e.currentTarget.style.background = "#f59e0b"}
+          onMouseEnter={e => e.currentTarget.style.background = "#caff35"}
+          onMouseLeave={e => e.currentTarget.style.background = "#b8ff00"}
         >
           Build your first project
         </button>

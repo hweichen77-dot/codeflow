@@ -29,13 +29,13 @@ function CodeMockup() {
         <span style={{ color: "#a3a3a3" }}>({"{"})</span>
       </div>
       <div style={{ paddingLeft: "36px" }}>
-        <span style={{ color: "#fb923c" }}>model</span>
+        <span style={{ color: "#b8ff00" }}>model</span>
         <span style={{ color: "#a3a3a3" }}>: </span>
         <span style={{ color: "#86efac" }}>"gpt-4o-mini"</span>
         <span style={{ color: "#a3a3a3" }}>,</span>
       </div>
       <div style={{ paddingLeft: "36px" }}>
-        <span style={{ color: "#fb923c" }}>messages</span>
+        <span style={{ color: "#b8ff00" }}>messages</span>
         <span style={{ color: "#a3a3a3" }}>: [{"{"}role: </span>
         <span style={{ color: "#86efac" }}>"user"</span>
         <span style={{ color: "#a3a3a3" }}>, content: input{"}"}]</span>
@@ -87,7 +87,7 @@ export default function BentoGrid() {
 
         {/* LARGE: Learn by doing */}
         <div style={{ ...card, gridColumn: "span 7" }}>
-          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#f59e0b", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
+          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#b8ff00", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
             CORE EXPERIENCE
           </div>
           <h3 style={{ color: "#f0f0f0", fontSize: "22px", fontWeight: 700, margin: "0 0 10px", letterSpacing: "-0.02em" }}>
@@ -102,7 +102,7 @@ export default function BentoGrid() {
 
         {/* TALL: Real projects */}
         <div style={{ ...card, gridColumn: "span 5", gridRow: "span 2" }}>
-          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#f59e0b", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
+          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#b8ff00", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
             PROJECT LIBRARY
           </div>
           <h3 style={{ color: "#f0f0f0", fontSize: "20px", fontWeight: 700, margin: "0 0 10px", letterSpacing: "-0.02em" }}>
@@ -114,7 +114,7 @@ export default function BentoGrid() {
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             {projects.map((p) => (
               <div key={p} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span style={{ color: "#f59e0b", fontSize: "16px", lineHeight: 1 }}>✓</span>
+                <span style={{ color: "#b8ff00", fontSize: "16px", lineHeight: 1 }}>✓</span>
                 <span style={{ color: "#d4d4d4", fontSize: "15px", fontWeight: 500 }}>{p}</span>
               </div>
             ))}
@@ -140,7 +140,7 @@ export default function BentoGrid() {
                   <div style={{
                     height: "100%",
                     width: `${[40, 70, 90][i]}%`,
-                    background: i === 0 ? "#f59e0b" : i === 1 ? "#fb923c" : "#ef4444",
+                    background: i === 0 ? "#b8ff00" : i === 1 ? "#7acc00" : "#4d9900",
                     borderRadius: "2px",
                   }} />
                 </div>
@@ -152,7 +152,7 @@ export default function BentoGrid() {
 
         {/* WIDE: AI guidance */}
         <div style={{ ...card, gridColumn: "span 4" }}>
-          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#f59e0b", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
+          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#b8ff00", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
             AI TUTOR
           </div>
           <h3 style={{ color: "#f0f0f0", fontSize: "18px", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>
@@ -183,7 +183,7 @@ export default function BentoGrid() {
 
         {/* SMALL: Learner count */}
         <div style={{ ...card, gridColumn: "span 4", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ color: "#f59e0b", fontSize: "42px", fontWeight: 800, lineHeight: 1, fontFamily: "Georgia, serif", letterSpacing: "-0.03em" }}>
+          <div style={{ color: "#b8ff00", fontSize: "42px", fontWeight: 800, lineHeight: 1, fontFamily: "Georgia, serif", letterSpacing: "-0.03em" }}>
             2,400+
           </div>
           <div style={{ color: "#c0c0c0", fontSize: "14px", marginTop: "8px", fontWeight: 500 }}>
