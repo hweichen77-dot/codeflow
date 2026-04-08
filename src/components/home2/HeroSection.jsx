@@ -32,8 +32,8 @@ export default function HeroSection() {
         margin: "0 0 28px",
       }}>
         The fastest way to go from{" "}
-        <span style={{ color: "#f59e0b" }}>curious</span> to{" "}
-        <span style={{ color: "#f59e0b" }}>capable</span>.
+        <span style={{ color: "#b8ff00" }}>curious</span> to{" "}
+        <span style={{ color: "#b8ff00" }}>capable</span>.
       </h1>
 
       {/* Subtext */}
