@@ -121,8 +121,7 @@ export default function AITrack() {
         <div className="max-w-7xl mx-auto">
           <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#666" }}>§ AI TRACK</div>
           <h1
-            className="font-display font-black leading-none mb-5"
-            style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "-0.02em", lineHeight: 1.05, color: "#e8e8e8" }}
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 20px" }}
           >
             Learn to build<br />
             <span style={{ WebkitTextStroke: "1.5px #b8ff00", color: "transparent" }}>with AI.</span>
@@ -254,8 +253,7 @@ export default function AITrack() {
         <div className="text-center py-12" style={{ border: "1px solid #1a1a1a" }}>
           <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#666" }}>READY?</div>
           <h2
-            className="font-display font-black mb-4"
-            style={{ fontSize: "2rem", letterSpacing: "-0.03em", color: "#e8e8e8" }}
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", margin: "0 0 16px" }}
           >
             Start building with AI.
           </h2>

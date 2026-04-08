@@ -126,8 +126,7 @@ export default function ChallengeDetail() {
                 )}
               </div>
               <h1
-                className="font-display font-black leading-tight"
-                style={{ fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+                style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: 0 }}
               >
                 {challenge.title}
               </h1>

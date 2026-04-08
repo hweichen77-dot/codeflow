@@ -74,8 +74,7 @@ export default function Projects() {
             <span className="font-mono text-xs tracking-widest" style={{ color: "#666" }}>§ PROJECTS</span>
           </div>
           <h1
-            className="font-display font-black leading-none mb-4"
-            style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "-0.02em", lineHeight: 1.05, color: "#e8e8e8" }}
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 16px" }}
           >
             Choose your module.
           </h1>

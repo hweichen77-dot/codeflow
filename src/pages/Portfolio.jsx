@@ -30,8 +30,7 @@ export default function Portfolio() {
         <div className="max-w-5xl mx-auto">
           <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#666" }}>§ PORTFOLIO</div>
           <h1
-            className="font-display font-black leading-none mb-3"
-            style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "-0.04em", color: "#e8e8e8" }}
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 12px" }}
           >
             {user.full_name?.split(" ")[0] || "Your"}'s builds.
           </h1>
