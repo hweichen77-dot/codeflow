@@ -7,7 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
 import LessonExplanation from "../components/lesson/LessonExplanation";
-import LessonQuiz from "../components/lesson/LessonQuiz";
+import ZybooksQuiz from "../components/lesson/ZybooksQuiz";
+import ParticipationActivity from "../components/lesson/ParticipationActivity";
+import LessonPointsSummary from "../components/lesson/LessonPointsSummary";
 import LessonChallenge from "../components/lesson/LessonChallenge";
 import { runCodeInSandbox } from "../lib/codeRunner";
 
@@ -24,6 +26,11 @@ export default function ProjectDetail() {
   const [showHints, setShowHints] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [readingDone, setReadingDone] = useState(false);
+  const [quizDone, setQuizDone] = useState(false);
+  const [participationDone, setParticipationDone] = useState(false);
+  const [challengeDone, setChallengeReportDone] = useState(false);
+  const [earnedPoints, setEarnedPoints] = useState(0);
   const lessonStartTime = useRef(Date.now());
   const wrongAttempts = useRef(0);
 
@@ -70,6 +77,11 @@ export default function ProjectDetail() {
       setOutput(null);
       setShowHints(false);
       setShowSolution(false);
+      setReadingDone(false);
+      setQuizDone(false);
+      setParticipationDone(false);
+      setChallengeReportDone(false);
+      setEarnedPoints(0);
       lessonStartTime.current = Date.now();
       wrongAttempts.current = 0;
     }
@@ -270,15 +282,20 @@ export default function ProjectDetail() {
                         >
                           {completed ? "✓" : String(i + 1).padStart(2, "0")}
                         </span>
-                        <span
-                          className="font-display text-xs leading-snug transition-colors duration-150"
-                          style={{
-                            color: active ? "#e8e8e8" : completed ? "#666" : "#333",
-                            fontWeight: active ? 600 : 400,
-                          }}
-                        >
-                          {lesson.title}
-                        </span>
+                        <div>
+                          <span
+                            className="font-display text-xs leading-snug transition-colors duration-150 block"
+                            style={{
+                              color: active ? "#e8e8e8" : completed ? "#666" : "#333",
+                              fontWeight: active ? 600 : 400,
+                            }}
+                          >
+                            {lesson.title}
+                          </span>
+                          <span className="font-mono" style={{ fontSize: "9px", color: completed ? "#b8ff00" : "#2a2a2a" }}>
+                            {lesson.xp_reward || 10} pts
+                          </span>
+                        </div>
                       </div>
                     </button>
                   );
@@ -299,51 +316,86 @@ export default function ProjectDetail() {
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                   className="space-y-8"
                 >
-                  {/* Lesson header */}
-                  <div style={{ borderBottom: "1px solid #1a1a1a", paddingBottom: "2rem" }}>
-                    <div className="flex items-center gap-4 mb-4">
-                      <span
-                        className="font-mono font-bold"
-                        style={{ fontSize: "3rem", lineHeight: 1, color: "#141414", letterSpacing: "-0.05em" }}
-                      >
-                        {String(activeLessonIndex + 1).padStart(2, "0")}
-                      </span>
-                      <div>
-                        {activeLesson.concept && (
-                          <div
-                            className="font-mono text-xs tracking-widest uppercase mb-1"
-                            style={{ color: "#b8ff00" }}
-                          >
-                            {activeLesson.concept}
-                          </div>
-                        )}
-                        <h2
-                          className="font-display font-black leading-tight"
-                          style={{ fontSize: "clamp(1.5rem, 3vw, 2.25rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
-                        >
-                          {activeLesson.title}
-                        </h2>
-                      </div>
+                  {/* Zybooks-style section number + title */}
+                  <div style={{ marginBottom: "8px" }}>
+                    <h2 style={{
+                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                      fontSize: "1.55rem", fontWeight: 400, color: "#e0e0e0", letterSpacing: "-0.01em",
+                      margin: 0, lineHeight: 1.35,
+                    }}>
+                      {activeLessonIndex + 1}.{" "}{activeLesson.title}
+                    </h2>
+                    <div className="font-mono text-xs mt-2" style={{ color: "#b8ff00" }}>
+                      {activeLesson.xp_reward || 10} points available
                     </div>
                   </div>
 
-                  {/* Explanation — document style */}
-                  <div
-                    className="rounded px-8 py-8"
-                    style={{ background: "#ffffff", border: "1px solid #e5e5e5" }}
-                  >
+                  {/* White textbook reading area */}
+                  <div style={{ background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: "4px", padding: "32px 36px" }}>
+                    {activeLesson.concept && (
+                      <h3 style={{
+                        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                        fontSize: "1.1rem", fontWeight: 700, color: "#222", margin: "0 0 16px",
+                      }}>
+                        {activeLesson.concept}
+                      </h3>
+                    )}
+
                     <LessonExplanation
                       explanation={activeLesson.explanation || ""}
                       concept={null}
                     />
+
+                    {!readingDone && (
+                      <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e8e8e8" }}>
+                        <button
+                          onClick={() => { setReadingDone(true); setEarnedPoints(p => p + 2); }}
+                          style={{
+                            background: "#cf6a2f", color: "#fff", border: "none", borderRadius: "4px",
+                            padding: "10px 28px", fontSize: "0.875rem", fontWeight: 700, cursor: "pointer",
+                          }}
+                        >
+                          ✓ I've read this section (+2 pts)
+                        </button>
+                      </div>
+                    )}
+                    {readingDone && (
+                      <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e8e8e8", color: "#2d7a3a", fontSize: "0.875rem", fontWeight: 600 }}>
+                        ✓ Reading complete (+2 pts)
+                      </div>
+                    )}
+
+                    {activeLesson.participation_activities?.map((activity, ai) => (
+                      <ParticipationActivity
+                        key={ai}
+                        activity={activity}
+                        sectionNumber={`${activeLessonIndex + 1}.${ai + 1}`}
+                        activityIndex={ai + 1}
+                        onComplete={(correct, total) => {
+                          if (!participationDone) {
+                            setParticipationDone(true);
+                            setEarnedPoints(p => p + 3);
+                          }
+                        }}
+                      />
+                    ))}
                   </div>
 
-                  {/* Quiz section */}
+                  {/* Quiz — zybooks participation style */}
                   {activeLesson.quiz_questions?.length > 0 && (
-                    <LessonQuiz questions={activeLesson.quiz_questions} />
+                    <ZybooksQuiz
+                      questions={activeLesson.quiz_questions}
+                      sectionNumber={`${activeLessonIndex + 1}`}
+                      onComplete={(correct, total) => {
+                        if (!quizDone) {
+                          setQuizDone(true);
+                          setEarnedPoints(p => p + 3);
+                        }
+                      }}
+                    />
                   )}
 
-                  {/* Coding challenge section */}
+                  {/* Coding challenge */}
                   <LessonChallenge lesson={activeLesson} />
 
                   {/* Code editor */}
@@ -357,6 +409,20 @@ export default function ProjectDetail() {
                     lessonTitle={activeLesson.title}
                     solutionCode={activeLesson.solution_code || ""}
                     enableAIAnalysis={!!activeLesson.solution_code}
+                  />
+
+                  {/* Points summary — zybooks style */}
+                  <LessonPointsSummary
+                    lessonTitle={activeLesson.title}
+                    sectionNumber={activeLessonIndex + 1}
+                    totalPoints={activeLesson.xp_reward || 10}
+                    earnedPoints={earnedPoints}
+                    readingComplete={readingDone}
+                    quizComplete={quizDone}
+                    participationComplete={participationDone}
+                    challengeComplete={challengeDone}
+                    nextLessonTitle={activeLessonIndex < lessons.length - 1 ? lessons[activeLessonIndex + 1].title : null}
+                    onNextLesson={goToNextLesson}
                   />
 
                   {/* Action row */}
