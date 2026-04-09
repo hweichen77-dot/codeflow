@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Copy, Check } from "lucide-react";
 
 function CodeBlock({ children, className }) {
@@ -164,6 +165,7 @@ export default function LessonExplanation({ explanation, concept }) {
       `}</style>
 
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => <h1>{children}</h1>,
           h2: ({ children }) => <h2>{children}</h2>,
