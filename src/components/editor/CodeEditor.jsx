@@ -28,8 +28,9 @@ export default function CodeEditor({
   // Debounced AI analysis
   const triggerAnalysis = useCallback(async (currentCode) => {
     if (!enableAIAnalysis || !solutionCode || currentCode.trim().length < 30) return;
-    const result = await api.integrations.Core.InvokeLLM({
-      prompt: `A student is working on a coding lesson: "${lessonTitle}".
+    try {
+      const result = await api.integrations.Core.InvokeLLM({
+        prompt: `A student is working on a coding lesson: "${lessonTitle}".
 Expected solution pattern:
 \`\`\`
 ${solutionCode}
@@ -39,15 +40,18 @@ Student's current code:
 ${currentCode}
 \`\`\`
 If you notice ONE specific, actionable issue (logic error, infinite loop risk, wrong approach, off-by-one), return a single hint of max 15 words. Be direct, not encouraging. If the code looks reasonable or is clearly incomplete/empty, return null.`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          hint: { type: "string" },
+        response_json_schema: {
+          type: "object",
+          properties: {
+            hint: { type: "string" },
+          },
         },
-      },
-    });
-    if (result?.hint && result.hint !== "null") {
-      setAiHint(result.hint);
+      });
+      if (result?.hint && result.hint !== "null") {
+        setAiHint(result.hint);
+      }
+    } catch (e) {
+      // Silently ignore AI errors (rate limits, credit limits, etc.)
     }
   }, [enableAIAnalysis, solutionCode, lessonTitle]);
 
