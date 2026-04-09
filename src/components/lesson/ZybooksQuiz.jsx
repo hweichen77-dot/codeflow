@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
   const [answers, setAnswers] = useState({});
@@ -44,12 +45,29 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
               {sectionNumber}: Quiz
             </span>
           </div>
-          <div style={{
-            width: "32px", height: "32px", borderRadius: "4px",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: allChecked ? "#cf6a2f" : "#e0e0e0",
-          }}>
-            {allChecked && <Check size={20} color="#fff" strokeWidth={3} />}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {allChecked && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{
+                  fontFamily: "monospace", fontSize: "0.7rem", fontWeight: 700,
+                  color: correctCount === totalQuestions ? "#2d7a3a" : "#cf6a2f",
+                  background: correctCount === totalQuestions ? "#e8f5e9" : "#fff5f0",
+                  border: `1px solid ${correctCount === totalQuestions ? "#a5d6a7" : "#ffccbc"}`,
+                  padding: "3px 10px", borderRadius: "3px",
+                }}
+              >
+                {correctCount}/{totalQuestions} ✓
+              </motion.div>
+            )}
+            <div style={{
+              width: "32px", height: "32px", borderRadius: "4px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: allChecked ? "#cf6a2f" : "#e0e0e0",
+            }}>
+              {allChecked && <Check size={20} color="#fff" strokeWidth={3} />}
+            </div>
           </div>
         </div>
       </div>
@@ -60,7 +78,17 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
         const isCorrect = checked[qi] === true;
 
         return (
-          <div key={qi} style={{ padding: "20px 28px", borderBottom: "1px solid #e8e8e8" }}>
+          <motion.div
+            key={qi}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: qi * 0.07 }}
+            style={{
+              padding: "20px 28px", borderBottom: "1px solid #e8e8e8",
+              background: isChecked ? (isCorrect ? "#f9fff9" : "#fff9f9") : "#fff",
+              transition: "background 0.3s ease",
+            }}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: "0.9375rem", color: "#333", lineHeight: 1.6, margin: "0 0 14px" }}>
@@ -74,75 +102,105 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                     const isThisWrong = isChecked && isSelected && oi !== q.correct_index;
 
                     return (
-                      <label
+                      <motion.label
                         key={oi}
+                        animate={isThisCorrect ? { x: [0, 4, 0] } : isThisWrong ? { x: [0, -4, 4, -4, 0] } : {}}
+                        transition={{ duration: 0.4 }}
                         onClick={() => handleSelect(qi, oi)}
                         style={{
                           display: "flex", alignItems: "center", gap: "10px",
                           cursor: isChecked ? "default" : "pointer",
-                          padding: "4px 0", fontSize: "0.9375rem",
+                          padding: "6px 10px", fontSize: "0.9375rem",
                           color: isThisCorrect ? "#2d7a3a" : isThisWrong ? "#c0392b" : "#333",
                           fontWeight: isThisCorrect ? 600 : 400,
+                          borderRadius: "4px",
+                          background: isThisCorrect ? "#e8f5e9" : isThisWrong ? "#fde8e8" : isSelected ? "#f5f5f5" : "transparent",
+                          border: isThisCorrect ? "1px solid #a5d6a7" : isThisWrong ? "1px solid #ffcdd2" : "1px solid transparent",
+                          transition: "all 0.2s",
                         }}
                       >
                         <span
                           style={{
                             width: "16px", height: "16px", borderRadius: "50%",
-                            border: `2px solid ${isSelected ? "#555" : "#ccc"}`,
+                            border: `2px solid ${isThisCorrect ? "#2d7a3a" : isThisWrong ? "#c0392b" : isSelected ? "#555" : "#ccc"}`,
                             display: "flex", alignItems: "center", justifyContent: "center",
                             flexShrink: 0,
                           }}
                         >
                           {isSelected && (
-                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#555" }} />
+                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: isThisCorrect ? "#2d7a3a" : isThisWrong ? "#c0392b" : "#555" }} />
                           )}
                         </span>
                         {opt}
-                      </label>
+                        {isThisCorrect && <span style={{ marginLeft: "auto" }}>✓</span>}
+                        {isThisWrong && <span style={{ marginLeft: "auto" }}>✕</span>}
+                      </motion.label>
                     );
                   })}
                 </div>
                 {!isChecked && answers[qi] !== undefined && (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => handleCheck(qi)}
                     style={{
-                      marginTop: "10px", marginLeft: "24px",
+                      marginTop: "12px", marginLeft: "24px",
                       background: "#cf6a2f", color: "#fff", border: "none", borderRadius: "4px",
-                      padding: "6px 16px", fontSize: "0.8125rem", fontWeight: 700, cursor: "pointer",
+                      padding: "7px 20px", fontSize: "0.8125rem", fontWeight: 700, cursor: "pointer",
                     }}
                   >
-                    Check
-                  </button>
+                    Check Answer
+                  </motion.button>
                 )}
-                {isChecked && q.explanation && (
-                  <p style={{
-                    fontSize: "0.8125rem",
-                    color: isCorrect ? "#2d7a3a" : "#c0392b",
-                    marginTop: "10px", marginLeft: "24px", lineHeight: 1.5,
-                  }}>
-                    {isCorrect ? "✓ Correct. " : "✕ Incorrect. "}{q.explanation}
-                  </p>
-                )}
+                <AnimatePresence>
+                  {isChecked && q.explanation && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      style={{
+                        fontSize: "0.8125rem",
+                        color: isCorrect ? "#2d7a3a" : "#c0392b",
+                        marginTop: "10px", marginLeft: "24px", lineHeight: 1.6,
+                        background: isCorrect ? "#f0fff4" : "#fff0f0",
+                        padding: "8px 12px", borderRadius: "4px",
+                        borderLeft: `3px solid ${isCorrect ? "#2d7a3a" : "#c0392b"}`,
+                      }}
+                    >
+                      {isCorrect ? "✓ Correct! " : "✕ Incorrect. "}{q.explanation}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
-              <div style={{
-                flexShrink: 0, width: "32px", height: "32px", borderRadius: "4px",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                background: isChecked ? (isCorrect ? "#cf6a2f" : "#e74c3c") : "#e0e0e0",
-              }}>
+              <motion.div
+                animate={{ scale: isChecked ? [1, 1.3, 1] : 1 }}
+                transition={{ duration: 0.3 }}
+                style={{
+                  flexShrink: 0, width: "32px", height: "32px", borderRadius: "4px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: isChecked ? (isCorrect ? "#cf6a2f" : "#e74c3c") : "#e0e0e0",
+                }}
+              >
                 {isChecked && <Check size={18} color="#fff" strokeWidth={3} />}
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         );
       })}
 
       {/* Footer */}
       {allChecked && (
-        <div style={{ padding: "12px 28px", borderTop: "1px solid #e8e8e8", textAlign: "right" }}>
-          <span style={{ fontSize: "0.8125rem", color: "#cf6a2f", fontWeight: 600 }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{ padding: "14px 28px", borderTop: "1px solid #e8e8e8", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        >
+          <span style={{ fontSize: "0.8125rem", color: "#888" }}>
+            {correctCount === totalQuestions ? "🎉 Perfect score!" : `Keep practicing — review the explanations above.`}
+          </span>
+          <span style={{ fontSize: "0.8125rem", color: "#cf6a2f", fontWeight: 700 }}>
             {correctCount}/{totalQuestions} correct
           </span>
-        </div>
+        </motion.div>
       )}
     </div>
   );

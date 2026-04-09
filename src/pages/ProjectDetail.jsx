@@ -12,6 +12,8 @@ import ParticipationActivity from "../components/lesson/ParticipationActivity";
 import LessonPointsSummary from "../components/lesson/LessonPointsSummary";
 import LessonChallenge from "../components/lesson/LessonChallenge";
 import { runCodeInSandbox } from "../lib/codeRunner";
+import XPToastContainer, { showXPToast } from "../components/gamification/XPToast";
+import XPLevelBar from "../components/gamification/XPLevelBar";
 
 const DIFFICULTY_NUM = { beginner: "00", intermediate: "01", advanced: "02" };
 
@@ -81,7 +83,7 @@ export default function ProjectDetail() {
       setQuizDone(false);
       setParticipationDone(false);
       setChallengeReportDone(false);
-      setEarnedPoints(0);
+      setEarnedPoints(saved?.points_earned || 0);
       lessonStartTime.current = Date.now();
       wrongAttempts.current = 0;
     }
@@ -122,7 +124,10 @@ export default function ProjectDetail() {
   };
 
   const handleComplete = () => {
-    if (user && activeLesson) completeMutation.mutate(activeLesson.id);
+    if (user && activeLesson) {
+      completeMutation.mutate(activeLesson.id);
+      showXPToast("Lesson Complete!", activeLesson.xp_reward || 10, "🏆");
+    }
   };
 
   const goToNextLesson = () => {
@@ -131,8 +136,30 @@ export default function ProjectDetail() {
     }
   };
 
+  const [expandingLesson, setExpandingLesson] = useState(false);
+
+  const handleExpandLesson = async () => {
+    if (!activeLesson) return;
+    setExpandingLesson(true);
+    try {
+      await base44.functions.invoke("expandLesson", {
+        lessonId: activeLesson.id,
+        lessonTitle: activeLesson.title,
+        concept: activeLesson.concept,
+        explanation: activeLesson.explanation,
+        starterCode: activeLesson.starter_code,
+      });
+      queryClient.invalidateQueries({ queryKey: ["lessons", projectId] });
+      showXPToast("Lesson expanded!", 0, "🤖");
+    } catch (e) {
+      console.error(e);
+    }
+    setExpandingLesson(false);
+  };
+
   const completedCount = progress.filter((p) => p.completed).length;
   const totalLessons = lessons.length;
+  const totalXP = progress.filter(p => p.completed).reduce((sum, p) => sum + (p.points_earned || 10), 0);
 
   if (loadingProject || loadingLessons) {
     return (
@@ -162,6 +189,7 @@ export default function ProjectDetail() {
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh" }}>
+      <XPToastContainer />
       {/* Project header — full width banner */}
       <div
         className="relative pt-20"
@@ -306,6 +334,11 @@ export default function ProjectDetail() {
 
           {/* Main content */}
           <div>
+            {/* XP Level Bar */}
+            <div style={{ marginBottom: "20px" }}>
+              <XPLevelBar totalXP={totalXP} earnedThisLesson={earnedPoints} />
+            </div>
+
             <AnimatePresence mode="wait">
               {activeLesson && (
                 <motion.div
@@ -349,7 +382,7 @@ export default function ProjectDetail() {
                     {!readingDone && (
                       <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e8e8e8" }}>
                         <button
-                          onClick={() => { setReadingDone(true); setEarnedPoints(p => p + 2); }}
+                          onClick={() => { setReadingDone(true); setEarnedPoints(p => p + 2); showXPToast("Reading complete!", 2, "📖"); }}
                           style={{
                             background: "#cf6a2f", color: "#fff", border: "none", borderRadius: "4px",
                             padding: "10px 28px", fontSize: "0.875rem", fontWeight: 700, cursor: "pointer",
@@ -375,6 +408,7 @@ export default function ProjectDetail() {
                           if (!participationDone) {
                             setParticipationDone(true);
                             setEarnedPoints(p => p + 3);
+                            showXPToast(`${correct}/${total} correct!`, 3, "✏️");
                           }
                         }}
                       />
@@ -390,6 +424,7 @@ export default function ProjectDetail() {
                         if (!quizDone) {
                           setQuizDone(true);
                           setEarnedPoints(p => p + 3);
+                          showXPToast(`Quiz: ${correct}/${total} correct!`, 3, "🧩");
                         }
                       }}
                     />
@@ -427,6 +462,19 @@ export default function ProjectDetail() {
 
                   {/* Action row */}
                   <div className="flex flex-wrap items-center gap-3 pt-2">
+                    {user?.role === "admin" && (
+                      <button
+                        onClick={handleExpandLesson}
+                        disabled={expandingLesson}
+                        className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                        style={{
+                          color: "#60a5fa", border: "1px solid #60a5fa33",
+                          background: "#60a5fa10", opacity: expandingLesson ? 0.5 : 1,
+                        }}
+                      >
+                        {expandingLesson ? "⏳ Expanding..." : "🤖 Expand with AI"}
+                      </button>
+                    )}
                     {activeLesson.hints && activeLesson.hints.length > 0 && (
                       <button
                         onClick={() => setShowHints(!showHints)}

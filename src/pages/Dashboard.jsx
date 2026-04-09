@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
+import { getLevel } from "../components/gamification/XPLevelBar";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -61,12 +62,19 @@ export default function Dashboard() {
     }
   });
 
-  // XP: 10 per completed lesson + bonus from quiz scores
-  const totalXP = completedProgress.reduce((sum, p) => {
-    let xp = 10;
-    if (p.quiz_score && p.quiz_score > 0) xp += Math.round(p.quiz_score / 10);
-    return sum + xp;
-  }, 0);
+  // XP: use stored points or fallback to 10 per lesson
+  const totalXP = completedProgress.reduce((sum, p) => sum + (p.points_earned || 10), 0);
+  const lvl = getLevel(totalXP);
+  const nextLvl = [
+    { level: 1, name: "Novice", min: 0, max: 50 },
+    { level: 2, name: "Learner", min: 50, max: 150 },
+    { level: 3, name: "Builder", min: 150, max: 300 },
+    { level: 4, name: "Developer", min: 300, max: 500 },
+    { level: 5, name: "Engineer", min: 500, max: 800 },
+    { level: 6, name: "Architect", min: 800, max: 1200 },
+    { level: 7, name: "Master", min: 1200, max: Infinity },
+  ].find(l => l.min > lvl.min);
+  const lvlPct = lvl.max === Infinity ? 100 : Math.min(100, Math.round(((totalXP - lvl.min) / (lvl.max - lvl.min)) * 100));
 
   // Streak: count consecutive days ending today (or yesterday) with activity
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -122,6 +130,26 @@ export default function Dashboard() {
           <p className="font-display text-sm" style={{ color: "#888", fontWeight: 400 }}>
             {user.email}
           </p>
+
+          {/* Level progress bar */}
+          <div style={{ marginTop: "20px", maxWidth: "400px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+              <span className="font-mono text-xs" style={{ color: lvl.color }}>
+                LVL {lvl.level} — {lvl.name}
+              </span>
+              <span className="font-mono text-xs" style={{ color: "#555" }}>
+                {totalXP} / {lvl.max === Infinity ? "∞" : lvl.max} XP
+              </span>
+            </div>
+            <div style={{ height: "4px", background: "#1a1a1a", borderRadius: "2px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${lvlPct}%`, background: lvl.color, borderRadius: "2px", transition: "width 1s ease" }} />
+            </div>
+            {nextLvl && (
+              <div className="font-mono text-xs mt-1" style={{ color: "#444" }}>
+                {lvl.max - totalXP} XP to reach {nextLvl.name}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -132,9 +160,9 @@ export default function Dashboard() {
           {[
             { val: completedLessons, label: "Lessons Done", accent: null },
             { val: completedProjects.length, label: "Projects Done", accent: null },
-            { val: `${totalXP} XP`, label: "Total XP", accent: "#b8ff00" },
+            { val: `${totalXP}`, label: "Total XP", accent: "#b8ff00" },
             { val: `${streak}🔥`, label: "Day Streak", accent: streak >= 3 ? "#ff6b35" : null },
-            { val: inProgressProjects.length, label: "Active Projects", accent: null },
+            { val: `LVL ${lvl.level}`, label: lvl.name, accent: lvl.color },
             { val: `${overallPct}%`, label: "Overall Progress", accent: null },
           ].map((stat, i, arr) => (
             <div
