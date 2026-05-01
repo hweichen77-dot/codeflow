@@ -14,6 +14,10 @@ import LessonChallenge from "../components/lesson/LessonChallenge";
 import { runCodeInSandbox } from "../lib/codeRunner";
 import XPToastContainer, { showXPToast } from "../components/gamification/XPToast";
 import XPLevelBar from "../components/gamification/XPLevelBar";
+import StreakBadge from "../components/gamification/StreakBadge";
+import BadgeUnlock from "../components/gamification/BadgeUnlock";
+import OutputComparison from "../components/lesson/OutputComparison";
+import LessonCompletionCelebration from "../components/lesson/LessonCompletionCelebration";
 
 const DIFFICULTY_NUM = { beginner: "00", intermediate: "01", advanced: "02" };
 
@@ -126,7 +130,7 @@ export default function ProjectDetail() {
   const handleComplete = () => {
     if (user && activeLesson) {
       completeMutation.mutate(activeLesson.id);
-      showXPToast("Lesson Complete!", activeLesson.xp_reward || 10, "🏆");
+      setShowCelebration(true);
     }
   };
 
@@ -137,6 +141,7 @@ export default function ProjectDetail() {
   };
 
   const [expandingLesson, setExpandingLesson] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const handleExpandLesson = async () => {
     if (!activeLesson) return;
@@ -190,6 +195,13 @@ export default function ProjectDetail() {
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh" }}>
       <XPToastContainer />
+      <BadgeUnlock completedCount={completedCount} />
+      <LessonCompletionCelebration
+        show={showCelebration}
+        lessonTitle={activeLesson?.title || ""}
+        xpEarned={activeLesson?.xp_reward || 10}
+        onClose={() => { setShowCelebration(false); showXPToast("Lesson Complete!", activeLesson?.xp_reward || 10, "🏆"); }}
+      />
       {/* Project header — full width banner */}
       <div
         className="relative pt-20"
@@ -277,6 +289,9 @@ export default function ProjectDetail() {
               className="sticky top-20"
               style={{ borderLeft: "1px solid #1a1a1a", paddingLeft: "1.25rem" }}
             >
+              {/* Streak badges */}
+              <StreakBadge completedCount={completedCount} />
+
               {/* Vertical label */}
               <div
                 className="font-mono text-xs tracking-widest uppercase mb-5"
@@ -445,6 +460,14 @@ export default function ProjectDetail() {
                     solutionCode={activeLesson.solution_code || ""}
                     enableAIAnalysis={!!activeLesson.solution_code}
                   />
+
+                  {/* Output comparison */}
+                  {output && activeLesson?.expected_output && (
+                    <OutputComparison
+                      actualOutput={output}
+                      expectedOutput={activeLesson.expected_output}
+                    />
+                  )}
 
                   {/* Points summary — zybooks style */}
                   <LessonPointsSummary
