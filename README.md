@@ -1,39 +1,28 @@
-**Welcome to your api project** 
+# CodeFlow
 
-**About**
+A coding challenge tracker and portfolio manager for developers.
 
-View and Edit  your app on [api.com](http://api.com) 
+## Features
+- **Dashboard** — track completion stats and streaks
+- **Challenges** — browse and track coding challenges by difficulty and category
+- **Portfolio** — showcase your projects with links and tech stack
+- **Projects** — manage in-progress and completed projects
+- **Tracks** — follow structured learning paths
 
-This project contains everything you need to run your app locally.
+## Tech Stack
+- React 18 + Vite
+- Tailwind CSS + Radix UI (shadcn/ui)
+- Supabase (auth + database)
 
-**Edit the code in your local development environment**
+## Getting Started
 
-Any change pushed to the repo will also be reflected in the api Builder.
-
-**Prerequisites:** 
-
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
-
-```
-VITE_api_APP_ID=your_app_id
-VITE_api_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_api_APP_ID=cbef744a8545c389ef439ea6
-VITE_api_APP_BASE_URL=https://my-to-do-list-81bfaad7.api.app
+```bash
+npm install
+cp .env.local.example .env.local
+# Fill in your Supabase URL and anon key
+npm run dev
 ```
 
-Run the app: `npm run dev`
+## Database Setup
 
-**Publish your changes**
-
-Open [api.com](http://api.com) and click on Publish.
-
-**Docs & Support**
-
-Documentation: [https://docs.api.com/Integrations/Using-GitHub](https://docs.api.com/Integrations/Using-GitHub)
-
-Support: [https://app.api.com/support](https://app.api.com/support)
+Run the SQL in `supabase-schema.sql` in your Supabase project's SQL editor.
