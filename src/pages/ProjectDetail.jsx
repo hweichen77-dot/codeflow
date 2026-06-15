@@ -141,6 +141,53 @@ export default function ProjectDetail() {
     }
   };
 
+  const goToPrevLesson = () => {
+    if (activeLessonIndex > 0) {
+      setActiveLessonId(lessons[activeLessonIndex - 1].id);
+    }
+  };
+
+  // Focus mode — persisted preference.
+  const [focusMode, setFocusMode] = useState(() => {
+    try { return localStorage.getItem("codeflow_focus_mode") === "1"; } catch { return false; }
+  });
+  const toggleFocusMode = () => {
+    setFocusMode((prev) => {
+      const next = !prev;
+      try { localStorage.setItem("codeflow_focus_mode", next ? "1" : "0"); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
+  // One-time keyboard-nav hint.
+  const [showNavHint, setShowNavHint] = useState(() => {
+    try { return localStorage.getItem("codeflow_navhint_seen") !== "1"; } catch { return true; }
+  });
+  const dismissNavHint = () => {
+    setShowNavHint(false);
+    try { localStorage.setItem("codeflow_navhint_seen", "1"); } catch { /* ignore */ }
+  };
+
+  // Keyboard navigation: ← previous, → next. Ignore when typing.
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      const tag = t?.tagName;
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        t?.isContentEditable
+      ) return;
+      if (e.key === "ArrowRight") { goToNextLesson(); dismissNavHint(); }
+      else if (e.key === "ArrowLeft") { goToPrevLesson(); dismissNavHint(); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [activeLessonIndex, lessons]);
+
   const [expandingLesson, setExpandingLesson] = useState(false);
   const [enrichingLesson, setEnrichingLesson] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -295,11 +342,18 @@ export default function ProjectDetail() {
       </div>
 
       {/* Main layout */}
-      <div className="max-w-7xl mx-auto px-8 lg:px-16 py-10">
-        <div className="grid lg:grid-cols-[220px_1fr] gap-10">
-
-          {/* Sidebar — notebook spine */}
-          <div className="relative">
+      <div
+        className="mx-auto px-8 lg:px-16 py-10 transition-all duration-300"
+        style={{ maxWidth: focusMode ? "920px" : "80rem" }}
+      >
+        <div
+          className="grid gap-10 transition-all duration-300"
+          style={{ gridTemplateColumns: focusMode ? "1fr" : undefined }}
+          data-focus={focusMode ? "1" : "0"}
+        >
+          {/* Sidebar — notebook spine (hidden in focus mode) */}
+          {!focusMode && (
+          <div className="relative" style={{ width: "220px" }}>
             <div
               className="sticky top-20"
               style={{ borderLeft: "1px solid #1a1a1a", paddingLeft: "1.25rem" }}
@@ -361,9 +415,36 @@ export default function ProjectDetail() {
               </div>
             </div>
           </div>
+          )}
 
           {/* Main content */}
           <div>
+            {/* Focus mode toggle + keyboard-nav hint */}
+            <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+              {showNavHint ? (
+                <button
+                  onClick={dismissNavHint}
+                  className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
+                  style={{ color: "#666", border: "1px solid #1a1a1a", background: "#0d0d0d" }}
+                  title="Dismiss hint"
+                >
+                  ← → to navigate lessons
+                </button>
+              ) : <span />}
+              <button
+                onClick={toggleFocusMode}
+                className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
+                style={{
+                  color: focusMode ? "#b8ff00" : "#666",
+                  border: `1px solid ${focusMode ? "#b8ff0033" : "#1a1a1a"}`,
+                  background: focusMode ? "#b8ff0010" : "#0d0d0d",
+                }}
+                title="Toggle focus mode"
+              >
+                {focusMode ? "◇ Exit Focus" : "◆ Focus Mode"}
+              </button>
+            </div>
+
             {/* XP Level Bar */}
             <div style={{ marginBottom: "20px" }}>
               <XPLevelBar totalXP={totalXP} earnedThisLesson={earnedPoints} />

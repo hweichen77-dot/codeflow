@@ -1,6 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api/apiClient";
+import ProgressRing from "../components/gamification/ProgressRing";
 
 const TRACK = [
   {
@@ -11,7 +14,7 @@ const TRACK = [
     description: "Models, training vs inference, what a prediction actually is. The mental model before touching any API.",
     concepts: ["Neural networks", "Training data", "Inference"],
     type: "project",
-    projectId: "69c9b0173a255fc470d7c5bc",
+    projectId: "ai-01",
   },
   {
     number: "02",
@@ -21,7 +24,7 @@ const TRACK = [
     description: "What an API is, JSON, API keys, rate limits. Build a Python script that calls an AI model.",
     concepts: ["REST APIs", "JSON", "Authentication"],
     type: "project",
-    projectId: "69c9b0173a255fc470d7c5bd",
+    projectId: "ai-02",
   },
   {
     number: "03",
@@ -31,7 +34,7 @@ const TRACK = [
     description: "System prompts, temperature, tokens, few-shot prompting. The marketable skill most CS courses skip.",
     concepts: ["System prompts", "Temperature", "Few-shot"],
     type: "project",
-    projectId: "69c9b0173a255fc470d7c5be",
+    projectId: "ai-03",
   },
   {
     number: "04",
@@ -41,7 +44,7 @@ const TRACK = [
     description: "Message history, context windows, streaming. Build a character chatbot that stays in-persona.",
     concepts: ["Context windows", "Role arrays", "Streaming"],
     type: "project",
-    projectId: "69c9b0173a255fc470d7c5bf",
+    projectId: "ai-04",
   },
   {
     number: "05",
@@ -51,7 +54,7 @@ const TRACK = [
     description: "Image classification, CNNs conceptually, vision APIs. Feed images, get structure back.",
     concepts: ["Image classification", "CNNs", "Vision APIs"],
     type: "project",
-    projectId: "69c9b0173a255fc470d7c5c0",
+    projectId: "ai-05",
   },
   {
     number: "06",
@@ -61,7 +64,7 @@ const TRACK = [
     description: "Vectors, cosine similarity, what embeddings capture. Build a movie recommender from scratch.",
     concepts: ["Vector embeddings", "Cosine similarity", "Semantic search"],
     type: "project",
-    projectId: "69c9b0173a255fc470d7c5c1",
+    projectId: "ai-06",
   },
   {
     number: "07",
@@ -71,7 +74,7 @@ const TRACK = [
     description: "Why LLMs hallucinate, retrieval-augmented generation, chunking. Build a document Q&A tool.",
     concepts: ["RAG", "Document chunking", "Retrieval"],
     type: "capstone",
-    projectId: "69c9b0173a255fc470d7c5c2",
+    projectId: "ai-07",
   },
   {
     number: "08",
@@ -81,7 +84,7 @@ const TRACK = [
     description: "When to fine-tune vs prompt, what an eval is, measuring model quality. Write a real eval suite.",
     concepts: ["Fine-tuning", "Evaluation", "Model quality"],
     type: "capstone",
-    projectId: "69c9b0173a255fc470d7c5c3",
+    projectId: "ai-08",
   },
 ];
 
@@ -113,6 +116,29 @@ const DIFF_COLOR = {
 };
 
 export default function AITrack() {
+  // Per-module progress: completed lessons / total lessons for that project.
+  const { data: user } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => api.auth.me().catch(() => null),
+  });
+  const { data: lessons = [] } = useQuery({
+    queryKey: ["all-lessons"],
+    queryFn: () => api.entities.Lesson.list("order"),
+  });
+  const { data: progress = [] } = useQuery({
+    queryKey: ["all-progress", user?.email],
+    queryFn: () => api.entities.UserProgress.filter({ user_email: user.email }),
+    enabled: !!user,
+  });
+
+  const completedIds = new Set(progress.filter((p) => p.completed).map((p) => p.lesson_id));
+  const modulePct = (projectId) => {
+    const ls = lessons.filter((l) => l.project_id === projectId);
+    if (ls.length === 0) return 0;
+    const done = ls.filter((l) => completedIds.has(l.id)).length;
+    return Math.round((done / ls.length) * 100);
+  };
+
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
       {/* Hero */}
@@ -164,8 +190,17 @@ export default function AITrack() {
                   onMouseEnter={e => { e.currentTarget.style.background = "#0d0d0d"; e.currentTarget.style.paddingLeft = "1.75rem"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; }}
                 >
-                  <div className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#1e1e1e", letterSpacing: "-0.05em" }}>
-                    {item.number}
+                  <div className="flex items-center" style={{ minWidth: "3rem" }}>
+                    {(() => {
+                      const pct = modulePct(item.projectId);
+                      return pct > 0 ? (
+                        <ProgressRing percent={pct} size={38} color="#b8ff00" />
+                      ) : (
+                        <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#1e1e1e", letterSpacing: "-0.05em" }}>
+                          {item.number}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">

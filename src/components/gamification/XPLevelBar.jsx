@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const LEVELS = [
+export const LEVELS = [
   { level: 1, name: "Novice", min: 0, max: 50, color: "#888" },
   { level: 2, name: "Learner", min: 50, max: 150, color: "#60a5fa" },
   { level: 3, name: "Builder", min: 150, max: 300, color: "#a78bfa" },

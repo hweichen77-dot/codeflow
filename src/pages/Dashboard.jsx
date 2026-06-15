@@ -6,6 +6,10 @@ import { createPageUrl } from "../utils";
 import { getLevel } from "../components/gamification/XPLevelBar";
 import { useAuth } from "../hooks/useAuth";
 import { UserChallenges } from "../api/supabaseClient";
+import ProgressRing from "../components/gamification/ProgressRing";
+import Achievements from "../components/gamification/Achievements";
+import LevelUpModal from "../components/gamification/LevelUpModal";
+import XPToastContainer from "../components/gamification/XPToast";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -49,6 +53,40 @@ export default function Dashboard() {
     queryKey: ["all-projects"],
     queryFn: () => api.entities.Project.list("order"),
   });
+
+  const { data: allLessons = [] } = useQuery({
+    queryKey: ["all-lessons"],
+    queryFn: () => api.entities.Lesson.list("order"),
+  });
+
+  const { data: capstones = [] } = useQuery({
+    queryKey: ["all-capstones", user?.email],
+    queryFn: () => api.entities.CapstoneSubmission.filter({ user_email: user.email }),
+    enabled: !!user,
+  });
+
+  // Level-up modal — decoupled localStorage approach.
+  const [levelUp, setLevelUp] = useState(null);
+
+  // Detect level crossings by comparing current level to last-seen in localStorage.
+  useEffect(() => {
+    if (!user || progress.length === 0) return;
+    const xp = progress
+      .filter((p) => p.completed)
+      .reduce((sum, p) => sum + (p.points_earned || 10), 0);
+    const currentLevel = getLevel(xp).level;
+    let lastSeen = 0;
+    try {
+      lastSeen = parseInt(localStorage.getItem("codeflow_last_level") || "0", 10) || 0;
+    } catch { /* ignore */ }
+
+    if (currentLevel > lastSeen) {
+      // Only celebrate if the user had a baseline (avoid first-ever-load fanfare
+      // for returning users who never had the key, but still record it).
+      if (lastSeen > 0) setLevelUp(currentLevel);
+      try { localStorage.setItem("codeflow_last_level", String(currentLevel)); } catch { /* ignore */ }
+    }
+  }, [user, progress]);
 
   if (!user) return null;
 
@@ -134,6 +172,32 @@ export default function Dashboard() {
   const totalAvailableLessons = projects.reduce((s, p) => s + (p.lessons_count || 0), 0);
   const overallPct = totalAvailableLessons ? Math.round((completedLessons / totalAvailableLessons) * 100) : 0;
 
+  // Completed lesson lookup for ring + next-lesson computation.
+  const completedLessonIds = new Set(completedProgress.map((p) => p.lesson_id));
+  const lessonsByProject = (projId) =>
+    allLessons.filter((l) => l.project_id === projId).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const projectRingPct = (proj) => {
+    const total = proj.lessons_count || lessonsByProject(proj.id).length;
+    if (!total) return 0;
+    const done = progress.filter((p) => p.project_id === proj.id && p.completed).length;
+    return Math.round((done / total) * 100);
+  };
+
+  // "Continue where you left off": first project (in order) with an incomplete lesson.
+  let nextStep = null; // { project, lesson, started }
+  for (const proj of projects) {
+    const ls = lessonsByProject(proj.id);
+    if (ls.length === 0) continue;
+    const firstIncomplete = ls.find((l) => !completedLessonIds.has(l.id));
+    if (firstIncomplete) {
+      const started = ls.some((l) => completedLessonIds.has(l.id)) || progress.length > 0;
+      nextStep = { project: proj, lesson: firstIncomplete, started };
+      break;
+    }
+  }
+  const trackComplete = projects.length > 0 && allLessons.length > 0 && !nextStep;
+  const nothingStarted = progress.length === 0;
+
   // Struggle signals: lessons where student viewed solution or had many wrong attempts
   const struggledLessons = completedProgress.filter(
     (p) => p.solution_viewed || (p.wrong_attempts && p.wrong_attempts >= 3)
@@ -180,7 +244,56 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <XPToastContainer />
+      <LevelUpModal show={!!levelUp} level={levelUp} onClose={() => setLevelUp(null)} />
+
       <div className="max-w-5xl mx-auto px-8 lg:px-16 py-12 space-y-12">
+
+        {/* Continue where you left off — hero card */}
+        {trackComplete ? (
+          <div
+            className="px-8 py-8"
+            style={{ border: "1px solid #b8ff0033", background: "#b8ff0008", borderLeft: "2px solid #b8ff00" }}
+          >
+            <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#b8ff00" }}>
+              TRACK COMPLETE
+            </div>
+            <h2 style={{ fontFamily: "'Syne', Georgia, serif", fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", margin: "0 0 8px" }}>
+              You finished every lesson. 👑
+            </h2>
+            <p className="font-display text-sm" style={{ color: "#aaa", fontWeight: 400 }}>
+              Revisit a module, ship a capstone, or take on the challenges.
+            </p>
+          </div>
+        ) : nextStep ? (
+          <Link to={createPageUrl(`ProjectDetail?id=${nextStep.project.id}`)} className="group block">
+            <div
+              className="flex items-center gap-6 px-8 py-7 transition-all duration-150"
+              style={{ border: "1px solid #1a1a1a", background: "#0d0d0d", borderLeft: "2px solid #b8ff00" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#101010"; e.currentTarget.style.borderColor = "#b8ff0033"; e.currentTarget.style.borderLeftColor = "#b8ff00"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#0d0d0d"; e.currentTarget.style.borderColor = "#1a1a1a"; e.currentTarget.style.borderLeftColor = "#b8ff00"; }}
+            >
+              <ProgressRing percent={projectRingPct(nextStep.project)} size={56} color="#b8ff00" />
+              <div className="flex-1 min-w-0">
+                <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#b8ff00" }}>
+                  {nothingStarted ? "START MODULE 1" : "CONTINUE WHERE YOU LEFT OFF"}
+                </div>
+                <h2
+                  className="truncate transition-colors duration-150 group-hover:text-white"
+                  style={{ fontFamily: "'Syne', Georgia, serif", fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", margin: "0 0 4px", lineHeight: 1.15 }}
+                >
+                  {nextStep.lesson.title}
+                </h2>
+                <p className="font-display text-sm truncate" style={{ color: "#888", fontWeight: 400 }}>
+                  {nextStep.project.title}
+                </p>
+              </div>
+              <span className="font-mono text-2xl transition-colors duration-150 group-hover:text-white flex-shrink-0" style={{ color: "#444" }}>
+                →
+              </span>
+            </div>
+          </Link>
+        ) : null}
 
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-0" style={{ border: "1px solid #1a1a1a" }}>
@@ -357,6 +470,7 @@ export default function Dashboard() {
                         e.currentTarget.style.paddingLeft = "1.5rem";
                       }}
                     >
+                      <ProgressRing percent={pct} size={40} color="#b8ff00" />
                       <div className="flex-1 min-w-0">
                         <div
                           className="font-display font-bold text-base mb-2 transition-colors duration-150 group-hover:text-white truncate"
@@ -415,6 +529,9 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Achievements */}
+        <Achievements progress={progress} projects={projects} streak={streak} capstones={capstones} />
 
         {/* Empty state */}
         {progress.length === 0 && (
