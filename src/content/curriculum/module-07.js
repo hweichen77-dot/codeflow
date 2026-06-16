@@ -163,6 +163,76 @@ print("With context:", grounded_answer(question, context))
 `,
       expected_output: `No context: The Q3 revenue was $5.8 million.
 With context: Based on the document, Q3 revenue was $4.2 million.`,
+      step_throughs: [
+        {
+          title: "question → retrieve → ground → answer",
+          steps: [
+            { label: "User asks", detail: "A question about a fact the model never saw in training.", code: '"What was our Q3 revenue?"' },
+            { label: "Retrieve the source", detail: "Find the passage from your own documents that holds the fact, instead of trusting the model's memory.", code: 'doc1: "Q3 revenue of $4.2 million, up 18%."' },
+            { label: "Stuff it into the prompt", detail: "Paste that passage in as context and tell the model to answer using only it.", code: 'prompt = "Use ONLY this context: " + doc1' },
+            { label: "Grounded answer", detail: "The model reads the supplied text and reports the real figure — no guessing.", code: '"Q3 revenue was $4.2 million."' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Plain LLM is asked: "What is our refund window?" It was never trained on your policy. What happens?',
+          steps: [
+            "The fact lives only in your private docs, which were never in the training data.",
+            "The model has no live lookup, so it cannot fetch the real number.",
+            "It predicts a plausible-sounding continuation — maybe '30 days' — with full confidence.",
+            "That answer might be right by luck or wrong by accident; either way it is a guess, not a fact."
+          ],
+          output: "A confident but unverifiable answer (a hallucination risk)"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'Write a grounding check: the answer says "Revenue was $5.8 million." The source doc says "Q3 revenue of $4.2 million." Is the answer grounded?',
+          steps: [
+            "Pull every number-bearing token out of the answer: ['$5.8', 'million'].",
+            "Strip symbols: '5.8'.",
+            "Search the source text for '5.8' — it is not present (the source says 4.2).",
+            "At least one number is unsupported, so the answer is NOT grounded — flag it as a likely hallucination."
+          ],
+          output: "is_grounded -> False"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "plain LLM vs. RAG",
+          columns: ["Aspect", "Plain LLM", "RAG"],
+          rows: [
+            { cells: ["Source of the answer", "Frozen training memory", "Your live documents"] },
+            { cells: ["Private / recent data", "Invisible — must guess", "Retrieved and supplied"] },
+            { cells: ["When it lacks the fact", "Bluffs a fluent guess", "Can say 'I don't know'"] },
+            { cells: ["Traceable to a source", "No", "Yes — cites the chunk"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "needs retrieval vs. fine without it",
+          bins: [
+            { id: "retrieve", label: "Needs retrieval" },
+            { id: "plain", label: "Fine for a plain LLM" }
+          ],
+          items: [
+            { id: "i1", text: "What was our Q3 revenue?", bin: "retrieve" },
+            { id: "i2", text: "What is the boiling point of water?", bin: "plain" },
+            { id: "i3", text: "What does our return policy say?", bin: "retrieve" },
+            { id: "i4", text: "Write a haiku about autumn", bin: "plain" },
+            { id: "i5", text: "Who did we hire last month?", bin: "retrieve" },
+            { id: "i6", text: "Reverse a string in Python", bin: "plain" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does giving the model the document first reduce hallucination, when the model itself hasn't changed?",
+          sampleAnswer: "The model's weakness is recall — pulling exact facts from fuzzy memory. Its strength is reading comprehension. By pasting the document in, you swap the hard job (remember this number) for the easy one (summarize this paragraph). Same model, easier task, so it stops guessing."
+        }
+      ],
       hints: [
         "naive_answer ignores the docs entirely — it just returns a hardcoded wrong figure to mimic a hallucination.",
         "grounded_answer should look inside the context string before answering, and fall back to 'I don't have that information.' if the fact isn't there.",
@@ -347,6 +417,76 @@ Chunks created: 4
 [1] by fetching relevant text before the model writes a reply. Chunking splits
 [2] reply. Chunking splits long documents into smaller searchable pieces. Good chunks keep
 [3] Good chunks keep related sentences together so context survives.`,
+      step_throughs: [
+        {
+          title: "document → sized window → overlap → chunks",
+          steps: [
+            { label: "Start with the full text", detail: "One long document, far too big to paste into every prompt.", code: '36 words of source text' },
+            { label: "Pick size and overlap", detail: "Decide how many words per chunk and how many to repeat between neighbors.", code: 'size = 12, overlap = 3' },
+            { label: "Slide the window", detail: "Advance by (size - overlap) each step so each chunk shares its tail with the next.", code: 'step = 12 - 3 = 9' },
+            { label: "Emit searchable chunks", detail: "Each piece is small enough to retrieve on its own, and boundary facts survive in the overlap.", code: '4 chunks, each independently searchable' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Chunk "a b c d e f" with size=3, overlap=1. What chunks come out?',
+          steps: [
+            "step = size - overlap = 3 - 1 = 2.",
+            "Start 0: words[0:3] = 'a b c'.",
+            "Start 2: words[2:5] = 'c d e' (shares 'c' with the previous chunk).",
+            "Start 4: words[4:6] = 'e f' (shares 'e'); we've reached the end, so stop."
+          ],
+          output: "['a b c', 'c d e', 'e f']"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'Pack these sentences into chunks of at most 40 chars: "First fact. Second fact. Third fact."',
+          steps: [
+            "Split on '.' into sentences and re-add the period: ['First fact.', 'Second fact.', 'Third fact.'].",
+            "Start empty. Add 'First fact.' (11 chars) — fits.",
+            "Try adding 'Second fact.' -> 'First fact. Second fact.' is 24 chars — still under 40, keep it.",
+            "Try adding 'Third fact.' -> would reach 36 chars... but checking the +1 separator pushes past 40, so flush the current chunk and start a new one with 'Third fact.'"
+          ],
+          output: "['First fact. Second fact.', 'Third fact.']"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "fixed-size vs. semantic chunking",
+          columns: ["Aspect", "Fixed-size (word count)", "Semantic (sentence/paragraph)"],
+          rows: [
+            { cells: ["Split point", "Every N words, anywhere", "On natural boundaries"] },
+            { cells: ["Risk", "Slices mid-sentence", "Keeps ideas intact"] },
+            { cells: ["Implementation", "Trivial — slice a list", "Needs sentence detection"] },
+            { cells: ["Retrieval quality", "Lower, needs overlap", "Higher, context survives"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "good chunk size vs. a problem",
+          bins: [
+            { id: "good", label: "Reasonable chunk" },
+            { id: "bad", label: "Likely a problem" }
+          ],
+          items: [
+            { id: "i1", text: "One paragraph, ~200 words", bin: "good" },
+            { id: "i2", text: "A whole 50-page PDF as one chunk", bin: "bad" },
+            { id: "i3", text: 'A 4-word fragment: "it costs $4.2M"', bin: "bad" },
+            { id: "i4", text: "A few related sentences, ~120 words", bin: "good" },
+            { id: "i5", text: "Half a sentence cut at a boundary", bin: "bad" },
+            { id: "i6", text: "A complete section under a heading", bin: "good" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Explain in one or two sentences why both too-big and too-small chunks hurt retrieval, but for opposite reasons.",
+          sampleAnswer: "Too-big chunks mix many topics, so similarity search can't tell what they're really about and you waste tokens shipping irrelevant text. Too-small chunks strip a sentence away from the context that gives it meaning, so even a perfect match retrieves something unusable."
+        }
+      ],
       hints: [
         "Split the text into a list of words first with text.split().",
         "step = size - overlap. Loop start over range(0, len(words), step) and slice words[start:start+size].",
@@ -558,6 +698,76 @@ print(f"Best match: {ranked[0][0]}")
 doc1: 0.816
 doc2: 0.000
 Best match: doc1`,
+      step_throughs: [
+        {
+          title: "query → embed → score → rank",
+          steps: [
+            { label: "Embed every chunk once", detail: "Convert each stored chunk into a vector up front and keep it.", code: 'doc1 -> [1, 0, 0, 1, 1, 0]' },
+            { label: "Embed the query", detail: "Turn the user's question into a vector the exact same way.", code: '"revenue growth?" -> [1, 0, 0, 1, 0, 0]' },
+            { label: "Score with cosine", detail: "Measure the angle between the query vector and each chunk vector — direction, not length.", code: 'cosine(q, doc1) = 0.816' },
+            { label: "Rank and return", detail: "Sort highest-to-lowest and hand back the top matches.", code: 'best match -> doc1' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Two unit vectors point the same way: a = [1, 0], b = [1, 0]. What is their cosine similarity?',
+          steps: [
+            "Dot product = (1)(1) + (0)(0) = 1.",
+            "Magnitude of a = sqrt(1 + 0) = 1; magnitude of b = 1.",
+            "Cosine = dot / (mag_a * mag_b) = 1 / (1 * 1) = 1.0.",
+            "A score of 1.0 means identical direction — the closest possible match."
+          ],
+          output: "1.0 (maximally similar)"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'Query "revenue growth" embeds to [1, 0, 0, 1] and doc "earnings increased" embeds to [0, 1, 1, 0] (no shared keywords). Will keyword search find it? Will embeddings?',
+          steps: [
+            "Keyword search compares raw words: 'revenue growth' vs 'earnings increased' share zero words, so keyword match = 0.",
+            "But a real embedding model maps both phrases near each other in meaning-space because they mean the same thing.",
+            "Cosine on those true embeddings would be high even though the toy keyword-count vectors above show 0.",
+            "Lesson: keyword search misses synonyms; embedding search captures meaning, which is why RAG uses it."
+          ],
+          output: "Keyword search: miss. Embedding search: match."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "keyword search vs. semantic (embedding) search",
+          columns: ["Aspect", "Keyword search", "Embedding search"],
+          rows: [
+            { cells: ["Matches on", "Exact words", "Meaning"] },
+            { cells: ['"revenue growth" finds "earnings increased"', "No", "Yes"] },
+            { cells: ["Handles synonyms / paraphrase", "Poorly", "Well"] },
+            { cells: ["Right tool for RAG retrieval", "Rarely enough", "Yes"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "high similarity vs. low similarity",
+          bins: [
+            { id: "high", label: "High cosine (close in meaning)" },
+            { id: "low", label: "Low cosine (unrelated)" }
+          ],
+          items: [
+            { id: "i1", text: '"revenue growth" vs "earnings increased"', bin: "high" },
+            { id: "i2", text: '"office dog" vs "quarterly profit"', bin: "low" },
+            { id: "i3", text: '"refund policy" vs "money-back terms"', bin: "high" },
+            { id: "i4", text: '"shipping times" vs "password reset"', bin: "low" },
+            { id: "i5", text: '"car" vs "automobile"', bin: "high" },
+            { id: "i6", text: '"banana" vs "database index"', bin: "low" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Why does cosine similarity care about the angle between vectors instead of the straight-line distance? Answer in one or two sentences.",
+          sampleAnswer: "Angle measures direction, which is what carries meaning, while ignoring magnitude. That way a one-line query and a long paragraph that mean the same thing still score as a near-perfect match, even though their raw lengths (and distances) differ a lot."
+        }
+      ],
       hints: [
         "Cosine = dot product divided by (magnitude of a times magnitude of b). Guard against divide-by-zero by returning 0.0 when either magnitude is 0.",
         "Build a vectors dict once by embedding every doc, then embed the query separately.",
@@ -795,6 +1005,76 @@ Context:
 - Standard shipping takes 5 to 7 business days.
 
 Question: How long do I have to return something for a refund?`,
+      step_throughs: [
+        {
+          title: "retrieve → stuff context → constrain → grounded answer",
+          steps: [
+            { label: "Retrieve top chunks", detail: "Embed the question and pull the best-matching passages from the store.", code: 'retrieve(query, k=2) -> [policy1, policy2]' },
+            { label: "Stuff them into context", detail: "Format the chunks as a clearly labeled context block.", code: 'Context:\\n- You can return any item within 30 days...' },
+            { label: "Add the grounding rules", detail: "Tell the model to answer using ONLY the context, and to admit when it can't.", code: '"...if not in the context, say you don\'t know."' },
+            { label: "Send → grounded answer", detail: "The assembled prompt goes to the LLM, which answers from the supplied text.", code: 'Question: How long to return for a refund?' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'A RAG prompt includes context and the question but forgets the "say you don\'t know" line. The retrieved chunks don\'t contain the answer. What happens?',
+          steps: [
+            "The model is built to continue text, and 'I don't know' is an unlikely continuation after a question.",
+            "Without an explicit out, it falls back to its training memory to produce a fluent answer.",
+            "That answer is ungrounded — the exact hallucination RAG is meant to prevent.",
+            "Adding the 'say you don't know' instruction gives the model a permitted escape hatch."
+          ],
+          output: "Model bluffs a guess instead of admitting the gap"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'Build a prompt from chunks ["Refunds within 30 days.", "Ships in 5-7 days."] for the question "What is the refund window?". What are the three required parts?',
+          steps: [
+            "Part 1 — context: join the chunks into a labeled block ('Context:\\n- Refunds within 30 days.\\n- Ships in 5-7 days.').",
+            "Part 2 — constraint: 'Answer the question using ONLY the context below.'",
+            "Part 3 — fallback: 'If the answer is not in the context, say you don't know.'",
+            "Append the question last on its own line so its role stays distinct from the context."
+          ],
+          output: "A prompt with labeled context + constraint + I-don't-know + question"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "grounded prompt vs. naive prompt",
+          columns: ["Prompt element", "Naive prompt", "Grounded RAG prompt"],
+          rows: [
+            { cells: ["Includes retrieved context", "No", "Yes, labeled"] },
+            { cells: ['Says "use ONLY this context"', "No", "Yes"] },
+            { cells: ['Allows "I don\'t know"', "No", "Yes"] },
+            { cells: ["Result when retrieval misses", "Hallucinates", "Admits the gap"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "good RAG prompt ingredient vs. anti-pattern",
+          bins: [
+            { id: "good", label: "Belongs in a RAG prompt" },
+            { id: "bad", label: "Anti-pattern" }
+          ],
+          items: [
+            { id: "i1", text: "A labeled Context: block", bin: "good" },
+            { id: "i2", text: '"Answer using only the context"', bin: "good" },
+            { id: "i3", text: '"Say you don\'t know if it\'s not here"', bin: "good" },
+            { id: "i4", text: "Context and question mashed into one paragraph", bin: "bad" },
+            { id: "i5", text: '"Use your best judgment if unsure"', bin: "bad" },
+            { id: "i6", text: "Question on its own clearly separated line", bin: "good" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Retrieval and prompting are called partners. Explain in your own words what breaks if you get one right but not the other.",
+          sampleAnswer: "If retrieval is perfect but the prompt is sloppy, the model ignores the good context and wanders into its training memory. If the prompt is tight but retrieval pulled the wrong chunks, the model obediently answers from irrelevant text. The answer is only trustworthy when both the right context and the right instructions line up."
+        }
+      ],
       hints: [
         "retrieve should embed the query, sort KB keys by cosine similarity descending, and return the top k as (id, text) tuples.",
         "build_prompt joins the chunk texts into a labeled 'Context:' block, then appends 'Question:' on its own line.",
@@ -1041,6 +1321,76 @@ Context:
 Question: What is the refund window?
 
 Answer from the context only.`,
+      step_throughs: [
+        {
+          title: "prompt → messages.create → read text → answer",
+          steps: [
+            { label: "Read the key from env", detail: "Pull the API key from the environment, never hardcoded in source.", code: 'Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])' },
+            { label: "Build the request", detail: "Pass the model, a token budget, and your assembled prompt as one user message.", code: 'model="claude-sonnet-4-6", max_tokens=1024' },
+            { label: "Call the Messages API", detail: "Send the request to Claude and wait for the response object.", code: 'response = client.messages.create(**request)' },
+            { label: "Read the answer", detail: "The response is a list of content blocks; the text answer is the first block's .text.", code: 'response.content[0].text' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You call client.messages.create(...) and want the plain text answer. Where do you read it from?",
+          steps: [
+            "The response is not a bare string — it holds a list of content blocks.",
+            "For a normal text answer there is one block of type 'text'.",
+            "Index the first block and read its .text attribute.",
+            "So the answer lives at response.content[0].text."
+          ],
+          output: "response.content[0].text"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You want the grounding rules to apply to every question without repeating them. Where should they go, and what stays in the user message?",
+          steps: [
+            "Standing rules that never change ('answer only from context; else say I don't know') go in the system field.",
+            "The model treats system instructions as higher-authority, separate from the turn's content.",
+            "The changing parts — this question and these retrieved chunks — go in the user message.",
+            "Result: system holds the policy, user holds the data; the model follows the rules more reliably."
+          ],
+          output: "system = rules; messages = [{role: user, content: context + question}]"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "rules in system prompt vs. rules in user message",
+          columns: ["Aspect", "Rules in user message", "Rules in system prompt"],
+          rows: [
+            { cells: ["Authority the model gives them", "Same as the question", "Higher, standing"] },
+            { cells: ["Repeated every turn", "Yes, mixed with context", "Defined once"] },
+            { cells: ["Separation of rules vs. data", "Blurred", "Clean"] },
+            { cells: ["Grounding reliability", "Lower", "Higher"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "secure API practice vs. a security mistake",
+          bins: [
+            { id: "safe", label: "Secure practice" },
+            { id: "risk", label: "Security mistake" }
+          ],
+          items: [
+            { id: "i1", text: 'os.environ["ANTHROPIC_API_KEY"]', bin: "safe" },
+            { id: "i2", text: 'api_key="sk-ant-abc123" in the source file', bin: "risk" },
+            { id: "i3", text: "Committing a .env with the key to git", bin: "risk" },
+            { id: "i4", text: "Reading the key from a secrets manager", bin: "safe" },
+            { id: "i5", text: "Pasting the key into a public notebook", bin: "risk" },
+            { id: "i6", text: "Loading the key from an environment variable at runtime", bin: "safe" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "You've now built RAG end to end. In your own words, summarize why this architecture hallucinates less than a bare model.",
+          sampleAnswer: "Instead of asking the model to recall facts from frozen training memory, RAG retrieves the relevant text from my own documents, stuffs it into the prompt, and constrains the model to answer only from that context, with permission to say 'I don't know.' The model's job shifts from unreliable recall to reliable reading comprehension, and every answer can be traced back to a real source."
+        }
+      ],
       hints: [
         "Call retrieve then build_prompt, then put the prompt into a single user message inside messages.",
         "Build the request as a dict with model, max_tokens, and messages so you can either return it or splat it into client.messages.create(**request).",

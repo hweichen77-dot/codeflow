@@ -23,7 +23,7 @@ export default function StreakBadge({ completedCount }) {
     }
   }, []);
 
-  const streakEmoji = streakDays >= 7 ? "🔥" : streakDays >= 3 ? "⚡" : "✦";
+  const streakEmoji = streakDays >= 7 ? "" : streakDays >= 3 ? "" : "✦";
 
   return (
     <div className="flex items-center gap-4 mb-5">
@@ -44,7 +44,7 @@ export default function StreakBadge({ completedCount }) {
 
       {/* Lessons done */}
       <div className="flex items-center gap-2 px-3 py-1.5" style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-        <span style={{ fontSize: "0.75rem" }}>🏆</span>
+        <span style={{ fontSize: "0.75rem" }}></span>
         <div className="font-mono text-xs font-bold" style={{ color: "#888" }}>
           {completedCount} done
         </div>

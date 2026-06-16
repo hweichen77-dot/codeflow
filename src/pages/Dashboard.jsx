@@ -259,7 +259,7 @@ export default function Dashboard() {
               TRACK COMPLETE
             </div>
             <h2 style={{ fontFamily: "'Syne', Georgia, serif", fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", margin: "0 0 8px" }}>
-              You finished every lesson. 👑
+              You finished every lesson.
             </h2>
             <p className="font-display text-sm" style={{ color: "#aaa", fontWeight: 400 }}>
               Revisit a module, ship a capstone, or take on the challenges.
@@ -280,7 +280,7 @@ export default function Dashboard() {
                 </div>
                 <h2
                   className="truncate transition-colors duration-150 group-hover:text-white"
-                  style={{ fontFamily: "'Syne', Georgia, serif", fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", margin: "0 0 4px", lineHeight: 1.15 }}
+                  style={{ fontFamily: "'Syne', Georgia, serif", fontSize: "1.3rem", fontWeight: 800, letterSpacing: "-0.03em", color: "#f0f0f0", margin: "0 0 4px", lineHeight: 1.2 }}
                 >
                   {nextStep.lesson.title}
                 </h2>
@@ -301,7 +301,7 @@ export default function Dashboard() {
             { val: statsLoading ? "—" : challengeStats.completed, label: "Challenges Done", accent: "#b8ff00" },
             { val: statsLoading ? "—" : challengeStats.inProgress, label: "In Progress", accent: null },
             { val: `${totalXP}`, label: "Total XP", accent: "#b8ff00" },
-            { val: statsLoading ? "—🔥" : `${challengeStats.streak}🔥`, label: "Challenge Streak", accent: challengeStats.streak >= 3 ? "#ff6b35" : null },
+            { val: statsLoading ? "—" : `${challengeStats.streak}`, label: "Challenge Streak", accent: challengeStats.streak >= 3 ? "#ff6b35" : null },
             { val: `LVL ${lvl.level}`, label: lvl.name, accent: lvl.color },
             { val: `${overallPct}%`, label: "Overall Progress", accent: null },
           ].map((stat, i, arr) => (
@@ -336,7 +336,7 @@ export default function Dashboard() {
               borderLeft: `2px solid ${streak >= 7 ? "#ff6b35" : streak >= 3 ? "#ffb300" : "#2a2a2a"}`,
             }}
           >
-            <span style={{ fontSize: "1.5rem" }}>🔥</span>
+            <span style={{ fontSize: "1.5rem" }}></span>
             <div>
               <div className="font-mono text-xs tracking-widest uppercase mb-0.5" style={{ color: streak >= 7 ? "#ff6b35" : "#ffb300" }}>
                 {streak >= 7 ? "ON FIRE" : streak >= 3 ? "BUILDING MOMENTUM" : "STREAK STARTED"}

@@ -25,10 +25,10 @@ export default function LessonChallenge({ lesson }) {
       }
 
       const result = await api.integrations.Core.InvokeLLM({
-        prompt: `You are a code execution simulator. Run the following JavaScript code and return the output.${testInfo}
+        prompt: `You are a code execution simulator. Run the following Python code and return the output.${testInfo}
 
 Code:
-\`\`\`javascript
+\`\`\`python
 ${code}
 \`\`\`
 

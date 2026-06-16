@@ -70,9 +70,9 @@ const projects = [
 ];
 
 const aiFeatures = [
-  { icon: "💬", label: "Ask anything" },
-  { icon: "🔧", label: "Get unstuck" },
-  { icon: "🚀", label: "Build faster" },
+  { icon: "", label: "Ask anything" },
+  { icon: "", label: "Get unstuck" },
+  { icon: "", label: "Build faster" },
 ];
 
 export default function BentoGrid() {
@@ -196,7 +196,7 @@ export default function BentoGrid() {
 
         {/* SMALL: Beginner friendly */}
         <div style={{ ...card, gridColumn: "span 4", display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ fontSize: "28px" }}>🌱</div>
+          <div style={{ fontSize: "28px" }}></div>
           <div>
             <div style={{ color: "#f0f0f0", fontSize: "16px", fontWeight: 700, marginBottom: "6px", letterSpacing: "-0.01em" }}>
               Beginner friendly.

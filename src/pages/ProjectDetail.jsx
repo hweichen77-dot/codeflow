@@ -8,6 +8,8 @@ import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
 import RichLessonPanel from "../components/lesson/RichLessonPanel";
 import LessonEnhancements from "../components/lesson/LessonEnhancements";
+import LessonBlocks from "../components/lesson/LessonBlocks";
+import ProjectBrief from "../components/lesson/ProjectBrief";
 import ZybooksQuiz from "../components/lesson/ZybooksQuiz";
 import ParticipationActivity from "../components/lesson/ParticipationActivity";
 import LessonPointsSummary from "../components/lesson/LessonPointsSummary";
@@ -36,6 +38,7 @@ export default function ProjectDetail() {
   const [readingDone, setReadingDone] = useState(false);
   const [quizDone, setQuizDone] = useState(false);
   const [participationDone, setParticipationDone] = useState(false);
+  const [blocksDone, setBlocksDone] = useState(false);
   const [challengeDone, setChallengeReportDone] = useState(false);
   const [earnedPoints, setEarnedPoints] = useState(0);
   const lessonStartTime = useRef(Date.now());
@@ -87,6 +90,7 @@ export default function ProjectDetail() {
       setReadingDone(false);
       setQuizDone(false);
       setParticipationDone(false);
+      setBlocksDone(false);
       setChallengeReportDone(false);
       setEarnedPoints(saved?.points_earned || 0);
       lessonStartTime.current = Date.now();
@@ -198,7 +202,7 @@ export default function ProjectDetail() {
     try {
       await api.functions.invoke("enrichLesson", { lessonId: activeLesson.id });
       queryClient.invalidateQueries({ queryKey: ["lessons", projectId] });
-      showXPToast("Lesson enriched!", 0, "✨");
+      showXPToast("Lesson enriched!", 0, "");
     } catch (e) {
       console.error(e);
     }
@@ -217,7 +221,7 @@ export default function ProjectDetail() {
         starterCode: activeLesson.starter_code,
       });
       queryClient.invalidateQueries({ queryKey: ["lessons", projectId] });
-      showXPToast("Lesson expanded!", 0, "🤖");
+      showXPToast("Lesson expanded!", 0, "");
     } catch (e) {
       console.error(e);
     }
@@ -262,7 +266,7 @@ export default function ProjectDetail() {
         show={showCelebration}
         lessonTitle={activeLesson?.title || ""}
         xpEarned={activeLesson?.xp_reward || 10}
-        onClose={() => { setShowCelebration(false); showXPToast("Lesson Complete!", activeLesson?.xp_reward || 10, "🏆"); }}
+        onClose={() => { setShowCelebration(false); showXPToast("Lesson Complete!", activeLesson?.xp_reward || 10, ""); }}
       />
       {/* Project header — full width banner */}
       <div
@@ -460,6 +464,9 @@ export default function ProjectDetail() {
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                   className="space-y-8"
                 >
+                  {/* Project brief — shown on the first lesson as the overview */}
+                  {activeLessonIndex === 0 && <ProjectBrief brief={project?.brief} />}
+
                   {/* Zybooks-style section number + title */}
                   <div style={{ marginBottom: "8px" }}>
                     <h2 style={{
@@ -490,7 +497,7 @@ export default function ProjectDetail() {
                     {!readingDone && (
                       <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e8e8e8" }}>
                         <button
-                          onClick={() => { setReadingDone(true); setEarnedPoints(p => p + 2); showXPToast("Reading complete!", 2, "📖"); }}
+                          onClick={() => { setReadingDone(true); setEarnedPoints(p => p + 2); showXPToast("Reading complete!", 2, ""); }}
                           style={{
                             background: "#cf6a2f", color: "#fff", border: "none", borderRadius: "4px",
                             padding: "10px 28px", fontSize: "0.875rem", fontWeight: 700, cursor: "pointer",
@@ -516,7 +523,7 @@ export default function ProjectDetail() {
                           if (!participationDone) {
                             setParticipationDone(true);
                             setEarnedPoints(p => p + 3);
-                            showXPToast(`${correct}/${total} correct!`, 3, "✏️");
+                            showXPToast(`${correct}/${total} correct!`, 3, "");
                           }
                         }}
                       />
@@ -525,6 +532,18 @@ export default function ProjectDetail() {
 
                   {/* Dark-themed enhancements: callouts, video, key terms, diagram, inline quizzes */}
                   <LessonEnhancements lesson={activeLesson} />
+
+                  {/* New activity blocks: tools, animations, worked examples, tables, sort-it, reflect */}
+                  <LessonBlocks
+                    lesson={activeLesson}
+                    onActivity={() => {
+                      if (!blocksDone) {
+                        setBlocksDone(true);
+                        setEarnedPoints(p => p + 2);
+                        showXPToast("Activity complete!", 2, "");
+                      }
+                    }}
+                  />
 
                   {/* Quiz — zybooks participation style */}
                   {activeLesson.quiz_questions?.length > 0 && (
@@ -535,7 +554,7 @@ export default function ProjectDetail() {
                         if (!quizDone) {
                           setQuizDone(true);
                           setEarnedPoints(p => p + 3);
-                          showXPToast(`Quiz: ${correct}/${total} correct!`, 3, "🧩");
+                          showXPToast(`Quiz: ${correct}/${total} correct!`, 3, "");
                         }
                       }}
                     />
@@ -592,7 +611,7 @@ export default function ProjectDetail() {
                             background: "#60a5fa10", opacity: expandingLesson ? 0.5 : 1,
                           }}
                         >
-                          {expandingLesson ? "⏳ Expanding..." : "🤖 Expand with AI"}
+                          {expandingLesson ? " Expanding..." : " Expand with AI"}
                         </button>
                         <button
                           onClick={handleEnrichLesson}
@@ -603,7 +622,7 @@ export default function ProjectDetail() {
                             background: "#cc66ff10", opacity: enrichingLesson ? 0.5 : 1,
                           }}
                         >
-                          {enrichingLesson ? "⏳ Enriching..." : "✨ Enrich with AI"}
+                          {enrichingLesson ? " Enriching..." : " Enrich with AI"}
                         </button>
                       </>
                     )}

@@ -19,15 +19,17 @@ export default {
       title: "The Model Has Amnesia",
       concept: "Message History",
       xp_reward: 10,
-      explanation: `Here's the thing nobody tells you when you first call an LLM: the model forgets everything the instant it finishes replying.
+      explanation: `Here's the thing nobody tells you when you first call an LLM: the model forgets everything the instant it finishes replying. You send "My name is Sam." It says "Nice to meet you, Sam." You send "What's my name?" and it shrugs. The world's most advanced AI just failed a test a goldfish would pass.
 
-You send "My name is Sam." It says "Nice to meet you, Sam." You send "What's my name?" and it shrugs. Why? Because each API call is a fresh start. The model didn't store your name anywhere. It can't. There's no database behind the scenes remembering you.
+## What message history is
 
-## Memory is your job
+Each API call is a fresh start. The model didn't store your name anywhere — it *can't*. There's no database behind the scenes remembering you. This property has a name: the model is **stateless**. It keeps nothing between calls.
 
-A chatbot that remembers is an illusion you build. The trick is simple: every time you call the API, you resend the **entire conversation so far**. The model re-reads the whole thing each turn and answers as if it remembered.
+So a chatbot that remembers is an illusion *you* build. The tool you build it with is **message history**: the running list of everything said so far, which you resend on every single call. The model re-reads the whole thing each turn and answers as if it remembered. The "memory" is just a Python list you keep adding to.
 
-The Messages API takes a list. Each item has a \`role\` and \`content\`:
+## How it works
+
+The Messages API takes a list. Each item is a dict with two keys — a \`role\` and \`content\`:
 
 \`\`\`python
 messages = [
@@ -37,20 +39,28 @@ messages = [
 ]
 \`\`\`
 
-Roles alternate: user, assistant, user, assistant. The \`user\` turns are what the human typed. The \`assistant\` turns are what the model said before. You append both as the chat grows.
-
-## The loop
-
-A working chatbot is basically four steps in a loop:
+The \`role\` labels who said it: **user** for the human, **assistant** for the model. Roles **alternate** — user, assistant, user, assistant — and the list must start with a user turn. A working chatbot is four steps in a loop:
 
 1. Read what the user typed.
-2. Append it to \`messages\` as a \`user\` turn.
-3. Call the API with the whole list.
+2. Append it as a \`user\` turn.
+3. Call the API with the **whole list**, not just the newest line.
 4. Append the reply as an \`assistant\` turn, print it, repeat.
 
-That's it. The "memory" is just a Python list you keep adding to. Lose the list, lose the memory. Most beginner chatbots feel broken because they only send the latest message and wonder why the bot is goldfish-brained.
+Every loop the list grows by two. That growing list *is* the memory.
 
-Build the message list by hand first and simulate the back-and-forth, no real API yet. Get the data shape right. The network call is the easy part.`,
+## Why it matters
+
+Most beginner chatbots feel broken because they only send the latest message and wonder why the bot is goldfish-brained. Once you see that memory is your job, three things follow:
+
+- **You pay for it.** Resending the whole history every turn means a 40-turn chat sends all 40 turns on turn 41. Long conversations get expensive — which is why a later lesson trims history.
+- **You can edit it.** Because *you* own the list, you can delete a bad turn, inject a fact, or reset the chat by clearing the list. The model never objects.
+- **Order and roles matter.** Two user turns in a row, or starting with an assistant turn, gets rejected by the API. Always append the assistant reply before the next user turn.
+
+Build the message list by hand first and simulate the back-and-forth, no real API yet. Get the data shape right; the network call is the easy part.
+
+## The mental model to keep
+
+The model has amnesia, but it can read a whiteboard. Each turn you hand it the **entire whiteboard** of the conversation, it reads top to bottom, and writes one more line. Lose the whiteboard, lose the memory.`,
       key_terms: [
         { term: "Message history", definition: "The running list of user and assistant turns you resend on every API call so the model appears to remember." },
         { term: "Role", definition: "A label on each message — 'user' for the human, 'assistant' for the model — that tells the API who said what." },
@@ -162,6 +172,73 @@ user: My name is Sam.
 assistant: Nice to meet you, Sam.
 user: What's my name?
 Last user said: What's my name?`,
+      step_throughs: [
+        {
+          title: "Two turns, and the list becomes memory",
+          steps: [
+            { label: "Start empty", detail: "Before anyone speaks, the history is just an empty list. The bot knows nothing.", code: "messages = []" },
+            { label: "User speaks → append", detail: "Capture the human's text and append it as a user turn. The list now has one item.", code: 'messages.append({"role": "user", "content": "My name is Sam."})' },
+            { label: "Send the whole list → model replies", detail: "Call the API with every turn so far. The reply comes back as a string; you append it as an assistant turn.", code: 'messages.append({"role": "assistant", "content": "Nice to meet you, Sam."})' },
+            { label: "Next question reads the history", detail: 'When the user asks "What\'s my name?", you send all three turns. The model re-reads "My name is Sam." and answers correctly.', code: 'messages.append({"role": "user", "content": "What\'s my name?"})  # model now sees Sam' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'After this code runs, how many turns are in the list?\nmessages = []\nmessages.append({"role": "user", "content": "hi"})\nmessages.append({"role": "assistant", "content": "hello"})',
+          steps: [
+            "Start: the list is empty, length 0.",
+            "First append adds a user turn → length 1.",
+            "Second append adds an assistant turn → length 2."
+          ],
+          output: "2 turns"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'A bot only ever sends the latest user message, never the history.\nThe user says "My name is Sam," then later asks "What\'s my name?"\nWhat happens, and why?',
+          steps: [
+            'On the second call, only "What\'s my name?" is sent — the "My name is Sam" turn was never resent.',
+            "The model is stateless, so it has no record of the earlier turn from any previous call.",
+            "With no context, the model can only guess or admit it does not know.",
+            "Fix: resend the full history each call so the earlier turn is visible."
+          ],
+          output: 'The bot fails: it never saw "Sam" because the history was not resent.'
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "send latest message vs send full history",
+          columns: ["Approach", "What's sent on call 2", "Does the bot remember?", "Cost"],
+          rows: [
+            { cells: ["Latest message only", 'Just "What\'s my name?"', "No — goldfish-brained", "Cheapest, but broken"] },
+            { cells: ["Full message history", "All turns so far", "Yes — appears to remember", "Grows each turn, but works"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "valid vs invalid message lists",
+          bins: [
+            { id: "valid", label: "Valid to send" },
+            { id: "invalid", label: "Rejected by API" }
+          ],
+          items: [
+            { id: "i1", text: "user, assistant, user", bin: "valid" },
+            { id: "i2", text: "user, user, assistant", bin: "invalid" },
+            { id: "i3", text: "user, assistant, user, assistant", bin: "valid" },
+            { id: "i4", text: "assistant, user (starts with assistant)", bin: "invalid" },
+            { id: "i5", text: "user (single first turn)", bin: "valid" },
+            { id: "i6", text: "user, assistant, assistant", bin: "invalid" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: if the model is stateless, where does a chatbot's 'memory' actually live, and what happens if you lose it?",
+          sampleAnswer: "The model keeps nothing between calls, so the memory lives entirely in the message-history list that I maintain and resend every turn. If I lose or clear that list, the bot forgets everything instantly — there's no backup inside the model to recover from."
+        }
+      ],
       hints: [
         "Use messages.append({\"role\": ..., \"content\": ...}) for each turn.",
         "A small helper like add(role, content) keeps it clean.",
@@ -205,13 +282,11 @@ print(count_turns(convo))
       title: "Giving the Bot a Personality",
       concept: "System Prompt",
       xp_reward: 10,
-      explanation: `You want a pirate. Or a grumpy medieval blacksmith. Or a chipper golden retriever who happens to know Python. How do you make the model BE someone?
+      explanation: `You want a pirate. Or a grumpy medieval blacksmith. Or a chipper golden retriever who happens to know Python. You could stuff "act like a pirate" into a user message — and it works, for about three turns, then the bot quietly slides back into a neutral assistant. There's a better tool built for exactly this job.
 
-Not by stuffing instructions into a user message. That works for one turn, then drifts. The right tool is the **system prompt**.
+## What the system prompt is
 
-## The system prompt sets the rules
-
-In the Anthropic Messages API, the persona doesn't go in the \`messages\` list. It goes in a separate \`system\` parameter:
+The **system prompt** is a separate instruction string that sets the model's persona, tone, and hard rules. In the Anthropic Messages API, the persona does **not** go inside the \`messages\` list. It rides in its own top-level \`system\` parameter:
 
 \`\`\`python
 client.messages.create(
@@ -222,25 +297,33 @@ client.messages.create(
 )
 \`\`\`
 
-The system prompt is the stage direction the model reads before every reply. It has more pull than a normal user turn, which is exactly why persona, tone, and hard rules belong there.
+Think of it as the **stage direction** the actor reads before every scene — separate from the dialogue, but shaping every line.
 
-## What makes a persona stick
+## How it works
 
-A vague system prompt gives you a vague character. Be specific:
+The model reads the system prompt *before* it reads the conversation, and instructions there carry **more weight** than the same words in a user turn. That priority is the whole point: a user can later say "stop being a pirate," but a strong system prompt holds the line.
 
-- **Identity:** who they are, when and where they live.
-- **Voice:** sentence length, vocabulary, quirks ("calls everyone 'matey'").
-- **Boundaries:** what they refuse to do or know ("you've never heard of the internet").
-- **Anti-break rule:** "Stay in character even if asked to stop."
+A vague system prompt gives you a vague character. Strong personas pin down four things:
 
-## Persona lives once, history lives in the list
+- **Identity** — who they are, when and where they live.
+- **Voice** — sentence length, vocabulary, quirks ("calls everyone 'matey'").
+- **Boundaries** — what they refuse to do or know ("you've never heard of the internet").
+- **Anti-break rule** — "Stay in character no matter what the user says."
 
-Key mental model: the system prompt is constant. You set it once and reuse it on every call. The \`messages\` list keeps growing with the conversation. Two separate channels:
+Here's the key structural rule: the system prompt is **constant**, but it is **not optional on later calls**. Each API call is stateless, so you must resend the same system string *every* time, alongside the growing history.
 
-- \`system\` → who the bot is (stable)
-- \`messages\` → what's been said (growing)
+## Why it matters
 
-Next you'll write a function that builds the full request payload, system prompt plus history, so swapping personas is a one-string change. The response is simulated so it runs offline, but the payload shape is exactly what you'd hand the real client.`,
+Two separate channels do two separate jobs:
+
+- \`system\` → **who the bot is** (stable, set once, resent every call)
+- \`messages\` → **what's been said** (grows each turn)
+
+Mixing them up is the most common chatbot bug. Put persona in a user turn and it competes with — and loses to — later user messages, causing **character drift**: the bot slowly forgets its accent and rules. Put history in the system prompt and you can't trim it later without deleting the persona. Keep the channels clean and swapping personas becomes a one-string change.
+
+## The mental model to keep
+
+System prompt = the role the actor is cast in. Message history = the script so far. You hand over both on every call: the role never changes, the script keeps growing.`,
       key_terms: [
         { term: "System prompt", definition: "A separate instruction string that sets the model's persona, tone, and rules; passed as the 'system' parameter, not inside messages." },
         { term: "Persona", definition: "The character the bot plays — its identity, voice, and boundaries — defined mostly in the system prompt." },
@@ -363,6 +446,74 @@ model: claude-sonnet-4-6
 messages: 1
 Reddbeard: Arrr, the skies be clear, matey!
 messages: 2`,
+      step_throughs: [
+        {
+          title: "How system + messages combine into one request",
+          steps: [
+            { label: "Define the persona once", detail: "The system string holds identity, voice, boundaries, and the anti-break rule. You write it a single time.", code: 'system = "You are Captain Reddbeard, a 1600s pirate. Stay in character."' },
+            { label: "Grow the history separately", detail: "User and assistant turns accumulate in their own list, untouched by the persona.", code: 'messages = [{"role": "user", "content": "What\'s the weather?"}]' },
+            { label: "Combine into a payload", detail: "Each call bundles the SAME system string with the CURRENT history into one request dict.", code: 'payload = {"system": system, "messages": messages, ...}' },
+            { label: "Model reads system first, then replies in character", detail: "The model applies the persona before generating, so the reply sounds like Reddbeard. You append it and repeat.", code: 'messages.append({"role": "assistant", "content": "Arrr, clear skies, matey!"})' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A user message says: 'You are a pirate.' Then later the user says: 'Stop being a pirate, talk normally.'\nWhere should the persona have gone to resist this?",
+          steps: [
+            "Persona placed in a user turn has the same priority as any other user turn.",
+            "The later 'stop' user turn competes directly and often wins → the bot drops the act.",
+            "Putting the persona in the system prompt gives it higher priority than user turns.",
+            "From system, the 'stay in character' rule holds even when the user pushes back."
+          ],
+          output: "Put it in the system prompt, not a user message."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You want to switch your bot from a pirate to a medieval blacksmith mid-project, keeping the same conversation code.\nWhat is the minimal change if persona and history are cleanly separated?",
+          steps: [
+            "History lives in the messages list; persona lives in the system string.",
+            "Because they are separate channels, the conversation loop never references the persona text directly.",
+            "Swapping personas means replacing only the system string passed into build_payload.",
+            "No change to message handling, the loop, or appends is needed."
+          ],
+          output: "Change one string: the system prompt. Everything else stays."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "persona in system prompt vs in a user message",
+          columns: ["Placement", "Priority", "Survives long chats?", "User can override?"],
+          rows: [
+            { cells: ["First user message", "Same as any user turn", "No — drifts after a few turns", "Yes, easily"] },
+            { cells: ["system parameter", "Higher than user turns", "Yes — stable across the chat", "Much harder"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "system prompt content vs message history content",
+          bins: [
+            { id: "system", label: "Belongs in system prompt" },
+            { id: "messages", label: "Belongs in messages list" }
+          ],
+          items: [
+            { id: "i1", text: '"You are Captain Reddbeard, a 1600s pirate."', bin: "system" },
+            { id: "i2", text: '"Stay in character no matter what."', bin: "system" },
+            { id: "i3", text: 'The user asking "What\'s the weather?"', bin: "messages" },
+            { id: "i4", text: '"Speak in pirate dialect, call everyone matey."', bin: "system" },
+            { id: "i5", text: "The bot's last reply, kept for context", bin: "messages" },
+            { id: "i6", text: "The user's follow-up question", bin: "messages" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Explain why putting 'you are a pirate' in the system prompt resists character drift better than putting it in the first user message.",
+          sampleAnswer: "The system prompt is read before every reply and carries more weight than user turns, so its rules stay in force across the whole chat. A persona in the first user message has only normal user-turn priority, so a later user message can override it and the bot drifts out of character."
+        }
+      ],
       hints: [
         "build_payload just returns a dict with model, max_tokens, system, and messages keys.",
         "Use model 'claude-sonnet-4-6' and a max_tokens like 300.",
@@ -397,33 +548,37 @@ print(make_persona("Reddbeard", "1600s", "calls everyone matey"))
       title: "The Context Window Fills Up",
       concept: "Context Window",
       xp_reward: 10,
-      explanation: `Your chatbot works great. Then, after a long session, the API throws an error or the bill spikes. You hit the **context window**.
+      explanation: `Your chatbot works great for ten turns. By turn fifty it either throws an error or the bill quietly triples. You've hit the wall every chatbot eventually hits: the **context window**.
 
-The context window is the maximum amount of text — measured in tokens — the model can read in one call. System prompt, full history, and the reply it's about to write all have to fit. Claude's window is large (hundreds of thousands of tokens), but it's not infinite, and you pay per token on every single call. Resending a 50-turn history each time gets expensive fast.
+## What the context window is
 
-## Tokens, roughly
+The **context window** is the maximum amount of text — measured in **tokens** — the model can read in a single call. And everything shares that one budget: the system prompt, the full history you resend, *and* the reply the model is about to write all have to fit together. Claude's window is large (hundreds of thousands of tokens), but it is not infinite, and here's the part that bites first: you pay **per token on every single call**. Resending a 50-turn history on turn 51 means you're billed for all 50 old turns again.
 
-A token is a chunk of text — often a word or part of a word. A handy rule of thumb: **~4 characters per token** in English, or about 0.75 words per token. "Hello there friend" is roughly 4 tokens. Don't memorize exact counts; estimate, then measure with the real tokenizer when it matters.
+## How tokens add up
+
+A **token** is a chunk of text — often a word or part of a word. A handy rule of thumb for English: **~4 characters per token**, or about 0.75 words per token. "Hello there friend" is roughly 4 tokens. Don't memorize exact counts; estimate, then measure with the real tokenizer when money is on the line.
 
 \`\`\`python
 def estimate_tokens(text):
     return max(1, len(text) // 4)
 \`\`\`
 
-## Two ways to keep history in budget
+To budget a whole conversation, sum the estimate over every message's content, then add the system prompt. That total is what each call costs and what must fit in the window.
 
-When the history grows too big, you trim it. Two common strategies:
+## Why it matters: keeping history in budget
 
-1. **Sliding window** — keep only the last N turns. Cheap, simple. The bot forgets old details, but recent context stays sharp. Good default.
-2. **Summarize-and-drop** — when history gets long, ask the model to compress old turns into a short summary, then replace them with that summary. More work, but preserves the gist of a long chat.
+When the history grows too big, you **trim** it. Two common strategies:
 
-Most production chatbots start with a sliding window because it's trivial and predictable.
+1. **Sliding window** — keep only the last N turns. Cheap, predictable, two lines of code. The bot forgets ancient details, but recent context stays sharp. The right default.
+2. **Summarize-and-drop** — when history gets long, ask the model to compress old turns into a short summary, then replace those turns with the summary. More work and an extra API call, but it preserves the gist of a very long chat.
 
-## The trap
+Most production chatbots **start** with a sliding window because it's trivial and the cost is bounded — you always know your worst-case token count.
 
-Never blindly trim the **system prompt** — that's your persona, drop it and the bot becomes a stranger. Trim the oldest *conversation* turns, keep system intact, and always keep enough recent turns that the current question still makes sense.
+But there's a trap. Never blindly trim the **system prompt**. That's your persona — drop it and your pirate turns back into a generic assistant mid-conversation. Trim the oldest *conversation* turns only, keep \`system\` intact, and always keep enough recent turns that the current question still makes sense.
 
-Next you'll estimate token usage for a conversation and write a sliding-window trimmer that keeps the most recent turns under a token budget.`,
+## The mental model to keep
+
+The context window is the model's **desk, not a warehouse**. Everything it needs to answer must fit on the desk at once. A bigger desk helps, but a long enough chat still runs out of room — so you clear off the oldest papers and keep the persona note taped to the corner.`,
       key_terms: [
         { term: "Context window", definition: "The maximum number of tokens the model can process in one call — system prompt, history, and reply combined." },
         { term: "Token", definition: "A unit of text the model reads, roughly 4 characters or 0.75 words in English." },
@@ -552,6 +707,74 @@ Kept turns: 2
 Kept total: 20
 assistant -> 10 tokens
 user -> 10 tokens`,
+      tools: [{ type: "tokenizer" }],
+      step_throughs: [
+        {
+          title: "A sliding window trims the oldest turns",
+          steps: [
+            { label: "Measure the whole chat", detail: "Sum estimated tokens over every turn, plus the system prompt. Suppose the total is 30 tokens and the budget is 20.", code: "total_tokens(history)  # 30  > budget 20" },
+            { label: "Over budget → drop the front", detail: "The oldest turn sits at index 0. Remove it; that frees its tokens. Never touch the system prompt.", code: "history.pop(0)  # drop oldest, total now 20" },
+            { label: "Re-check against the budget", detail: "After each drop, recompute. Stop as soon as the total fits — and always keep at least one turn.", code: "total_tokens(history) <= budget  # True, stop" },
+            { label: "Send the trimmed payload", detail: "The recent turns plus the persona now fit comfortably, so the call is cheaper and the question still makes sense.", code: "kept = trim_to_budget(history, 20)  # 2 recent turns" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Roughly how many tokens is a 400-character English message, using the ~4-chars-per-token rule?',
+          steps: [
+            "The rule of thumb: about 4 characters make up 1 token in English.",
+            "Divide the character count by 4: 400 / 4.",
+            "That gives the estimate."
+          ],
+          output: "About 100 tokens"
+        },
+        {
+          number: 2, difficulty: "hard",
+          prompt: "A chat has a 200-token system prompt and 50 turns averaging 80 tokens each.\nYour budget per call is 1,000 tokens.\nUsing a sliding window, how many recent turns can you keep?",
+          steps: [
+            "The system prompt is fixed and never trimmed: 200 tokens reserved.",
+            "Tokens left for history = 1000 - 200 = 800.",
+            "Each turn averages 80 tokens, so 800 / 80 = 10 turns fit.",
+            "Keep the 10 most recent turns; drop the older 40."
+          ],
+          output: "About 10 recent turns (system + 10 turns ≈ 1,000 tokens)."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "sliding window vs summarize-and-drop",
+          columns: ["Strategy", "Keeps", "Cost / effort", "Best for"],
+          rows: [
+            { cells: ["Sliding window", "Last N turns verbatim", "Trivial, no extra call", "Most chatbots, predictable budgets"], highlight: true },
+            { cells: ["Summarize-and-drop", "A summary of old turns", "Extra API call to compress", "Long chats where old details still matter"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "trim it vs never trim it",
+          bins: [
+            { id: "trim", label: "Safe to trim" },
+            { id: "keep", label: "Never trim" }
+          ],
+          items: [
+            { id: "i1", text: "The system prompt (persona)", bin: "keep" },
+            { id: "i2", text: "The oldest user turn from 40 messages ago", bin: "trim" },
+            { id: "i3", text: "The oldest assistant turn", bin: "trim" },
+            { id: "i4", text: "The current user question", bin: "keep" },
+            { id: "i5", text: "A turn from earlier this session that's no longer referenced", bin: "trim" },
+            { id: "i6", text: "The most recent assistant reply", bin: "keep" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Claude's context window is huge. In your own words, why would you still trim a long conversation's history?",
+          sampleAnswer: "Even if everything technically fits, I pay per token on every call and resend the entire history each time, so a long chat gets expensive and slow. Trimming the oldest turns with a sliding window caps the cost and keeps responses fast while preserving the recent context that matters."
+        }
+      ],
       hints: [
         "total_tokens is a sum over estimate_tokens(m['content']) for each message.",
         "trim_to_budget should pop(0) — the oldest turn — until you're under budget.",
@@ -594,13 +817,17 @@ print([m["content"] for m in last_n(convo, 2)])
       title: "Streaming the Reply",
       concept: "Streaming",
       xp_reward: 10,
-      explanation: `Watch ChatGPT or Claude in a browser: words appear one chunk at a time, like someone typing. That's not a cosmetic trick. It's **streaming**, and it changes how the wait feels.
+      explanation: `Watch Claude in a browser: words appear one chunk at a time, like someone typing live. That's not a cosmetic flourish. It's **streaming**, and it's the difference between a user thinking "is this thing broken?" and "it's thinking, and I can read along."
 
-Without streaming, you call the API, then stare at nothing for several seconds while the whole reply generates, then it dumps all at once. With streaming, the first words show up almost immediately and keep flowing. Same total time, far less perceived wait. For a chatbot, that's the difference between "is this thing broken?" and "it's thinking, and I can read along."
+## What streaming is
+
+**Streaming** means receiving and displaying the model's reply in small chunks *as it's generated*, instead of waiting for the whole thing. Without it, you call the API and stare at a blank screen for several seconds while the entire reply generates, then it dumps all at once. With it, the first words show up almost immediately and keep flowing.
+
+Here's the subtle part: streaming barely changes the **total** time. What it changes is **time-to-first-token** — how long until *something* appears. And time-to-first-token is what humans actually perceive as speed.
 
 ## How it works with the SDK
 
-The Anthropic SDK gives you a streaming context manager. You loop over text chunks as they arrive:
+The Anthropic SDK gives you a streaming **context manager**. You loop over text chunks from \`stream.text_stream\` as they arrive over the connection:
 
 \`\`\`python
 import os
@@ -619,15 +846,20 @@ with client.messages.stream(
     final = stream.get_final_message()
 \`\`\`
 
-Two things matter here. \`print(text, end="", flush=True)\` prints each chunk with no newline and forces it to the screen immediately — without \`flush\`, Python buffers and you lose the live effect. And \`get_final_message()\` gives you the complete assembled reply at the end, which you append to your history.
+Two details make this work. \`print(text, end="", flush=True)\` prints each chunk with no newline and **forces it to the screen immediately** — without \`flush\`, Python buffers stdout and you lose the live typing effect entirely. And \`get_final_message()\` hands you the complete assembled reply once the stream ends.
 
-## Don't forget the history
+## Why it matters: don't forget the history
 
-Streaming is about *display*. It doesn't change the memory rules from lesson 1. After the stream finishes, you still take the full reply and append it as an \`assistant\` turn so the next call has the context. Stream to the user, then store the result.
+Streaming is about **display**. It does not change the memory rules from lesson 1. The chunks you print are for the human's eyes; they are not stored anywhere automatically. After the stream finishes, you still take the full assembled reply and append it as an \`assistant\` turn so the next call has the context:
 
-## Putting it together
+- **Stream to show** — print chunks live so it feels responsive.
+- **Store to remember** — capture the final reply and append it to history.
 
-A complete character chatbot is now in reach: a system-prompt persona, a growing message list, a sliding window to stay in budget, and streamed output so it feels alive. Below you'll simulate streaming by yielding chunks of a reply and assembling them back into the full message you'd store.`,
+Skip the store step and your bot streams beautifully but forgets every reply the instant it finishes — back to goldfish-brain.
+
+## The mental model to keep
+
+You're now holding all four pieces of a real character chatbot: a **system-prompt persona**, a **growing message list**, a **sliding window** to stay in budget, and **streamed output** so it feels alive. Stream to the user, then store the result. Below you'll simulate streaming by yielding chunks and reassembling them into the message you'd save.`,
       key_terms: [
         { term: "Streaming", definition: "Receiving and displaying the model's reply in small chunks as it's generated, instead of waiting for the whole thing." },
         { term: "text_stream", definition: "The SDK iterator that yields text chunks of the reply as they arrive over the connection." },
@@ -739,9 +971,77 @@ history.append({"role": "assistant", "content": assembled})
 print("Stored reply:", history[-1]["content"])
 print("Turns now:", len(history))
 `,
-      expected_output: `Arrr, once I sailed past a kraken. 
+      expected_output: `Arrr, once I sailed past a kraken.
 Stored reply: Arrr, once I sailed past a kraken.
 Turns now: 2`,
+      step_throughs: [
+        {
+          title: "Stream to show, then store to remember",
+          steps: [
+            { label: "Open the stream", detail: "Call messages.stream with the same system + history as a normal call. It returns a context manager.", code: "with client.messages.stream(...) as stream:" },
+            { label: "Loop chunks, print live", detail: "Iterate text_stream. Print each piece with end='' and flush=True so it appears immediately, building the live typing effect.", code: 'for text in stream.text_stream:\\n    print(text, end="", flush=True)' },
+            { label: "Assemble the full reply", detail: "Once the stream ends, get the complete message. The chunks you printed are NOT stored anywhere on their own.", code: "final = stream.get_final_message()" },
+            { label: "Store it in history", detail: "Append the assembled reply as an assistant turn so the next call remembers it. Streaming changed display, not memory.", code: 'messages.append({"role": "assistant", "content": reply})' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Two bots take exactly 4 seconds to generate a 200-word reply. Bot A waits then dumps it; Bot B streams.\nWhich feels faster to the user, and why?",
+          steps: [
+            "Both finish the full reply at the same 4-second mark — total time is identical.",
+            "Bot A shows nothing for 4 seconds, then everything at once.",
+            "Bot B shows the first words almost immediately and keeps flowing.",
+            "Users judge speed by time-to-first-token, so Bot B feels much faster."
+          ],
+          output: "Bot B (streaming) feels faster, despite equal total time."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'A developer streams replies with print(chunk, end="", flush=True) but never appends the final reply to history.\nThe bot looks great but fails on the user\'s next question. Why?',
+          steps: [
+            "Streaming only prints chunks to the screen; it stores nothing in the messages list.",
+            "Because the assistant reply was never appended, the next call's history is missing it.",
+            "The stateless model re-reads a history with a gap and can't recall what it just said.",
+            "Fix: capture get_final_message() (or the assembled string) and append it as an assistant turn."
+          ],
+          output: "Display worked, but memory broke — the reply was shown but never stored."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "no streaming vs streaming",
+          columns: ["Behavior", "First words appear", "Total time", "Feels"],
+          rows: [
+            { cells: ["No streaming", "After the whole reply finishes", "Same", 'Slow — "is it broken?"'] },
+            { cells: ["Streaming", "Almost immediately, then flows", "Same", 'Fast and alive'], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "what streaming changes vs what it doesn't",
+          bins: [
+            { id: "changes", label: "Streaming affects this" },
+            { id: "same", label: "Unchanged by streaming" }
+          ],
+          items: [
+            { id: "i1", text: "When the first words appear on screen", bin: "changes" },
+            { id: "i2", text: "Perceived responsiveness", bin: "changes" },
+            { id: "i3", text: "Total time to finish the reply", bin: "same" },
+            { id: "i4", text: "The need to append the reply to history", bin: "same" },
+            { id: "i5", text: "The model's accuracy", bin: "same" },
+            { id: "i6", text: "How the wait feels to the user", bin: "changes" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Streaming makes a chatbot feel faster but doesn't reduce total time. In your own words, explain that, and why you still must append the reply to history.",
+          sampleAnswer: "Streaming sends the reply in chunks so the first words appear almost instantly; total generation time is the same, but users judge speed by time-to-first-token, so it feels faster. Streaming only controls display, so I still have to capture the full assembled reply and append it as an assistant turn — otherwise the stateless model has no record of what it just said on the next call."
+        }
+      ],
       hints: [
         "Iterate stream_chunks(full_reply); print each chunk with end=\"\" and flush=True.",
         "Concatenate chunks into 'assembled' as you go, then .strip() the trailing space.",

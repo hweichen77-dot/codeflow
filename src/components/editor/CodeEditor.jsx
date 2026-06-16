@@ -74,7 +74,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
       e.preventDefault();
       const start = e.target.selectionStart;
       const end = e.target.selectionEnd;
-      const newCode = code.substring(0, start) + "  " + code.substring(end);
+      const newCode = code.substring(0, start) + "" + code.substring(end);
       onChange(newCode);
       setTimeout(() => {
         e.target.selectionStart = e.target.selectionEnd = start + 2;

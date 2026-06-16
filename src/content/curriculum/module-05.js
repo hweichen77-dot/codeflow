@@ -19,23 +19,23 @@ export default {
       title: "How Computers See an Image",
       concept: "Pixels",
       xp_reward: 10,
-      explanation: `Take a photo of your cat. To you it's a cat. To a computer it's a grid of numbers — that's the whole starting point of computer vision.
+      explanation: `Zoom into any digital photo far enough and the picture dissolves into a checkerboard of tiny colored squares. Each square is a **pixel**, and each pixel is just a number. Take a photo of your cat: to you it's a cat, to a computer it's a grid of numbers. That grid is the whole starting point of computer vision — everything else is math on top of it.
 
-## An image is a 3D array
+## What an image really is
 
-A color image is a stack of three grids: red, green, and blue. Each grid is the height and width of the image, and every cell holds a brightness value from 0 to 255. A 1920×1080 photo is \`1080 × 1920 × 3\` numbers. That's about 6.2 million values for one picture.
+A grayscale image is a single **2D grid** of brightness values. Every cell holds an integer from **0 (black) to 255 (white)**, with the values in between being shades of gray. A color image is bigger: it's a stack of three grids called **channels** — one for red, one for green, one for blue. Stack them and you get a **3D array** with shape \`(height, width, 3)\`.
 
-So when someone says "the model takes an image as input," what they really mean is "the model takes a big array of numbers." Nothing magical. Just a lot of integers arranged in a known shape.
+Do the arithmetic and the numbers get large fast. A 1920×1080 photo is \`1080 × 1920 × 3 = 6,220,800\` values. So when someone says "the model takes an image as input," what they really mean is "the model takes a big array of integers." Nothing magical — just a lot of numbers arranged in a known shape.
 
 ## Why the shape matters
 
-Vision models care about *structure*, not just the raw count of pixels. The number at position (10, 50) in the red channel sits next to (10, 51) for a reason — they're physically adjacent in the world. A pixel and its neighbors usually describe the same edge, the same patch of fur, the same letter. Throw away that spatial layout and you lose the thing that makes an image an image.
+Vision models care about **structure**, not just the raw count of pixels. The value at position (10, 50) in the red channel sits next to (10, 51) for a reason — those points are physically adjacent in the world. A pixel and its neighbors usually describe the same edge, the same patch of fur, the same letter. Shuffle the grid and you destroy the very thing that makes an image an image.
 
-This is the big difference from the text work you've done. Text is a 1D sequence. An image is a 2D grid (per channel). The model has to respect *two* directions of nearness, not one.
+This is the big difference from the text work in earlier modules. **Text is a 1D sequence** — one direction of nearness. **An image is a 2D grid per channel** — the model must respect *two* directions of nearness, vertical and horizontal. That extra dimension is exactly why images need their own kind of model, which the next lesson covers.
 
 ## Normalize before you do anything
 
-Raw pixel values run 0–255. Almost every model expects them scaled to a smaller, centered range — usually 0 to 1, or roughly -1 to 1. You divide by 255, sometimes subtract a mean. This isn't a ritual; large unscaled inputs make training unstable and slow.
+Raw pixel values run 0–255. Almost every model expects them rescaled to a smaller, centered range — usually 0 to 1, or roughly -1 to 1. The most common move is **normalization**: divide every value by 255, and sometimes subtract a per-channel mean. This isn't a ritual. Large, unscaled inputs push a network's internal math into extreme ranges, which makes training slow and unstable.
 
 \`\`\`python
 import numpy as np
@@ -44,11 +44,20 @@ import numpy as np
 img = np.array([[0, 128],
                 [255, 64]], dtype=np.float32)
 
-normalized = img / 255.0
+normalized = img / 255.0   # every value now lands in 0.0 - 1.0
+print(normalized.shape)    # (2, 2)
 print(normalized)
 \`\`\`
 
-You won't hand-build pixel arrays in real projects — libraries load images for you. But knowing that an image is *just numbers in a grid* demystifies everything that follows. CNNs, vision APIs, classification — all of it operates on this array.`,
+Notice the division applies to the **whole array at once** — that's NumPy doing element-wise math, no loop required.
+
+## Why it matters
+
+You will rarely hand-build pixel arrays. Libraries like Pillow or OpenCV load an image straight into a NumPy array for you. But internalizing that an image is *just numbers in a grid* demystifies everything downstream: convolutions slide over that grid, vision APIs encode that grid, classifiers score that grid. The picture is an illusion your eye assembles; the computer only ever touches the numbers.
+
+## The mental model to keep
+
+**An image is a spreadsheet of brightness, one sheet per color.** Height by width by channels. Normalize it, respect its grid, and the rest of computer vision is operations on that array.`,
       key_terms: [
         { term: "Pixel", definition: "The smallest unit of an image — one cell in the grid, holding a brightness value (0–255 per color channel)." },
         { term: "Channel", definition: "One of the color grids that stack to form an image. Color images have 3 (red, green, blue); grayscale has 1." },
@@ -165,6 +174,76 @@ Normalized:
         "Dividing a whole array by a number applies the division to every element at once.",
         "128 / 255 ≈ 0.502 and 64 / 255 ≈ 0.251 — float32 prints those with extra digits."
       ],
+      step_throughs: [
+        {
+          title: "photo → pixel grid → numbers → normalized",
+          steps: [
+            { label: "Start with a photo", detail: "A real scene captured by a camera. Your eye sees objects; the file stores light.", code: "cat.png  (a 2x2 corner, zoomed way in)" },
+            { label: "Resolve into pixels", detail: "Every position becomes a discrete cell. Each cell will hold one brightness value per channel.", code: "[ dark  mid ]\n[ bright dim ]" },
+            { label: "Read the numbers", detail: "Brightness is just an integer 0-255. Here as a grayscale grid — one channel.", code: "[[  0, 128],\n [255,  64]]   shape (2, 2)" },
+            { label: "Normalize to 0-1", detail: "Divide the whole grid by 255 so the model sees small, centered values.", code: "[[0.00, 0.50],\n [1.00, 0.25]]" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Normalize the single pixel value 64 into the 0-1 range.",
+          steps: [
+            "Normalization for 0-255 pixels means dividing by the maximum, 255.",
+            "Compute 64 / 255.",
+            "64 / 255 = 0.2509..., which rounds to about 0.25."
+          ],
+          output: "0.25"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "How many numbers store a 256 x 256 RGB color image, and what is its array shape?",
+          steps: [
+            "Color means 3 channels (red, green, blue), so shape is (height, width, channels) = (256, 256, 3).",
+            "Total values = height x width x channels = 256 x 256 x 3.",
+            "256 x 256 = 65,536; times 3 = 196,608.",
+            "Grayscale would be a third of that: 65,536 values with shape (256, 256)."
+          ],
+          output: "shape (256, 256, 3), 196,608 numbers"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "grayscale vs RGB color",
+          columns: ["Property", "Grayscale", "RGB color"],
+          rows: [
+            { cells: ["Channels", "1", "3 (red, green, blue)"] },
+            { cells: ["Array shape", "(H, W)", "(H, W, 3)"] },
+            { cells: ["Numbers for 100x100", "10,000", "30,000"] },
+            { cells: ["Stores color?", "No — only brightness", "Yes — full color"], highlight: true },
+            { cells: ["Value range per cell", "0-255", "0-255 per channel"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "grayscale image vs color image",
+          bins: [
+            { id: "gray", label: "Grayscale (1 channel)" },
+            { id: "rgb", label: "RGB color (3 channels)" }
+          ],
+          items: [
+            { id: "i1", text: "Array shape (480, 640)", bin: "gray" },
+            { id: "i2", text: "Array shape (480, 640, 3)", bin: "rgb" },
+            { id: "i3", text: "Each pixel is one brightness number", bin: "gray" },
+            { id: "i4", text: "Each pixel is a red, green, blue triple", bin: "rgb" },
+            { id: "i5", text: "A black-and-white scanned document", bin: "gray" },
+            { id: "i6", text: "A photo of a sunset", bin: "rgb" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why must a vision model preserve the grid layout of pixels instead of treating the image as one long flat list of numbers?",
+          sampleAnswer: "Neighboring pixels are physically related — they share edges, textures, and shapes. The grid encodes which pixels are next to which. If you flatten the image into a flat list, the model loses the 2D nearness information, so it can no longer tell that a pixel and the one just below it belong to the same edge or object."
+        }
+      ],
       challenge_title: "Normalize a color pixel",
       challenge_description: "You're given a single RGB pixel as a list of three values (0–255). Write code that prints each value divided by 255, rounded to 2 decimal places, as a list.",
       challenge_starter_code: `pixel = [255, 128, 0]
@@ -197,17 +276,17 @@ print(normalized)
       title: "What a CNN Actually Does",
       concept: "Convolution",
       xp_reward: 10,
-      explanation: `For about a decade, the model behind nearly every "is this a dog or a cat" system was a CNN — a convolutional neural network. You don't need to build one from scratch, but you should understand the one idea that makes it work: the convolution.
+      explanation: `In 2012 a network called AlexNet won the ImageNet contest by a margin so wide it ended a debate. The architecture behind it — a **convolutional neural network**, or **CNN** — became the engine behind nearly every "is this a dog or a cat" system for the next decade. You won't build one from scratch, but understanding the single idea that makes it work, the **convolution**, unlocks everything that follows.
 
 ## The problem CNNs solve
 
-Imagine connecting every pixel of a 224×224 image to every neuron in a layer. That's ~50,000 inputs per neuron, and the model would have to *separately learn* that an edge in the top-left looks like an edge in the bottom-right. Wasteful, and it never generalizes well.
+Imagine wiring every pixel of a 224×224 image to every neuron in a layer. That's about 50,000 inputs per neuron, and the network would have to *separately learn* that an edge in the top-left corner looks like an edge in the bottom-right corner. Two flaws: a parameter explosion, and no shared knowledge of what an edge is. The model wastes capacity relearning the same pattern in every location, and it generalizes poorly.
 
-A convolution fixes both problems with one trick: a small filter that slides across the whole image.
+A convolution fixes both problems with one trick: a **small filter that slides across the whole image**.
 
 ## A filter is a tiny pattern detector
 
-A filter (also called a kernel) is a small grid of weights — say 3×3. You slide it over every position in the image. At each spot, you multiply the filter values by the pixels underneath and add them up. One number comes out. Do that across the whole image and you get a new grid called a **feature map** — a heatmap of "where did this pattern show up?"
+A **filter** (also called a **kernel**) is a small grid of weights — typically 3×3. You slide it over every position in the image. At each spot you multiply the filter's values by the pixels underneath and add the products into a single number. Slide across the entire image and the outputs collect into a new grid called a **feature map** — a heatmap answering "where did this pattern show up?"
 
 \`\`\`python
 import numpy as np
@@ -226,15 +305,23 @@ response = np.sum(patch * kernel)
 print(response)  # high magnitude = strong edge here
 \`\`\`
 
-The key insight: **the same filter is reused at every position.** A filter that detects a vertical edge detects it anywhere in the image. The model learns the filter once and applies it everywhere. That's called *weight sharing*, and it's why CNNs need far fewer parameters than naive networks.
+The element-wise multiply (\`patch * kernel\`) followed by \`np.sum\` is the entire operation at one position. A bright top row over a dark bottom row produces a large response; a uniform patch produces near zero.
+
+The key insight: **the same filter is reused at every position.** A filter that detects a vertical edge detects it anywhere in the frame. The model learns the filter once and applies it everywhere — a property called **weight sharing**. This is why CNNs need orders of magnitude fewer parameters than a fully connected network.
 
 ## Stacking builds up complexity
 
-One layer of filters finds edges and color blobs. Feed those feature maps into another layer, and it learns to combine edges into corners and textures. Another layer combines those into shapes — eyes, wheels, leaves. By the final layers, the network responds to whole objects. Simple parts, composed upward. You don't program any of this; the filters are learned from labeled examples.
+One layer of filters finds edges and color blobs. Feed those feature maps into another layer and it learns to combine edges into corners and textures. Another layer combines those into shapes — eyes, wheels, leaves. By the final layers, the network responds to whole objects. **Simple parts, composed upward.** You never program any of this; the filters are *learned* from labeled examples through training.
 
-Between convolution layers, **pooling** shrinks the feature maps (e.g. taking the max value in each 2×2 block). This makes the model faster and a little tolerant of small shifts — a cat nudged five pixels left is still a cat.
+Between convolution layers sits **pooling**, which shrinks each feature map by, say, taking the maximum value in every 2×2 block. Pooling makes the model faster and a little tolerant of small shifts — a cat nudged five pixels to the left is still a cat.
 
-You'll rarely hand-code a CNN today. But every vision API, including the multimodal model you'll call in the next lesson, is built on these ideas.`,
+## Why it matters
+
+CNNs slashed image-classification error rates and made vision practical at scale. Even though you'll rarely hand-code one today, every vision API — including the multimodal model in the next lesson — is built on these foundations. Understanding convolution means you understand what those APIs are doing under the hood.
+
+## The mental model to keep
+
+**A convolution is a stencil you drag across the page.** One small pattern, checked at every position, reused everywhere. Stack the stencils and simple edges compose into whole objects.`,
       key_terms: [
         { term: "Filter (kernel)", definition: "A small grid of weights slid across an image to detect a specific pattern like an edge or texture." },
         { term: "Feature map", definition: "The grid of numbers produced when a filter is applied across an image — a heatmap of where that pattern appears." },
@@ -367,6 +454,77 @@ print("Filter response:", response)
         "np.sum() adds up every value in the resulting grid.",
         "The top row (1·10 each = 30) and bottom row (-1·10 each = -30) cancel out, giving 0."
       ],
+      step_throughs: [
+        {
+          title: "image patch → slide filter → multiply-and-sum → feature map cell",
+          steps: [
+            { label: "Take a 3x3 patch", detail: "Grab the pixels currently under the filter. Bright on top, dark on the bottom — an edge.", code: "[[100,100,100],\n [ 50, 50, 50],\n [  0,  0,  0]]" },
+            { label: "Line up the kernel", detail: "An edge-detecting filter: positive weights on top, negative on the bottom.", code: "[[ 1, 1, 1],\n [ 0, 0, 0],\n [-1,-1,-1]]" },
+            { label: "Multiply and sum", detail: "Multiply overlapping cells, then add every product into one number.", code: "(100+100+100) + 0 + (-0-0-0) = 300" },
+            { label: "Write one feature-map cell", detail: "300 is large, so this spot lit up — a strong edge here. Slide one step over and repeat.", code: "feature_map[r][c] = 300" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Apply the horizontal-edge kernel to a flat patch where every pixel is 50. What is the response?",
+          steps: [
+            "The kernel's top row is all +1 and its bottom row is all -1; the middle row is 0.",
+            "Top row contributes (1*50)*3 = 150. Bottom row contributes (-1*50)*3 = -150.",
+            "150 + 0 + (-150) = 0.",
+            "A flat patch has no edge, so the edge filter correctly returns 0."
+          ],
+          output: "0"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A 6x6 image is processed by a convolution layer with a 3x3 filter (stride 1, no padding), then 2x2 max-pooling. What are the two output sizes?",
+          steps: [
+            "Valid convolution output size = input - filter + 1 in each dimension.",
+            "6 - 3 + 1 = 4, so the feature map is 4 x 4.",
+            "2x2 pooling halves each dimension: 4 / 2 = 2.",
+            "After pooling the map is 2 x 2."
+          ],
+          output: "feature map 4 x 4, after pooling 2 x 2"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "convolutional layer vs dense (fully connected) layer",
+          columns: ["Property", "Dense layer", "Convolutional layer"],
+          rows: [
+            { cells: ["Connectivity", "Every input to every neuron", "Small filter over local patches"] },
+            { cells: ["Parameters", "Huge (millions for one image)", "Tiny (just the filter weights)"] },
+            { cells: ["Weight sharing", "None", "Same filter reused everywhere"], highlight: true },
+            { cells: ["Respects spatial layout", "No — input is flattened", "Yes — slides across the grid"] },
+            { cells: ["Best for", "Tabular / final classification", "Images and grid-structured data"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which CNN component does each job?",
+          bins: [
+            { id: "conv", label: "Convolution / filter" },
+            { id: "pool", label: "Pooling" }
+          ],
+          items: [
+            { id: "i1", text: "Detects edges and textures", bin: "conv" },
+            { id: "i2", text: "Shrinks the feature map", bin: "pool" },
+            { id: "i3", text: "Reuses the same weights everywhere", bin: "conv" },
+            { id: "i4", text: "Adds tolerance to small shifts", bin: "pool" },
+            { id: "i5", text: "Produces a feature map", bin: "conv" },
+            { id: "i6", text: "Often takes the max of each 2x2 block", bin: "pool" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: explain weight sharing and why it lets a CNN use far fewer parameters than a fully connected network.",
+          sampleAnswer: "Weight sharing means the same small filter is slid across every position of the image instead of learning a separate set of weights for each pixel location. Because one filter is reused everywhere, the model only has to store and learn that filter's few weights, not millions of unique connections. A pattern learned once (like a vertical edge) is then detected anywhere in the image for free."
+        }
+      ],
       challenge_title: "Detect a strong edge",
       challenge_description: "Apply the same horizontal-edge kernel to a different patch where the top is bright and the bottom is dark. Print the filter response. A large magnitude means a strong edge was found.",
       challenge_starter_code: `import numpy as np
@@ -410,15 +568,15 @@ print("Filter response:", response)
       title: "Calling a Multimodal Vision Model",
       concept: "Multimodal API",
       xp_reward: 10,
-      explanation: `Here's the shift that changed everyday vision work: you no longer have to train a CNN to describe an image. You send the image to a multimodal model — like Claude — and ask in plain English. "What's in this picture?" "Is the person wearing a helmet?" "Read the receipt total." It answers.
+      explanation: `Five years ago, "make the computer tell me what's in this photo" meant collecting thousands of labeled images, training a CNN, and deploying it — weeks of work for one narrow task. Today it's one API call. You send the image to a **multimodal model** like Claude and ask in plain English: "What's in this picture?" "Is the person wearing a helmet?" "Read the receipt total." It answers in words. That collapse from weeks to minutes is the most important shift in everyday vision work.
 
 ## What "multimodal" means
 
-A multimodal model accepts more than one kind of input. Claude takes text *and* images in the same message. Under the hood it still turns the image into numbers and runs it through learned vision layers — the CNN ideas from the last lesson didn't go away. What changed is that you talk to it like a person instead of training a custom classifier for every new task.
+A **multimodal model** accepts more than one kind of input. Claude takes **text and images in the same message**. Under the hood it still converts the image into numbers and runs them through learned vision layers — the CNN ideas from the last lesson didn't disappear, they got absorbed into a much larger model. What changed for *you* is the interface: you talk to it like a person instead of training a custom classifier for every new task.
 
 ## The shape of the request
 
-You send a message whose content is a list of blocks: an image block plus a text block. The image goes in as base64-encoded bytes with its media type.
+You send a message whose \`content\` is a **list of blocks** — typically one image block and one text block. The image travels as **base64-encoded** bytes tagged with its **media type** (e.g. \`image/png\`). Base64 turns raw binary into text characters so the bytes can ride safely inside a JSON request.
 
 \`\`\`python
 import os
@@ -454,17 +612,21 @@ response = client.messages.create(
 print(response.content[0].text)
 \`\`\`
 
-That's the whole pattern. The image and the question travel together in one \`user\` message. Claude reads both and replies in text.
+That's the whole pattern. The image and the question travel together in one \`user\` message. Claude reads both and replies in text, which you pull out of \`response.content[0].text\`.
 
 ## Why this is a big deal
 
-The old workflow: collect thousands of labeled images, train a CNN, deploy it, retrain whenever the task changes. The new workflow: one API call, change the question whenever the task changes. Want to detect a different thing tomorrow? Edit the text prompt. No retraining.
+The old workflow: collect thousands of labeled images, train a CNN, deploy it, retrain whenever the task changes. The new workflow: **one API call, and you change the task by editing the prompt.** Want to detect something different tomorrow? Rewrite the question. No labeled dataset, no training loop, no redeploy.
 
-The tradeoff is cost and latency — an API call per image isn't free, and it's slower than a tiny specialized CNN. For high-volume, fixed tasks (a factory line scanning the same part a million times a day) a dedicated model still wins. For the long tail of "I just need to understand this image" tasks, the multimodal API is the obvious tool.
+The tradeoff is **cost and latency**. An API call per image isn't free, and it's slower than a tiny specialized CNN. For high-volume, fixed tasks — a factory line scanning the same part a million times a day — a dedicated model still wins on price and speed. For the long tail of "I just need to understand this one image" tasks, the multimodal API is the obvious tool.
 
 ## Keep the key out of your code
 
-Notice \`Anthropic()\` with no arguments — it pulls the key from \`os.environ["ANTHROPIC_API_KEY"]\`. Never paste an API key into source. Set it as an environment variable.`,
+Notice \`Anthropic()\` is called with no arguments — it pulls the key from \`os.environ["ANTHROPIC_API_KEY"]\`. Never paste an API key into source. The moment you push to a repo, a hardcoded key leaks. Set it as an environment variable and let the client read it.
+
+## The mental model to keep
+
+**Calling a vision model is texting a knowledgeable friend a photo with a caption.** The picture and the question go in one message; a written answer comes back. Swap the question, get a new task — no retraining required.`,
       key_terms: [
         { term: "Multimodal model", definition: "A model that accepts more than one input type — here, text and images in the same message." },
         { term: "Content block", definition: "One item in a message's content list. A vision request mixes an image block and a text block." },
@@ -613,6 +775,75 @@ print(response.content[0].text)
         "The image block needs type 'image' and a 'source' with type 'base64', a media_type, and the data.",
         "Claude's text answer lives at response.content[0].text."
       ],
+      step_throughs: [
+        {
+          title: "image file → base64 → message blocks → answer",
+          steps: [
+            { label: "Read the bytes", detail: "Open the file in binary mode and read its raw bytes from disk.", code: 'raw = open("receipt.png", "rb").read()' },
+            { label: "Base64-encode", detail: "Turn binary bytes into text-safe characters so they fit inside JSON.", code: 'image_data = base64.standard_b64encode(raw).decode("utf-8")' },
+            { label: "Build the content list", detail: "One image block (with media_type and data) plus one text block (the question) in a single user message.", code: 'content = [image_block, {"type": "text", "text": "What store is this?"}]' },
+            { label: "Call and read", detail: "Send to client.messages.create, then pull the text out of the first content block.", code: "print(response.content[0].text)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You have a JPEG photo. What media_type string goes in the image source block?",
+          steps: [
+            "The media_type tells the API the image format.",
+            "JPEG files use the MIME type image/jpeg (not image/jpg).",
+            "PNG would be image/png; this one is a JPEG."
+          ],
+          output: '"image/jpeg"'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You need to classify 50,000 identical factory parts per hour, forever, with the same yes/no check. Multimodal API call per image, or a dedicated CNN? Why?",
+          steps: [
+            "List the workload traits: extremely high volume, one fixed task that never changes.",
+            "A multimodal API charges per call and adds network latency every image — costly and slow at this scale.",
+            "A dedicated CNN is tiny, fast, and cheap once trained, and the fixed task means no retraining churn.",
+            "High-volume + fixed task favors the specialized CNN; the API wins for varied, low-volume work."
+          ],
+          output: "Dedicated CNN — high volume and a fixed task make per-call cost and latency the deciding factor"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "multimodal API vs custom-trained CNN",
+          columns: ["Dimension", "Multimodal API", "Custom CNN"],
+          rows: [
+            { cells: ["Setup to first result", "Minutes (write a prompt)", "Weeks (label data, train)"] },
+            { cells: ["Change the task", "Edit the text prompt", "Relabel and retrain"], highlight: true },
+            { cells: ["Cost per image", "Higher (per API call)", "Very low once deployed"] },
+            { cells: ["Latency", "Network round-trip", "Milliseconds, local"] },
+            { cells: ["Best fit", "Varied, low-volume tasks", "High-volume, fixed task"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "where does each piece of the request belong?",
+          bins: [
+            { id: "image", label: "Image block" },
+            { id: "text", label: "Text block" }
+          ],
+          items: [
+            { id: "i1", text: "The base64-encoded data", bin: "image" },
+            { id: "i2", text: 'media_type "image/png"', bin: "image" },
+            { id: "i3", text: '"What store is this receipt from?"', bin: "text" },
+            { id: "i4", text: 'source with type "base64"', bin: "image" },
+            { id: "i5", text: '"Answer only yes or no."', bin: "text" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does editing the text prompt replace an entire retraining cycle when you use a multimodal model?",
+          sampleAnswer: "With a custom CNN, the task is baked into the trained weights, so changing what you want to detect means collecting new labeled data and training again. With a multimodal model the perception ability is already general; the specific task lives in the prompt you send. Asking a different question simply points that general ability at a new goal, so you swap the text instead of running a training loop."
+        }
+      ],
       challenge_title: "Ask a yes/no vision question",
       challenge_description: "Reuse the request pattern but change the question to a safety check: 'Is the person in this photo wearing a helmet? Answer only yes or no.' Print the answer. (Assume the image variable is already loaded as image_data.)",
       challenge_starter_code: `from anthropic import Anthropic
@@ -668,11 +899,11 @@ print(response.content[0].text)
       title: "Getting Structured Data Back",
       concept: "Structured Output",
       xp_reward: 10,
-      explanation: `A sentence describing an image is nice for a human. It's useless to a program. If you want to *do something* with the answer — store it in a database, branch on it, add it up — you need structured data: JSON with known fields. This lesson is about turning "feed an image, get a paragraph" into "feed an image, get a clean object."
+      explanation: `"The receipt is from Blue Bottle Coffee and the total appears to be twelve dollars and fifty cents." Lovely for a human. Useless to a program — you can't add up a sentence, store it in a column, or branch on it. To *do* something with a vision answer you need **structured data**: JSON with known fields. This lesson turns "feed an image, get a paragraph" into "feed an image, get a clean object your code can use."
 
 ## Ask for JSON, get a string of JSON
 
-The simplest approach: tell the model exactly what shape you want, then parse the text. You describe the fields in the prompt, the model writes JSON, and you call \`json.loads()\` on the reply.
+The simplest approach: tell the model **exactly what shape you want**, then parse the reply. You describe the fields in the prompt, the model writes JSON as its text response, and you call \`json.loads()\` to turn that string into a Python dict.
 
 \`\`\`python
 import json
@@ -727,7 +958,15 @@ except (json.JSONDecodeError, KeyError, ValueError):
     total = None  # handle the miss instead of crashing
 \`\`\`
 
-For production, the API also offers a structured-outputs mode that constrains the response to a schema so it can't drift — worth reaching for once you're past prototyping. But the prompt-and-parse pattern above is the foundation, and it's enough to build something real today.`,
+For production, the API also offers a structured-outputs mode that constrains the response to a schema so it can't drift — worth reaching for once you're past prototyping. But the prompt-and-parse pattern above is the foundation, and it's enough to build something real today.
+
+## Why it matters
+
+This pattern is what makes vision *operational*. A pile of photos becomes a queryable table; a stack of invoices becomes a sum; a folder of screenshots becomes filterable records. The expensive, fuzzy perception work goes to the model exactly once per image, and the cheap, exact processing stays in your code where you can test and trust it.
+
+## The mental model to keep
+
+**Structured output is the handoff line between perception and logic.** Tell the model the exact keys and types, demand JSON and nothing else, parse it behind a guard — then your deterministic code takes over.`,
       key_terms: [
         { term: "Structured output", definition: "A model response shaped as data (JSON with known fields) rather than free-form prose, so your code can use it directly." },
         { term: "json.loads()", definition: "The Python function that parses a JSON string into a dict you can index by field name." },
@@ -845,6 +1084,76 @@ print(data["store"], "->", data["total"])
         "json.loads(text) turns the JSON string into a dict.",
         "Access fields with square brackets: data['store'].",
         "12.50 prints as 12.5 because trailing zeros are dropped from a float."
+      ],
+      step_throughs: [
+        {
+          title: "specify fields → constrain output → parse → validate",
+          steps: [
+            { label: "Name fields and types", detail: "Tell the model the exact keys and their types so the shape is predictable.", code: 'store (string), total (number), item_count (integer)' },
+            { label: "Constrain the output", detail: "Demand pure JSON so you don't have to strip a friendly preamble before parsing.", code: '"Reply with only the JSON, no other text."' },
+            { label: "Parse the reply", detail: "json.loads turns the JSON string into a Python dict you can index by key.", code: 'data = json.loads(response.content[0].text)' },
+            { label: "Validate, then use", detail: "Guard against missing keys or wrong types before relying on the values.", code: 'total = float(data["total"])  # inside try/except' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Parse \'{"store": "Philz", "total": 8.25}\' and print the total.',
+          steps: [
+            "Call json.loads on the string to get a dict.",
+            'Index the dict by key: data["total"].',
+            "The value is the number 8.25."
+          ],
+          output: "8.25"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'You loop over four replies and want the sum of all valid totals: \'{"total": 12.50}\', \'{"total": 8.25}\', \'oops not json\', \'{"store": "X"}\'. What is the sum and why?',
+          steps: [
+            "Reply 1 parses; total 12.50 adds in.",
+            "Reply 2 parses; total 8.25 adds in (running sum 20.75).",
+            "Reply 3 is not valid JSON, so json.loads raises JSONDecodeError — skip it.",
+            'Reply 4 parses but has no "total" key, so indexing raises KeyError — skip it. Final sum 20.75.'
+          ],
+          output: "20.75"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "free-form prose vs structured JSON output",
+          columns: ["Property", "Free-form prose", "Structured JSON"],
+          rows: [
+            { cells: ["Shape", "A paragraph", "Known keys and types"] },
+            { cells: ["Index a field in code", "No — must parse text", "Yes — data['total']"], highlight: true },
+            { cells: ["Store in a database", "Awkward", "Drops into a row"] },
+            { cells: ["Sum / branch / compute", "Not directly", "Directly"] },
+            { cells: ["Good for", "Human reading", "Program processing"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "model job vs your code's job",
+          bins: [
+            { id: "model", label: "Model handles (perception)" },
+            { id: "code", label: "Your code handles (logic)" }
+          ],
+          items: [
+            { id: "i1", text: "Reading the store name off the receipt", bin: "model" },
+            { id: "i2", text: "Recognizing the total in the image", bin: "model" },
+            { id: "i3", text: "Summing 500 totals", bin: "code" },
+            { id: "i4", text: "json.loads on the reply", bin: "code" },
+            { id: "i5", text: "Checking that required keys exist", bin: "code" },
+            { id: "i6", text: "Describing what objects are in the photo", bin: "model" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why should you treat the model's JSON like untrusted input and wrap json.loads in a try/except?",
+          sampleAnswer: "The model generates its JSON by prediction, so it is not guaranteed to be perfect. It might omit a field, return a string where you expected a number, or occasionally wrap the JSON in stray text. If you parse it naively, any of those breaks your program with a crash. Wrapping json.loads in a try/except and checking for required keys turns a rare bad response into a handled miss instead of a 2am outage."
+        }
       ],
       challenge_title: "Parse safely and total the receipts",
       challenge_description: "You're given a list of JSON reply strings, one per receipt. Parse each safely (skip any that fail or lack a 'total'), and print the sum of all totals rounded to 2 decimals.",

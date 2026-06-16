@@ -47,9 +47,26 @@ const Challenge = {
   filter: async (q) => (q?.id ? CHALLENGES.filter((c) => c.id === q.id) : [...CHALLENGES]),
 }
 
-// Graceful offline LLM stub — UI must not crash.
-const InvokeLLM = async () =>
+// LLM bridge. When Supabase is configured, route prompts through the
+// `invoke-llm` edge function (API key stays server-side). Otherwise degrade
+// to an offline message so the UI never crashes.
+const OFFLINE_MSG =
   'AI assist is offline in this build. Read the lesson, write the code, and run it locally.'
+
+const InvokeLLM = async ({ prompt, max_tokens } = {}) => {
+  try {
+    const { supabase } = await import('./supabaseClient')
+    if (supabase?.functions?.invoke && prompt) {
+      const { data, error } = await supabase.functions.invoke('invoke-llm', {
+        body: { prompt, max_tokens },
+      })
+      if (!error && data?.text) return data.text
+    }
+  } catch {
+    /* fall through to offline */
+  }
+  return OFFLINE_MSG
+}
 
 export const api = {
   auth: {
