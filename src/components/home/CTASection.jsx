@@ -53,7 +53,7 @@ export default function CTASection() {
 
         <p
           className="font-display text-lg mb-14 mx-auto"
-          style={{ color: "#555", maxWidth: "40ch", fontWeight: 400 }}
+          style={{ color: "#c4c4c4", maxWidth: "40ch", fontWeight: 400 }}
         >
           Free forever. No setup. Open your first lesson in under 30 seconds.
         </p>
@@ -85,7 +85,7 @@ export default function CTASection() {
               className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{
                 background: "transparent",
-                color: "#555",
+                color: "#c4c4c4",
                 border: "1px solid #1e1e1e",
               }}
               onMouseEnter={e => {
@@ -95,7 +95,7 @@ export default function CTASection() {
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.borderColor = "#1e1e1e";
-                e.currentTarget.style.color = "#555";
+                e.currentTarget.style.color = "#c4c4c4";
                 e.currentTarget.style.transform = "";
               }}
             >
@@ -106,19 +106,19 @@ export default function CTASection() {
 
         <div
           className="mt-20 font-mono text-xs tracking-widest"
-          style={{ color: "#222" }}
+          style={{ color: "#e8e8e8" }}
         >
           © 2026 codeflow &nbsp;·&nbsp; crafted with insomnia and strong opinions
           <span
             className="ml-4 cursor-pointer select-none transition-all duration-500"
-            style={{ color: "#1a1a1a" }}
+            style={{ color: "#e8e8e8" }}
             title="you found it"
             onMouseEnter={e => {
               e.currentTarget.style.color = "#b8ff00";
               e.currentTarget.style.letterSpacing = "0.4em";
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.color = "#1a1a1a";
+              e.currentTarget.style.color = "#e8e8e8";
               e.currentTarget.style.letterSpacing = "";
             }}
           >▸</span>

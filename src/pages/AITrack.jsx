@@ -145,14 +145,14 @@ export default function AITrack() {
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #1a1a1a" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }} />
         <div className="max-w-7xl mx-auto">
-          <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#666" }}>§ AI TRACK</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#c4c4c4" }}>§ AI TRACK</div>
           <h1
             style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 20px" }}
           >
             Learn to build<br />
             <span style={{ WebkitTextStroke: "1.5px #b8ff00", color: "transparent" }}>with AI.</span>
           </h1>
-          <p className="font-display text-base max-w-prose" style={{ color: "#aaa", fontWeight: 400 }}>
+          <p className="font-display text-base max-w-prose" style={{ color: "#d4d4d4", fontWeight: 400 }}>
             Not just theory. A full progression from "what is a model" to building and deploying real AI-powered applications — with working code at every step.
           </p>
         </div>
@@ -162,7 +162,7 @@ export default function AITrack() {
 
         {/* Curriculum */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#666" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#c4c4c4" }}>
             CURRICULUM — 8 MODULES
           </div>
 
@@ -172,7 +172,7 @@ export default function AITrack() {
             style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #1a1a1a" }}
           >
             {["MOD", "PROJECT", "LEVEL", "TIME"].map(h => (
-              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#666" }}>{h}</div>
+              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>{h}</div>
             ))}
           </div>
 
@@ -196,7 +196,7 @@ export default function AITrack() {
                       return pct > 0 ? (
                         <ProgressRing percent={pct} size={38} color="#b8ff00" />
                       ) : (
-                        <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#1e1e1e", letterSpacing: "-0.05em" }}>
+                        <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#e8e8e8", letterSpacing: "-0.05em" }}>
                           {item.number}
                         </span>
                       );
@@ -213,12 +213,12 @@ export default function AITrack() {
                         </span>
                       )}
                     </div>
-                    <p className="font-display text-sm mb-3" style={{ color: "#999", fontWeight: 400 }}>
+                    <p className="font-display text-sm mb-3" style={{ color: "#d4d4d4", fontWeight: 400 }}>
                       {item.description}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {item.concepts.map(c => (
-                        <span key={c} className="font-mono text-xs px-2 py-0.5" style={{ color: "#777", border: "1px solid #2a2a2a" }}>
+                        <span key={c} className="font-mono text-xs px-2 py-0.5" style={{ color: "#c4c4c4", border: "1px solid #2a2a2a" }}>
                           {c}
                         </span>
                       ))}
@@ -232,7 +232,7 @@ export default function AITrack() {
                       {item.difficulty}
                     </span>
                   </div>
-                  <div className="font-mono text-sm text-right" style={{ color: "#888" }}>
+                  <div className="font-mono text-sm text-right" style={{ color: "#d4d4d4" }}>
                     {item.time}
                   </div>
                 </div>
@@ -243,7 +243,7 @@ export default function AITrack() {
 
         {/* Capstone projects */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#666" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#c4c4c4" }}>
             CAPSTONE PROJECTS — WHAT YOU WILL BUILD
           </div>
           <div className="grid md:grid-cols-3 gap-0" style={{ border: "1px solid #1a1a1a" }}>
@@ -267,14 +267,14 @@ export default function AITrack() {
                   >
                     {cap.title}
                   </h3>
-                  <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#aaa", fontWeight: 400 }}>
+                  <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#d4d4d4", fontWeight: 400 }}>
                     {cap.description}
                   </p>
                   <div className="space-y-1.5">
                     {cap.skills.map(s => (
                       <div key={s} className="flex items-center gap-2">
                         <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>→</span>
-                        <span className="font-mono text-xs" style={{ color: "#999" }}>{s}</span>
+                        <span className="font-mono text-xs" style={{ color: "#d4d4d4" }}>{s}</span>
                       </div>
                     ))}
                   </div>
@@ -286,13 +286,13 @@ export default function AITrack() {
 
         {/* CTA */}
         <div className="text-center py-12" style={{ border: "1px solid #1a1a1a" }}>
-          <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#666" }}>READY?</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#c4c4c4" }}>READY?</div>
           <h2
             style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", margin: "0 0 16px" }}
           >
             Start building with AI.
           </h2>
-          <p className="font-display text-base mb-8" style={{ color: "#aaa", fontWeight: 400 }}>
+          <p className="font-display text-base mb-8" style={{ color: "#d4d4d4", fontWeight: 400 }}>
             The projects are in the Projects section. Filter by category "AI/ML".
           </p>
           <Link to={createPageUrl("Projects")}>

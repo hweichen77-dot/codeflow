@@ -30,7 +30,7 @@ export default function HowItWorks() {
         <div style={{
           fontFamily: "monospace",
           fontSize: "11px",
-          color: "#888888",
+          color: "#d4d4d4",
           letterSpacing: "0.1em",
           textTransform: "uppercase",
           marginBottom: "56px",

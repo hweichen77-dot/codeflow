@@ -35,21 +35,21 @@ function LeftPanel({ scrollYProgress }) {
           CODE
         </div>
         <div className="relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#555" }}>PATH 01</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#c4c4c4" }}>PATH 01</div>
           <h3
             className="font-display font-black mb-4"
             style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
           >
             Coding
           </h3>
-          <p className="font-display text-base mb-6" style={{ color: "#444", fontWeight: 400 }}>
+          <p className="font-display text-base mb-6" style={{ color: "#e8e8e8", fontWeight: 400 }}>
             From HTML & JavaScript to React and algorithms. Build real projects, not toy examples.
           </p>
           <motion.div style={{ opacity: contentOpacity }} className="space-y-2.5 mb-8">
             {CODING_TOPICS.map((t) => (
               <div key={t} className="flex items-center gap-3">
                 <span className="font-mono text-xs" style={{ color: "#b8ff0066" }}>→</span>
-                <span className="font-mono text-xs" style={{ color: "#555" }}>{t}</span>
+                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{t}</span>
               </div>
             ))}
           </motion.div>
@@ -101,20 +101,20 @@ function RightPanel({ scrollYProgress }) {
           AI
         </div>
         <div className="relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#555" }}>PATH 02</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#c4c4c4" }}>PATH 02</div>
           <h3
             className="font-display font-black mb-4"
             style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
           >
             AI / ML
           </h3>
-          <p className="font-display text-base mb-6" style={{ color: "#444", fontWeight: 400 }}>
+          <p className="font-display text-base mb-6" style={{ color: "#e8e8e8", fontWeight: 400 }}>
             From neural network basics to fine-tuning LLMs. Deploy real AI-powered apps.
           </p>
           <motion.div style={{ opacity: contentOpacity }} className="space-y-2.5 mb-8">
             {AI_TOPICS.map((t) => (
               <div key={t} className="flex items-center justify-end gap-3">
-                <span className="font-mono text-xs" style={{ color: "#555" }}>{t}</span>
+                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{t}</span>
                 <span className="font-mono text-xs" style={{ color: "#b8ff0066" }}>→</span>
               </div>
             ))}

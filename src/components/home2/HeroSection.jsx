@@ -85,7 +85,7 @@ export default function HeroSection() {
         </button>
       </div>
 
-      <p style={{ fontSize: "13px", color: "#777777", fontWeight: 400 }}>
+      <p style={{ fontSize: "13px", color: "#c4c4c4", fontWeight: 400 }}>
         No credit card required
       </p>
     </section>

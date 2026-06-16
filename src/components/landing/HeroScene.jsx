@@ -150,7 +150,7 @@ export default function HeroScene() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.65, duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="font-display text-lg md:text-xl mb-12 mx-auto"
-            style={{ color: "#555", maxWidth: "50ch", fontWeight: 400, lineHeight: 1.7 }}
+            style={{ color: "#c4c4c4", maxWidth: "50ch", fontWeight: 400, lineHeight: 1.7 }}
           >
             Not courses. Not theory dumps. A hands-on progression from first principles to deployed AI — with code at every step.
           </motion.p>
@@ -180,13 +180,13 @@ export default function HeroScene() {
             <Link to={createPageUrl("AITrack")}>
               <button
                 className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
-                style={{ color: "#555", border: "1px solid #1e1e1e" }}
+                style={{ color: "#c4c4c4", border: "1px solid #1e1e1e" }}
                 onMouseEnter={e => {
                   e.currentTarget.style.color = "#e8e8e8";
                   e.currentTarget.style.borderColor = "#333";
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.color = "#555";
+                  e.currentTarget.style.color = "#c4c4c4";
                   e.currentTarget.style.borderColor = "#1e1e1e";
                 }}
               >
@@ -202,7 +202,7 @@ export default function HeroScene() {
             transition={{ delay: 2, duration: 1 }}
             className="mt-20 flex flex-col items-center gap-2"
           >
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#222" }}>SCROLL</span>
+            <span className="font-mono text-xs tracking-widest" style={{ color: "#e8e8e8" }}>SCROLL</span>
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}

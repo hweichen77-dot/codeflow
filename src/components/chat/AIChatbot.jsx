@@ -143,19 +143,19 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 <div className="w-6 h-6 flex items-center justify-center" style={{ background: "#b8ff0015", border: "1px solid #b8ff0033" }}>
                   <Brain size={12} style={{ color: "#b8ff00" }} />
                 </div>
-                <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#888" }}>
+                <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>
                   AI Tutor
                 </span>
-                <span className="font-mono text-xs" style={{ color: "#333" }}>·</span>
-                <span className="font-mono text-xs" style={{ color: "#444" }} title={lessonTitle}>
+                <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>·</span>
+                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }} title={lessonTitle}>
                   {lessonTitle?.length > 18 ? lessonTitle.slice(0, 18) + "…" : lessonTitle}
                 </span>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                style={{ color: "#333" }}
-                onMouseEnter={e => e.currentTarget.style.color = "#888"}
-                onMouseLeave={e => e.currentTarget.style.color = "#333"}
+                style={{ color: "#e8e8e8" }}
+                onMouseEnter={e => e.currentTarget.style.color = "#d4d4d4"}
+                onMouseLeave={e => e.currentTarget.style.color = "#e8e8e8"}
               >
                 <X size={14} />
               </button>
@@ -166,12 +166,12 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               className="flex items-center gap-3 px-5 py-2.5 flex-shrink-0"
               style={{ borderBottom: "1px solid #111", background: "#080808" }}
             >
-              <span className="font-mono text-xs" style={{ color: "#333" }}>mode:</span>
+              <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>mode:</span>
               <button
                 onClick={() => setSocraticMode(true)}
                 className="font-mono text-xs px-3 py-1 transition-all duration-150"
                 style={{
-                  color: socraticMode ? "#b8ff00" : "#333",
+                  color: socraticMode ? "#b8ff00" : "#e8e8e8",
                   border: `1px solid ${socraticMode ? "#b8ff0033" : "#1a1a1a"}`,
                   background: socraticMode ? "#b8ff0010" : "transparent",
                 }}
@@ -182,7 +182,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 onClick={() => setSocraticMode(false)}
                 className="font-mono text-xs px-3 py-1 transition-all duration-150"
                 style={{
-                  color: !socraticMode ? "#b8ff00" : "#333",
+                  color: !socraticMode ? "#b8ff00" : "#e8e8e8",
                   border: `1px solid ${!socraticMode ? "#b8ff0033" : "#1a1a1a"}`,
                   background: !socraticMode ? "#b8ff0010" : "transparent",
                 }}
@@ -190,7 +190,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 Direct
               </button>
               {currentCode && (
-                <span className="ml-auto font-mono text-xs flex items-center gap-1" style={{ color: "#2a2a2a" }}>
+                <span className="ml-auto font-mono text-xs flex items-center gap-1" style={{ color: "#e8e8e8" }}>
                   <Zap size={9} />
                   code-aware
                 </span>
@@ -206,7 +206,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                     style={{
                       background: msg.role === "user" ? "#1a1a1a" : "#141414",
                       border: `1px solid ${msg.role === "user" ? "#2a2a2a" : "#1e1e1e"}`,
-                      color: msg.role === "user" ? "#e8e8e8" : "#999",
+                      color: msg.role === "user" ? "#e8e8e8" : "#d4d4d4",
                       fontWeight: 400,
                     }}
                   >
@@ -218,7 +218,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 <div className="flex justify-start">
                   <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: "#141414", border: "1px solid #1e1e1e" }}>
                     <Loader2 size={12} className="animate-spin" style={{ color: "#b8ff00" }} />
-                    <span className="font-mono text-xs" style={{ color: "#333" }}>thinking...</span>
+                    <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>thinking...</span>
                   </div>
                 </div>
               )}

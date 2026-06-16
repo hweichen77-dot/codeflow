@@ -59,7 +59,7 @@ export default function ProgressRing({
             alignItems: "center",
             justifyContent: "center",
             fontSize: size * 0.26,
-            color: pct === 100 ? color : "#888",
+            color: pct === 100 ? color : "#d4d4d4",
             fontWeight: 700,
             letterSpacing: "-0.03em",
           }}

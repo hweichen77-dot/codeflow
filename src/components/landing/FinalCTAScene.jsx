@@ -75,7 +75,7 @@ export default function FinalCTAScene() {
 
         <p
           className="font-display text-lg mb-12 mx-auto"
-          style={{ color: "#444", maxWidth: "42ch", fontWeight: 400, lineHeight: 1.6 }}
+          style={{ color: "#e8e8e8", maxWidth: "42ch", fontWeight: 400, lineHeight: 1.6 }}
         >
           Free forever. No setup required. Open your first lesson and write code in under 30 seconds.
         </p>
@@ -106,14 +106,14 @@ export default function FinalCTAScene() {
           <Link to={createPageUrl("AITrack")}>
             <button
               className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
-              style={{ color: "#555", border: "1px solid #1e1e1e" }}
+              style={{ color: "#c4c4c4", border: "1px solid #1e1e1e" }}
               onMouseEnter={e => {
                 e.currentTarget.style.borderColor = "#333";
                 e.currentTarget.style.color = "#e8e8e8";
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.borderColor = "#1e1e1e";
-                e.currentTarget.style.color = "#555";
+                e.currentTarget.style.color = "#c4c4c4";
               }}
             >
               AI Track
@@ -130,7 +130,7 @@ export default function FinalCTAScene() {
           ].map(([top, bot]) => (
             <div key={top} className="text-center">
               <div className="font-display font-bold text-sm" style={{ color: "#ccc" }}>{top}</div>
-              <div className="font-mono text-xs" style={{ color: "#333" }}>{bot}</div>
+              <div className="font-mono text-xs" style={{ color: "#e8e8e8" }}>{bot}</div>
             </div>
           ))}
         </div>
@@ -138,7 +138,7 @@ export default function FinalCTAScene() {
         {/* Footer */}
         <div
           className="mt-20 font-mono text-xs tracking-widest"
-          style={{ color: "#1e1e1e" }}
+          style={{ color: "#e8e8e8" }}
         >
           © 2026 codeflow &nbsp;·&nbsp; crafted with insomnia and strong opinions
           <span

@@ -19,33 +19,33 @@ function CodeMockup() {
       lineHeight: 1.8,
       marginTop: "20px",
     }}>
-      <div style={{ color: "#888888", marginBottom: "6px" }}>// lesson_03.js</div>
-      <div><span style={{ color: "#c084fc" }}>async function</span> <span style={{ color: "#60a5fa" }}>analyzeText</span><span style={{ color: "#a3a3a3" }}>(input) {"{"}</span></div>
+      <div style={{ color: "#d4d4d4", marginBottom: "6px" }}>// lesson_03.js</div>
+      <div><span style={{ color: "#c084fc" }}>async function</span> <span style={{ color: "#60a5fa" }}>analyzeText</span><span style={{ color: "#d4d4d4" }}>(input) {"{"}</span></div>
       <div style={{ paddingLeft: "18px" }}>
-        <span style={{ color: "#a3a3a3" }}>const result = </span>
+        <span style={{ color: "#d4d4d4" }}>const result = </span>
         <span style={{ color: "#34d399" }}>await</span>
-        <span style={{ color: "#a3a3a3" }}> openai.</span>
+        <span style={{ color: "#d4d4d4" }}> openai.</span>
         <span style={{ color: "#60a5fa" }}>chat</span>
-        <span style={{ color: "#a3a3a3" }}>({"{"})</span>
+        <span style={{ color: "#d4d4d4" }}>({"{"})</span>
       </div>
       <div style={{ paddingLeft: "36px" }}>
         <span style={{ color: "#b8ff00" }}>model</span>
-        <span style={{ color: "#a3a3a3" }}>: </span>
+        <span style={{ color: "#d4d4d4" }}>: </span>
         <span style={{ color: "#86efac" }}>"gpt-4o-mini"</span>
-        <span style={{ color: "#a3a3a3" }}>,</span>
+        <span style={{ color: "#d4d4d4" }}>,</span>
       </div>
       <div style={{ paddingLeft: "36px" }}>
         <span style={{ color: "#b8ff00" }}>messages</span>
-        <span style={{ color: "#a3a3a3" }}>: [{"{"}role: </span>
+        <span style={{ color: "#d4d4d4" }}>: [{"{"}role: </span>
         <span style={{ color: "#86efac" }}>"user"</span>
-        <span style={{ color: "#a3a3a3" }}>, content: input{"}"}]</span>
+        <span style={{ color: "#d4d4d4" }}>, content: input{"}"}]</span>
       </div>
-      <div style={{ paddingLeft: "18px" }}><span style={{ color: "#a3a3a3" }}>{"})"}</span></div>
+      <div style={{ paddingLeft: "18px" }}><span style={{ color: "#d4d4d4" }}>{"})"}</span></div>
       <div style={{ paddingLeft: "18px" }}>
         <span style={{ color: "#34d399" }}>return</span>
-        <span style={{ color: "#a3a3a3" }}> result.choices[0].message.content</span>
+        <span style={{ color: "#d4d4d4" }}> result.choices[0].message.content</span>
       </div>
-      <div><span style={{ color: "#a3a3a3" }}>{"}"}</span></div>
+      <div><span style={{ color: "#d4d4d4" }}>{"}"}</span></div>
       <div style={{
         marginTop: "12px",
         padding: "10px",
@@ -93,7 +93,7 @@ export default function BentoGrid() {
           <h3 style={{ color: "#f0f0f0", fontSize: "22px", fontWeight: 700, margin: "0 0 10px", letterSpacing: "-0.02em" }}>
             Learn by doing, not watching.
           </h3>
-          <p style={{ color: "#a3a3a3", fontSize: "14px", lineHeight: 1.7, margin: 0, maxWidth: "380px" }}>
+          <p style={{ color: "#d4d4d4", fontSize: "14px", lineHeight: 1.7, margin: 0, maxWidth: "380px" }}>
             Every lesson is a real task. Write the code, run it, see what breaks.
             We guide you through it — not past it.
           </p>
@@ -125,7 +125,7 @@ export default function BentoGrid() {
             borderTop: "1px solid #1e1e1e",
             marginTop: "36px",
           }}>
-            <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#525252", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+            <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#c4c4c4", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
               Skill level
             </div>
             {["Beginner", "Intermediate", "Advanced"].map((lvl, i) => (
@@ -144,7 +144,7 @@ export default function BentoGrid() {
                     borderRadius: "2px",
                   }} />
                 </div>
-                <span style={{ color: "#888888", fontSize: "12px", fontFamily: "monospace", minWidth: "80px" }}>{lvl}</span>
+                <span style={{ color: "#d4d4d4", fontSize: "12px", fontFamily: "monospace", minWidth: "80px" }}>{lvl}</span>
               </div>
             ))}
           </div>
@@ -189,7 +189,7 @@ export default function BentoGrid() {
           <div style={{ color: "#c0c0c0", fontSize: "14px", marginTop: "8px", fontWeight: 500 }}>
             learners building with AI
           </div>
-          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#888888", marginTop: "4px" }}>
+          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#d4d4d4", marginTop: "4px" }}>
             and growing every week
           </div>
         </div>

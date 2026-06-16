@@ -25,9 +25,9 @@ export default function HomeNav() {
               <a
                 key={link}
                 href={`#${link.toLowerCase()}`}
-                style={{ color: "#a3a3a3", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
+                style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
                 onMouseEnter={e => e.currentTarget.style.color = "#f0f0f0"}
-                onMouseLeave={e => e.currentTarget.style.color = "#a3a3a3"}
+                onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
               >
                 {link}
               </a>

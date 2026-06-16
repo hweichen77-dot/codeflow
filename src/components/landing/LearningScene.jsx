@@ -58,7 +58,7 @@ function StepIndicator({ index, step, scrollYProgress }) {
       >
         {index + 1}
       </motion.div>
-      <span className="font-mono text-xs hidden sm:block" style={{ color: "#2a2a2a" }}>
+      <span className="font-mono text-xs hidden sm:block" style={{ color: "#e8e8e8" }}>
         {step.label.split("—")[1]?.trim()}
       </span>
     </div>
@@ -91,7 +91,7 @@ function StepCard({ index, step, scrollYProgress }) {
           <h3 className="font-display font-bold text-2xl mb-2" style={{ color: "#e8e8e8", letterSpacing: "-0.02em" }}>
             {step.title}
           </h3>
-          <p className="font-display text-base" style={{ color: "#555", fontWeight: 400 }}>
+          <p className="font-display text-base" style={{ color: "#c4c4c4", fontWeight: 400 }}>
             {step.body}
           </p>
         </div>
@@ -113,7 +113,7 @@ function StepCard({ index, step, scrollYProgress }) {
               {step.outputLabel}
             </span>
             {step.output && (
-              <span className="font-mono text-xs" style={{ color: "#555" }}>{step.output}</span>
+              <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{step.output}</span>
             )}
           </div>
         )}
@@ -205,7 +205,7 @@ export default function LearningScene() {
         </motion.div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto px-6 relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-10 text-center" style={{ color: "#2a2a2a" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-10 text-center" style={{ color: "#e8e8e8" }}>
             § THE LEARNING EXPERIENCE
           </div>
 
@@ -223,7 +223,7 @@ export default function LearningScene() {
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#b8ff00" }} />
-              <span className="font-mono text-xs ml-4" style={{ color: "#2a2a2a" }}>lesson_01.py</span>
+              <span className="font-mono text-xs ml-4" style={{ color: "#e8e8e8" }}>lesson_01.py</span>
             </div>
             <div className="relative" style={{ minHeight: "340px" }}>
               {STEPS.map((s, i) => (
