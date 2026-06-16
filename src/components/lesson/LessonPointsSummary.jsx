@@ -33,10 +33,10 @@ export default function LessonPointsSummary({
   }, [allDone]);
 
   const items = [
-    { label: "Reading", done: readingComplete, pts: 2, emoji: "📖" },
-    { label: "Participation Activities", done: participationComplete, pts: 3, emoji: "✏️" },
-    { label: "Quiz", done: quizComplete, pts: 3, emoji: "🧩" },
-    { label: "Coding Challenge", done: challengeComplete, pts: 2, emoji: "💻" },
+    { label: "Reading", done: readingComplete, pts: 2, emoji: "" },
+    { label: "Participation Activities", done: participationComplete, pts: 3, emoji: "" },
+    { label: "Quiz", done: quizComplete, pts: 3, emoji: "" },
+    { label: "Coding Challenge", done: challengeComplete, pts: 2, emoji: "" },
   ];
 
   return (
@@ -46,7 +46,7 @@ export default function LessonPointsSummary({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#222", margin: "0 0 4px", display: "flex", alignItems: "center", gap: "8px" }}>
-              {allDone && <span style={{ fontSize: "1.1rem" }}>🎉</span>}
+              {allDone && <span style={{ fontSize: "1.1rem" }}></span>}
               Activity summary: {lessonTitle}
             </h3>
             {allDone && (
@@ -169,7 +169,7 @@ export default function LessonPointsSummary({
             onMouseEnter={e => e.currentTarget.style.opacity = "0.7"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
-            {allDone ? "🏆 Next:" : "↓"} {nextLessonTitle} →
+            {allDone ? " Next:" : "↓"} {nextLessonTitle} →
           </button>
         </div>
       )}

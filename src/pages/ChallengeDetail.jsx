@@ -44,7 +44,7 @@ export default function ChallengeDetail() {
           .join("\n")}`;
       }
       const result = await api.integrations.Core.InvokeLLM({
-        prompt: `You are a code execution simulator. Execute the following JavaScript code and return the console output. Then check if it passes the test cases (if any).\n\nCode:\n\`\`\`javascript\n${code}\n\`\`\`\n${testInfo}\n\nReturn ONLY in this format:\nOUTPUT:\n[the console output here]\n\nTESTS:\n[PASS or FAIL for each test, or "No tests" if none]\n\nRESULT: [PASSED or FAILED]`,
+        prompt: `You are a code execution simulator. Execute the following Python code and return the console output. Then check if it passes the test cases (if any).\n\nCode:\n\`\`\`python\n${code}\n\`\`\`\n${testInfo}\n\nReturn ONLY in this format:\nOUTPUT:\n[the console output here]\n\nTESTS:\n[PASS or FAIL for each test, or "No tests" if none]\n\nRESULT: [PASSED or FAILED]`,
         response_json_schema: {
           type: "object",
           properties: {

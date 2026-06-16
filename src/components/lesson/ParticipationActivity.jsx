@@ -305,7 +305,7 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
           style={{ padding: "12px 28px", borderTop: "1px solid #e8e8e8", display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
           <span style={{ fontSize: "0.8125rem", color: "#888" }}>
-            {correctCount === totalQuestions ? "🎉 All correct!" : "Nice effort — review the explanations above."}
+            {correctCount === totalQuestions ? " All correct!" : "Nice effort — review the explanations above."}
           </span>
           <span style={{ fontSize: "0.8125rem", color: "#cf6a2f", fontWeight: 600 }}>
             {correctCount}/{totalQuestions} correct

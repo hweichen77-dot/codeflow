@@ -19,29 +19,47 @@ export default {
       title: "Prediction Machines, Not Brains",
       concept: "Prediction",
       xp_reward: 10,
-      explanation: `Type "I'm running a little" into your phone and it suggests "late." That's the whole trick. A large language model is autocomplete that read most of the internet.
+      explanation: `Type "I'm running a little" into your phone and it suggests "late." That's the whole trick. A large language model is autocomplete that read most of the internet — and once that clicks, almost everything else about AI stops being magic.
 
-## What the model actually does
+## What it is
 
-An LLM does exactly one thing: given some text, it guesses the next chunk of text. Then it adds that chunk to the input and guesses again. And again. It keeps going until it decides to stop. That stream of guesses is the "answer" you see.
+A **language model** is a program that does exactly one thing: given some text, it predicts the next chunk of text. That's it. There is no module for "reasoning," no separate "memory bank," no truth-checker. The entire system is a giant function that takes the text so far and outputs a probability for every chunk that could come next.
 
-It is not thinking about your question the way a person does. It is not looking up facts in a database. It is computing, for every possible next chunk, "how likely is this to come next?" — and picking from the top candidates.
+The key operation has a name: **next-token prediction**. The model scores thousands of candidate continuations, then picks one of the likely ones. Add it to the input. Predict again. This loop is the whole engine.
 
-Here's the part that surprises people: there's no separate step where the model "decides what to say" and then "writes it." Writing the next word *is* the deciding. The sentence builds itself one piece at a time.
+## How it works
 
-## Why this matters
+Walk through one answer being built:
 
-Once you see the model as a prediction machine, a lot of weird behavior stops being mysterious:
+1. You send text. Your question becomes the starting input — the **context**.
+2. The model predicts. It assigns a likelihood to every possible next chunk and selects from the top candidates.
+3. It appends. The chosen chunk is glued onto the input.
+4. It repeats — predict, append, predict, append — until it emits a special *stop* signal.
 
-- It sounds confident even when it's wrong, because confident-sounding text is what usually follows a question on the internet.
+There is no hidden step where the model "decides what to say" and then writes it down. **Writing the next word is the deciding.** The sentence assembles itself one piece at a time, each piece conditioned on everything before it. Here is the loop in miniature:
+
+\`\`\`python
+prompt = "I am running a"
+while not done:
+    next_word = model.predict(prompt)  # score candidates, pick one
+    prompt = prompt + " " + next_word  # append, then loop
+\`\`\`
+
+Because each step only ever looks at the text in front of it, the model is **stateless** between requests. Nothing is remembered unless it is fed back in.
+
+## Why it matters
+
+Once you see the model as a prediction machine, weird behavior stops being mysterious:
+
+- It sounds confident even when wrong, because confident-sounding text is what usually follows a question online. It imitates the *style*, not the correctness.
 - It can write a poem and debug Python with the same machinery — both are just "what text comes next?"
-- It has no memory of you between conversations unless you feed it that history again. Each request is a fresh prediction over whatever text you handed it.
+- It has no memory of you between conversations. Each request is a fresh prediction over whatever text you handed it. Chat apps fake memory by resending old messages.
+
+This is also why one wrong word early can derail an entire answer: the model keeps predicting *consistent* continuations of its own mistake.
 
 ## The mental model to keep
 
-Picture a ridiculously well-read person who has to answer every question by blurting out one word at a time, with no ability to pause and check anything. Fast. Fluent. Often right. Sometimes makes stuff up with a straight face.
-
-Don't think "robot brain." Think "the most powerful autocomplete ever built." That single swap will make the rest of this module click.`,
+Picture a ridiculously well-read person who must answer every question by blurting out one word at a time, with no ability to pause and check anything. Fast. Fluent. Often right. Sometimes wrong with a straight face. Don't think "robot brain." Think **the most powerful autocomplete ever built.**`,
       key_terms: [
         { term: "Language model", definition: "A program that predicts the next chunk of text given the text before it." },
         { term: "Next-token prediction", definition: "The core operation: guess what comes next, add it, repeat." },
@@ -146,6 +164,75 @@ i am running
 i am running a
 i am running a little
 i am running a little late`,
+      step_throughs: [
+        {
+          title: "one answer, built word by word",
+          steps: [
+            { label: "You send text", detail: "Your question becomes the starting context. Nothing has been predicted yet.", code: 'prompt = "The sky is"' },
+            { label: "Predict the next chunk", detail: "The model scores every candidate continuation and picks a likely one. Here, 'blue' beats 'green', 'falling', and the rest.", code: '"The sky is"->  next = " blue"(most likely)' },
+            { label: "Append and loop", detail: "The chosen chunk is glued on, and the whole thing is fed back in to predict again. The sentence grows one piece at a time.", code: 'prompt = "The sky is blue"->  next = " today"' },
+            { label: "Emit stop", detail: "Eventually the model predicts a special stop signal instead of a word. The collected chunks are your finished answer.", code: '"The sky is blue today."->  <STOP>' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Given the prompt "Roses are red, violets are", what single word does autocomplete most likely add next?',
+          steps: [
+            'This phrase appears countless times in training text, almost always finishing the same way.',
+            'The model scores candidates; "blue" dominates because that continuation is overwhelmingly common.',
+            "It picks the highest-likelihood chunk and appends it."
+          ],
+          output: '" blue"'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'You ask the same model the same question twice and get two different answers. How is that possible if it just predicts "the most likely" word?',
+          steps: [
+            "The model does not always take the single top candidate. It samples from the top few by their probabilities.",
+            "A setting called temperature controls how random that sampling is: higher means more variety, lower means more predictable.",
+            "So two runs can diverge at the first point where a slightly-less-likely chunk gets picked.",
+            "After they diverge, each run keeps predicting consistent continuations of its own path, so the answers drift further apart."
+          ],
+          output: "Sampling randomness (temperature) means the next chunk isn't always the top one, so runs can differ."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "prediction machine vs human brain",
+          columns: ["Aspect", "LLM (prediction machine)", "Human brain"],
+          rows: [
+            { cells: ["Core operation", "Predict the next text chunk", "Understand, reason, recall"] },
+            { cells: ["Memory across chats", "None unless text is re-fed", "Persistent and automatic"] },
+            { cells: ["Fact-checking", "No built-in verifier", "Can pause and double-check"] },
+            { cells: ["What it optimizes for", "Plausible continuation", "Goals, truth, intent"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "what an LLM does vs doesn't do",
+          bins: [
+            { id: "does", label: "What it actually does" },
+            { id: "doesnt", label: "What it does NOT do" }
+          ],
+          items: [
+            { id: "i1", text: "Predicts the next chunk of text", bin: "does" },
+            { id: "i2", text: "Looks up facts in a live database", bin: "doesnt" },
+            { id: "i3", text: "Builds an answer one piece at a time", bin: "does" },
+            { id: "i4", text: "Remembers you between separate chats", bin: "doesnt" },
+            { id: "i5", text: "Uses the same machinery for poems and code", bin: "does" },
+            { id: "i6", text: "Plans the full reply before writing it", bin: "doesnt" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: if an LLM only predicts the next chunk of text, why does it still feel like it is 'answering' your question?",
+          sampleAnswer: "Because the training text is full of questions followed by sensible answers, the most likely continuation of your question is an answer-shaped piece of text. The model isn't deciding to answer you; producing answer-like text is simply the most probable way to continue the conversation it was given."
+        }
+      ],
       hints: [
         "The dictionary maps the text-so-far to the next word. Look up the current prompt.",
         "Use a while loop: keep going as long as the current prompt is a key in next_word.",
@@ -207,9 +294,9 @@ Tokens aren't trivia. They control money, limits, and quality:
 Common text becomes few tokens. Rare or messy text becomes many. A clean English sentence is efficient. A long random string, an unusual name, or lots of emoji burns extra tokens because the model has to fall back to tiny pieces.
 
 \`\`\`
-"hello world"      -> ["hello", " world"]            (2 tokens)
+"hello world"    -> ["hello", " world"]            (2 tokens)
 "antidisestablish" -> ["anti", "dis", "establish"]   (3 tokens)
-"🦄🦄🦄"            -> many tiny pieces               (lots of tokens)
+"Zx9_q4ß!"       -> many tiny pieces           (lots of tokens)
 \`\`\`
 
 The takeaway: when you write a prompt, you're spending tokens. Tight, plain language is cheaper and usually clearer to the model too. That's a rare case where saving money and getting better results point the same direction.`,
@@ -302,6 +389,74 @@ print("estimated tokens:", est_tokens)
 `,
       expected_output: `characters: 32
 estimated tokens: 8`,
+      tools: [{ type: "tokenizer" }],
+      step_throughs: [
+        {
+          title: "text → tokens → bill",
+          steps: [
+            { label: "You write a prompt", detail: "A plain string of characters — what you typed.", code: '"The model sees tokens."' },
+            { label: "The tokenizer splits it", detail: "Each chunk is matched against the model's fixed vocabulary. Common words stay whole; rare ones shatter.", code: '["The", " model", " sees", " tokens", "."]  →  5 tokens' },
+            { label: "Tokens become IDs", detail: "Every token maps to an integer. The model only ever does math on these numbers.", code: "[464, 2746, 7224, 16326, 13]" },
+            { label: "You get billed + limited", detail: "Token count drives the API bill (in and out) and must fit inside the context window.", code: "5 tokens · $3 / 1M in  →  $0.000015" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'How many tokens is "hello world"?',
+          steps: [
+            "Both words are extremely common, so each stays a single token.",
+            'The space before "world" rides along with it as part of that token.',
+            'Count the chunks: ["hello"] + [" world"] = 2.'
+          ],
+          output: "2 tokens"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You send a 1,000-token prompt and get a 600-token answer.\nInput: $3 / 1M tokens.  Output: $15 / 1M tokens.\nWhat does the call cost?",
+          steps: [
+            "Input cost = 1000 / 1,000,000 × $3 = $0.003.",
+            "Output cost = 600 / 1,000,000 × $15 = $0.009.",
+            "Output tokens cost 5× more — answers, not prompts, usually dominate the bill.",
+            "Total = $0.003 + $0.009 = $0.012."
+          ],
+          output: "$0.012000 per call"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "three ways to split text",
+          columns: ["Granularity", "Vocab size", "Tokens for 'unbelievable'", "Trade-off"],
+          rows: [
+            { cells: ["Character", "~100", "12 (one per letter)", "Tiny vocab, but sequences get very long"] },
+            { cells: ["Word", "millions", "1 — if seen, else unknown", "Short sequences, but chokes on rare/new words"] },
+            { cells: ["Subword (BPE)", "~50–100k", "3 (un · believ · able)", "The sweet spot every modern LLM uses"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "few tokens vs many tokens",
+          bins: [
+            { id: "few", label: "Few tokens (cheap)" },
+            { id: "many", label: "Many tokens (expensive)" }
+          ],
+          items: [
+            { id: "i1", text: '"the cat sat"', bin: "few" },
+            { id: "i2", text: '"pneumonoultramicroscopic"', bin: "many" },
+            { id: "i3", text: '"hello there"', bin: "few" },
+            { id: "i4", text: '"xq9f3!! Zq"', bin: "many" },
+            { id: "i5", text: '"good morning"', bin: "few" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In one or two sentences: why does rare or messy text cost more tokens than plain English?",
+          sampleAnswer: "The tokenizer only has whole-chunk symbols for text it saw often. Rare or messy text isn't in that set, so it gets rebuilt from many tiny pieces — and more pieces means more tokens, which means more cost."
+        }
+      ],
       hints: [
         "len(text) gives the character count.",
         "Divide the character count by 4 to approximate tokens.",
@@ -334,39 +489,41 @@ print(f"total cost: \${total:.6f}")
       title: "Training vs Inference",
       concept: "Training",
       xp_reward: 10,
-      explanation: `There are two completely different phases in an AI's life, and people mix them up constantly. Getting them straight will save you a hundred confused conversations.
+      explanation: `A frontier model can cost over one hundred million dollars to build — and then answer your question for a fraction of a cent. That gap isn't a contradiction. It's the difference between the two phases of an AI's life: **training** and **inference**. People mix these up constantly, and getting them straight will save you a hundred confused conversations.
 
-## Training: building the model (once, slow, expensive)
+## What it is
 
-Training is when the model learns. You show it mountains of text and play a fill-in-the-blank game billions of times: hide the next token, let the model guess, then nudge its internal numbers (its **weights**) toward the right answer. Repeat at enormous scale.
+Every model lives in two phases. **Training** is building the model: a slow, brutally expensive, one-time process that produces the finished thing. **Inference** is using the model: running your prompt through the finished thing to get an answer. Training happens once, by a team you'll never meet. Inference happens billions of times, every time anyone hits "send."
 
-This phase:
+## How it works
 
-- Takes weeks to months on thousands of expensive GPUs.
-- Costs millions of dollars for a frontier model.
-- Happens once. The result is a frozen file of weights — the finished model.
+**Training** plays a fill-in-the-blank game at impossible scale. Show the model mountains of text, hide the next token, let it guess, then nudge its internal numbers — its **weights** — slightly toward the right answer. Repeat billions of times. One nudge looks like this:
 
-Think of training like writing and printing a textbook. Slow, costly, done by a team you'll never meet. When it's done, the book exists.
+\`\`\`python
+# one training step: move the weight toward the target
+weight = weight + learning_rate * (target - weight)
+# 0.50  ->  0.55  ->  0.59  ...  the model is changing
+\`\`\`
 
-## Inference: using the model (every time, fast, cheap-ish)
+This phase takes weeks to months on thousands of GPUs and costs millions. When it ends, the weights **freeze** into a finished file — the model.
 
-Inference is what happens when *you* send a prompt. The weights don't change. The model just runs your text through its frozen numbers and predicts tokens. This is the autocomplete loop from lesson 1.
+**Inference** never touches those weights. When you send a prompt, the model runs your text through the frozen numbers and predicts tokens — the autocomplete loop from lesson 1. It takes milliseconds, happens on every request, and teaches the model nothing.
 
-This phase:
+The textbook analogy nails it: training is *writing and printing* the book (slow, once, costly); inference is *reading* it (fast, repeatable). Reading never changes what's printed on the pages.
 
-- Takes milliseconds to seconds.
-- Happens every single time anyone uses the model.
-- Does not teach the model anything. Your chat does not update its brain.
+## Why it matters
 
-Inference is like reading the textbook. Fast, repeatable, and the book itself doesn't change because you read it.
+The freeze has consequences that trip everyone up:
 
-## The consequence that trips everyone up
+- **The model does not learn from your conversation.** Tell it your name, close the tab, come back tomorrow — it has no idea who you are. Inference leaves the weights untouched, so nothing is stored.
+- **Knowledge cutoff.** Its knowledge is frozen at training time. It cannot know about events after the data it trained on, no matter how confidently it talks about them.
+- **In-chat "memory" is an illusion.** When a chatbot remembers something you said five messages ago, the app is simply resending those earlier messages as part of each new prompt. Same frozen model, more input text — not learning.
 
-**The model does not learn from your conversation.** Tell it your name, close the tab, come back tomorrow — it has no idea who you are. Its knowledge is frozen at training time, which also gives it a **knowledge cutoff**: it doesn't know about events after the data it trained on.
+This also explains the cost shape of AI products: a giant up-front bill to train once, then a tiny per-request bill to serve answers forever.
 
-When a chatbot "remembers" earlier in the same conversation, that's not learning. The app is just resending the previous messages as part of your prompt every time. Same frozen model, more input text.
+## The mental model to keep
 
-So: training builds the brain, once. Inference uses the brain, constantly, without changing it.`,
+**Training builds the brain, once. Inference uses the brain, constantly, without changing it.**`,
       key_terms: [
         { term: "Training", definition: "The slow, expensive one-time process of adjusting a model's weights so it predicts text well." },
         { term: "Inference", definition: "Running the finished, frozen model on your prompt to generate output." },
@@ -462,6 +619,75 @@ print("after:", weights)
       expected_output: `before: 0.5
 result: 1.0
 after: 0.5`,
+      step_throughs: [
+        {
+          title: "from raw text to a model you can use",
+          steps: [
+            { label: "Collect data", detail: "Gather enormous amounts of text — books, code, web pages. This happens only during training; inference uses none of it.", code: "corpus = trillions of tokens of text" },
+            { label: "Train: guess and nudge", detail: "Hide the next token, let the model guess, then adjust its weights toward the right answer. Repeat billions of times.", code: "weight += lr * (target - guess)  # weights change" },
+            { label: "Freeze the weights", detail: "When training ends, the weights are saved into a fixed file. The model stops changing forever.", code: "model.save('weights.bin')  # now read-only" },
+            { label: "Infer, again and again", detail: "Every user request runs the frozen weights to predict tokens. No weight is ever updated here.", code: "answer = model(prompt)  # weights unchanged" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You tell ChatGPT your dog's name. The next day, in a brand-new chat, it doesn't remember it. Which phase explains this?",
+          steps: [
+            "Telling it something happens during inference — you sent a prompt and got a reply.",
+            "Inference runs the frozen weights and never updates them, so nothing you said was stored in the model.",
+            "A brand-new chat starts with no prior messages, and the model has no memory of its own."
+          ],
+          output: "Inference doesn't change weights, so the model never learned your dog's name."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A model trained on data up to early 2024 is asked who won an election held in late 2025. It answers confidently but wrongly. Why?",
+          steps: [
+            "The model's knowledge is frozen at training time — its knowledge cutoff is early 2024.",
+            "The 2025 election simply was not in its training data, so it has no real information about it.",
+            "But the model still predicts plausible text, so it produces a confident-sounding guess instead of admitting the gap.",
+            "Fix: give it the result in the prompt (grounding) rather than relying on its frozen memory."
+          ],
+          output: "The event is after the knowledge cutoff, so the frozen model can only guess."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "training vs inference",
+          columns: ["Dimension", "Training", "Inference"],
+          rows: [
+            { cells: ["When it happens", "Once, before release", "Every single request"] },
+            { cells: ["Speed", "Weeks to months", "Milliseconds to seconds"] },
+            { cells: ["Cost", "Millions of dollars", "Fractions of a cent"] },
+            { cells: ["Effect on weights", "Changes them", "Leaves them frozen"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "sort each fact into the right phase",
+          bins: [
+            { id: "train", label: "Training" },
+            { id: "infer", label: "Inference" }
+          ],
+          items: [
+            { id: "i1", text: "Adjusts the model's weights", bin: "train" },
+            { id: "i2", text: "Runs every time you send a prompt", bin: "infer" },
+            { id: "i3", text: "Costs millions and happens once", bin: "train" },
+            { id: "i4", text: "Leaves the weights completely frozen", bin: "infer" },
+            { id: "i5", text: "Plays fill-in-the-blank on huge text", bin: "train" },
+            { id: "i6", text: "Takes milliseconds and is cheap", bin: "infer" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: when a chatbot seems to 'remember' what you said earlier in the same conversation, what is actually happening?",
+          sampleAnswer: "The model itself isn't remembering anything — its weights are frozen. The app stores the earlier messages and resends them as part of each new prompt, so the conversation history is fed back in as fresh input every time. It looks like memory, but it's just re-supplied context running through the same unchanged model."
+        }
+      ],
       hints: [
         "infer() only reads weights; it returns a value and never reassigns the global.",
         "Print result to see the output of inference.",
@@ -496,30 +722,41 @@ print("new weight:", round(new_weight, 2))
       title: "Why LLMs Make Things Up",
       concept: "Hallucination",
       xp_reward: 10,
-      explanation: `Ask a model for a court case to support your argument and it might hand you a perfectly formatted citation — case name, court, year — that does not exist. A real lawyer did this and got sanctioned. The model wasn't lying. It was doing its only job: predicting plausible text.
+      explanation: `In 2023 a New York lawyer asked a model for cases to support his argument. It handed him six perfectly formatted citations — case names, courts, years, judges. All six were invented. He filed them, got caught, and was sanctioned by the court. The model wasn't lying. It was doing its only job: predicting plausible text.
 
-## Why it happens
+## What it is
 
-Remember lesson 1: the model predicts what text usually comes next. It optimizes for **plausible**, not **true**. Most of the time plausible and true overlap, which is why it's so useful. But when they split — when the most natural-sounding continuation isn't factually correct — the model will happily produce the natural-sounding one.
+**Hallucination** is when a model produces confident output that is wrong or entirely made up. Not a typo, not a refusal — a fluent, authoritative-sounding answer that happens to be false. The unsettling part is *how convincing* it looks. The fake citations were formatted exactly like real ones, because the model learned what real citations look like.
 
-This is called **hallucination**: confident output that's wrong or invented.
+The root cause is a single fact from lesson 1: the model optimizes for **plausible**, not **true**. Most of the time those overlap, which is why the tool is useful. But when they split — when the most natural-sounding continuation isn't factually correct — the model produces the natural-sounding one anyway.
 
-Three big reasons it shows up:
+## How it works
 
-- **No fact-checker inside.** There's no separate truth-verifier built into the model. It generates; it doesn't look things up (unless an app gives it a tool to).
-- **Gaps in training.** If the model saw little or conflicting info on a topic, it fills the gap with whatever sounds right. Obscure people, recent events, niche APIs — common hallucination zones.
-- **Pressure to answer.** The model is built to continue text. "I don't know" is a less common continuation after a confident question, so it often guesses instead of refusing.
+Three forces push a model toward making things up:
 
-## How to protect yourself
+- **No fact-checker inside.** There is no separate truth-verifier in the model. It generates text; it does not look anything up unless an app explicitly gives it a tool to.
+- **Gaps in training.** If the model saw little or conflicting information on a topic, it fills the gap with whatever sounds right. Obscure people, very recent events, and niche APIs are classic hallucination zones.
+- **Pressure to answer.** The model is built to *continue* text. After a confident-sounding question, "I don't know" is a rarer continuation in its training data than a confident answer — so it tends to guess rather than refuse.
 
-You don't need to fear the tool. You need to use it like a fast, fluent intern who's sometimes wrong:
+You can picture the failure path: obscure question -> thin training signal -> predict plausible text -> confident wrong answer.
 
-- **Verify anything that matters.** Names, numbers, citations, legal/medical/financial claims — check them against a real source.
-- **Give it the facts.** Paste the document and ask questions about *that*, instead of relying on its memory. This is the core idea behind retrieval (a later module).
+## Why it matters
+
+You don't need to fear the tool. You need to use it like a fast, fluent intern who is sometimes wrong:
+
+- **Verify anything that matters.** Names, numbers, citations, legal, medical, and financial claims — check them against a real source.
+- **Give it the facts (grounding).** Paste the document and ask about *that*, instead of relying on the model's fuzzy memory. This is the core idea behind retrieval, covered in a later module.
 - **Watch for over-specific confidence.** Exact page numbers, precise dates, and tidy citations on obscure topics are classic hallucination tells.
-- **Ask it to flag uncertainty.** Prompts like "say 'I'm not sure' if you don't know" reduce, but don't eliminate, made-up answers.
+- **Ask it to flag uncertainty.** A prompt like the one below reduces, but does not eliminate, fabrication:
 
-The fix isn't to make the model stop predicting — that's all it can do. The fix is to put truth-checking where it belongs: around the model, in how you use it.`,
+\`\`\`text
+Answer only from the text I pasted. If the answer isn't there,
+reply exactly: "Not stated in the source."
+\`\`\`
+
+## The mental model to keep
+
+The fix isn't to make the model stop predicting — that's all it can do. **Put the truth-checking around the model, in how you use it,** not inside the model, where it doesn't exist.`,
       key_terms: [
         { term: "Hallucination", definition: "When a model produces confident output that is wrong or entirely made up." },
         { term: "Plausible vs true", definition: "Models optimize for text that sounds right, which usually but not always matches reality." },
@@ -611,6 +848,75 @@ for a in answers:
 `,
       expected_output: `Paris is the capital of France. (confidence 0.97) -> OK
 The capital of Australia is Sydney. (confidence 0.95) -> HALLUCINATION`,
+      step_throughs: [
+        {
+          title: "how a confident lie slips out",
+          steps: [
+            { label: "You ask an obscure question", detail: "The topic is niche, recent, or barely covered in training text.", code: 'prompt = "Cite a 2019 case on drone privacy law."' },
+            { label: "Thin training signal", detail: "The model has weak or missing real information for this exact request. There's a gap.", code: "relevant_examples_seen = almost none" },
+            { label: "Predict plausible text anyway", detail: "It can't say 'no data here'; it continues with what citations usually look like, inventing the specifics.", code: '"Smith v. Aerial Corp., 412 F.3d 88 (9th Cir. 2019)"' },
+            { label: "Confident wrong answer", detail: "The output is perfectly formatted and authoritative — and entirely fabricated. Looks real, isn't.", code: "case_exists = False  # hallucination" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A model gives an answer with 0.95 confidence and it turns out to be false. Was the high confidence a useful signal that it was correct?",
+          steps: [
+            "Confidence reflects how likely the text was as a continuation, not whether it matches reality.",
+            "Plausible-sounding falsehoods can score just as high as true statements.",
+            "So a high confidence number tells you nothing reliable about correctness."
+          ],
+          output: "No — confidence measures plausibility, not truth."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You need a model to summarize a contract without inventing clauses that aren't there. What's the most reliable way to set this up?",
+          steps: [
+            "Relying on the model's memory invites it to fill gaps with plausible-but-fake clauses.",
+            "Instead, paste the actual contract text into the prompt — this is grounding.",
+            'Constrain it: instruct it to answer only from the pasted text and to say "Not stated in the source" when something is missing.',
+            "Then verify any high-stakes clause against the original document yourself."
+          ],
+          output: "Ground it in the pasted contract, constrain answers to that text, then verify the important parts."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "trustworthy answer vs hallucination risk",
+          columns: ["Situation", "Lower risk", "Higher risk"],
+          rows: [
+            { cells: ["Topic", "Common, well-documented", "Obscure, recent, or niche"] },
+            { cells: ["Source of facts", "Grounded in pasted text", "From the model's memory"] },
+            { cells: ["Specificity", "General, hedged claims", "Exact dates, page numbers, citations"] },
+            { cells: ["Your habit", "Verify what matters", "Trust because it sounds confident"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "raises risk vs reduces risk of acting on a hallucination",
+          bins: [
+            { id: "reduce", label: "Reduces risk" },
+            { id: "raise", label: "Raises risk" }
+          ],
+          items: [
+            { id: "i1", text: "Pasting the source document and asking about it", bin: "reduce" },
+            { id: "i2", text: "Trusting an answer because it sounds confident", bin: "raise" },
+            { id: "i3", text: "Verifying citations against a real source", bin: "reduce" },
+            { id: "i4", text: "Asking about an obscure topic from memory", bin: "raise" },
+            { id: "i5", text: 'Telling it to say "I am not sure" when unsure', bin: "reduce" },
+            { id: "i6", text: "Accepting exact dates on a niche subject", bin: "raise" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can't you fix hallucinations just by telling the model 'only say true things'?",
+          sampleAnswer: "The model has no internal way to check truth — it only predicts plausible continuations, and an instruction to be truthful is just more text that nudges its style, not a verifier it can consult. Real reliability comes from grounding it in source material and checking important claims yourself, putting the truth-checking around the model rather than inside it."
+        }
+      ],
       hints: [
         "Loop over the answers list and read each dict's fields.",
         "Use the 'true' field to decide the label, not the confidence.",

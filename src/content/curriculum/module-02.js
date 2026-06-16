@@ -19,35 +19,41 @@ export default {
       title: "What Even Is an API?",
       concept: "APIs",
       xp_reward: 10,
-      explanation: `You order a coffee. You don't walk behind the counter, grind the beans, and pull the shot yourself. You tell the barista what you want, they do the work, and they hand you a cup. That's an API.
+      explanation: `Open your weather app and pull-to-refresh. In the half-second before the numbers update, your phone just fired a message across the internet to a server it has never met, asked it a question, and got an answer back. That round trip is an **API call**, and your phone makes hundreds of them a day without you noticing.
 
-## The counter, not the kitchen
+## What it is
 
-API stands for Application Programming Interface. Strip the jargon: it's a way for your code to ask someone else's code to do something, without you knowing how they do it.
+**API** stands for **Application Programming Interface**. Strip the jargon: it's a defined way for your code to ask someone else's code to do something, without you knowing *how* they do it.
 
-When you want Claude to answer a question, you don't run the model on your laptop. You can't — it's enormous. Instead you send a request over the internet to Anthropic's servers. Their code runs the model and sends an answer back. Your script never sees the machinery. It just sends the order and waits for the cup.
+The coffee-shop version: you order a latte. You don't walk behind the counter, grind the beans, and pull the shot yourself. You tell the barista what you want, they do the work, they hand you a cup. The counter is the **interface** — the agreed spot where you place an order and receive a result. You never see the espresso machine.
 
-## A request and a response
+## How it works
 
-Every API call is two halves:
+When you want Claude to answer a question, you don't run the model on your laptop. You can't — it's hundreds of gigabytes of numbers. Instead your script sends a **request** over the internet to Anthropic's servers. Their code runs the model and sends a **response** back. Your script never touches the machinery.
+
+Every API call is exactly two halves:
 
 - **The request** — what you send. "Here's my question. Here's who I am."
 - **The response** — what comes back. "Here's the answer."
 
-That's it. You'll spend the rest of this module learning the exact shape of those two halves for the Claude API, but the pattern never changes. Send something, get something back.
-
-## Why APIs are everywhere
-
-Your weather app doesn't own a satellite. It calls a weather API. Your banking app doesn't store its own copy of the stock market. It calls a finance API. Splitting work across APIs lets each team be great at one thing and lets everyone else borrow that thing with a single call.
-
-For you, that means you can build something that talks to one of the best AI models in the world in about ten lines of Python. You don't need a PhD or a data center. You need an address to send the request to and permission to send it.
+That pattern never changes. You send something, you get something back. The whole rest of this module is just learning the precise shape of those two halves for Claude:
 
 \`\`\`text
 Your script  --->  request  --->  Anthropic's API
 Your script  <---  response <---  Anthropic's API
 \`\`\`
 
-Don't overthink it. An API is a counter. You place an order, you get a result. Next up: the format that order is written in.`,
+## Why it matters
+
+APIs are how modern software is built. Your weather app doesn't own a satellite — it calls a weather API. Your banking app doesn't keep its own copy of the stock market — it calls a finance API. Splitting work across APIs lets each team be great at one thing and lets everyone else borrow that thing with a single call.
+
+For you, that means you can build something that talks to one of the best AI models in the world in about ten lines of Python. No PhD, no data center. You need two things: an **address** to send the request to, and **permission** to send it. The next three lessons hand you both.
+
+There's a cost side too. Because the work happens on someone else's servers, every call travels the network (so it has **latency**, a small delay) and often costs money. That shapes how you design real programs — you batch calls, cache answers, and avoid hammering the API in a tight loop.
+
+## The mental model to keep
+
+An API is a counter, not a kitchen. You place an order, you wait, you get a result — and you never need to know how the kitchen works.`,
       key_terms: [
         { term: "API", definition: "Application Programming Interface — a defined way for one program to ask another program to do something." },
         { term: "Request", definition: "The message your code sends to an API describing what you want." },
@@ -138,6 +144,74 @@ print("Response: what comes back")
       expected_output: `An API is a way for my code to ask another program to do work and send back a result.
 Request: what I send
 Response: what comes back`,
+      step_throughs: [
+        {
+          title: "anatomy of one API call",
+          steps: [
+            { label: "Build the request", detail: "Your code packages what you want into a structured message: the question plus who you are.", code: 'request = {"question": "What is 2 + 2?"}' },
+            { label: "Send it over the network", detail: "The request leaves your machine and travels the internet to the API's address. This hop adds a small delay called latency.", code: "POST https://api.anthropic.com/v1/messages" },
+            { label: "Their server does the work", detail: "Anthropic's code receives the request, runs Claude on your question, and produces an answer. Nothing heavy runs on your laptop.", code: "# Claude runs here, not on your machine" },
+            { label: "Read the response", detail: "The result travels back and your script reads it. Send something, get something back.", code: 'response = {"answer": "4"}' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A music app shows you song lyrics but doesn't store any lyrics itself. How does it get them?",
+          steps: [
+            "The app needs data it does not own, so it borrows it.",
+            "It sends a request to a lyrics API: 'give me the lyrics for this song.'",
+            "The lyrics API responds with the text, and the app displays it."
+          ],
+          output: "The app calls a lyrics API — request out, lyrics back."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You want a Python script to translate text using a translation service.\nList the two halves of that interaction and what each contains.",
+          steps: [
+            "Identify the request: your script sends the text to translate plus the target language.",
+            "Identify the response: the service sends back the translated text.",
+            "Notice you never see how the translation model works — only the counter.",
+            "This is the same send-then-receive pattern as every other API."
+          ],
+          output: "Request = {text, target_language}; Response = {translated_text}"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "running it yourself vs calling an API",
+          columns: ["Aspect", "Run the model yourself", "Call the API"],
+          rows: [
+            { cells: ["Hardware", "Needs a data center of GPUs", "Just your laptop and internet"] },
+            { cells: ["Setup", "Download + host hundreds of GB", "Send ten lines of code"] },
+            { cells: ["Cost model", "Buy/rent the machines up front", "Pay per request as you go"], highlight: true },
+            { cells: ["Who maintains it", "You", "Anthropic"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "request or response?",
+          bins: [
+            { id: "req", label: "Part of the request (you send)" },
+            { id: "res", label: "Part of the response (you receive)" }
+          ],
+          items: [
+            { id: "i1", text: "Your question for Claude", bin: "req" },
+            { id: "i2", text: "Claude's generated answer", bin: "res" },
+            { id: "i3", text: "Your API key proving who you are", bin: "req" },
+            { id: "i4", text: "The model name you want to use", bin: "req" },
+            { id: "i5", text: "How many tokens the reply used", bin: "res" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words, why is it a good thing that you don't run the Claude model on your own computer?",
+          sampleAnswer: "The model is enormous and needs expensive hardware to run. By sending a request to Anthropic's servers instead, I borrow that power with a few lines of code — they handle the heavy machinery and I just send a question and read the answer."
+        }
+      ],
       hints: [
         "An API is about one program talking to another. Keep your sentence simple.",
         "Remember the two halves: a request goes out, a response comes back.",
@@ -165,11 +239,11 @@ print("response")
       title: "JSON: How Data Travels",
       concept: "JSON",
       xp_reward: 10,
-      explanation: `APIs don't speak English to each other. They speak JSON. If you've ever filled out a form with labeled boxes — name, email, message — you already understand JSON. It's labeled boxes for data.
+      explanation: `Your Python script holds a dictionary. Anthropic's servers run on different code, maybe a different language, on a machine across the country. How do two strangers agree on the exact shape of a message? They both speak **JSON** — a plain-text format so simple it has a one-page spec, yet it carries nearly every API request on the internet.
 
-## What JSON looks like
+## What it is
 
-JSON (JavaScript Object Notation) is just text arranged as **key-value pairs** inside curly braces:
+**JSON** (JavaScript Object Notation, despite the name it's used everywhere, not just JavaScript) is text arranged as **key-value pairs** inside curly braces. If you've ever filled out a form with labeled boxes — name, email, message — you already understand it.
 
 \`\`\`json
 {
@@ -179,9 +253,11 @@ JSON (JavaScript Object Notation) is just text arranged as **key-value pairs** i
 }
 \`\`\`
 
-Each key (left of the colon) is a label. Each value (right of the colon) is the data. Strings get double quotes. Numbers and \`true\`/\`false\` don't. Pairs are separated by commas.
+Each **key** (left of the colon) is a label. Each **value** (right of the colon) is the data. The rules are tight: strings get double quotes, numbers and \`true\`/\`false\` don't, and commas separate pairs. That's 90% of JSON.
 
-That's 90% of it. The other 10%: values can themselves be lists or more boxes.
+## How it works
+
+The other 10%: a value can itself be a **list** or another box. That nesting is what lets JSON describe complex things.
 
 \`\`\`json
 {
@@ -192,11 +268,9 @@ That's 90% of it. The other 10%: values can themselves be lists or more boxes.
 }
 \`\`\`
 
-See the square brackets? That's a **list**. Inside it, another set of curly braces — a box inside a box. When you call Claude, your request is shaped exactly like this. Don't memorize it yet. Just notice the pattern.
+The square brackets \`[ ]\` hold a list. Inside it, another set of curly braces — a box inside a box. This is exactly the shape of a Claude request. Don't memorize it yet; just notice that it's labeled boxes all the way down.
 
-## JSON in Python
-
-Here's the part that makes JSON pleasant in Python: a JSON object looks almost identical to a Python dictionary.
+In Python, JSON is pleasant because a JSON object looks almost identical to a Python **dictionary**. Two functions move between them:
 
 \`\`\`python
 import json
@@ -209,11 +283,17 @@ back = json.loads(text)     # JSON string -> dict
 print(back["name"])         # Ada
 \`\`\`
 
-\`json.dumps\` turns a Python dict into a JSON string to send. \`json.loads\` turns a JSON string you received back into a dict you can read. Dump to send, load to read. The SDK you'll use later does this for you, but knowing what's happening underneath means you'll never be confused by a response again.
+\`json.dumps\` **dumps** a dict out as a JSON string to send. \`json.loads\` **loads** a received JSON string back into a dict you can index. Dump to send, load to read.
 
-## Why double quotes matter
+## Why it matters
 
-JSON is strict. Keys and string values **must** use double quotes — single quotes break it. A trailing comma after the last pair breaks it too. When an API rejects your request with a vague error, a quote or a comma is the usual culprit. Look there first.`,
+Only **text** can travel over a network — not a live Python object. JSON is the agreed text format both sides serialize to and parse from, which is why it's everywhere. The SDK you'll meet in lesson 4 does the dumps/loads for you, but when an error message mentions a malformed body or you print a raw response, knowing what's underneath means you're never lost.
+
+JSON is also strict, and that strictness causes most beginner errors. Keys and string values **must** use double quotes — single quotes break it. A **trailing comma** after the last pair breaks it too. When an API rejects your request with a vague error, check for a stray quote or comma first.
+
+## The mental model to keep
+
+JSON is labeled boxes for data — \`dumps\` to pack them for the trip, \`loads\` to unpack them when they arrive.`,
       key_terms: [
         { term: "JSON", definition: "JavaScript Object Notation — a text format for data, written as key-value pairs inside curly braces." },
         { term: "Key-value pair", definition: "A label and its data, like \"name\": \"Ada\". The key names it; the value is the data." },
@@ -311,6 +391,73 @@ print(back["name"])
 `,
       expected_output: `{"name": "Ada", "age": 36}
 Ada`,
+      step_throughs: [
+        {
+          title: "dict → JSON → wire → dict",
+          steps: [
+            { label: "Start with a Python dict", detail: "A live object in memory. Useful in code, but it can't travel over a network as-is.", code: 'person = {"name": "Ada", "age": 36}' },
+            { label: "json.dumps packs it", detail: "The dict becomes a JSON string: double quotes added, ready to send.", code: "text = json.dumps(person)\n# '{\"name\": \"Ada\", \"age\": 36}'" },
+            { label: "The text crosses the network", detail: "Plain text is the only thing that can travel. This string is what actually reaches the server.", code: '{"name": "Ada", "age": 36}' },
+            { label: "json.loads unpacks it", detail: "On arrival, the JSON string becomes a dict again, so you can index it normally.", code: 'back = json.loads(text)\nback["name"]  # "Ada"' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Is this valid JSON?\n{ 'role': 'user' }",
+          steps: [
+            "Check the quotes: JSON requires double quotes around keys and string values.",
+            "Here both 'role' and 'user' use single quotes.",
+            "Single quotes are not allowed, so it is invalid."
+          ],
+          output: 'Invalid — must be {"role": "user"} with double quotes.'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You receive this JSON string and need Claude's reply text:\n{\"content\": [{\"type\": \"text\", \"text\": \"Hi there\"}]}\nHow do you reach \"Hi there\" after json.loads?",
+          steps: [
+            "json.loads turns the string into a dict named data.",
+            'data["content"] is a list, so index the first element: data["content"][0].',
+            "That element is a box; read its 'text' key.",
+            'Full path: data["content"][0]["text"].'
+          ],
+          output: 'data["content"][0]["text"]  ->  "Hi there"'
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "json.dumps vs json.loads",
+          columns: ["Function", "Direction", "Input", "Output", "When you use it"],
+          rows: [
+            { cells: ["json.dumps", "Outbound", "Python dict", "JSON string", "Packing data to send"] },
+            { cells: ["json.loads", "Inbound", "JSON string", "Python dict", "Reading data you received"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "valid JSON vs broken JSON",
+          bins: [
+            { id: "ok", label: "Valid JSON" },
+            { id: "bad", label: "Broken JSON" }
+          ],
+          items: [
+            { id: "i1", text: '{"name": "Ada"}', bin: "ok" },
+            { id: "i2", text: "{'name': 'Ada'}", bin: "bad" },
+            { id: "i3", text: '{"age": 36, "ok": true}', bin: "ok" },
+            { id: "i4", text: '{"a": 1, "b": 2,}', bin: "bad" },
+            { id: "i5", text: '{"items": [1, 2, 3]}', bin: "ok" },
+            { id: "i6", text: '{"name": Ada}', bin: "bad" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Why can't you just send a Python dictionary straight across the network — why convert it to JSON first?",
+          sampleAnswer: "A network can only carry text, not live Python objects. json.dumps serializes the dict into a plain JSON string both sides agree on, so the server (which may not even run Python) can parse it. On the way back, json.loads turns the JSON text into a dict I can use again."
+        }
+      ],
       hints: [
         "Use json.dumps(person) to turn the dictionary into a JSON string.",
         "json.dumps keeps the keys in the order you wrote them and uses double quotes.",
@@ -344,46 +491,52 @@ print(loaded["content"])
       title: "API Keys and Rate Limits",
       concept: "Auth & limits",
       xp_reward: 10,
-      explanation: `An API key is your password to the counter. It tells Anthropic who's calling, so they can check you're allowed and bill the right account. Lose it, leak it, and someone else can run up your tab. Treat it like a credit card number.
+      explanation: `In 2023 a developer pasted his cloud API key into a public GitHub repo for "just five minutes" while testing. Automated scanners found it in under a minute and ran up a five-figure bill before he noticed. The lesson is brutal and simple: an **API key** is a password, and the internet never stops scanning for leaked ones.
 
-## What a key looks like
+## What it is
 
-A Claude API key is a long string, something like \`sk-ant-...\`. You get it from the Anthropic console. Every request you send includes it, and the server checks it before doing any work. No valid key, no answer — you'll get a \`401 Unauthorized\` error.
+An API key tells Anthropic who's calling, so they can check you're allowed and **bill the right account**. A Claude key is a long string like \`sk-ant-...\`, generated in the Anthropic console. Every request includes it, and the server verifies it before doing any work. No valid key, no answer — you get a \`401 Unauthorized\`.
 
-## Never put your key in your code
+Treat it exactly like a credit card number. Anyone holding your key can spend your money.
 
-This is the rule that saves careers: **do not paste your key into your script.** If you do, and you push that code to GitHub, bots will find it within minutes and drain your account. It happens constantly.
+## How it works
 
-Instead, store the key in an **environment variable** — a value that lives in your computer's environment, outside your code. Your script reads it at runtime:
+The rule that saves careers: **never paste your key into your script.** If it ends up in code you push to GitHub, bots will find it and drain your account.
 
-\`\`\`python
-import os
-
-api_key = os.environ["ANTHROPIC_API_KEY"]
-print("Key loaded:", api_key is not None)
-\`\`\`
-
-You set the variable once in your terminal:
+Instead, store the key in an **environment variable** — a value that lives in your computer's environment, outside your source code. You set it once in your terminal:
 
 \`\`\`bash
 export ANTHROPIC_API_KEY="sk-ant-your-key-here"
 \`\`\`
 
-Now your code says \`os.environ["ANTHROPIC_API_KEY"]\` and never contains the actual secret. Share the code freely; the key stays on your machine.
+Then your script reads it at runtime, and the secret never appears in the file:
 
-## Rate limits: there's a speed limit
+\`\`\`python
+import os
 
-You can't fire a million requests a second. APIs enforce **rate limits** — caps on how many requests or tokens you can use per minute. Go over and the server replies with \`429 Too Many Requests\` instead of an answer.
-
-Limits exist so one user can't hog the service or rack up a surprise bill. For learning, you'll never come close. But when you build something real that loops over thousands of items, you'll hit them. The fix is simple: slow down, spread requests out, and retry after waiting.
-
-\`\`\`text
-401 -> your key is missing or wrong
-429 -> you're sending too fast, back off and retry
-200 -> success, here's your answer
+api_key = os.environ.get("ANTHROPIC_API_KEY")
+print("Key loaded:", api_key is not None)
 \`\`\`
 
-Two numbers, two rules. Keep your key secret. Respect the speed limit. Everything else is detail.`,
+Now you can share the code freely; the key stays on your machine. (Use \`.get\` rather than \`os.environ["..."]\` so a missing variable returns \`None\` instead of crashing.)
+
+## Why it matters
+
+The second guardrail is **rate limits**. You can't fire a million requests a second — APIs cap how many **requests or tokens** you can use per minute. Go over and the server replies with \`429 Too Many Requests\` instead of an answer.
+
+Limits exist so one user can't hog a shared service or rack up a runaway bill. While learning you'll never come close, but build something that loops over thousands of items and you'll hit them fast. The fix is to slow down, spread requests out, and **retry after waiting** — production code does this automatically with **exponential backoff** (wait 1s, then 2s, then 4s, retrying until it succeeds).
+
+A handful of status codes tell you what happened:
+
+\`\`\`text
+200 -> success, here's your answer
+401 -> your key is missing or wrong
+429 -> you're sending too fast, back off and retry
+\`\`\`
+
+## The mental model to keep
+
+Keep your key secret like a password, and respect the speed limit like a road sign. 401 means "who are you?"; 429 means "slow down." Everything else is detail.`,
       key_terms: [
         { term: "API key", definition: "A secret string that identifies and authorizes you to the API. Anyone with it can call on your account." },
         { term: "Environment variable", definition: "A value stored in your system's environment, read by code at runtime, so secrets stay out of your source code." },
@@ -478,6 +631,75 @@ else:
     print("No API key set. Set ANTHROPIC_API_KEY in your environment.")
 `,
       expected_output: `No API key set. Set ANTHROPIC_API_KEY in your environment.`,
+      step_throughs: [
+        {
+          title: "a key's safe journey",
+          steps: [
+            { label: "Generate it in the console", detail: "Create an sk-ant-... key in the Anthropic dashboard. This is the only time you can copy the full value.", code: "sk-ant-api03-XXXXXXXX..." },
+            { label: "Store it in your environment", detail: "Export it in your terminal so it lives outside your code. It never gets typed into a .py file.", code: 'export ANTHROPIC_API_KEY="sk-ant-..."' },
+            { label: "Read it at runtime", detail: "Your script pulls the value from the environment when it runs. The source file stays secret-free.", code: 'api_key = os.environ.get("ANTHROPIC_API_KEY")' },
+            { label: "Server verifies it", detail: "Anthropic checks the key before running Claude. A bad or missing key returns 401 and no work happens.", code: "# valid -> 200, invalid -> 401" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Your script runs and immediately returns a 401 error. What is the most likely cause?",
+          steps: [
+            "401 means 'Unauthorized' — the server could not verify who you are.",
+            "That points to the key, not the request body or rate limits.",
+            "Check that ANTHROPIC_API_KEY is set and correct in your environment."
+          ],
+          output: "The API key is missing, mistyped, or not loaded."
+        },
+        {
+          number: 2, difficulty: "hard",
+          prompt: "You loop over 5,000 items, one API call each, and start getting 429s after a few hundred.\nDesign a fix using exponential backoff.",
+          steps: [
+            "429 means you exceeded the rate limit, so the fix is to slow down and retry — not to give up.",
+            "On a 429, wait, then retry the same request.",
+            "Each retry, double the wait: 1s, then 2s, then 4s. This is exponential backoff.",
+            "Cap the number of retries so a truly broken request eventually stops.",
+            "Optionally add a small delay between successful calls to stay under the limit from the start."
+          ],
+          output: "Retry on 429 with delays of 1s, 2s, 4s... up to a max retry count."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "401 vs 429 — two very different problems",
+          columns: ["Code", "Meaning", "Cause", "What to do"],
+          rows: [
+            { cells: ["200", "OK", "Request succeeded", "Read the response"] },
+            { cells: ["401", "Unauthorized", "Key missing or wrong", "Fix the key, then retry"] },
+            { cells: ["429", "Too Many Requests", "Sending too fast", "Back off and retry slower"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "safe vs risky key handling",
+          bins: [
+            { id: "safe", label: "Safe" },
+            { id: "risky", label: "Risky" }
+          ],
+          items: [
+            { id: "i1", text: "Read the key from an environment variable", bin: "safe" },
+            { id: "i2", text: "Paste the key directly into your .py file", bin: "risky" },
+            { id: "i3", text: "Put the key in a comment so you remember it", bin: "risky" },
+            { id: "i4", text: "Keep the key out of version control", bin: "safe" },
+            { id: "i5", text: "Commit the key to a public GitHub repo", bin: "risky" },
+            { id: "i6", text: "Rotate the key if you suspect it leaked", bin: "safe" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Explain why storing your API key in an environment variable is safer than writing it directly in your code.",
+          sampleAnswer: "Code gets shared, pushed to GitHub, and copied between machines. If the key lives in the file, it travels with the code and can be scraped by bots within minutes. An environment variable keeps the secret on my machine only — the code reads it at runtime, so the file I share never contains the actual key."
+        }
+      ],
       hints: [
         "Use os.environ.get(\"ANTHROPIC_API_KEY\") — .get returns None instead of raising an error when the variable is missing.",
         "An if/else on api_key lets you print a different message for found vs missing.",
@@ -518,19 +740,21 @@ else:
       title: "Call Claude and Print the Reply",
       concept: "Messages API",
       xp_reward: 10,
-      explanation: `Everything so far was setup. Now you make the call. Ten lines of Python sends a question to Claude and prints the answer. Here they are.
+      explanation: `Everything so far was setup — the counter, the JSON, the key, the limits. Now you walk up and place the order. About ten lines of Python sends a question to Claude and prints the answer. By the end of this lesson, every line of it will make sense.
 
-## Install the SDK
+## What it is
 
-Anthropic ships a Python library so you don't have to build the JSON request by hand. Install it once:
+Anthropic ships an **SDK** (Software Development Kit) — a Python library that wraps the raw API so you don't hand-build the JSON. Install it once:
 
 \`\`\`bash
 pip install anthropic
 \`\`\`
 
-An SDK is a wrapper around the raw API. It builds the JSON, attaches your key, sends the request, and hands you back a tidy object. You could do all that with the \`requests\` library and a hand-written dict — but the SDK is less to get wrong.
+An SDK builds the JSON request, attaches your key, sends it over the network, and hands you back a tidy object. You *could* do all that with the \`requests\` library and a hand-written dict, but the SDK is simply less to get wrong.
 
-## The whole thing
+## How it works
+
+Here is the whole program:
 
 \`\`\`python
 import os
@@ -551,17 +775,21 @@ print(response.content[0].text)
 
 Read it top to bottom:
 
-- **client** — your connection, holding the key it reads from the environment.
-- **messages.create** — the call itself. This is where the request goes out and the response comes back.
-- **model** — which Claude to use. \`claude-sonnet-4-6\` is a solid, fast default.
-- **max_tokens** — the cap on how long the reply can be. A token is roughly a word-piece; 200 is plenty for a sentence.
-- **messages** — a list of turns. Each turn has a \`role\` (\`user\` is you) and \`content\` (what you said). Recognize the shape? It's the JSON from lesson 2.
+- **client** — your connection. It reads the key from the environment (lesson 3) and holds it.
+- **messages.create** — the call itself. Here the request goes out and the response comes back (lesson 1).
+- **model** — which Claude to use. \`claude-sonnet-4-6\` is a fast, capable default.
+- **max_tokens** — a cap on how long the reply can be, measured in tokens. 200 is plenty for a sentence; set it too low and the answer gets cut off mid-thought.
+- **messages** — a list of **turns**. Each turn has a \`role\` (\`user\` is you) and \`content\` (what you said). Recognize the shape? It's exactly the JSON from lesson 2.
 
-## Reading the response
+## Why it matters
 
-The reply comes back as an object. The text lives at \`response.content[0].text\`. Why the \`[0]\`? Because \`content\` is a list of blocks, and for a simple text reply there's one block — the first one. Grab its \`.text\` and print it.
+The reply comes back as an object, and the text lives at \`response.content[0].text\`. Why the \`[0]\`? Because \`content\` is a **list of blocks**. A plain text answer is one block — the first — so you grab \`content[0]\` and read its \`.text\`. (The list exists because richer replies can carry multiple blocks, like tool calls, which you'll meet later.)
 
-That's the full loop you learned in lesson 1, made real: you built a request, sent it, the server ran Claude, and you read the response. Change the \`content\` string and you change the question. You now know how to talk to an AI from code.`,
+This is the full loop from lesson 1, made real: you built a request, sent it, the server ran Claude, and you read the response. Change the \`content\` string and you change the question. Wrap it in a loop and you have a chatbot; feed it a document and you have a summarizer. Every Claude program you ever write is a variation on these ten lines.
+
+## The mental model to keep
+
+\`messages.create\` is the counter from lesson 1 with a real menu: hand it a model, a length cap, and your messages list, and read your answer out of \`content[0].text\`.`,
       key_terms: [
         { term: "SDK", definition: "Software Development Kit — a library that wraps an API so you call simple functions instead of building raw requests." },
         { term: "messages.create", definition: "The Anthropic SDK call that sends your message to Claude and returns the response." },
@@ -663,6 +891,75 @@ response = client.messages.create(
 print(response.content[0].text)
 `,
       expected_output: `Hello! It's great to meet you.`,
+      step_throughs: [
+        {
+          title: "ten lines, step by step",
+          steps: [
+            { label: "Create the client", detail: "Anthropic(api_key=...) reads your key from the environment and holds the connection open.", code: "client = Anthropic(api_key=os.environ[\"ANTHROPIC_API_KEY\"])" },
+            { label: "Build the messages list", detail: "One user turn: a role saying who's speaking and content holding your question. Same JSON shape as lesson 2.", code: 'messages=[{"role": "user", "content": "Say hello."}]' },
+            { label: "Call messages.create", detail: "Pass the model, max_tokens, and messages. The SDK packs the JSON, attaches your key, and sends the request.", code: "response = client.messages.create(model=..., max_tokens=200, messages=messages)" },
+            { label: "Read the reply", detail: "content is a list of blocks; the first block's .text holds Claude's answer. Print it.", code: "print(response.content[0].text)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'In messages=[{"role": "user", "content": "Hi"}], what does "user" mean?',
+          steps: [
+            "Each message has a role naming who is speaking.",
+            "'user' marks this turn as coming from you.",
+            "Claude's own replies come back with role 'assistant'."
+          ],
+          output: '"user" = the message is from you, not from Claude.'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You run the program and Claude's answer is cut off halfway through a sentence.\nWhat parameter is to blame and how do you fix it?",
+          steps: [
+            "A truncated reply means the model hit its length cap before finishing.",
+            "That cap is max_tokens — the maximum length of the response.",
+            "Raise it (for example from 50 to 500) so the answer has room to complete.",
+            "Tokens are roughly word-pieces, so estimate generously for longer replies."
+          ],
+          output: "Increase max_tokens so the reply isn't truncated."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "raw requests vs the SDK",
+          columns: ["Step", "Doing it by hand (requests)", "With the SDK"],
+          rows: [
+            { cells: ["Build JSON body", "You write the dict yourself", "Done for you"] },
+            { cells: ["Attach the key", "Set the header manually", "Passed once to the client"] },
+            { cells: ["Send + parse", "requests.post then json.loads", "One messages.create call"], highlight: true },
+            { cells: ["Read the text", 'resp.json()["content"][0]["text"]', "response.content[0].text"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "request field vs response field",
+          bins: [
+            { id: "in", label: "You put it in the request" },
+            { id: "out", label: "You read it from the response" }
+          ],
+          items: [
+            { id: "i1", text: "model", bin: "in" },
+            { id: "i2", text: "max_tokens", bin: "in" },
+            { id: "i3", text: "messages", bin: "in" },
+            { id: "i4", text: "content[0].text", bin: "out" },
+            { id: "i5", text: "role 'assistant' on the reply", bin: "out" },
+            { id: "i6", text: "usage (tokens consumed)", bin: "out" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Connect this lesson back to lesson 1: how is messages.create the same request-and-response loop you learned at the start?",
+          sampleAnswer: "messages.create is the request half — I package the model, max_tokens, and my messages and send them to Anthropic's servers. The returned object is the response half — Claude's answer, which I read from content[0].text. It's the exact send-something, get-something-back pattern from lesson 1, just with the real Claude shape filled in."
+        }
+      ],
       hints: [
         "Pass three things to messages.create: model=\"claude-sonnet-4-6\", max_tokens=200, and the messages list.",
         "Each message is a dict with \"role\": \"user\" and \"content\": your question.",

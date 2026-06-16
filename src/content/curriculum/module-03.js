@@ -22,7 +22,7 @@ export default {
       title: "System Prompts: Setting the Stage",
       concept: "System Prompts",
       xp_reward: 10,
-      explanation: `Same question, two different answers. Ask a model "what should I eat?" with no setup and you get a generic list. Ask it the same thing after telling it "You are a no-nonsense sports nutritionist talking to a marathoner two days before a race" and the answer changes completely. That setup is the **system prompt**.
+      explanation: `Same question, two different answers. Ask a model "what should I eat?" with no setup and you get a generic list. Ask it the same thing after telling it "You are a no-nonsense sports nutritionist talking to a marathoner two days before a race" and the answer changes completely. That setup is the **system prompt** — the single highest-leverage line of text in all of prompt engineering.
 
 ## What a system prompt actually is
 
@@ -31,9 +31,11 @@ Most chat APIs split your input into two channels:
 - **System prompt** — standing instructions. Who the model is, how it should behave, what rules it must follow. Set once, applies to the whole conversation.
 - **User messages** — the actual back-and-forth.
 
-Think of it like a job briefing you give a new hire before their first customer walks in. You don't re-explain the company values on every call. You say it once, up front, and it colors everything after.
+Think of it like a **job briefing** you give a new hire before their first customer walks in. You don't re-explain the company values on every call. You say it once, up front, and it colors everything after. The model treats the system prompt as the persona it never drops.
 
-## Where it goes in the API
+## How it works
+
+Internally there is no magic separate brain reading the system prompt. The API stitches your \`system\` text and your \`messages\` into one input stream, but it tags the system portion as authoritative framing. The model then predicts every following token *conditioned on that frame*. So "answer in one sentence" isn't enforced by a rule engine — it just makes one-sentence continuations far more likely.
 
 With Claude's Messages API, the system prompt is its own top-level field — it is **not** another message in the list:
 
@@ -58,15 +60,19 @@ The \`system\` value steers tone, role, and constraints. The \`messages\` list c
 
 Good system prompts are concrete. Instead of "be helpful," try:
 
-- A role: "You are a patient Python tutor for absolute beginners."
-- A format rule: "Always answer with a numbered list of steps."
-- A boundary: "If you don't know, say so. Never invent function names."
+- A **role**: "You are a patient Python tutor for absolute beginners."
+- A **format rule**: "Always answer with a numbered list of steps."
+- A **boundary**: "If you don't know, say so. Never invent function names."
 
 Don't dump everything in here. A system prompt that's three pages long competes with itself — the model can't follow ten priorities at once. Pick the few rules that matter and state them plainly.
 
 ## Why it matters
 
-The system prompt is your cheapest, highest-leverage control. Before you reach for fancier techniques, get this right. Half the "the model won't behave" problems people have are really "I never told it how to behave" problems.`,
+The system prompt is your cheapest, highest-leverage control. It costs a handful of tokens, applies to every turn, and steers behavior without touching the model at all. Before you reach for fancier techniques like few-shot examples or higher token budgets, get this right. Half the "the model won't behave" problems people have are really "I never told it how to behave" problems. It is also where safety and brand voice live — a support bot that must never promise refunds gets that rule here, once.
+
+## The mental model to keep
+
+The system prompt is the **role you cast the model in before the scene starts**. Get the casting right and the performance follows. State the role, a format, and a boundary in a few plain lines, and stop there.`,
       key_terms: [
         { term: "System prompt", definition: "Standing instructions sent once that define the model's role, tone, and rules for the whole conversation." },
         { term: "User message", definition: "An individual turn in the conversation — the actual question or input from the person." },
@@ -141,6 +147,74 @@ The system prompt is your cheapest, highest-leverage control. Before you reach f
           ]
         }
       ],
+      step_throughs: [
+        {
+          title: "How a system prompt shapes one answer",
+          steps: [
+            { label: "Set the role once", detail: "The system text defines the persona and rules for the whole conversation. It is sent on every call but you only write it once.", code: 'system="You are a terse senior engineer. One sentence. No fluff."' },
+            { label: "User asks a question", detail: "The actual turn arrives in the messages list, separate from the system frame.", code: 'messages=[{"role": "user", "content": "Tabs or spaces?"}]' },
+            { label: "Model conditions on the frame", detail: "Every predicted token is biased toward the persona. One-sentence, no-fluff continuations become the most likely.", code: "# bias: terse + decisive + engineer voice" },
+            { label: "Shaped response comes back", detail: "The answer obeys the role without you ever repeating the rules in the user message.", code: '"Spaces — they render identically everywhere."' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Turn the vague instruction "be helpful" into a concrete system prompt for a beginner Python tutor.',
+          steps: [
+            'Name the role explicitly: "You are a patient Python tutor for absolute beginners."',
+            "Add one behavior rule the model can act on: explain each step and avoid jargon.",
+            "Stop there — one role plus one behavior is enough to steer tone."
+          ],
+          output: '"You are a patient Python tutor for absolute beginners. Explain each step in plain language and avoid jargon."'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A support bot must (a) stay friendly, (b) never promise refunds, and (c) escalate billing questions. Write the system prompt and explain the ordering.",
+          steps: [
+            "Lead with the role so the persona is set first: a friendly support assistant.",
+            "State the hard boundary plainly — never promise refunds — because boundaries are the rules most often violated when buried.",
+            "Add the escalation rule as a concrete action, not a vibe: route billing questions to a human.",
+            "Keep it to three short lines so no rule competes with another for attention."
+          ],
+          output: '"You are a friendly customer-support assistant. Never promise refunds or discounts. If a question is about billing, tell the customer you are escalating it to a human agent."'
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "weak vs strong system prompts",
+          columns: ["System prompt", "What the model can act on", "Result"],
+          rows: [
+            { cells: ['"Be helpful and nice."', "Nothing concrete — tone is undefined", "Generic, inconsistent answers"] },
+            { cells: ['"Do a good job."', "No role, no format, no boundary", "Drifts in length and style across turns"] },
+            { cells: ['"You are a terse senior engineer. One sentence. No fluff."', "Clear role + format + constraint", "Short, consistent, on-voice replies"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "system prompt vs user message",
+          bins: [
+            { id: "system", label: "Belongs in system prompt" },
+            { id: "user", label: "Belongs in a user message" }
+          ],
+          items: [
+            { id: "i1", text: '"You are a patient math tutor."', bin: "system" },
+            { id: "i2", text: '"What is 17 times 4?"', bin: "user" },
+            { id: "i3", text: '"Always answer in a numbered list."', bin: "system" },
+            { id: "i4", text: '"Translate this sentence for me."', bin: "user" },
+            { id: "i5", text: '"Never reveal internal pricing."', bin: "system" },
+            { id: "i6", text: '"Here is the paragraph to summarize: ..."', bin: "user" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does a focused three-line system prompt often beat a sprawling three-page one?",
+          sampleAnswer: "A system prompt steers the model by making certain continuations more likely, not by enforcing rules. When you stack ten priorities the model can't honor them all at once, so they dilute each other. A few clear rules — role, format, boundary — give strong, non-competing signals the model can actually follow on every turn."
+        }
+      ],
       starter_code: `import os
 from anthropic import Anthropic
 
@@ -212,7 +286,11 @@ print(support_system_prompt("Acme"))`,
       title: "Tokens: How Models Read and Bill",
       concept: "Tokens",
       xp_reward: 10,
-      explanation: `Models don't read words. They read **tokens** — chunks of text that are usually a few characters long. "cat" is one token. "unbelievable" might be three ("un", "believ", "able"). A space is often glued to the front of the next token. This sounds like trivia until you realize tokens are how you get billed and how the model's memory limit is measured.
+      explanation: `Paste "ChatGPT" into a tokenizer and it splits into "Chat" + "GPT" — two tokens, not one word. Models don't read words. They read **tokens** — chunks of text that are usually a few characters long. "cat" is one token. "unbelievable" might be three ("un", "believ", "able"). A space is often glued to the front of the next token. This sounds like trivia until you realize tokens are how you get **billed** and how the model's **memory limit** is measured. Every dollar and every length limit in LLM-land is denominated in tokens.
+
+## What a token is
+
+A **token** is a common chunk of text drawn from the model's fixed vocabulary of roughly 50,000 to 100,000 entries. Sometimes a token is a whole word, sometimes a word-piece ("ing"), sometimes a space-plus-word (" the"), sometimes a single punctuation mark. The vocabulary is learned by finding which chunks appear most often, so frequent text packs into few tokens and rare text shatters into many.
 
 ## A rough rule of thumb
 
@@ -226,7 +304,7 @@ print("Characters:", len(text))
 print("Rough token estimate:", estimate)
 \`\`\`
 
-## Two limits you'll hit
+## How it works: two limits you'll hit
 
 1. **Context window** — the total tokens the model can consider at once: your system prompt + all messages + the response. Big models hold a lot, but it's still finite. Stuff too much in and the oldest content falls off or the call errors.
 2. **max_tokens** — a cap *you* set on how long the response can be. It does not control the input. If you set \`max_tokens=50\` and ask for an essay, you get a sentence and a half, cut off mid-thought.
@@ -245,13 +323,16 @@ response = client.messages.create(
 print(response.content[0].text)
 \`\`\`
 
-## Why you care
+## Why it matters
 
-- **Cost.** You pay per token, usually at different rates for input and output. A bloated system prompt repeated across thousands of calls adds up fast.
+- **Cost.** You pay per token, usually at different rates for input and output — output is often 4–5x pricier. A bloated system prompt repeated across thousands of calls adds up fast.
 - **Truncation.** Set \`max_tokens\` too low and answers get chopped. Too high and you waste headroom (though you're only billed for what's actually generated).
 - **Limits.** Long documents can blow the context window. That's when you start chunking or summarizing.
+- **Weird failures.** Asking a model to "count the r's in strawberry" trips it up partly because it sees tokens, not individual letters. It literally isn't looking at the letters the way you are.
 
-Tokens are the unit everything in LLM-land is priced and measured in. Get a feel for them and the rest of prompt engineering gets less mysterious.`,
+## The mental model to keep
+
+Tokens are the **currency and the ruler** of LLMs — everything is priced and measured in them. Tight, plain language spends fewer tokens and usually reads clearer to the model too, so saving money and getting better output point the same direction.`,
       key_terms: [
         { term: "Token", definition: "A chunk of text (often a few characters) that the model reads and generates; the unit used for billing and limits." },
         { term: "Context window", definition: "The maximum total tokens — input plus output — the model can handle in a single request." },
@@ -326,6 +407,74 @@ Tokens are the unit everything in LLM-land is priced and measured in. Get a feel
           ]
         }
       ],
+      tools: [{ type: "tokenizer" }],
+      step_throughs: [
+        {
+          title: "From your text to a bill",
+          steps: [
+            { label: "You write a prompt", detail: "A plain string of characters — exactly what you typed.", code: '"Explain recursion simply."' },
+            { label: "The tokenizer splits it", detail: "Each chunk is matched against the model's fixed vocabulary. Common words stay whole; rare ones break into pieces.", code: '["Explain", " recursion", " simply", "."]  ->  4 tokens' },
+            { label: "Add the system prompt + history", detail: "Your system text and every prior message count as input tokens too. The total must fit the context window.", code: "system (28) + history (140) + prompt (4) = 172 in" },
+            { label: "Billed in and out", detail: "Input tokens are billed at one rate, the generated answer at another (usually higher).", code: "172 in @ $3/1M + 90 out @ $15/1M  ->  $0.00187" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Estimate the tokens in "The quick brown fox" using the rule of thumb.',
+          steps: [
+            "Count the characters including spaces: 19.",
+            "Apply the rule 1 token per 4 characters: 19 / 4 = 4.75.",
+            "Round to a whole number — about 5 tokens. (A real tokenizer gives 4 here; the estimate is close enough for budgeting.)"
+          ],
+          output: "About 5 tokens"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A chatbot resends a 200-token system prompt on every one of 50,000 daily calls. Input is $3 per 1M tokens. How much does just the system prompt cost per day?",
+          steps: [
+            "Tokens spent on the system prompt = 200 x 50,000 = 10,000,000 per day.",
+            "Convert to millions: 10,000,000 / 1,000,000 = 10 million-token units.",
+            "Cost = 10 x $3 = $30 per day, purely on the repeated system prompt.",
+            "Trimming it to 100 tokens halves that to $15 per day — about $5,400 saved a year."
+          ],
+          output: "$30 per day (before any user messages or answers)"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "context window vs max_tokens",
+          columns: ["Limit", "Who sets it", "What it caps", "Symptom when hit"],
+          rows: [
+            { cells: ["Context window", "The model / API", "Total input + output tokens", "Call errors or oldest messages drop"] },
+            { cells: ["max_tokens", "You, per request", "Only the generated output", "Answer cut off mid-sentence"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "few tokens vs many tokens",
+          bins: [
+            { id: "few", label: "Few tokens (cheap)" },
+            { id: "many", label: "Many tokens (expensive)" }
+          ],
+          items: [
+            { id: "i1", text: '"the cat sat down"', bin: "few" },
+            { id: "i2", text: '"pneumonoultramicroscopic"', bin: "many" },
+            { id: "i3", text: '"good morning team"', bin: "few" },
+            { id: "i4", text: '"x9$Qz!! 7vK"', bin: "many" },
+            { id: "i5", text: '"please summarize this"', bin: "few" },
+            { id: "i6", text: '"aGVsbG8gd29ybGQ= base64 blob"', bin: "many" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In one or two sentences: why does max_tokens=50 not make a long prompt cheaper to send?",
+          sampleAnswer: "max_tokens only caps the output the model is allowed to generate; it never touches the input. A long prompt is still tokenized and billed in full as input — setting max_tokens low just chops the answer short, it doesn't shrink what you sent."
+        }
+      ],
       starter_code: `def estimate_tokens(text):
     # Rough rule: about 1 token per 4 characters.
     # TODO: return an integer estimate of the token count.
@@ -378,24 +527,20 @@ print(estimate_cost("hello world this is a test", 3.0))`,
       title: "Temperature: Tuning Randomness",
       concept: "Temperature",
       xp_reward: 10,
-      explanation: `Ask a model to "name a fruit" ten times at temperature 0 and you'll likely get "apple" ten times. Crank the temperature up and you'll start seeing "dragonfruit," "kumquat," "persimmon." **Temperature** is the dial that controls how adventurous the model gets when picking its next token.
+      explanation: `Ask a model to "name a fruit" ten times at temperature 0 and you'll likely get "apple" ten times. Crank the temperature up and you'll start seeing "dragonfruit," "kumquat," "persimmon." **Temperature** is the dial that controls how adventurous the model gets when picking its next token — and misunderstanding it is one of the most common prompt-engineering mistakes.
 
-## What's actually happening
+## What it is
 
-At each step the model has a ranked list of likely next tokens with probabilities attached. Temperature reshapes that list before the model picks:
+Temperature is a single number (typically **0 to 1**, some APIs allow higher) that controls **randomness in token selection**. It is NOT a "creativity score" you turn up for better writing. It's a risk knob: low means play it safe, high means take chances. More randomness is not the same as more quality.
+
+## How it works
+
+At each step the model produces a ranked list of likely next tokens with probabilities attached. Temperature reshapes that list *before* a token is sampled:
 
 - **Low temperature (near 0)** — sharpen toward the top choice. The model almost always grabs the most likely token. Output is focused, repeatable, predictable.
 - **High temperature (toward 1)** — flatten the odds. Lower-ranked tokens get a real shot. Output is varied, surprising, sometimes off the rails.
 
-Temperature usually runs from 0 to 1 (some APIs allow higher). It is NOT a "creativity score" you turn up for better writing — it's a randomness knob, and more randomness is not always better.
-
-## When to use which
-
-| Goal | Temperature |
-|------|-------------|
-| Extracting data, classification, math | 0 — you want the same right answer every time |
-| Summaries, straightforward Q&A | 0 to 0.3 — mostly stable, a little flexibility |
-| Brainstorming, names, varied phrasings | 0.7 to 1.0 — you want range |
+Picture the probabilities as a hill. Low temperature makes the hill into a sharp spike — one token dominates. High temperature flattens it into gentle rolling ground — many tokens are plausible.
 
 \`\`\`python
 import os
@@ -412,11 +557,23 @@ response = client.messages.create(
 print(response.content[0].text)
 \`\`\`
 
-## The trap
+## When to use which
 
-People reach for high temperature when they're unhappy with output, hoping randomness fixes it. Usually the real fix is a clearer prompt. If you need a *correct* answer, low temperature plus a good prompt beats high temperature every time. Save the high settings for when you genuinely want variety, like generating ten different headline options.
+| Goal | Temperature |
+|------|-------------|
+| Extracting data, classification, math | 0 — you want the same right answer every time |
+| Summaries, straightforward Q&A | 0 to 0.3 — mostly stable, a little flexibility |
+| Brainstorming, names, varied phrasings | 0.7 to 1.0 — you want range |
 
-One more note: even at temperature 0, outputs aren't guaranteed byte-for-byte identical across runs. Low temperature reduces randomness; it doesn't promise perfect determinism.`,
+## Why it matters: the trap
+
+People reach for high temperature when they're unhappy with output, hoping randomness fixes it. Usually the real fix is a clearer prompt. If you need a *correct* answer, low temperature plus a good prompt beats high temperature every time. Save the high settings for when you genuinely want variety, like generating ten different headline options. Raising temperature on a wrong answer just produces wrong answers in more creative ways.
+
+One more note: even at temperature 0, outputs aren't guaranteed byte-for-byte identical across runs. Low temperature reduces randomness; it doesn't promise perfect determinism.
+
+## The mental model to keep
+
+Temperature is a **risk dial, not a quality dial**. Turn it down when you want one correct answer; turn it up only when you genuinely want range.`,
       key_terms: [
         { term: "Temperature", definition: "A setting (typically 0–1) that controls how random the model's token choices are — low is focused, high is varied." },
         { term: "Deterministic", definition: "Producing the same or very similar output for the same input; low temperature pushes toward this." },
@@ -491,6 +648,74 @@ One more note: even at temperature 0, outputs aren't guaranteed byte-for-byte id
           ]
         }
       ],
+      step_throughs: [
+        {
+          title: "How temperature reshapes one token choice",
+          steps: [
+            { label: "Model ranks the next tokens", detail: "After 'Name a fruit:', the model assigns a probability to every candidate.", code: "apple .60  banana .15  kiwi .08  durian .01 ..." },
+            { label: "Apply low temperature (0)", detail: "The distribution is sharpened to a spike — the top token swallows almost all the probability.", code: "apple .98  banana .01  kiwi .005 ..." },
+            { label: "Apply high temperature (0.9)", detail: "The distribution is flattened — long-shot tokens get a real chance.", code: "apple .30  banana .18  kiwi .14  durian .06 ..." },
+            { label: "Sample one token", detail: "At temp 0 you get 'apple' nearly every run; at temp 0.9 you might get 'durian'. Then repeat for the next token.", code: "temp 0 -> apple   |   temp 0.9 -> durian" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You are extracting the total amount from thousands of invoices and need the same answer every time. What temperature, and why?",
+          steps: [
+            "Extraction has exactly one correct answer per invoice — variety is a bug, not a feature.",
+            "You want the model to grab the single most likely (correct) token every time.",
+            "Set temperature to 0 so the distribution is sharpened to the top choice."
+          ],
+          output: "temperature = 0 (consistency over variety)"
+        },
+        {
+          number: 2, difficulty: "hard",
+          prompt: "A teammate brainstorms 10 product names at temperature 0 and gets the same 2 names repeated. They then crank temperature to 1.4 and get gibberish like 'Zorpity Glonk'. What is going wrong at each extreme, and what should they pick?",
+          steps: [
+            "At temperature 0 the distribution is a spike, so the model keeps grabbing the same top tokens — almost no variety, which defeats brainstorming.",
+            "At temperature 1.4 the distribution is flattened so far that nonsense tokens become likely — variety, but incoherent.",
+            "Brainstorming wants range that is still plausible, which lives in the middle.",
+            "Pick around 0.8 to 1.0: varied, surprising, but still real words and real names."
+          ],
+          output: "temperature ~0.9 — variety without falling off the rails"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "low vs high temperature at a glance",
+          columns: ["Setting", "Distribution effect", "Output character", "Best for"],
+          rows: [
+            { cells: ["Low (0 - 0.3)", "Sharpened to the top token", "Focused, repeatable, safe", "Extraction, classification, math, factual Q&A"], highlight: true },
+            { cells: ["Mid (0.4 - 0.6)", "Mildly flattened", "Some flexibility, mostly stable", "Summaries, conversational replies"] },
+            { cells: ["High (0.7 - 1.0)", "Flattened, long-shots viable", "Varied, surprising, sometimes off", "Brainstorming, names, multiple drafts"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "low temperature vs high temperature",
+          bins: [
+            { id: "low", label: "Use low temperature (0)" },
+            { id: "high", label: "Use high temperature (~0.9)" }
+          ],
+          items: [
+            { id: "i1", text: "Pull the invoice total as a number", bin: "low" },
+            { id: "i2", text: "Generate 12 tagline options", bin: "high" },
+            { id: "i3", text: "Classify an email as spam or not", bin: "low" },
+            { id: "i4", text: "Brainstorm quirky startup names", bin: "high" },
+            { id: "i5", text: "Solve an arithmetic word problem", bin: "low" },
+            { id: "i6", text: "Write five different opening lines for a story", bin: "high" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is calling temperature a 'creativity dial' misleading?",
+          sampleAnswer: "Temperature only controls how much randomness goes into picking each token — it flattens or sharpens the probability distribution. It doesn't make the model smarter or more imaginative; it just lets less-likely tokens through. Real creativity comes from the prompt and the model, while high temperature can just as easily produce incoherent or wrong output as interesting output."
+        }
+      ],
       starter_code: `def recommend_temperature(task):
     # Return a temperature for the task.
     # "extraction" or "classification" -> 0.0
@@ -555,16 +780,18 @@ print(temp_with_reason("qa"))`,
       title: "Few-Shot Prompting: Teaching by Example",
       concept: "Few-Shot",
       xp_reward: 10,
-      explanation: `Telling a model "classify the sentiment" works okay. *Showing* it three labeled examples first works a lot better. That's **few-shot prompting**: you give the model a handful of input-output examples right in the prompt, then ask it to handle a new case the same way.
+      explanation: `Telling a model "classify the sentiment" works okay. *Showing* it three labeled examples first works a lot better. That's **few-shot prompting**: you give the model a handful of input-output examples right in the prompt, then ask it to handle a new case the same way. It is often the fastest jump in output quality you can make without changing the model at all.
 
-## Zero-shot vs few-shot
+## What it is
+
+**Few-shot prompting** means demonstrating the task with a few worked examples inside the prompt, then leaving the new input open for the model to complete. "Few" usually means two to five. The opposite is **zero-shot** — describing the task with no examples.
 
 - **Zero-shot** — you describe the task and hope the model figures out the exact format and edge cases. "Translate this to French."
 - **Few-shot** — you include examples that pin down format, tone, and edge handling. The model pattern-matches off them.
 
-The model isn't being retrained. It's just reading your examples as context and copying the pattern. This is one of the most reliable ways to get consistent output without touching any model internals.
+## How it works
 
-## What it looks like
+The crucial point: the model **isn't being retrained**. No weights change. It's just reading your examples as context and continuing the demonstrated pattern — the same next-token prediction loop, now strongly biased by the input -> output pairs sitting right there in the prompt. This is sometimes called **in-context learning**: the model "learns" the task only for this one request, then forgets it.
 
 \`\`\`python
 import os
@@ -597,9 +824,13 @@ Those three examples do the heavy lifting. The model sees the \`Review: ... -> L
 - **Two to five examples is the sweet spot** for most tasks. One is rarely enough; twenty wastes tokens and rarely helps more than five.
 - **Keep examples consistent.** If half use "->" and half use ":", the model gets confused about the format.
 
-## Why bother
+## Why it matters
 
-Few-shot is the bridge between "describe it and pray" and full-on fine-tuning. It costs you some tokens but gives you control over format and behavior with zero training. When a zero-shot prompt is *almost* right but the format keeps drifting, examples are usually the fastest fix.`,
+Few-shot is the bridge between "describe it and pray" and full-on fine-tuning. It costs you some tokens but gives you control over format and behavior with zero training. When a zero-shot prompt is *almost* right but the format keeps drifting, examples are usually the fastest fix. The trade-off: every example is re-sent and re-billed on every call, so you balance accuracy against token cost.
+
+## The mental model to keep
+
+Few-shot is **show, don't tell**. The model copies the pattern you demonstrate, so make your examples look exactly like the answer you want back.`,
       key_terms: [
         { term: "Few-shot prompting", definition: "Including several input-output examples in the prompt so the model copies the pattern on a new input." },
         { term: "Zero-shot prompting", definition: "Describing the task with no examples and relying on the model to infer the format and behavior." },
@@ -674,6 +905,75 @@ Few-shot is the bridge between "describe it and pray" and full-on fine-tuning. I
           ]
         }
       ],
+      step_throughs: [
+        {
+          title: "Building and running a few-shot prompt",
+          steps: [
+            { label: "State the task once", detail: "A short instruction line tells the model what the examples will demonstrate.", code: '"Classify sentiment as POSITIVE or NEGATIVE."' },
+            { label: "Add labeled examples", detail: "Each example uses the exact format you want back: input, separator, label.", code: '"Review: The food was cold. -> NEGATIVE"\n"Review: Loved every bite! -> POSITIVE"' },
+            { label: "Leave the new input open", detail: "End with the new case in the same shape, but stop right at the separator so the model fills the label.", code: '"Review: Cozy spot, great coffee. ->"' },
+            { label: "Model continues the pattern", detail: "It predicts the most likely continuation of the demonstrated pattern — the missing label.", code: "-> POSITIVE" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Turn this zero-shot prompt into a one-example prompt: 'Make this phrase formal: yo'.",
+          steps: [
+            'Add one demonstration that shows the transformation you want: "hi => Hello".',
+            "Keep the separator consistent (=>) so the model knows the format.",
+            'End with the real input open: "yo =>" so the model completes it.'
+          ],
+          output: '"Make this formal.\\n\\nhi => Hello\\nyo =>"'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Your sentiment classifier handles POSITIVE and NEGATIVE fine, but neutral reviews like 'It was okay' get labeled randomly. Fix it with few-shot.",
+          steps: [
+            "The model never saw a neutral example, so it forces every review into the two labels it was shown.",
+            "Add a third label to the task line: POSITIVE, NEGATIVE, or NEUTRAL.",
+            'Include at least one neutral demonstration: "Review: It was fine, nothing special. -> NEUTRAL".',
+            "Now the pattern covers the edge case, so 'It was okay' maps to NEUTRAL instead of a coin flip."
+          ],
+          output: "Adding a NEUTRAL example pins down the previously ambiguous case."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "zero-shot vs few-shot",
+          columns: ["Aspect", "Zero-shot", "Few-shot"],
+          rows: [
+            { cells: ["Examples in prompt", "None", "2 - 5 input -> output pairs"] },
+            { cells: ["Format control", "Loose — model guesses the shape", "Tight — model copies your shape"], highlight: true },
+            { cells: ["Token cost", "Lower", "Higher (examples re-sent each call)"] },
+            { cells: ["Best when", "Task is simple and format is obvious", "Format drifts or edge cases matter"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "good few-shot example vs bad few-shot example",
+          bins: [
+            { id: "good", label: "Good example to include" },
+            { id: "bad", label: "Bad example to include" }
+          ],
+          items: [
+            { id: "i1", text: "Uses the exact -> separator as every other example", bin: "good" },
+            { id: "i2", text: "Mixes ':' and '->' across examples", bin: "bad" },
+            { id: "i3", text: "Covers a tricky neutral case", bin: "good" },
+            { id: "i4", text: "Labels in random capitalization (Positive, NEGATIVE)", bin: "bad" },
+            { id: "i5", text: "Matches the output format you actually want", bin: "good" },
+            { id: "i6", text: "Twenty near-identical examples that waste tokens", bin: "bad" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does few-shot prompting work even though no training happens?",
+          sampleAnswer: "The model still does plain next-token prediction, but the examples sitting in the prompt strongly bias what continuation is likely. Seeing two or three 'input -> output' pairs makes the model predict the same pattern for the new input. Nothing is learned permanently — it's in-context pattern matching that lasts only for that one request."
+        }
+      ],
       starter_code: `def build_few_shot(new_input):
     examples = [
         ("The food was cold.", "NEGATIVE"),
@@ -742,13 +1042,17 @@ print(few_shot("Make it formal.", ex, "yo"))`,
       title: "Structured Output: Getting JSON You Can Use",
       concept: "Structured Output",
       xp_reward: 10,
-      explanation: `A model that replies "Sure! The customer seems happy, sentiment is positive 😊" is useless to your code. Your program can't reliably pull "positive" out of that sentence. What you want is \`{"sentiment": "positive"}\` — clean, parseable, predictable. Getting that consistently is **structured output**, and it's where prompt engineering meets real software.
+      explanation: `A model that replies "Sure! The customer seems happy, sentiment is positive" is useless to your code. Your program can't reliably pull "positive" out of that sentence. What you want is \`{"sentiment": "positive"}\` — clean, parseable, predictable. Getting that consistently is **structured output**, and it's where prompt engineering stops being a chat trick and becomes real software engineering.
+
+## What it is
+
+**Structured output** is model output in a fixed, machine-readable shape — almost always **JSON** — that your code can parse with one line instead of fragile string-hunting. Instead of a sentence, you get \`{"name": "Maria", "age": 34}\`: defined keys, predictable types, no surprises.
 
 ## Why plain prose breaks your code
 
-When a model answers in free-form text, every response is shaped a little differently. Parsing it means brittle string-hunting that falls apart the moment the phrasing shifts. Structured output flips this: you tell the model the exact shape you want, and you get back something \`json.loads()\` can swallow.
+When a model answers in free-form text, every response is shaped a little differently. "She is 34" one time, "Maria, age thirty-four" the next. Parsing that means brittle string-hunting that falls apart the moment the phrasing shifts. Structured output flips this: you tell the model the exact shape you want, and you get back something \`json.loads()\` can swallow every time.
 
-## Asking for JSON
+## How it works: asking for JSON
 
 The simplest approach is to just demand it clearly, ideally with an example of the shape:
 
@@ -795,9 +1099,13 @@ def safe_parse(text, default=None):
         return default
 \`\`\`
 
-## The payoff
+## Why it matters: the payoff
 
-Structured output is what lets an LLM live inside a real app instead of just a chat box. Sentiment that becomes a database column, extracted fields that flow into a form, classifications that trigger logic — all of it depends on output your code can trust. Nail the prompt, parse defensively, and the model becomes a dependable component instead of a wildcard.`,
+Structured output is what lets an LLM live inside a real app instead of just a chat box. Sentiment that becomes a database column, extracted fields that flow into a form, classifications that trigger logic — all of it depends on output your code can trust. Nail the prompt, parse defensively, and the model becomes a dependable component instead of a wildcard.
+
+## The mental model to keep
+
+Free-form prose is an **open-ended interview**; structured output is a **fill-in-the-blank form**. Forms are boring on purpose — and that predictability is exactly why your code can build on them.`,
       key_terms: [
         { term: "Structured output", definition: "Model output in a fixed, machine-readable shape (commonly JSON) that your code can parse reliably." },
         { term: "JSON", definition: "A lightweight text format of keys and values that programs parse easily; the most common target for structured LLM output." },
@@ -870,6 +1178,75 @@ Structured output is what lets an LLM live inside a real app instead of just a c
             { question: "Showing the model a literal example of the JSON shape works better than just describing the fields in words.", type: "true_false", correct_answer: "true", explanation: "A concrete schema example is the most reliable way to pin down the output shape." },
             { question: "The Python function commonly used to turn a JSON string into a usable object is json.____ .", type: "fill_in", correct_answer: "loads", explanation: "json.loads() parses a JSON string into Python objects." }
           ]
+        }
+      ],
+      step_throughs: [
+        {
+          title: "From prompt to trusted data",
+          steps: [
+            { label: "Specify the exact shape", detail: "Show a literal JSON example with the keys and value types you want. A concrete schema beats a description.", code: 'Respond with ONLY JSON like {"name": "...", "age": 0}' },
+            { label: "Forbid the extras", detail: "Tell the model: no preamble, no markdown, no code fences. This heads off 'Here is the JSON:' and ```json wrappers.", code: '"...and nothing else. No markdown, no code fences."' },
+            { label: "Model returns clean JSON", detail: "The output now matches your schema and is ready to parse.", code: '{"name": "Maria", "age": 34}' },
+            { label: "Parse defensively", detail: "Wrap json.loads in try/except so one rare malformed response can't crash the pipeline.", code: "data = safe_parse(raw, default={})" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Write the key instruction that turns "tell me the sentiment" into reliable JSON output.',
+          steps: [
+            'Demand JSON only so the model skips its friendly preamble: "Respond with ONLY valid JSON."',
+            'Show the exact shape so the keys are fixed: {"sentiment": "..."}.',
+            "Together these two moves are the highest-impact changes for reliability."
+          ],
+          output: 'Respond with ONLY valid JSON like {"sentiment": "positive"} and nothing else.'
+        },
+        {
+          number: 2, difficulty: "hard",
+          prompt: "Your pipeline crashes intermittently because the model occasionally returns ```json\\n{...}\\n``` with code fences. Walk through a robust fix.",
+          steps: [
+            "First, prevent it at the prompt: add 'no markdown, no code fences, no explanation' to the instruction.",
+            "Accept that no prompt is perfect 100% of the time, so also harden the parser.",
+            "Strip a leading fence line (```json) and a trailing ``` before parsing.",
+            "Wrap json.loads in try/except returning a default, so a stray bad response is handled instead of crashing."
+          ],
+          output: "Prompt forbids fences AND the parser strips fences + catches errors — defense in depth."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "free-form prose vs structured JSON",
+          columns: ["Aspect", "Free-form prose", "Structured JSON"],
+          rows: [
+            { cells: ["Shape per response", "Varies every time", "Fixed keys and types"] },
+            { cells: ["Parsing", "Brittle string-hunting", "One json.loads() call"], highlight: true },
+            { cells: ["Feeds into code", "Unreliable", "Database columns, forms, logic"] },
+            { cells: ["Failure mode", "Phrasing drift breaks parser", "Rare malformed JSON, caught defensively"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "reliable JSON habit vs reliability risk",
+          bins: [
+            { id: "good", label: "Improves JSON reliability" },
+            { id: "risk", label: "Risks broken output" }
+          ],
+          items: [
+            { id: "i1", text: 'Saying "ONLY valid JSON, nothing else"', bin: "good" },
+            { id: "i2", text: "Showing a literal example of the keys and types", bin: "good" },
+            { id: "i3", text: "Wrapping json.loads in try/except", bin: "good" },
+            { id: "i4", text: "Letting the model add a friendly preamble", bin: "risk" },
+            { id: "i5", text: "Allowing ```json code fences in the output", bin: "risk" },
+            { id: "i6", text: "Describing fields in vague prose only", bin: "risk" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why parse defensively even when your prompt reliably produces JSON?",
+          sampleAnswer: "Because the model is a probabilistic text predictor, not a guaranteed JSON generator. Even a great prompt slips occasionally and returns a preamble, a code fence, or malformed JSON. Wrapping json.loads in try/except means one bad response returns a safe default instead of crashing the whole pipeline."
         }
       ],
       starter_code: `import json
