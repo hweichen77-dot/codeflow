@@ -17,12 +17,12 @@ export default function Reflection({ prompt, sampleAnswer, onComplete }) {
   };
 
   return (
-    <div className="my-7" style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-      <div className="px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#36d399" }}>REFLECT</span>
+    <div className="my-7" style={{ border: "1px solid #e4e4e7", background: "#ffffff" }}>
+      <div className="px-5 py-3" style={{ borderBottom: "1px solid #ececef" }}>
+        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#059669" }}>REFLECT</span>
       </div>
       <div className="p-5">
-        <p className="font-display text-sm mb-3" style={{ color: "#ddd", fontWeight: 500 }}>{prompt}</p>
+        <p className="font-display text-sm mb-3" style={{ color: "#18181b", fontWeight: 500 }}>{prompt}</p>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -30,21 +30,21 @@ export default function Reflection({ prompt, sampleAnswer, onComplete }) {
           rows={3}
           placeholder="Write a sentence or two in your own words…"
           className="w-full px-4 py-3 font-display text-sm resize-none outline-none"
-          style={{ background: "#080808", border: "1px solid #222", color: "#e8e8e8" }}
+          style={{ background: "#f6f6f7", border: "1px solid #e4e4e7", color: "#1f2937" }}
         />
         {!submitted ? (
           <button
             onClick={submit}
             disabled={text.trim().length < 8}
             className="mt-3 font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all disabled:opacity-30"
-            style={{ background: "#36d399", color: "#04130d", fontWeight: 700, border: "none", cursor: text.trim().length < 8 ? "not-allowed" : "pointer" }}
+            style={{ background: "#059669", color: "#ffffff", fontWeight: 700, border: "none", cursor: text.trim().length < 8 ? "not-allowed" : "pointer" }}
           >
             Submit
           </button>
         ) : (
           <div className="mt-4">
-            <div className="font-mono text-xs tracking-widest uppercase mb-1.5" style={{ color: "#36d399" }}>✓ Logged — one way to put it</div>
-            <p className="font-display text-sm leading-relaxed px-4 py-3" style={{ color: "#aaa", background: "#08130d", border: "1px solid #36d39922" }}>{sampleAnswer}</p>
+            <div className="font-mono text-xs tracking-widest uppercase mb-1.5" style={{ color: "#059669" }}>✓ Logged — one way to put it</div>
+            <p className="font-display text-sm leading-relaxed px-4 py-3" style={{ color: "#3f3f46", background: "#05966910", border: "1px solid #05966933" }}>{sampleAnswer}</p>
           </div>
         )}
       </div>

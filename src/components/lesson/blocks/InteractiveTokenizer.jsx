@@ -5,7 +5,7 @@ import React, { useState, useMemo } from "react";
  * Type text → see an approximate token split, counts, and cost. Pure client-side
  * heuristic (NOT a real BPE tokenizer, but close enough to build intuition).
  */
-const PALETTE = ["#b8ff00", "#60a5fa", "#cc66ff", "#ff6b35", "#36d399", "#f0c000"];
+const PALETTE = ["#4d7c0f", "#2563eb", "#9333ea", "#ea580c", "#059669", "#b45309"];
 
 // Rough heuristic: whitespace+punct boundaries, then chop long word-pieces ~4 chars.
 function tokenize(text) {
@@ -45,12 +45,12 @@ export default function InteractiveTokenizer() {
   const ratio = charCount ? (charCount / Math.max(tokenCount, 1)).toFixed(1) : "0";
 
   return (
-    <div className="my-7" style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#b8ff00" }}>
+    <div className="my-7" style={{ border: "1px solid #e4e4e7", background: "#ffffff" }}>
+      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #ececef" }}>
+        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#4d7c0f" }}>
           TOOL — TOKENIZER PLAYGROUND
         </span>
-        <span className="font-mono text-xs" style={{ color: "#555" }}>approximate</span>
+        <span className="font-mono text-xs" style={{ color: "#6b7280" }}>approximate</span>
       </div>
 
       <div className="p-5">
@@ -60,7 +60,7 @@ export default function InteractiveTokenizer() {
           rows={2}
           spellCheck={false}
           className="w-full px-4 py-3 font-mono text-sm resize-none outline-none"
-          style={{ background: "#080808", border: "1px solid #222", color: "#e8e8e8" }}
+          style={{ background: "#f6f6f7", border: "1px solid #e4e4e7", color: "#1f2937" }}
         />
 
         {/* presets */}
@@ -70,7 +70,7 @@ export default function InteractiveTokenizer() {
               key={p}
               onClick={() => setText(p)}
               className="font-mono text-xs px-2.5 py-1 transition-all"
-              style={{ background: "transparent", border: "1px solid #222", color: "#888", cursor: "pointer", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+              style={{ background: "transparent", border: "1px solid #d4d4d8", color: "#3f3f46", cursor: "pointer", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
             >
               {p}
             </button>
@@ -85,7 +85,7 @@ export default function InteractiveTokenizer() {
               <span
                 key={idx}
                 className="font-mono text-xs px-2 py-1"
-                style={{ background: `${c}18`, border: `1px solid ${c}55`, color: c, whiteSpace: "pre" }}
+                style={{ background: `${c}14`, border: `1px solid ${c}55`, color: c, whiteSpace: "pre" }}
                 title={`token ${idx + 1}`}
               >
                 {tok.t}
@@ -93,18 +93,18 @@ export default function InteractiveTokenizer() {
             );
           })}
           {visible.length === 0 && (
-            <span className="font-mono text-xs" style={{ color: "#555" }}>type something above…</span>
+            <span className="font-mono text-xs" style={{ color: "#6b7280" }}>type something above…</span>
           )}
         </div>
 
         {/* stats */}
-        <div className="grid grid-cols-4 gap-0 mt-5" style={{ border: "1px solid #1a1a1a" }}>
-          <Stat label="Tokens" value={tokenCount} accent="#b8ff00" />
+        <div className="grid grid-cols-4 gap-0 mt-5" style={{ border: "1px solid #e4e4e7" }}>
+          <Stat label="Tokens" value={tokenCount} accent="#4d7c0f" />
           <Stat label="Characters" value={charCount} />
           <Stat label="Chars / token" value={ratio} />
-          <Stat label="Input cost" value={`$${inCost.toFixed(6)}`} accent="#60a5fa" last />
+          <Stat label="Input cost" value={`$${inCost.toFixed(6)}`} accent="#2563eb" last />
         </div>
-        <p className="font-mono text-xs mt-3" style={{ color: "#555" }}>
+        <p className="font-mono text-xs mt-3" style={{ color: "#6b7280" }}>
           Notice: rare/long words shatter into many tiny pieces, while common words stay whole.
         </p>
       </div>
@@ -114,11 +114,11 @@ export default function InteractiveTokenizer() {
 
 function Stat({ label, value, accent, last }) {
   return (
-    <div className="px-4 py-3" style={{ borderRight: last ? "none" : "1px solid #1a1a1a" }}>
-      <div className="font-display font-black" style={{ fontSize: "1.4rem", color: accent || "#e8e8e8", letterSpacing: "-0.03em", lineHeight: 1 }}>
+    <div className="px-4 py-3" style={{ borderRight: last ? "none" : "1px solid #e4e4e7" }}>
+      <div className="font-display font-black" style={{ fontSize: "1.4rem", color: accent || "#18181b", letterSpacing: "-0.03em", lineHeight: 1 }}>
         {value}
       </div>
-      <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "#777" }}>{label}</div>
+      <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "#6b7280" }}>{label}</div>
     </div>
   );
 }

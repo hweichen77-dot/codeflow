@@ -24,9 +24,9 @@ const TOOL_REGISTRY = {
   tokenizer: InteractiveTokenizer,
 };
 
-function Label({ children, accent = "#b8ff00" }) {
+function Label({ children, accent = "#4d7c0f" }) {
   return (
-    <div className="font-mono text-xs tracking-widest uppercase mt-10 mb-2" style={{ color: "#555" }}>
+    <div className="font-mono text-xs tracking-widest uppercase mt-10 mb-2" style={{ color: "#6b7280" }}>
       <span style={{ color: accent }}>//</span> {children}
     </div>
   );
@@ -56,7 +56,7 @@ export default function LessonBlocks({ lesson, onActivity }) {
 
       {step_throughs?.map((s, i) => (
         <div key={`step-${i}`}>
-          <Label accent="#60a5fa">Watch it happen</Label>
+          <Label accent="#2563eb">Watch it happen</Label>
           <StepThrough title={s.title} steps={s.steps} onComplete={() => onActivity?.("step")} />
         </div>
       ))}
@@ -72,21 +72,21 @@ export default function LessonBlocks({ lesson, onActivity }) {
 
       {comparison_tables?.map((c, i) => (
         <div key={`cmp-${i}`}>
-          <Label accent="#f0c000">Compare the approaches</Label>
+          <Label accent="#b45309">Compare the approaches</Label>
           <ComparisonTable title={c.title} columns={c.columns} rows={c.rows} />
         </div>
       ))}
 
       {drag_to_bins?.map((d, i) => (
         <div key={`dtb-${i}`}>
-          <Label accent="#cc66ff">Sort it</Label>
+          <Label accent="#9333ea">Sort it</Label>
           <DragToBin title={d.title} bins={d.bins} items={d.items} onComplete={() => onActivity?.("sort")} />
         </div>
       ))}
 
       {reflections?.map((r, i) => (
         <div key={`ref-${i}`}>
-          <Label accent="#36d399">Reflect</Label>
+          <Label accent="#059669">Reflect</Label>
           <Reflection prompt={r.prompt} sampleAnswer={r.sampleAnswer} onComplete={() => onActivity?.("reflect")} />
         </div>
       ))}

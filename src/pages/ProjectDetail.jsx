@@ -528,9 +528,9 @@ export default function ProjectDetail() {
                         }}
                       />
                     ))}
-                  </div>
 
-                  {/* Dark-themed enhancements: callouts, video, key terms, diagram, inline quizzes */}
+                  {/* Enhancements: callouts, video, key terms, diagram, inline quizzes */}
+                  <div style={{ marginTop: "8px" }}>
                   <LessonEnhancements lesson={activeLesson} />
 
                   {/* New activity blocks: tools, animations, worked examples, tables, sort-it, reflect */}
@@ -562,6 +562,8 @@ export default function ProjectDetail() {
 
                   {/* Coding challenge */}
                   <LessonChallenge lesson={activeLesson} />
+                  </div>
+                  </div>
 
                   {/* Code editor */}
                   <CodeEditor

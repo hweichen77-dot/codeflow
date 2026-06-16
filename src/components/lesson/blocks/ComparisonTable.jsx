@@ -7,10 +7,10 @@ import React from "react";
  */
 export default function ComparisonTable({ title, columns = [], rows = [] }) {
   return (
-    <div className="my-7" style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
+    <div className="my-7" style={{ border: "1px solid #e4e4e7", background: "#ffffff" }}>
       {title && (
-        <div className="px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-          <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#f0c000" }}>TABLE — {title}</span>
+        <div className="px-5 py-3" style={{ borderBottom: "1px solid #ececef" }}>
+          <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#b45309" }}>TABLE — {title}</span>
         </div>
       )}
       <div className="overflow-x-auto">
@@ -21,7 +21,7 @@ export default function ComparisonTable({ title, columns = [], rows = [] }) {
                 <th
                   key={i}
                   className="text-left font-mono text-xs tracking-widest uppercase px-4 py-3"
-                  style={{ color: "#888", borderBottom: "1px solid #1f1f1f", background: "#0a0a0a", whiteSpace: "nowrap" }}
+                  style={{ color: "#52525b", borderBottom: "1px solid #e4e4e7", background: "#fafafa", whiteSpace: "nowrap" }}
                 >
                   {c}
                 </th>
@@ -30,16 +30,16 @@ export default function ComparisonTable({ title, columns = [], rows = [] }) {
           </thead>
           <tbody>
             {rows.map((r, ri) => (
-              <tr key={ri} style={{ background: r.highlight ? "#b8ff0008" : "transparent" }}>
+              <tr key={ri} style={{ background: r.highlight ? "#4d7c0f0d" : "transparent" }}>
                 {r.cells.map((cell, ci) => (
                   <td
                     key={ci}
                     className="font-display text-sm px-4 py-3 align-top"
                     style={{
-                      color: ci === 0 ? "#e8e8e8" : "#aaa",
+                      color: ci === 0 ? "#18181b" : "#3f3f46",
                       fontWeight: ci === 0 ? 600 : 400,
-                      borderBottom: "1px solid #151515",
-                      borderLeft: r.highlight && ci === 0 ? "2px solid #b8ff00" : "none",
+                      borderBottom: "1px solid #e4e4e7",
+                      borderLeft: r.highlight && ci === 0 ? "2px solid #4d7c0f" : "none",
                     }}
                   >
                     {cell}

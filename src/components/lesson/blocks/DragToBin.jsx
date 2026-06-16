@@ -37,13 +37,13 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
   const correctCount = items.filter((it) => placed[it.id] === it.bin).length;
 
   return (
-    <div className="my-7" style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#cc66ff" }}>
+    <div className="my-7" style={{ border: "1px solid #e4e4e7", background: "#ffffff" }}>
+      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #ececef" }}>
+        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#9333ea" }}>
           SORT IT — {title}
         </span>
         {checked && (
-          <span className="font-mono text-xs" style={{ color: correctCount === items.length ? "#b8ff00" : "#ff6b35" }}>
+          <span className="font-mono text-xs" style={{ color: correctCount === items.length ? "#4d7c0f" : "#ea580c" }}>
             {correctCount}/{items.length} correct
           </span>
         )}
@@ -58,16 +58,16 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
               onClick={() => setSelected(selected === it.id ? null : it.id)}
               className="font-mono text-xs px-3 py-2 transition-all"
               style={{
-                background: selected === it.id ? "#cc66ff22" : "#111",
-                border: selected === it.id ? "1px solid #cc66ff" : "1px solid #222",
-                color: selected === it.id ? "#cc66ff" : "#ccc",
+                background: selected === it.id ? "#9333ea14" : "#f6f6f7",
+                border: selected === it.id ? "1px solid #9333ea" : "1px solid #e4e4e7",
+                color: selected === it.id ? "#9333ea" : "#3f3f46",
                 cursor: "pointer",
               }}
             >
               {it.text}
             </button>
           ))}
-          {allPlaced && <span className="font-mono text-xs" style={{ color: "#555" }}>all sorted — check your answer</span>}
+          {allPlaced && <span className="font-mono text-xs" style={{ color: "#6b7280" }}>all sorted — check your answer</span>}
         </div>
 
         {/* bins */}
@@ -80,13 +80,13 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
                 onClick={() => place(bin.id)}
                 className="px-3 py-3 transition-all"
                 style={{
-                  border: selected ? "1px dashed #cc66ff66" : "1px solid #1a1a1a",
-                  background: selected ? "#cc66ff08" : "#0a0a0a",
+                  border: selected ? "1px dashed #9333ea66" : "1px solid #e4e4e7",
+                  background: selected ? "#9333ea08" : "#fafafa",
                   minHeight: 92,
                   cursor: selected ? "pointer" : "default",
                 }}
               >
-                <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#888" }}>{bin.label}</div>
+                <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#52525b" }}>{bin.label}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {binItems.map((it) => {
                     const ok = it.bin === bin.id;
@@ -96,9 +96,9 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
                         onClick={(e) => { e.stopPropagation(); setPlaced((p) => { const n = { ...p }; delete n[it.id]; return n; }); setChecked(false); }}
                         className="inline-flex items-center gap-1 font-mono text-xs px-2 py-1"
                         style={{
-                          background: "#111",
-                          border: `1px solid ${checked ? (ok ? "#b8ff0055" : "#ff6b3555") : "#222"}`,
-                          color: checked ? (ok ? "#b8ff00" : "#ff6b35") : "#ccc",
+                          background: "#f6f6f7",
+                          border: `1px solid ${checked ? (ok ? "#4d7c0f55" : "#ea580c55") : "#e4e4e7"}`,
+                          color: checked ? (ok ? "#4d7c0f" : "#ea580c") : "#3f3f46",
                           cursor: "pointer",
                         }}
                       >
@@ -118,11 +118,11 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
             onClick={check}
             disabled={!allPlaced}
             className="font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all disabled:opacity-30"
-            style={{ background: "#cc66ff", color: "#150621", fontWeight: 700, border: "none", cursor: allPlaced ? "pointer" : "not-allowed" }}
+            style={{ background: "#9333ea", color: "#ffffff", fontWeight: 700, border: "none", cursor: allPlaced ? "pointer" : "not-allowed" }}
           >
             Check answer
           </button>
-          <button onClick={reset} className="font-mono text-xs tracking-widest uppercase px-3 py-2" style={{ background: "transparent", border: "1px solid #222", color: "#888", cursor: "pointer" }}>
+          <button onClick={reset} className="font-mono text-xs tracking-widest uppercase px-3 py-2" style={{ background: "transparent", border: "1px solid #d4d4d8", color: "#52525b", cursor: "pointer" }}>
             Reset
           </button>
         </div>

@@ -46,12 +46,12 @@ export default function StepThrough({ title, steps = [], onComplete }) {
   const step = steps[i] || {};
 
   return (
-    <div className="my-7" style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#60a5fa" }}>
+    <div className="my-7" style={{ border: "1px solid #e4e4e7", background: "#ffffff" }}>
+      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #ececef" }}>
+        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#2563eb" }}>
           ANIMATION — {title}
         </span>
-        <span className="font-mono text-xs" style={{ color: "#555" }}>
+        <span className="font-mono text-xs" style={{ color: "#6b7280" }}>
           STEP {i + 1} / {steps.length}
         </span>
       </div>
@@ -64,7 +64,7 @@ export default function StepThrough({ title, steps = [], onComplete }) {
             <div
               key={k}
               className="h-1 flex-1 rounded-full transition-all duration-300"
-              style={{ background: k <= i ? "#60a5fa" : "#222" }}
+              style={{ background: k <= i ? "#2563eb" : "#e4e4e7" }}
             />
           ))}
         </div>
@@ -77,16 +77,16 @@ export default function StepThrough({ title, steps = [], onComplete }) {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
           >
-            <div className="font-display font-bold text-lg mb-2" style={{ color: "#f0f0f0" }}>
+            <div className="font-display font-bold text-lg mb-2" style={{ color: "#18181b" }}>
               {step.label}
             </div>
-            <p className="font-display text-sm leading-relaxed" style={{ color: "#aaa" }}>
+            <p className="font-display text-sm leading-relaxed" style={{ color: "#3f3f46" }}>
               {step.detail}
             </p>
             {step.code && (
               <pre
                 className="mt-4 px-4 py-3 overflow-x-auto font-mono text-xs"
-                style={{ background: "#080808", border: "1px solid #1a1a1a", color: "#b8ff00", lineHeight: 1.7 }}
+                style={{ background: "#f6f6f7", border: "1px solid #e4e4e7", color: "#166534", lineHeight: 1.7 }}
               >
                 {step.code}
               </pre>
@@ -96,20 +96,20 @@ export default function StepThrough({ title, steps = [], onComplete }) {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-2 px-5 py-3" style={{ borderTop: "1px solid #1a1a1a" }}>
+      <div className="flex items-center gap-2 px-5 py-3" style={{ borderTop: "1px solid #ececef" }}>
         <Ctl onClick={() => { setPlaying(false); setI(0); }} aria-label="Restart"><RotateCcw size={13} /></Ctl>
         <Ctl onClick={() => { setPlaying(false); setI((v) => Math.max(v - 1, 0)); }} disabled={i === 0} aria-label="Previous"><ChevronLeft size={15} /></Ctl>
         <button
           onClick={() => { if (atEnd) { setI(0); setPlaying(true); } else setPlaying((p) => !p); }}
           className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all"
-          style={{ background: "#60a5fa", color: "#06121f", fontWeight: 700, border: "none", cursor: "pointer" }}
+          style={{ background: "#2563eb", color: "#ffffff", fontWeight: 700, border: "none", cursor: "pointer" }}
         >
           {playing ? <Pause size={13} /> : <Play size={13} />}
           {playing ? "Pause" : atEnd ? "Replay" : "Play"}
         </button>
         <Ctl onClick={() => { setPlaying(false); setI((v) => Math.min(v + 1, steps.length - 1)); }} disabled={atEnd} aria-label="Next"><ChevronRight size={15} /></Ctl>
         {seen.size === steps.length && (
-          <span className="ml-auto font-mono text-xs tracking-widest uppercase" style={{ color: "#b8ff00" }}>
+          <span className="ml-auto font-mono text-xs tracking-widest uppercase" style={{ color: "#4d7c0f" }}>
             ✓ viewed
           </span>
         )}
@@ -123,7 +123,7 @@ function Ctl({ children, ...props }) {
     <button
       {...props}
       className="flex items-center justify-center w-8 h-8 transition-all disabled:opacity-30"
-      style={{ background: "transparent", border: "1px solid #222", color: "#888", cursor: props.disabled ? "not-allowed" : "pointer" }}
+      style={{ background: "transparent", border: "1px solid #d4d4d8", color: "#52525b", cursor: props.disabled ? "not-allowed" : "pointer" }}
     >
       {children}
     </button>

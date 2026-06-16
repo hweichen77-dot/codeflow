@@ -4,7 +4,7 @@ import InlineQuiz from "./InlineQuiz";
 import ConceptVideo from "./ConceptVideo";
 
 /**
- * Renders all dark-themed lesson enhancements that sit OUTSIDE the white reading box:
+ * Renders all light-themed lesson enhancements that sit INSIDE the white reading panel:
  * - Concept video embed
  * - Key terms glossary
  * - Concept flow diagram

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
@@ -26,22 +26,22 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
   };
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "4px", marginTop: "24px", marginBottom: "24px" }}>
+    <div style={{ background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: "4px", marginTop: "24px", marginBottom: "24px" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid #e0e0e0" }}>
-        <div style={{ width: "4px", background: "#cf6a2f", flexShrink: 0 }} />
+      <div style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid #e4e4e7" }}>
+        <div style={{ width: "4px", background: "#ea580c", flexShrink: 0 }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, padding: "10px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             <div>
-              <div style={{ fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#333", lineHeight: 1.2 }}>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#18181b", lineHeight: 1.2 }}>
                 PARTICIPATION
               </div>
-              <div style={{ fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#333", lineHeight: 1.2 }}>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#18181b", lineHeight: 1.2 }}>
                 ACTIVITY
               </div>
             </div>
-            <div style={{ width: "1px", height: "28px", background: "#ddd" }} />
-            <span style={{ fontSize: "0.875rem", color: "#555" }}>
+            <div style={{ width: "1px", height: "28px", background: "#e4e4e7" }} />
+            <span style={{ fontSize: "0.875rem", color: "#52525b" }}>
               {sectionNumber}: Quiz
             </span>
           </div>
@@ -51,20 +51,22 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                 initial={{ opacity: 0, scale: 0.7 }}
                 animate={{ opacity: 1, scale: 1 }}
                 style={{
+                  display: "inline-flex", alignItems: "center", gap: "4px",
                   fontFamily: "monospace", fontSize: "0.7rem", fontWeight: 700,
-                  color: correctCount === totalQuestions ? "#2d7a3a" : "#cf6a2f",
-                  background: correctCount === totalQuestions ? "#e8f5e9" : "#fff5f0",
-                  border: `1px solid ${correctCount === totalQuestions ? "#a5d6a7" : "#ffccbc"}`,
+                  color: correctCount === totalQuestions ? "#059669" : "#ea580c",
+                  background: correctCount === totalQuestions ? "#05966914" : "#ea580c14",
+                  border: `1px solid ${correctCount === totalQuestions ? "#05966933" : "#ea580c33"}`,
                   padding: "3px 10px", borderRadius: "3px",
                 }}
               >
-                {correctCount}/{totalQuestions} ✓
+                {correctCount}/{totalQuestions}
+                <Check size={12} strokeWidth={3} />
               </motion.div>
             )}
             <div style={{
               width: "32px", height: "32px", borderRadius: "4px",
               display: "flex", alignItems: "center", justifyContent: "center",
-              background: allChecked ? "#cf6a2f" : "#e0e0e0",
+              background: allChecked ? "#ea580c" : "#e4e4e7",
             }}>
               {allChecked && <Check size={20} color="#fff" strokeWidth={3} />}
             </div>
@@ -84,15 +86,15 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: qi * 0.07 }}
             style={{
-              padding: "20px 28px", borderBottom: "1px solid #e8e8e8",
-              background: isChecked ? (isCorrect ? "#f9fff9" : "#fff9f9") : "#fff",
+              padding: "20px 28px", borderBottom: "1px solid #e4e4e7",
+              background: isChecked ? (isCorrect ? "#05966908" : "#dc262608") : "#ffffff",
               transition: "background 0.3s ease",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "0.9375rem", color: "#333", lineHeight: 1.6, margin: "0 0 14px" }}>
-                  <span style={{ color: "#888", marginRight: "8px" }}>{qi + 1})</span>
+                <p style={{ fontSize: "0.9375rem", color: "#18181b", lineHeight: 1.6, margin: "0 0 14px" }}>
+                  <span style={{ color: "#52525b", marginRight: "8px" }}>{qi + 1})</span>
                   {q.question}
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginLeft: "24px" }}>
@@ -111,29 +113,29 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                           display: "flex", alignItems: "center", gap: "10px",
                           cursor: isChecked ? "default" : "pointer",
                           padding: "6px 10px", fontSize: "0.9375rem",
-                          color: isThisCorrect ? "#2d7a3a" : isThisWrong ? "#c0392b" : "#333",
+                          color: isThisCorrect ? "#059669" : isThisWrong ? "#dc2626" : "#18181b",
                           fontWeight: isThisCorrect ? 600 : 400,
                           borderRadius: "4px",
-                          background: isThisCorrect ? "#e8f5e9" : isThisWrong ? "#fde8e8" : isSelected ? "#f5f5f5" : "transparent",
-                          border: isThisCorrect ? "1px solid #a5d6a7" : isThisWrong ? "1px solid #ffcdd2" : "1px solid transparent",
+                          background: isThisCorrect ? "#05966914" : isThisWrong ? "#dc262614" : isSelected ? "#f6f6f7" : "transparent",
+                          border: isThisCorrect ? "1px solid #05966933" : isThisWrong ? "1px solid #dc262633" : "1px solid transparent",
                           transition: "all 0.2s",
                         }}
                       >
                         <span
                           style={{
                             width: "16px", height: "16px", borderRadius: "50%",
-                            border: `2px solid ${isThisCorrect ? "#2d7a3a" : isThisWrong ? "#c0392b" : isSelected ? "#555" : "#ccc"}`,
+                            border: `2px solid ${isThisCorrect ? "#059669" : isThisWrong ? "#dc2626" : isSelected ? "#6b7280" : "#d4d4d8"}`,
                             display: "flex", alignItems: "center", justifyContent: "center",
                             flexShrink: 0,
                           }}
                         >
                           {isSelected && (
-                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: isThisCorrect ? "#2d7a3a" : isThisWrong ? "#c0392b" : "#555" }} />
+                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: isThisCorrect ? "#059669" : isThisWrong ? "#dc2626" : "#6b7280" }} />
                           )}
                         </span>
                         {opt}
-                        {isThisCorrect && <span style={{ marginLeft: "auto" }}>✓</span>}
-                        {isThisWrong && <span style={{ marginLeft: "auto" }}>✕</span>}
+                        {isThisCorrect && <Check size={15} strokeWidth={3} style={{ marginLeft: "auto", flexShrink: 0 }} />}
+                        {isThisWrong && <X size={15} strokeWidth={3} style={{ marginLeft: "auto", flexShrink: 0 }} />}
                       </motion.label>
                     );
                   })}
@@ -145,7 +147,7 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                     onClick={() => handleCheck(qi)}
                     style={{
                       marginTop: "12px", marginLeft: "24px",
-                      background: "#cf6a2f", color: "#fff", border: "none", borderRadius: "4px",
+                      background: "#ea580c", color: "#ffffff", border: "none", borderRadius: "4px",
                       padding: "7px 20px", fontSize: "0.8125rem", fontWeight: 700, cursor: "pointer",
                     }}
                   >
@@ -158,15 +160,19 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       style={{
+                        display: "flex", alignItems: "flex-start", gap: "6px",
                         fontSize: "0.8125rem",
-                        color: isCorrect ? "#2d7a3a" : "#c0392b",
+                        color: isCorrect ? "#059669" : "#dc2626",
                         marginTop: "10px", marginLeft: "24px", lineHeight: 1.6,
-                        background: isCorrect ? "#f0fff4" : "#fff0f0",
+                        background: isCorrect ? "#05966914" : "#dc262614",
                         padding: "8px 12px", borderRadius: "4px",
-                        borderLeft: `3px solid ${isCorrect ? "#2d7a3a" : "#c0392b"}`,
+                        borderLeft: `3px solid ${isCorrect ? "#059669" : "#dc2626"}`,
                       }}
                     >
-                      {isCorrect ? "✓ Correct! " : "✕ Incorrect. "}{q.explanation}
+                      {isCorrect
+                        ? <Check size={15} strokeWidth={3} style={{ flexShrink: 0, marginTop: "2px" }} />
+                        : <X size={15} strokeWidth={3} style={{ flexShrink: 0, marginTop: "2px" }} />}
+                      <span>{isCorrect ? "Correct! " : "Incorrect. "}{q.explanation}</span>
                     </motion.p>
                   )}
                 </AnimatePresence>
@@ -177,10 +183,12 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                 style={{
                   flexShrink: 0, width: "32px", height: "32px", borderRadius: "4px",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: isChecked ? (isCorrect ? "#cf6a2f" : "#e74c3c") : "#e0e0e0",
+                  background: isChecked ? (isCorrect ? "#059669" : "#dc2626") : "#e4e4e7",
                 }}
               >
-                {isChecked && <Check size={18} color="#fff" strokeWidth={3} />}
+                {isChecked && (isCorrect
+                  ? <Check size={18} color="#fff" strokeWidth={3} />
+                  : <X size={18} color="#fff" strokeWidth={3} />)}
               </motion.div>
             </div>
           </motion.div>
@@ -192,12 +200,12 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          style={{ padding: "14px 28px", borderTop: "1px solid #e8e8e8", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+          style={{ padding: "14px 28px", borderTop: "1px solid #e4e4e7", display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
-          <span style={{ fontSize: "0.8125rem", color: "#888" }}>
-            {correctCount === totalQuestions ? " Perfect score!" : `Keep practicing — review the explanations above.`}
+          <span style={{ fontSize: "0.8125rem", color: "#52525b" }}>
+            {correctCount === totalQuestions ? "Perfect score!" : `Keep practicing — review the explanations above.`}
           </span>
-          <span style={{ fontSize: "0.8125rem", color: "#cf6a2f", fontWeight: 700 }}>
+          <span style={{ fontSize: "0.8125rem", color: "#ea580c", fontWeight: 700 }}>
             {correctCount}/{totalQuestions} correct
           </span>
         </motion.div>
