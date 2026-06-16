@@ -80,7 +80,7 @@ export default function LessonPointsSummary({
               height: "100%",
               background: allDone
                 ? "linear-gradient(90deg, #2d7a3a, #4caf50)"
-                : `linear-gradient(90deg, #cf6a2f, #f59e0b)`,
+                : `linear-gradient(90deg, #4d7c0f, #84cc16)`,
               borderRadius: "3px",
             }}
           />

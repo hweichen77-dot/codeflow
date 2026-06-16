@@ -60,7 +60,7 @@ function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnsw
               onClick={handleCheck}
               style={{
                 marginTop: "12px", marginLeft: "24px",
-                background: "#cf6a2f", color: "#fff", border: "none", borderRadius: "4px",
+                background: "#65a30d", color: "#0f1b00", border: "none", borderRadius: "2px",
                 padding: "7px 20px", fontSize: "0.8125rem", fontWeight: 700, cursor: "pointer",
               }}
             >
@@ -93,7 +93,7 @@ function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnsw
           style={{
             flexShrink: 0, width: "32px", height: "32px", borderRadius: "4px",
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: checked ? (isCorrect ? "#cf6a2f" : "#e74c3c") : "#e0e0e0",
+            background: checked ? (isCorrect ? "#65a30d" : "#e74c3c") : "#e0e0e0",
           }}
         >
           {checked && <Check size={18} color="#fff" strokeWidth={3} />}
@@ -136,9 +136,11 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
               disabled={checked}
               placeholder="Type your answer..."
               style={{
-                border: `1px solid ${checked ? (isCorrect ? "#2d7a3a" : "#e74c3c") : "#ccc"}`,
-                borderRadius: "4px", padding: "9px 14px", fontSize: "0.875rem",
-                width: "240px", outline: "none", color: "#333",
+                fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+                border: `1px solid ${checked ? (isCorrect ? "#2d7a3a" : "#e74c3c") : "#d4d4d8"}`,
+                borderRadius: "2px", padding: "9px 14px", fontSize: "0.875rem",
+                lineHeight: 1.5, minHeight: "40px",
+                width: "260px", outline: "none", color: "#18181b",
                 background: checked ? (isCorrect ? "#e8f5e9" : "#fde8e8") : "#fff",
                 transition: "all 0.2s",
               }}
@@ -152,8 +154,8 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
                   onClick={handleCheck}
                   disabled={!input.trim()}
                   style={{
-                    background: input.trim() ? "#cf6a2f" : "#ccc",
-                    color: "#fff", border: "none", borderRadius: "4px",
+                    background: input.trim() ? "#65a30d" : "#d4d4d8",
+                    color: input.trim() ? "#0f1b00" : "#fff", border: "none", borderRadius: "2px",
                     padding: "7px 20px", fontSize: "0.8125rem", fontWeight: 700,
                     cursor: input.trim() ? "pointer" : "not-allowed",
                   }}
@@ -195,7 +197,7 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
           style={{
             flexShrink: 0, width: "32px", height: "32px", borderRadius: "4px",
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: checked ? (isCorrect ? "#cf6a2f" : "#e74c3c") : "#e0e0e0",
+            background: checked ? (isCorrect ? "#65a30d" : "#e74c3c") : "#e0e0e0",
           }}
         >
           {checked && <Check size={18} color="#fff" strokeWidth={3} />}
@@ -224,14 +226,14 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
     <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "4px", marginTop: "24px", marginBottom: "24px" }}>
       {/* Header bar */}
       <div style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid #e0e0e0" }}>
-        <div style={{ width: "4px", background: "#cf6a2f", flexShrink: 0 }} />
+        <div style={{ width: "4px", background: "#65a30d", flexShrink: 0 }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, padding: "10px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             <div>
-              <div style={{ fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#333", lineHeight: 1.2 }}>
+              <div style={{ fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#18181b", lineHeight: 1.25 }}>
                 PARTICIPATION
               </div>
-              <div style={{ fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#333", lineHeight: 1.2 }}>
+              <div style={{ fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#18181b", lineHeight: 1.25 }}>
                 ACTIVITY
               </div>
             </div>
@@ -247,7 +249,7 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
                 animate={{ opacity: 1, scale: 1 }}
                 style={{
                   fontFamily: "monospace", fontSize: "0.7rem", fontWeight: 700,
-                  color: correctCount === totalQuestions ? "#2d7a3a" : "#cf6a2f",
+                  color: correctCount === totalQuestions ? "#2d7a3a" : "#65a30d",
                   background: correctCount === totalQuestions ? "#e8f5e9" : "#fff5f0",
                   border: `1px solid ${correctCount === totalQuestions ? "#a5d6a7" : "#ffccbc"}`,
                   padding: "3px 10px", borderRadius: "3px",
@@ -262,7 +264,7 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
               style={{
                 width: "32px", height: "32px", borderRadius: "4px",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                background: allAnswered ? "#cf6a2f" : "#e0e0e0",
+                background: allAnswered ? "#65a30d" : "#e0e0e0",
               }}
             >
               {allAnswered && <Check size={20} color="#fff" strokeWidth={3} />}
@@ -307,7 +309,7 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
           <span style={{ fontSize: "0.8125rem", color: "#888" }}>
             {correctCount === totalQuestions ? " All correct!" : "Nice effort — review the explanations above."}
           </span>
-          <span style={{ fontSize: "0.8125rem", color: "#cf6a2f", fontWeight: 600 }}>
+          <span style={{ fontSize: "0.8125rem", color: "#65a30d", fontWeight: 600 }}>
             {correctCount}/{totalQuestions} correct
           </span>
         </motion.div>

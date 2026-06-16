@@ -59,20 +59,22 @@ export default function LessonExplanation({ explanation, concept }) {
         .lesson-doc {
           color: #1a1a1a;
           line-height: 1.75;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: 'IBM Plex Sans', system-ui, sans-serif;
         }
         .lesson-doc h1 {
+          font-family: 'IBM Plex Serif', Georgia, serif;
           font-size: 1.6rem;
           font-weight: 700;
           color: #111;
           margin-bottom: 1.25rem;
           margin-top: 0;
-          letter-spacing: -0.01em;
+          letter-spacing: -0.005em;
           line-height: 1.3;
         }
         .lesson-doc h2 {
-          font-size: 1.05rem;
-          font-weight: 700;
+          font-family: 'IBM Plex Serif', Georgia, serif;
+          font-size: 1.15rem;
+          font-weight: 600;
           color: #111;
           margin-top: 2rem;
           margin-bottom: 0.6rem;
@@ -81,8 +83,9 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc h2:first-child { margin-top: 0; }
         .lesson-doc h3 {
-          font-size: 0.95rem;
-          font-weight: 700;
+          font-family: 'IBM Plex Serif', Georgia, serif;
+          font-size: 1rem;
+          font-weight: 600;
           color: #222;
           margin-top: 1.5rem;
           margin-bottom: 0.4rem;
@@ -121,19 +124,19 @@ export default function LessonExplanation({ explanation, concept }) {
           font-style: italic;
         }
         .lesson-doc code {
-          font-family: 'Space Mono', 'Courier New', monospace;
-          font-size: 0.8em;
-          background: #f0f0f0;
-          color: #c7254e;
+          font-family: 'IBM Plex Mono', 'Courier New', monospace;
+          font-size: 0.82em;
+          background: #f4f4f5;
+          color: #4d7c0f;
           padding: 0.1em 0.35em;
           border-radius: 3px;
-          border: 1px solid #e0e0e0;
+          border: 1px solid #e4e4e7;
         }
         .lesson-doc blockquote {
-          border-left: 3px solid #cf6a2f;
+          border-left: 3px solid #65a30d;
           padding: 0.75rem 1.25rem;
           margin: 1.25rem 0;
-          background: #fdf8f4;
+          background: #65a30d0a;
           color: #444;
           font-style: normal;
         }
