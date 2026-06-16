@@ -29,8 +29,8 @@ export default function Reflection({ prompt, sampleAnswer, onComplete }) {
           disabled={submitted}
           rows={3}
           placeholder="Write a sentence or two in your own words…"
-          className="w-full px-4 py-3 font-display text-sm resize-none outline-none"
-          style={{ background: "#f6f6f7", border: "1px solid #e4e4e7", color: "#1f2937" }}
+          className="w-full px-4 py-3 text-sm resize-none outline-none"
+          style={{ fontFamily: "'IBM Plex Sans', system-ui, sans-serif", lineHeight: 1.6, background: "#f6f6f7", border: "1px solid #e4e4e7", color: "#1f2937" }}
         />
         {!submitted ? (
           <button

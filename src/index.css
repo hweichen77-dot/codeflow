@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -122,6 +123,20 @@
 
 .font-display {
   font-family: 'Syne', system-ui, sans-serif !important;
+}
+
+/* ---- Reader surfaces (lessons / projects / challenges): IBM Plex editorial stack ----
+   Dark landing/home shell keeps Syne brand. Higher specificity + !important
+   overrides the global .font-mono / .font-display utilities above. */
+.reader-surface {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+}
+.reader-surface .font-display {
+  font-family: 'IBM Plex Serif', Georgia, serif !important;
+  letter-spacing: -0.005em;
+}
+.reader-surface .font-mono {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
 }
 
 /* Accent glow */
