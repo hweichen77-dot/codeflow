@@ -34,7 +34,7 @@ export default function LessonCompletionCelebration({ show, lessonTitle, xpEarne
             style={{ background: "#0d0d0d", border: "1px solid #b8ff00", boxShadow: "0 0 60px rgba(184,255,0,0.2)", maxWidth: "420px" }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ fontSize: "3rem", marginBottom: "12px" }}>🏆</div>
+            <div style={{ fontSize: "3rem", marginBottom: "12px" }}></div>
             <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#b8ff00" }}>
               Lesson Complete
             </div>

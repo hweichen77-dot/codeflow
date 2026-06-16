@@ -195,7 +195,7 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
           style={{ padding: "14px 28px", borderTop: "1px solid #e8e8e8", display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
           <span style={{ fontSize: "0.8125rem", color: "#888" }}>
-            {correctCount === totalQuestions ? "🎉 Perfect score!" : `Keep practicing — review the explanations above.`}
+            {correctCount === totalQuestions ? " Perfect score!" : `Keep practicing — review the explanations above.`}
           </span>
           <span style={{ fontSize: "0.8125rem", color: "#cf6a2f", fontWeight: 700 }}>
             {correctCount}/{totalQuestions} correct

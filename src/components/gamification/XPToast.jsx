@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Global XP toast queue
 let toastListeners = [];
-export function showXPToast(message, xp, emoji = "⚡") {
+export function showXPToast(message, xp, emoji = "") {
   const id = Date.now() + Math.random();
   toastListeners.forEach(fn => fn({ id, message, xp, emoji }));
 }

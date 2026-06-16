@@ -33,7 +33,7 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
 
             <div className="flex items-center gap-3">
               {status === "running" && (
-                <span className="font-mono text-xs animate-pulse" style={{ color: "#60a5fa" }}>⏳ running...</span>
+                <span className="font-mono text-xs animate-pulse" style={{ color: "#60a5fa" }}> running...</span>
               )}
               {status === "done" && (
                 <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>✓ done</span>
@@ -260,7 +260,7 @@ export default function LessonExpander() {
                   cursor: enrichRunning ? "not-allowed" : "pointer",
                 }}
               >
-                {enrichRunning ? `⏳ Enriching ${enrichIndex + 1}/${lessons.length}...` : `✨ Enrich All Lessons (${lessons.length})`}
+                {enrichRunning ? ` Enriching ${enrichIndex + 1}/${lessons.length}...` : ` Enrich All Lessons (${lessons.length})`}
               </button>
               <div className="font-mono text-xs" style={{ color: "#888" }}>
                 Adds key terms, callouts, diagrams, inline quizzes, quizzes & participation activities
@@ -293,8 +293,8 @@ export default function LessonExpander() {
             }}
           >
             {running
-              ? `⏳ Processing ${currentIndex + 1}/${(isLessonsTab ? lessons : projects).filter(x => lessonStatuses[x.id] !== "already_expanded" && lessonStatuses[x.id] !== "done").length}...`
-              : `🤖 Expand All ${isLessonsTab ? "Lessons" : "Projects"} (${(isLessonsTab ? lessons : projects).filter(x => (isLessonsTab ? lessonStatuses : projectStatuses)[x.id] !== "already_expanded" && (isLessonsTab ? lessonStatuses : projectStatuses)[x.id] !== "done").length} remaining)`}
+              ? ` Processing ${currentIndex + 1}/${(isLessonsTab ? lessons : projects).filter(x => lessonStatuses[x.id] !== "already_expanded" && lessonStatuses[x.id] !== "done").length}...`
+              : ` Expand All ${isLessonsTab ? "Lessons" : "Projects"} (${(isLessonsTab ? lessons : projects).filter(x => (isLessonsTab ? lessonStatuses : projectStatuses)[x.id] !== "already_expanded" && (isLessonsTab ? lessonStatuses : projectStatuses)[x.id] !== "done").length} remaining)`}
           </button>
 
           {isLessonsTab && Object.keys(lessonStatuses).length > 0 && (

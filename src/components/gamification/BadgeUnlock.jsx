@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const BADGES = [
-  { id: "first_lesson", label: "First Step", icon: "🚀", desc: "Complete your first lesson", threshold: 1 },
-  { id: "five_lessons", label: "Getting Warm", icon: "🔥", desc: "Complete 5 lessons", threshold: 5 },
-  { id: "ten_lessons", label: "On Fire", icon: "⚡", desc: "Complete 10 lessons", threshold: 10 },
-  { id: "twenty_lessons", label: "Unstoppable", icon: "💥", desc: "Complete 20 lessons", threshold: 20 },
+  { id: "first_lesson", label: "First Step", icon: "", desc: "Complete your first lesson", threshold: 1 },
+  { id: "five_lessons", label: "Getting Warm", icon: "", desc: "Complete 5 lessons", threshold: 5 },
+  { id: "ten_lessons", label: "On Fire", icon: "", desc: "Complete 10 lessons", threshold: 10 },
+  { id: "twenty_lessons", label: "Unstoppable", icon: "", desc: "Complete 20 lessons", threshold: 20 },
 ];
 
 export default function BadgeUnlock({ completedCount }) {
