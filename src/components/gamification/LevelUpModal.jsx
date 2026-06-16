@@ -77,7 +77,7 @@ export default function LevelUpModal({ show, level, onClose }) {
 
             <div
               className="font-mono text-xs tracking-widest uppercase mb-6"
-              style={{ color: "#666" }}
+              style={{ color: "#c4c4c4" }}
             >
               § LEVEL UP
             </div>
@@ -127,7 +127,7 @@ export default function LevelUpModal({ show, level, onClose }) {
             </h2>
             <p
               className="font-display text-sm"
-              style={{ color: "#999", fontWeight: 400, margin: "0 0 32px" }}
+              style={{ color: "#d4d4d4", fontWeight: 400, margin: "0 0 32px" }}
             >
               You've reached a new level. Keep building.
             </p>

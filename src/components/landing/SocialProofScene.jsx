@@ -68,7 +68,7 @@ function QuoteCard({ quote, index, scrollYProgress }) {
           </div>
           <div>
             <div className="font-display font-bold text-sm" style={{ color: "#e8e8e8" }}>{quote.name}</div>
-            <div className="font-mono text-xs" style={{ color: "#444" }}>{quote.role}</div>
+            <div className="font-mono text-xs" style={{ color: "#e8e8e8" }}>{quote.role}</div>
           </div>
           <div className="ml-auto">
             <div className="flex gap-1.5">
@@ -147,7 +147,7 @@ export default function SocialProofScene() {
         </div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-16 text-center" style={{ color: "#2a2a2a" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-16 text-center" style={{ color: "#e8e8e8" }}>
             § FROM THE COMMUNITY
           </div>
 
@@ -160,7 +160,7 @@ export default function SocialProofScene() {
 
           {/* Milestone timeline — fades in near end of scene */}
           <motion.div style={{ opacity: milestonesOpacity }}>
-            <div className="font-mono text-xs tracking-widest uppercase mb-8 text-center" style={{ color: "#2a2a2a" }}>
+            <div className="font-mono text-xs tracking-widest uppercase mb-8 text-center" style={{ color: "#e8e8e8" }}>
               YOUR TIMELINE
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-0" style={{ border: "1px solid #1a1a1a" }}>
@@ -173,7 +173,7 @@ export default function SocialProofScene() {
                   <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#b8ff00" }}>
                     {m.step}
                   </div>
-                  <p className="font-display text-sm leading-relaxed" style={{ color: "#555", fontWeight: 400 }}>
+                  <p className="font-display text-sm leading-relaxed" style={{ color: "#c4c4c4", fontWeight: 400 }}>
                     {m.text}
                   </p>
                   {/* connector dot */}
@@ -191,7 +191,7 @@ export default function SocialProofScene() {
         <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none" style={{ borderTop: "1px solid #111" }}>
           <motion.div style={{ x: tickerX }} className="flex whitespace-nowrap py-3">
             {[...Array(4)].map((_, ri) => (
-              <span key={ri} className="font-mono text-xs tracking-widest uppercase mr-16" style={{ color: "#1e1e1e" }}>
+              <span key={ri} className="font-mono text-xs tracking-widest uppercase mr-16" style={{ color: "#e8e8e8" }}>
                 STRUCTURE · PROJECTS · AI TRACK · CODE · BUILD · DEPLOY · LEARN · SHIP · STRUCTURE · PROJECTS · AI TRACK · CODE · BUILD · DEPLOY · LEARN · SHIP &nbsp;
               </span>
             ))}

@@ -28,7 +28,7 @@ export default function HeroSection() {
 
       <div
         className="absolute left-8 top-1/2 -translate-y-1/2 -translate-x-1/2 rotate-90 font-mono text-xs tracking-widest"
-        style={{ color: "#2a2a2a", whiteSpace: "nowrap" }}
+        style={{ color: "#e8e8e8", whiteSpace: "nowrap" }}
       >
         § 00 — INTRO
       </div>
@@ -57,8 +57,8 @@ export default function HeroSection() {
               <span className="font-mono text-xs tracking-[0.25em] uppercase" style={{ color: "#b8ff00" }}>
                 CodeFlow
               </span>
-              <span className="font-mono text-xs" style={{ color: "#2a2a2a" }}>///</span>
-              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#444" }}>
+              <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>///</span>
+              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>
                 Learn by building
               </span>
             </div>
@@ -90,7 +90,7 @@ export default function HeroSection() {
 
             <p
               className="font-display text-lg leading-relaxed mb-12 max-w-sm"
-              style={{ color: "#888", fontWeight: 400 }}
+              style={{ color: "#d4d4d4", fontWeight: 400 }}
             >
               {TAGLINE}
             </p>
@@ -122,7 +122,7 @@ export default function HeroSection() {
                   className="font-mono text-sm tracking-widest uppercase px-8 py-4 transition-all duration-200"
                   style={{
                     background: "transparent",
-                    color: "#888",
+                    color: "#d4d4d4",
                     border: "1px solid #2a2a2a",
                   }}
                   onMouseEnter={e => {
@@ -132,7 +132,7 @@ export default function HeroSection() {
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.borderColor = "#2a2a2a";
-                    e.currentTarget.style.color = "#888";
+                    e.currentTarget.style.color = "#d4d4d4";
                     e.currentTarget.style.transform = "";
                   }}
                 >
@@ -157,7 +157,7 @@ export default function HeroSection() {
                     >
                       {stat.val}
                     </div>
-                    <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#444" }}>
+                    <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>
                       {stat.label}
                     </div>
                   </div>
@@ -191,7 +191,7 @@ export default function HeroSection() {
                     <div className="w-3 h-3 rounded-full" style={{ background: "#3a3a3a" }} />
                     <div className="w-3 h-3 rounded-full" style={{ background: "#3a3a3a" }} />
                   </div>
-                  <span className="font-mono text-xs" style={{ color: "#444" }}>~/projects/lesson_01.js</span>
+                  <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>~/projects/lesson_01.js</span>
                 </div>
                 <span
                   className="font-mono text-xs px-2 py-0.5"
@@ -203,48 +203,48 @@ export default function HeroSection() {
 
               <div className="p-6 font-mono text-sm leading-7">
                 <div>
-                  <span style={{ color: "#555" }}>01</span>
-                  <span style={{ color: "#555" }}> &nbsp; </span>
+                  <span style={{ color: "#c4c4c4" }}>01</span>
+                  <span style={{ color: "#c4c4c4" }}> &nbsp; </span>
                   <span style={{ color: "#b8ff00" }}>const</span>
                   <span style={{ color: "#e8e8e8" }}> skills </span>
-                  <span style={{ color: "#555" }}>= [</span>
+                  <span style={{ color: "#c4c4c4" }}>= [</span>
                 </div>
                 {["'HTML & CSS'", "'JavaScript'", "'React'", "'AI Tools'"].map((s, i) => (
                   <div key={s}>
-                    <span style={{ color: "#555" }}>0{i + 2}</span>
-                    <span style={{ color: "#555" }}> &nbsp;&nbsp;&nbsp; </span>
+                    <span style={{ color: "#c4c4c4" }}>0{i + 2}</span>
+                    <span style={{ color: "#c4c4c4" }}> &nbsp;&nbsp;&nbsp; </span>
                     <span style={{ color: "#b8ff0099" }}>{s}</span>
-                    <span style={{ color: "#444" }}>,</span>
+                    <span style={{ color: "#e8e8e8" }}>,</span>
                   </div>
                 ))}
                 <div>
-                  <span style={{ color: "#555" }}>06</span>
-                  <span style={{ color: "#555" }}> &nbsp; </span>
-                  <span style={{ color: "#555" }}>];</span>
+                  <span style={{ color: "#c4c4c4" }}>06</span>
+                  <span style={{ color: "#c4c4c4" }}> &nbsp; </span>
+                  <span style={{ color: "#c4c4c4" }}>];</span>
                 </div>
-                <div><span style={{ color: "#333" }}>07</span></div>
+                <div><span style={{ color: "#e8e8e8" }}>07</span></div>
                 <div>
-                  <span style={{ color: "#555" }}>08</span>
-                  <span style={{ color: "#555" }}> &nbsp; </span>
+                  <span style={{ color: "#c4c4c4" }}>08</span>
+                  <span style={{ color: "#c4c4c4" }}> &nbsp; </span>
                   <span style={{ color: "#b8ff00" }}>function</span>
                   <span style={{ color: "#e8e8e8" }}> build</span>
-                  <span style={{ color: "#555" }}>(</span>
-                  <span style={{ color: "#888" }}>skill</span>
-                  <span style={{ color: "#555" }}>) &#123;</span>
+                  <span style={{ color: "#c4c4c4" }}>(</span>
+                  <span style={{ color: "#d4d4d4" }}>skill</span>
+                  <span style={{ color: "#c4c4c4" }}>) &#123;</span>
                 </div>
                 <div>
-                  <span style={{ color: "#555" }}>09</span>
-                  <span style={{ color: "#555" }}> &nbsp;&nbsp;&nbsp; </span>
+                  <span style={{ color: "#c4c4c4" }}>09</span>
+                  <span style={{ color: "#c4c4c4" }}> &nbsp;&nbsp;&nbsp; </span>
                   <span style={{ color: "#b8ff00" }}>return</span>
                   <span style={{ color: "#e8e8e8" }}> launch</span>
-                  <span style={{ color: "#555" }}>(</span>
-                  <span style={{ color: "#888" }}>skill</span>
-                  <span style={{ color: "#555" }}>);</span>
+                  <span style={{ color: "#c4c4c4" }}>(</span>
+                  <span style={{ color: "#d4d4d4" }}>skill</span>
+                  <span style={{ color: "#c4c4c4" }}>);</span>
                 </div>
                 <div>
-                  <span style={{ color: "#555" }}>10</span>
-                  <span style={{ color: "#555" }}> &nbsp; </span>
-                  <span style={{ color: "#555" }}>&#125;</span>
+                  <span style={{ color: "#c4c4c4" }}>10</span>
+                  <span style={{ color: "#c4c4c4" }}> &nbsp; </span>
+                  <span style={{ color: "#c4c4c4" }}>&#125;</span>
                 </div>
               </div>
 
@@ -257,20 +257,20 @@ export default function HeroSection() {
                     className="w-1.5 h-1.5 rounded-full animate-pulse"
                     style={{ background: "#b8ff00" }}
                   />
-                  <span className="font-mono text-xs" style={{ color: "#555" }}>output</span>
+                  <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>output</span>
                 </div>
                 <div className="font-mono text-xs leading-6" style={{ color: "#b8ff0099" }}>
                   <div>skill acquired: 'JavaScript'</div>
                   <div>project deployed: <span style={{ color: "#b8ff00" }}>true</span></div>
-                  <div style={{ color: "#555" }}>// took 47 mins. not bad.</div>
-                  <div style={{ color: "#444" }}>▶ next: lesson 02<span className="cursor-blink">_</span></div>
+                  <div style={{ color: "#c4c4c4" }}>// took 47 mins. not bad.</div>
+                  <div style={{ color: "#e8e8e8" }}>▶ next: lesson 02<span className="cursor-blink">_</span></div>
                 </div>
               </div>
             </div>
 
             <div
               className="absolute -right-4 top-1/3 font-mono text-xs rotate-90 origin-right"
-              style={{ color: "#2a2a2a", whiteSpace: "nowrap" }}
+              style={{ color: "#e8e8e8", whiteSpace: "nowrap" }}
             >
               lesson_01.js — 10 lines
             </div>

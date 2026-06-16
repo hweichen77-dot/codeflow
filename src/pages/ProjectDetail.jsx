@@ -238,7 +238,7 @@ export default function ProjectDetail() {
         className="min-h-screen flex items-center justify-center"
         style={{ background: "#0a0a0a" }}
       >
-        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#333" }}>
+        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#e8e8e8" }}>
           Loading module...
         </div>
       </div>
@@ -248,7 +248,7 @@ export default function ProjectDetail() {
   if (!project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#0a0a0a" }}>
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#444" }}>404 — NOT FOUND</div>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>404 — NOT FOUND</div>
         <Link to={createPageUrl("Projects")}>
           <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#b8ff00", border: "1px solid #b8ff0033" }}>
             ← Back to Projects
@@ -280,7 +280,7 @@ export default function ProjectDetail() {
           <Link
             to={createPageUrl("Projects")}
             className="font-mono text-xs tracking-widest uppercase mb-6 inline-block transition-colors duration-150"
-            style={{ color: "#333" }}
+            style={{ color: "#e8e8e8" }}
             onMouseEnter={e => e.currentTarget.style.color = "#b8ff00"}
             onMouseLeave={e => e.currentTarget.style.color = "#333"}
           >
@@ -307,14 +307,14 @@ export default function ProjectDetail() {
                   </h1>
                 </div>
               </div>
-              <p className="font-display text-sm leading-relaxed" style={{ color: "#555", fontWeight: 400, maxWidth: "55ch" }}>
+              <p className="font-display text-sm leading-relaxed" style={{ color: "#c4c4c4", fontWeight: 400, maxWidth: "55ch" }}>
                 {project.description}
               </p>
             </div>
 
             {/* Progress indicator — dot trail */}
             <div className="flex flex-col items-end gap-3">
-              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#333" }}>
+              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>
                 {completedCount}/{totalLessons} complete
               </div>
               <div className="flex gap-1.5">
@@ -337,7 +337,7 @@ export default function ProjectDetail() {
                   />
                 ))}
               </div>
-              <div className="font-mono text-xs" style={{ color: "#222" }}>
+              <div className="font-mono text-xs" style={{ color: "#e8e8e8" }}>
                 {project.estimated_time ? `~${project.estimated_time}min` : ""}
               </div>
             </div>
@@ -368,7 +368,7 @@ export default function ProjectDetail() {
               {/* Vertical label */}
               <div
                 className="font-mono text-xs tracking-widest uppercase mb-5"
-                style={{ color: "#666" }}
+                style={{ color: "#c4c4c4" }}
               >
                 LESSONS
               </div>
@@ -429,7 +429,7 @@ export default function ProjectDetail() {
                 <button
                   onClick={dismissNavHint}
                   className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
-                  style={{ color: "#666", border: "1px solid #1a1a1a", background: "#0d0d0d" }}
+                  style={{ color: "#c4c4c4", border: "1px solid #1a1a1a", background: "#0d0d0d" }}
                   title="Dismiss hint"
                 >
                   ← → to navigate lessons
@@ -711,10 +711,10 @@ export default function ProjectDetail() {
                           <div className="px-5 py-4 space-y-3">
                             {activeLesson.hints.map((hint, i) => (
                               <div key={i} className="flex items-start gap-3">
-                                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#333" }}>
+                                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#e8e8e8" }}>
                                   {String(i + 1).padStart(2, "0")}
                                 </span>
-                                <p className="font-display text-sm leading-relaxed" style={{ color: "#666", fontWeight: 400 }}>
+                                <p className="font-display text-sm leading-relaxed" style={{ color: "#c4c4c4", fontWeight: 400 }}>
                                   {hint}
                                 </p>
                               </div>
@@ -736,7 +736,7 @@ export default function ProjectDetail() {
                       >
                         <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
                           <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#555" }}>
+                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>
                               Solution
                             </span>
                             <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
@@ -745,7 +745,7 @@ export default function ProjectDetail() {
                           </div>
                           <pre
                             className="font-mono overflow-x-auto p-5"
-                            style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#888" }}
+                            style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#d4d4d4" }}
                           >
                             {activeLesson.solution_code}
                           </pre>

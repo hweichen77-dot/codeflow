@@ -5,7 +5,7 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
   return (
     <div style={{ border: "1px solid #1a1a1a" }}>
       <div className="px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a", background: "#0d0d0d" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#555" }}>
+        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>
           {items.length} items
         </span>
       </div>
@@ -18,7 +18,7 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
             style={{ borderBottom: "1px solid #111" }}
           >
             <div className="flex items-center gap-4">
-              <span className="font-mono text-xs w-6 text-right flex-shrink-0" style={{ color: "#333" }}>
+              <span className="font-mono text-xs w-6 text-right flex-shrink-0" style={{ color: "#e8e8e8" }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
               <div>
@@ -26,7 +26,7 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
                   {item[labelKey]}
                 </div>
                 {subKey && item[subKey] && (
-                  <div className="font-mono text-xs" style={{ color: "#555" }}>{item[subKey]}</div>
+                  <div className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{item[subKey]}</div>
                 )}
               </div>
             </div>
@@ -42,16 +42,16 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
                 <span className="font-mono text-xs" style={{ color: "#ef4444" }}>✗ error</span>
               )}
               {status === "already_expanded" && (
-                <span className="font-mono text-xs" style={{ color: "#555" }}>✓ already expanded</span>
+                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>✓ already expanded</span>
               )}
               {!running && (
                 <button
                   onClick={() => onRunOne(item)}
                   disabled={status === "running"}
                   className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all"
-                  style={{ color: "#888", border: "1px solid #1e1e1e", background: "transparent", cursor: "pointer" }}
+                  style={{ color: "#d4d4d4", border: "1px solid #1e1e1e", background: "transparent", cursor: "pointer" }}
                   onMouseEnter={e => { e.currentTarget.style.color = "#b8ff00"; e.currentTarget.style.borderColor = "#b8ff0033"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "#888"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "#d4d4d4"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
                 >
                   {status === "already_expanded" ? "Re-expand" : "Expand"}
                 </button>
@@ -200,7 +200,7 @@ export default function LessonExpander() {
   if (!user || user.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0a0a" }}>
-        <p className="font-mono text-sm" style={{ color: "#888" }}>Admin access required.</p>
+        <p className="font-mono text-sm" style={{ color: "#d4d4d4" }}>Admin access required.</p>
       </div>
     );
   }
@@ -221,7 +221,7 @@ export default function LessonExpander() {
           <h1 className="font-display font-bold text-3xl mt-2 mb-1" style={{ color: "#f0f0f0" }}>
             AI Content Expander
           </h1>
-          <p className="font-display text-sm" style={{ color: "#888" }}>
+          <p className="font-display text-sm" style={{ color: "#d4d4d4" }}>
             Uses Claude Sonnet to enrich lessons with detailed explanations, quizzes & activities — and rewrites project descriptions to be crystal clear for AI beginners.
           </p>
         </div>
@@ -234,7 +234,7 @@ export default function LessonExpander() {
               onClick={() => setTab(t)}
               className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
               style={{
-                color: tab === t ? "#b8ff00" : "#555",
+                color: tab === t ? "#b8ff00" : "#c4c4c4",
                 borderBottom: tab === t ? "2px solid #b8ff00" : "2px solid transparent",
                 background: "transparent",
                 marginBottom: "-1px",
@@ -255,14 +255,14 @@ export default function LessonExpander() {
                 className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
                 style={{
                   background: enrichRunning ? "#1a1a1a" : "#cc66ff",
-                  color: enrichRunning ? "#555" : "#0a0a0a",
+                  color: enrichRunning ? "#c4c4c4" : "#0a0a0a",
                   border: "1px solid transparent", fontWeight: 700,
                   cursor: enrichRunning ? "not-allowed" : "pointer",
                 }}
               >
                 {enrichRunning ? ` Enriching ${enrichIndex + 1}/${lessons.length}...` : ` Enrich All Lessons (${lessons.length})`}
               </button>
-              <div className="font-mono text-xs" style={{ color: "#888" }}>
+              <div className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
                 Adds key terms, callouts, diagrams, inline quizzes, quizzes & participation activities
               </div>
             </div>
@@ -286,7 +286,7 @@ export default function LessonExpander() {
             className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
             style={{
               background: running ? "#1a1a1a" : "#b8ff00",
-              color: running ? "#555" : "#0a0a0a",
+              color: running ? "#c4c4c4" : "#0a0a0a",
               border: "1px solid transparent",
               fontWeight: 700,
               cursor: running ? "not-allowed" : "pointer",
@@ -298,14 +298,14 @@ export default function LessonExpander() {
           </button>
 
           {isLessonsTab && Object.keys(lessonStatuses).length > 0 && (
-            <div className="font-mono text-xs" style={{ color: "#888" }}>
+            <div className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
               <span style={{ color: "#b8ff00" }}>{lessonDone} done</span>
               {lessonErrors > 0 && <span style={{ color: "#ef4444", marginLeft: "12px" }}>{lessonErrors} errors</span>}
               {" / "}{lessons.length} total
             </div>
           )}
           {!isLessonsTab && Object.keys(projectStatuses).length > 0 && (
-            <div className="font-mono text-xs" style={{ color: "#888" }}>
+            <div className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
               <span style={{ color: "#b8ff00" }}>{projectDone} done</span>
               {projectErrors > 0 && <span style={{ color: "#ef4444", marginLeft: "12px" }}>{projectErrors} errors</span>}
               {" / "}{projects.length} total

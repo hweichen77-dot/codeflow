@@ -31,7 +31,7 @@ export default function Pricing() {
         <div style={{
           fontFamily: "monospace",
           fontSize: "11px",
-          color: "#888888",
+          color: "#d4d4d4",
           letterSpacing: "0.1em",
           textTransform: "uppercase",
           marginBottom: "48px",
@@ -49,13 +49,13 @@ export default function Pricing() {
             borderRadius: "12px",
             padding: "36px",
           }}>
-            <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#888888", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
+            <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#d4d4d4", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
               Free
             </div>
             <div style={{ color: "#f0f0f0", fontSize: "36px", fontWeight: 800, fontFamily: "Georgia, serif", letterSpacing: "-0.03em", marginBottom: "6px" }}>
               $0
             </div>
-            <div style={{ color: "#888888", fontSize: "13px", marginBottom: "32px", fontFamily: "monospace" }}>/ month</div>
+            <div style={{ color: "#d4d4d4", fontSize: "13px", marginBottom: "32px", fontFamily: "monospace" }}>/ month</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "13px", marginBottom: "36px" }}>
               {freeFeatures.map(f => (
                 <div key={f} style={{ color: "#c0c0c0", fontSize: "14px" }}>
@@ -113,7 +113,7 @@ export default function Pricing() {
             <div style={{ color: "#f0f0f0", fontSize: "36px", fontWeight: 800, fontFamily: "Georgia, serif", letterSpacing: "-0.03em", marginBottom: "6px" }}>
               $12
             </div>
-            <div style={{ color: "#888888", fontSize: "13px", marginBottom: "32px", fontFamily: "monospace" }}>/ month</div>
+            <div style={{ color: "#d4d4d4", fontSize: "13px", marginBottom: "32px", fontFamily: "monospace" }}>/ month</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "13px", marginBottom: "36px" }}>
               {proFeatures.map(f => (
                 <div key={f} style={{ color: "#c0c0c0", fontSize: "14px" }}>

@@ -51,10 +51,10 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#666" }}>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>
           ACHIEVEMENTS
         </div>
-        <div className="font-mono text-xs" style={{ color: "#555" }}>
+        <div className="font-mono text-xs" style={{ color: "#c4c4c4" }}>
           {unlockedCount} / {achievements.length}
         </div>
       </div>
@@ -93,13 +93,13 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
               </div>
               <div
                 className="font-display text-sm font-bold mb-1"
-                style={{ color: a.unlocked ? "#e8e8e8" : "#555", letterSpacing: "-0.01em" }}
+                style={{ color: a.unlocked ? "#e8e8e8" : "#c4c4c4", letterSpacing: "-0.01em" }}
               >
                 {a.title}
               </div>
               <div
                 className="font-mono"
-                style={{ fontSize: "0.65rem", color: a.unlocked ? "#777" : "#444", lineHeight: 1.4 }}
+                style={{ fontSize: "0.65rem", color: a.unlocked ? "#d4d4d4" : "#c4c4c4", lineHeight: 1.4 }}
               >
                 {a.unlocked ? a.desc : "LOCKED"}
               </div>

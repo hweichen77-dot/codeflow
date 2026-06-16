@@ -102,7 +102,7 @@ function FeatureCard({ feature, index, scrollYProgress }) {
         </h3>
         <p
           className="font-display text-lg leading-relaxed"
-          style={{ color: "#555", fontWeight: 400, maxWidth: "52ch" }}
+          style={{ color: "#c4c4c4", fontWeight: 400, maxWidth: "52ch" }}
         >
           {feature.body}
         </p>
@@ -120,7 +120,7 @@ function FeatureCard({ feature, index, scrollYProgress }) {
               />
             ))}
           </div>
-          <span className="font-mono text-xs" style={{ color: "#2a2a2a" }}>
+          <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>
             {index + 1} / {FEATURES.length}
           </span>
         </div>
@@ -192,7 +192,7 @@ export default function FeaturesScene() {
         </motion.div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-6 text-center" style={{ color: "#2a2a2a" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-6 text-center" style={{ color: "#e8e8e8" }}>
             § WHAT YOU GET
           </div>
           <div className="relative" style={{ minHeight: "460px" }}>

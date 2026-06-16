@@ -39,7 +39,7 @@ export default function FeaturesSection() {
         <div className="flex items-start gap-8 mb-20">
           <div
             className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
-            style={{ color: "#2a2a2a", width: "4rem" }}
+            style={{ color: "#e8e8e8", width: "4rem" }}
           >
             § 01
           </div>
@@ -50,7 +50,7 @@ export default function FeaturesSection() {
             >
               How it works
             </h2>
-            <p className="font-display text-base" style={{ color: "#555" }}>
+            <p className="font-display text-base" style={{ color: "#c4c4c4" }}>
               Four principles. One outcome: you can actually code.
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function FeaturesSection() {
               <div className="flex items-start gap-6">
                 <div
                   className="font-mono font-bold flex-shrink-0"
-                  style={{ fontSize: "3rem", lineHeight: 1, color: "#1e1e1e", letterSpacing: "-0.05em" }}
+                  style={{ fontSize: "3rem", lineHeight: 1, color: "#e8e8e8", letterSpacing: "-0.05em" }}
                 >
                   {f.num}
                 </div>
@@ -96,7 +96,7 @@ export default function FeaturesSection() {
                   </h3>
                   <p
                     className="font-display text-sm leading-relaxed"
-                    style={{ color: "#666", fontWeight: 400 }}
+                    style={{ color: "#c4c4c4", fontWeight: 400 }}
                   >
                     {f.body}
                   </p>

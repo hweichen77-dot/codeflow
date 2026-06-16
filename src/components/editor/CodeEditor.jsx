@@ -102,7 +102,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
             </div>
-            <span className="font-mono text-xs" style={{ color: "#666" }}>
+            <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>
               ~/codeflow/{filename}
             </span>
           </div>
@@ -111,7 +111,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
               onClick={handleCopy}
               className="font-mono text-xs px-3 py-1.5 transition-all duration-150"
               style={{
-                color: copied ? "#b8ff00" : "#444",
+                color: copied ? "#b8ff00" : "#c4c4c4",
                 border: `1px solid ${copied ? "#b8ff0033" : "#1e1e1e"}`,
                 background: copied ? "#b8ff0010" : "transparent",
               }}
@@ -121,9 +121,9 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
             <button
               onClick={() => onChange("")}
               className="font-mono text-xs px-3 py-1.5 transition-all duration-150"
-              style={{ color: "#333", border: "1px solid #1e1e1e" }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#888"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "#333"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
+              style={{ color: "#e8e8e8", border: "1px solid #1e1e1e" }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#d4d4d4"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "#e8e8e8"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
             >
               reset
             </button>
@@ -150,7 +150,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
           <div
             ref={lineNumbersRef}
             className="font-mono text-right select-none overflow-hidden flex-shrink-0 py-5 px-4"
-            style={{ fontSize: "0.75rem", lineHeight: "1.6rem", color: "#2a2a2a", borderRight: "1px solid #1a1a1a", width: "3rem" }}
+            style={{ fontSize: "0.75rem", lineHeight: "1.6rem", color: "#e8e8e8", borderRight: "1px solid #1a1a1a", width: "3rem" }}
           >
             {lines.map((_, i) => <div key={i}>{i + 1}</div>)}
           </div>
@@ -183,7 +183,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
           <div style={{ borderTop: "1px solid #1a1a1a" }}>
             <div className="flex items-center gap-3 px-5 py-2.5" style={{ background: "#0a0a0a", borderBottom: "1px solid #1a1a1a" }}>
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#b8ff00" }} />
-              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#333" }}>output</span>
+              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>output</span>
             </div>
             <div
               className="font-mono py-5 px-5 overflow-auto"

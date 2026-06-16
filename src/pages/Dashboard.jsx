@@ -212,13 +212,13 @@ export default function Dashboard() {
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #1a1a1a" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }} />
         <div className="max-w-5xl mx-auto">
-          <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#666" }}>§ DASHBOARD</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#c4c4c4" }}>§ DASHBOARD</div>
           <h1
             style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 8px" }}
           >
             {user.full_name?.split(" ")[0] || "Learner"}
           </h1>
-          <p className="font-display text-sm" style={{ color: "#888", fontWeight: 400 }}>
+          <p className="font-display text-sm" style={{ color: "#d4d4d4", fontWeight: 400 }}>
             {user.email}
           </p>
 
@@ -228,7 +228,7 @@ export default function Dashboard() {
               <span className="font-mono text-xs" style={{ color: lvl.color }}>
                 LVL {lvl.level} — {lvl.name}
               </span>
-              <span className="font-mono text-xs" style={{ color: "#555" }}>
+              <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>
                 {totalXP} / {lvl.max === Infinity ? "∞" : lvl.max} XP
               </span>
             </div>
@@ -236,7 +236,7 @@ export default function Dashboard() {
               <div style={{ height: "100%", width: `${lvlPct}%`, background: lvl.color, borderRadius: "2px", transition: "width 1s ease" }} />
             </div>
             {nextLvl && (
-              <div className="font-mono text-xs mt-1" style={{ color: "#444" }}>
+              <div className="font-mono text-xs mt-1" style={{ color: "#c4c4c4" }}>
                 {lvl.max - totalXP} XP to reach {nextLvl.name}
               </div>
             )}
@@ -261,7 +261,7 @@ export default function Dashboard() {
             <h2 style={{ fontFamily: "'Syne', Georgia, serif", fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", margin: "0 0 8px" }}>
               You finished every lesson.
             </h2>
-            <p className="font-display text-sm" style={{ color: "#aaa", fontWeight: 400 }}>
+            <p className="font-display text-sm" style={{ color: "#d4d4d4", fontWeight: 400 }}>
               Revisit a module, ship a capstone, or take on the challenges.
             </p>
           </div>
@@ -284,11 +284,11 @@ export default function Dashboard() {
                 >
                   {nextStep.lesson.title}
                 </h2>
-                <p className="font-display text-sm truncate" style={{ color: "#888", fontWeight: 400 }}>
+                <p className="font-display text-sm truncate" style={{ color: "#d4d4d4", fontWeight: 400 }}>
                   {nextStep.project.title}
                 </p>
               </div>
-              <span className="font-mono text-2xl transition-colors duration-150 group-hover:text-white flex-shrink-0" style={{ color: "#444" }}>
+              <span className="font-mono text-2xl transition-colors duration-150 group-hover:text-white flex-shrink-0" style={{ color: "#c4c4c4" }}>
                 →
               </span>
             </div>
@@ -319,7 +319,7 @@ export default function Dashboard() {
               >
                 {stat.val}
               </div>
-              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#777" }}>
+              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>
                 {stat.label}
               </div>
             </div>
@@ -341,7 +341,7 @@ export default function Dashboard() {
               <div className="font-mono text-xs tracking-widest uppercase mb-0.5" style={{ color: streak >= 7 ? "#ff6b35" : "#ffb300" }}>
                 {streak >= 7 ? "ON FIRE" : streak >= 3 ? "BUILDING MOMENTUM" : "STREAK STARTED"}
               </div>
-              <p className="font-display text-sm" style={{ color: "#aaa", fontWeight: 400 }}>
+              <p className="font-display text-sm" style={{ color: "#d4d4d4", fontWeight: 400 }}>
                 {streak} day{streak !== 1 ? "s" : ""} in a row.{" "}
                 {streak >= 7
                   ? "Exceptional consistency — keep it up."
@@ -356,17 +356,17 @@ export default function Dashboard() {
         {/* Struggle signals */}
         {struggledLessons > 0 && (
           <div>
-            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#666" }}>
+            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#c4c4c4" }}>
               AI INSIGHTS
             </div>
             <div className="px-6 py-5" style={{ border: "1px solid #1a1a1a", background: "#0d0d0d", borderLeft: "2px solid #ffb300" }}>
               <div className="flex items-start gap-4">
                 <span className="font-mono text-xs mt-0.5" style={{ color: "#ffb300" }}>AI</span>
                 <div>
-                  <p className="font-display text-sm mb-1" style={{ color: "#888", fontWeight: 400 }}>
+                  <p className="font-display text-sm mb-1" style={{ color: "#d4d4d4", fontWeight: 400 }}>
                     You viewed solutions or had repeated errors on <span style={{ color: "#e8e8e8" }}>{struggledLessons} lesson{struggledLessons > 1 ? "s" : ""}</span>.
                   </p>
-                  <p className="font-display text-xs" style={{ color: "#aaa", fontWeight: 400 }}>
+                  <p className="font-display text-xs" style={{ color: "#d4d4d4", fontWeight: 400 }}>
                     Revisit those lessons — the concepts they cover are worth reinforcing before moving on.
                   </p>
                 </div>
@@ -377,7 +377,7 @@ export default function Dashboard() {
 
         {/* Activity heatmap */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-6" style={{ color: "#666" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-6" style={{ color: "#c4c4c4" }}>
             ACTIVITY — LAST 52 WEEKS
           </div>
           <div
@@ -392,7 +392,7 @@ export default function Dashboard() {
                     key={m.label + m.index}
                     className="font-mono text-xs"
                     style={{
-                      color: "#666",
+                      color: "#c4c4c4",
                       marginLeft: idx === 0 ? 0 : `${(m.index - monthLabels[idx - 1].index) * 13}px`,
                     }}
                   >
@@ -404,7 +404,7 @@ export default function Dashboard() {
                 {/* Day labels */}
                 <div className="flex flex-col gap-0.5 mr-2">
                   {["", "M", "", "W", "", "F", ""].map((d, i) => (
-                    <div key={i} className="font-mono" style={{ height: "11px", width: "12px", fontSize: "8px", color: "#666", display: "flex", alignItems: "center" }}>
+                    <div key={i} className="font-mono" style={{ height: "11px", width: "12px", fontSize: "8px", color: "#c4c4c4", display: "flex", alignItems: "center" }}>
                       {d}
                     </div>
                   ))}
@@ -446,7 +446,7 @@ export default function Dashboard() {
         {/* In progress */}
         {inProgressProjects.length > 0 && (
           <div>
-            <div className="font-mono text-xs tracking-widest uppercase mb-6" style={{ color: "#666" }}>
+            <div className="font-mono text-xs tracking-widest uppercase mb-6" style={{ color: "#c4c4c4" }}>
               CONTINUE LEARNING
             </div>
             <div style={{ border: "1px solid #1a1a1a" }}>
@@ -496,7 +496,7 @@ export default function Dashboard() {
                           </span>
                         </div>
                       </div>
-                      <span className="font-mono text-xs transition-colors duration-150 group-hover:text-white" style={{ color: "#666" }}>
+                      <span className="font-mono text-xs transition-colors duration-150 group-hover:text-white" style={{ color: "#c4c4c4" }}>
                         →
                       </span>
                     </div>
@@ -510,7 +510,7 @@ export default function Dashboard() {
         {/* Completed projects */}
         {completedProjects.length > 0 && (
           <div>
-            <div className="font-mono text-xs tracking-widest uppercase mb-6" style={{ color: "#666" }}>
+            <div className="font-mono text-xs tracking-widest uppercase mb-6" style={{ color: "#c4c4c4" }}>
               COMPLETED
             </div>
             <div className="space-y-2">
@@ -521,7 +521,7 @@ export default function Dashboard() {
                   style={{ border: "1px solid #1a1a1a" }}
                 >
                   <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>✓</span>
-                  <span className="font-display text-sm font-medium" style={{ color: "#aaa" }}>
+                  <span className="font-display text-sm font-medium" style={{ color: "#d4d4d4" }}>
                     {project.title}
                   </span>
                 </div>
@@ -539,10 +539,10 @@ export default function Dashboard() {
             className="text-center py-20"
             style={{ border: "1px solid #1a1a1a" }}
           >
-            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#666" }}>
+            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#c4c4c4" }}>
               NO ACTIVITY YET
             </div>
-            <p className="font-display text-base mb-8" style={{ color: "#888", fontWeight: 400 }}>
+            <p className="font-display text-base mb-8" style={{ color: "#d4d4d4", fontWeight: 400 }}>
               Start your first project to track progress here.
             </p>
             <Link to={createPageUrl("Projects")}>

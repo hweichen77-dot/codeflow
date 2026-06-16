@@ -25,7 +25,7 @@ function SkillBar({ bar, index, scrollYProgress }) {
   return (
     <motion.div style={{ opacity }}>
       <div className="flex items-center justify-between mb-2">
-        <span className="font-mono text-xs" style={{ color: "#555" }}>{bar.label}</span>
+        <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{bar.label}</span>
         <span className="font-mono text-xs" style={{ color: bar.color }}>{bar.width}%</span>
       </div>
       <div className="h-0.5 w-full" style={{ background: "#111" }}>
@@ -65,7 +65,7 @@ function StatCard({ stat, index, scrollYProgress }) {
       <div className="font-display font-bold text-sm mb-1" style={{ color: "#ccc" }}>
         {stat.label}
       </div>
-      <div className="font-display text-xs" style={{ color: "#444", fontWeight: 400 }}>
+      <div className="font-display text-xs" style={{ color: "#e8e8e8", fontWeight: 400 }}>
         {stat.description}
       </div>
     </motion.div>
@@ -150,7 +150,7 @@ export default function ProgressScene() {
         </div>
 
         <div className="w-full max-w-5xl mx-auto relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-12 text-center" style={{ color: "#2a2a2a" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-12 text-center" style={{ color: "#e8e8e8" }}>
             § YOUR GROWTH
           </div>
 

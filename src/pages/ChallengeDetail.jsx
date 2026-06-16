@@ -67,7 +67,7 @@ export default function ChallengeDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0a0a" }}>
-        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#333" }}>
+        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#e8e8e8" }}>
           Loading challenge...
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function ChallengeDetail() {
   if (!challenge) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#0a0a0a" }}>
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#444" }}>404 — NOT FOUND</div>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>404 — NOT FOUND</div>
         <Link to={createPageUrl("Challenges")}>
           <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#b8ff00", border: "1px solid #b8ff0033" }}>
             ← Back to Challenges
@@ -97,9 +97,9 @@ export default function ChallengeDetail() {
           <Link
             to={createPageUrl("Challenges")}
             className="font-mono text-xs tracking-widest uppercase mb-8 inline-block transition-colors duration-150"
-            style={{ color: "#888" }}
+            style={{ color: "#d4d4d4" }}
             onMouseEnter={e => e.currentTarget.style.color = "#b8ff00"}
-            onMouseLeave={e => e.currentTarget.style.color = "#888"}
+            onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
           >
             ← Challenges
           </Link>
@@ -120,7 +120,7 @@ export default function ChallengeDetail() {
                   {challenge.difficulty}
                 </span>
                 {challenge.xp_reward && (
-                  <span className="font-mono text-xs" style={{ color: "#888" }}>
+                  <span className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
                     +{challenge.xp_reward}xp
                   </span>
                 )}
@@ -130,7 +130,7 @@ export default function ChallengeDetail() {
               >
                 {challenge.title}
               </h1>
-              <p className="font-display text-sm mt-2 leading-relaxed" style={{ color: "#aaa", fontWeight: 400 }}>
+              <p className="font-display text-sm mt-2 leading-relaxed" style={{ color: "#d4d4d4", fontWeight: 400 }}>
                 {challenge.description}
               </p>
             </div>
@@ -143,17 +143,17 @@ export default function ChallengeDetail() {
         {challenge.test_cases && challenge.test_cases.length > 0 && (
           <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
             <div className="px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#444" }}>
+              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>
                 Test Cases
               </span>
             </div>
             <div className="px-5 py-4 space-y-2">
               {challenge.test_cases.map((tc, i) => (
                 <div key={i} className="flex items-center gap-4 font-mono text-xs py-2" style={{ borderBottom: i < challenge.test_cases.length - 1 ? "1px solid #111" : "none" }}>
-                  <span style={{ color: "#777" }}>{String(i + 1).padStart(2, "0")}</span>
-                  <span style={{ color: "#888" }}>in: <span style={{ color: "#ccc" }}>{tc.input}</span></span>
-                  <span style={{ color: "#666" }}>→</span>
-                  <span style={{ color: "#888" }}>expect: <span style={{ color: "#b8ff00" }}>{tc.expected_output}</span></span>
+                  <span style={{ color: "#c4c4c4" }}>{String(i + 1).padStart(2, "0")}</span>
+                  <span style={{ color: "#d4d4d4" }}>in: <span style={{ color: "#ccc" }}>{tc.input}</span></span>
+                  <span style={{ color: "#c4c4c4" }}>→</span>
+                  <span style={{ color: "#d4d4d4" }}>expect: <span style={{ color: "#b8ff00" }}>{tc.expected_output}</span></span>
                 </div>
               ))}
             </div>
@@ -185,7 +185,7 @@ export default function ChallengeDetail() {
                 <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#b8ff00" }}>
                   Challenge Complete
                 </div>
-                <div className="font-display text-sm" style={{ color: "#666", fontWeight: 400 }}>
+                <div className="font-display text-sm" style={{ color: "#c4c4c4", fontWeight: 400 }}>
                   All tests passed. Well done.
                 </div>
               </div>
@@ -200,7 +200,7 @@ export default function ChallengeDetail() {
               onClick={() => setShowHints(!showHints)}
               className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
               style={{
-                color: showHints ? "#b8ff00" : "#444",
+                color: showHints ? "#b8ff00" : "#c4c4c4",
                 border: `1px solid ${showHints ? "#b8ff0033" : "#1e1e1e"}`,
                 background: showHints ? "#b8ff0010" : "transparent",
               }}
@@ -212,9 +212,9 @@ export default function ChallengeDetail() {
             <button
               onClick={() => setShowSolution(!showSolution)}
               className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
-              style={{ color: "#333", border: "1px solid #1a1a1a" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#888"}
-              onMouseLeave={e => e.currentTarget.style.color = "#333"}
+              style={{ color: "#e8e8e8", border: "1px solid #1a1a1a" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#d4d4d4"}
+              onMouseLeave={e => e.currentTarget.style.color = "#e8e8e8"}
             >
               {showSolution ? "— Solution" : "Show Solution"}
             </button>
@@ -237,7 +237,7 @@ export default function ChallengeDetail() {
                 <div className="px-5 py-4 space-y-3">
                   {challenge.hints.map((hint, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#777" }}>
+                      <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#c4c4c4" }}>
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       <p className="font-display text-sm leading-relaxed" style={{ color: "#bbb", fontWeight: 400 }}>
@@ -262,7 +262,7 @@ export default function ChallengeDetail() {
             >
               <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
                 <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#888" }}>Solution</span>
+                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>Solution</span>
                   <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>JS</span>
                 </div>
                 <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#ccc" }}>

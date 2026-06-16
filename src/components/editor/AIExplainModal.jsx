@@ -60,14 +60,14 @@ Be direct and educational. Use code examples where helpful. Total response under
                 HOW DID I CATCH THIS?
               </span>
             </div>
-            <button onClick={onClose} style={{ color: "#444" }} onMouseEnter={e => e.currentTarget.style.color = "#888"} onMouseLeave={e => e.currentTarget.style.color = "#444"}>
+            <button onClick={onClose} style={{ color: "#c4c4c4" }} onMouseEnter={e => e.currentTarget.style.color = "#d4d4d4"} onMouseLeave={e => e.currentTarget.style.color = "#c4c4c4"}>
               <X size={16} />
             </button>
           </div>
 
           {/* Flagged hint */}
           <div className="px-6 py-4" style={{ borderBottom: "1px solid #1a1a1a", background: "#0d0d0d" }}>
-            <p className="font-mono text-xs" style={{ color: "#555" }}>Flagged issue:</p>
+            <p className="font-mono text-xs" style={{ color: "#c4c4c4" }}>Flagged issue:</p>
             <p className="font-mono text-sm mt-1" style={{ color: "#ffb300" }}>"{hint}"</p>
           </div>
 
@@ -76,17 +76,17 @@ Be direct and educational. Use code examples where helpful. Total response under
             {loading ? (
               <div className="flex items-center gap-3">
                 <Loader2 size={14} className="animate-spin" style={{ color: "#ffb300" }} />
-                <span className="font-mono text-xs" style={{ color: "#444" }}>Analyzing your code...</span>
+                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>Analyzing your code...</span>
               </div>
             ) : (
-              <div className="font-display text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#888", fontWeight: 400 }}>
+              <div className="font-display text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#d4d4d4", fontWeight: 400 }}>
                 {explanation}
               </div>
             )}
           </div>
 
           <div className="px-6 py-3" style={{ borderTop: "1px solid #1a1a1a" }}>
-            <p className="font-mono text-xs" style={{ color: "#2a2a2a" }}>
+            <p className="font-mono text-xs" style={{ color: "#e8e8e8" }}>
               The AI analyzed your code against the expected solution pattern to surface this.
             </p>
           </div>

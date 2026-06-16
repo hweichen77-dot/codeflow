@@ -23,7 +23,7 @@ export default function ProjectBrief({ brief }) {
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
           {brief.estimatedHours != null && (
-            <span className="hidden sm:flex items-center gap-1.5 font-mono text-xs" style={{ color: "#666" }}>
+            <span className="hidden sm:flex items-center gap-1.5 font-mono text-xs" style={{ color: "#c4c4c4" }}>
               <Clock size={12} /> ~{brief.estimatedHours}h
             </span>
           )}
@@ -33,7 +33,7 @@ export default function ProjectBrief({ brief }) {
 
       {open && (
         <div className="px-5 pb-5" style={{ borderTop: "1px solid #1a1a1a" }}>
-          <p className="font-display text-sm leading-relaxed mt-4 mb-5" style={{ color: "#aaa" }}>{brief.overview}</p>
+          <p className="font-display text-sm leading-relaxed mt-4 mb-5" style={{ color: "#d4d4d4" }}>{brief.overview}</p>
 
           <div className="grid md:grid-cols-2 gap-5">
             <Section icon={<Target size={13} />} label="What you'll build" accent="#b8ff00">
@@ -61,7 +61,7 @@ export default function ProjectBrief({ brief }) {
                     <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#cc66ff" }}>{String(i + 1).padStart(2, "0")}</span>
                     <div>
                       <div className="font-display text-sm font-medium" style={{ color: "#ddd" }}>{m.title}</div>
-                      <div className="font-display text-xs" style={{ color: "#888" }}>{m.detail}</div>
+                      <div className="font-display text-xs" style={{ color: "#d4d4d4" }}>{m.detail}</div>
                     </div>
                   </li>
                 ))}
@@ -73,7 +73,7 @@ export default function ProjectBrief({ brief }) {
                 {brief.rubric?.map((r, i) => (
                   <li key={i}>
                     <div className="font-display text-sm font-medium" style={{ color: "#ddd" }}>{r.criterion}</div>
-                    <div className="font-display text-xs" style={{ color: "#888" }}>{r.description}</div>
+                    <div className="font-display text-xs" style={{ color: "#d4d4d4" }}>{r.description}</div>
                   </li>
                 ))}
               </ul>

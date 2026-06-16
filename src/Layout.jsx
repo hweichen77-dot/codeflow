@@ -56,7 +56,7 @@ export default function Layout({ children, currentPageName }) {
             />
             <span
               className="font-mono text-xs tracking-widest uppercase transition-colors duration-200"
-              style={{ color: "#999" }}
+              style={{ color: "#d4d4d4" }}
             >
               CodeFlow
             </span>
@@ -70,13 +70,13 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(link.page)}
                 className="font-mono text-xs tracking-widest uppercase px-5 py-2 transition-all duration-150 relative"
                 style={{
-                  color: isActive(link.page) ? "#b8ff00" : "#888",
+                  color: isActive(link.page) ? "#b8ff00" : "#d4d4d4",
                 }}
                 onMouseEnter={e => {
                   if (!isActive(link.page)) e.currentTarget.style.color = "#bbb";
                 }}
                 onMouseLeave={e => {
-                  if (!isActive(link.page)) e.currentTarget.style.color = "#888";
+                  if (!isActive(link.page)) e.currentTarget.style.color = "#d4d4d4";
                 }}
               >
                 {isActive(link.page) && (
@@ -97,21 +97,21 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   to={createPageUrl("Portfolio")}
                   className="font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all duration-150"
-                  style={{ color: isActive("Portfolio") ? "#b8ff00" : "#888" }}
+                  style={{ color: isActive("Portfolio") ? "#b8ff00" : "#d4d4d4" }}
                   onMouseEnter={e => { if (!isActive("Portfolio")) e.currentTarget.style.color = "#bbb"; }}
-                  onMouseLeave={e => { if (!isActive("Portfolio")) e.currentTarget.style.color = "#888"; }}
+                  onMouseLeave={e => { if (!isActive("Portfolio")) e.currentTarget.style.color = "#d4d4d4"; }}
                 >
                   Portfolio
                 </Link>
-                <span className="font-mono text-xs" style={{ color: "#999" }}>
+                <span className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
                   {user.full_name?.split(" ")[0] || user.email?.split("@")[0]}
                 </span>
                 <button
                   onClick={() => api.auth.logout()}
                   className="font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all duration-150"
-                  style={{ color: "#888", border: "1px solid #2a2a2a" }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "#888"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "#888"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
+                  style={{ color: "#d4d4d4", border: "1px solid #2a2a2a" }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "#d4d4d4"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "#d4d4d4"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
                 >
                   Exit
                 </button>
@@ -138,7 +138,7 @@ export default function Layout({ children, currentPageName }) {
           {/* Mobile toggle */}
           <button
             className="md:hidden font-mono text-xs tracking-widest uppercase p-2 transition-colors"
-            style={{ color: mobileOpen ? "#b8ff00" : "#444" }}
+            style={{ color: mobileOpen ? "#b8ff00" : "#e8e8e8" }}
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? "[ X ]" : "[ = ]"}
@@ -157,7 +157,7 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(link.page)}
                 onClick={() => setMobileOpen(false)}
                 className="block font-mono text-xs tracking-widest uppercase px-4 py-3 transition-colors"
-                style={{ color: isActive(link.page) ? "#b8ff00" : "#888" }}
+                style={{ color: isActive(link.page) ? "#b8ff00" : "#d4d4d4" }}
               >
                 {link.label}
               </Link>
@@ -169,14 +169,14 @@ export default function Layout({ children, currentPageName }) {
                   to={createPageUrl("Portfolio")}
                   onClick={() => setMobileOpen(false)}
                   className="block font-mono text-xs tracking-widest uppercase px-4 py-3 transition-colors"
-                  style={{ color: "#888" }}
+                  style={{ color: "#d4d4d4" }}
                 >
                   Portfolio
                 </Link>
                 <button
                   onClick={() => api.auth.logout()}
                   className="font-mono text-xs tracking-widest uppercase w-full text-left px-4 py-3"
-                  style={{ color: "#888" }}
+                  style={{ color: "#d4d4d4" }}
                 >
                   Sign Out
                 </button>

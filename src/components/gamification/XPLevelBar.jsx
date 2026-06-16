@@ -43,7 +43,7 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
           <div className="font-mono text-xs" style={{ color: lvl.color }}>
             {lvl.name}
           </div>
-          <div className="font-mono text-xs" style={{ color: "#555" }}>
+          <div className="font-mono text-xs" style={{ color: "#c4c4c4" }}>
             {totalXP} / {lvl.max === Infinity ? "∞" : lvl.max} XP
           </div>
         </div>
