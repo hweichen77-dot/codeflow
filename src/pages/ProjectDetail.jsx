@@ -462,7 +462,7 @@ export default function ProjectDetail() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -12 }}
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="space-y-8"
+                  className="space-y-8 reader-surface"
                 >
                   {/* Project brief — shown on the first lesson as the overview */}
                   {activeLessonIndex === 0 && <ProjectBrief brief={project?.brief} />}
@@ -470,8 +470,8 @@ export default function ProjectDetail() {
                   {/* Zybooks-style section number + title */}
                   <div style={{ marginBottom: "8px" }}>
                     <h2 style={{
-                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                      fontSize: "1.55rem", fontWeight: 400, color: "#e0e0e0", letterSpacing: "-0.01em",
+                      fontFamily: "'IBM Plex Serif', Georgia, serif",
+                      fontSize: "1.55rem", fontWeight: 600, color: "#e0e0e0", letterSpacing: "-0.005em",
                       margin: 0, lineHeight: 1.35,
                     }}>
                       {activeLessonIndex + 1}.{" "}{activeLesson.title}
@@ -485,8 +485,8 @@ export default function ProjectDetail() {
                   <div style={{ background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: "4px", padding: "32px 36px" }}>
                     {activeLesson.concept && (
                       <h3 style={{
-                        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                        fontSize: "1.1rem", fontWeight: 700, color: "#222", margin: "0 0 16px",
+                        fontFamily: "'IBM Plex Serif', Georgia, serif",
+                        fontSize: "1.15rem", fontWeight: 600, color: "#222", margin: "0 0 16px",
                       }}>
                         {activeLesson.concept}
                       </h3>
@@ -499,17 +499,18 @@ export default function ProjectDetail() {
                         <button
                           onClick={() => { setReadingDone(true); setEarnedPoints(p => p + 2); showXPToast("Reading complete!", 2, ""); }}
                           style={{
-                            background: "#cf6a2f", color: "#fff", border: "none", borderRadius: "4px",
+                            background: "#65a30d", color: "#0f1b00", border: "none", borderRadius: "2px",
                             padding: "10px 28px", fontSize: "0.875rem", fontWeight: 700, cursor: "pointer",
+                            boxShadow: "0 1px 0 #4d7c0f",
                           }}
                         >
-                          ✓ I've read this section (+2 pts)
+                          Mark section as read (+2 pts)
                         </button>
                       </div>
                     )}
                     {readingDone && (
                       <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e8e8e8", color: "#2d7a3a", fontSize: "0.875rem", fontWeight: 600 }}>
-                        ✓ Reading complete (+2 pts)
+                        Reading complete (+2 pts)
                       </div>
                     )}
 

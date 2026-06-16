@@ -66,7 +66,7 @@ Return ONLY this JSON:
       >
         <div
           className="font-mono text-xs tracking-widest uppercase px-2 py-1"
-          style={{ color: "#b45309", border: "1px solid #b4530933", background: "#b4530914" }}
+          style={{ color: "#4d7c0f", border: "1px solid #65a30d44", background: "#65a30d12" }}
         >
           CHALLENGE
         </div>
@@ -127,9 +127,9 @@ Return ONLY this JSON:
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="mb-4 px-5 py-4 flex items-center gap-3"
-              style={{ border: "1px solid #05966933", background: "#05966914", borderLeft: "2px solid #059669", borderRadius: "4px" }}
+              style={{ border: "1px solid #65a30d44", background: "#65a30d12", borderLeft: "2px solid #65a30d", borderRadius: "2px" }}
             >
-              <CheckCircle2 size={18} color="#059669" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+              <CheckCircle2 size={18} color="#4d7c0f" strokeWidth={2.5} style={{ flexShrink: 0 }} />
               <div>
                 <div className="font-display font-bold text-sm" style={{ color: "#18181b" }}>Challenge complete.</div>
                 <div className="font-display text-xs" style={{ color: "#52525b" }}>All tests passed.</div>
