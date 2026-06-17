@@ -174,12 +174,19 @@ export default function LessonExplanation({ explanation, concept }) {
           h2: ({ children }) => <h2>{children}</h2>,
           h3: ({ children }) => <h3>{children}</h3>,
           p: ({ children }) => <p>{children}</p>,
-          code: ({ inline, className, children }) =>
-            inline ? (
-              <code>{children}</code>
-            ) : (
+          code: ({ className, children }) => {
+            // react-markdown v9 dropped the `inline` prop. Treat as a block
+            // only when it has a language class or spans multiple lines;
+            // otherwise render a short snippet inline so prose stays flowing.
+            const isBlock =
+              /language-/.test(className || "") ||
+              String(children).includes("\n");
+            return isBlock ? (
               <CodeBlock className={className}>{children}</CodeBlock>
-            ),
+            ) : (
+              <code>{children}</code>
+            );
+          },
           pre: ({ children }) => <>{children}</>,
           ul: ({ children }) => <ul>{children}</ul>,
           ol: ({ children }) => <ol>{children}</ol>,
