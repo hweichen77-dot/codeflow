@@ -4,14 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 
-const CATEGORIES = [
-  { value: "all", label: "All" },
-  { value: "ai_ml", label: "AI/ML" },
-  { value: "html_css", label: "HTML/CSS" },
-  { value: "javascript", label: "JavaScript" },
-  { value: "react", label: "React" },
-  { value: "python", label: "Python" },
-];
+// Known category labels. Tabs are derived from the categories that actually
+// have projects, so empty tracks never render as dead "No results" filters.
+const CATEGORY_LABELS = {
+  ai_ml: "AI/ML",
+  html_css: "HTML/CSS",
+  javascript: "JavaScript",
+  react: "React",
+  python: "Python",
+};
+const CATEGORY_ORDER = ["ai_ml", "html_css", "javascript", "react", "python"];
 
 const DIFFICULTY_LABEL = {
   beginner: "00",
@@ -50,6 +52,13 @@ export default function Projects() {
     const pp = progress.filter((p) => p.project_id === project.id);
     return project.lessons_count ? Math.round((pp.length / project.lessons_count) * 100) : 0;
   };
+
+  // Only show category tabs that have at least one project.
+  const presentCats = CATEGORY_ORDER.filter((c) => projects.some((p) => p.category === c));
+  const CATEGORIES = [
+    { value: "all", label: "All" },
+    ...presentCats.map((c) => ({ value: c, label: CATEGORY_LABELS[c] })),
+  ];
 
   const filtered = projects.filter((p) => {
     const matchSearch = !search || p.title?.toLowerCase().includes(search.toLowerCase());
