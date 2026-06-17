@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const freeFeatures = [
   "3 full projects included",
@@ -21,6 +22,7 @@ function CheckIcon() {
 }
 
 export default function Pricing() {
+  const navigate = useNavigate();
   return (
     <section id="pricing" style={{
       borderTop: "1px solid #1a1a1a",
@@ -75,6 +77,7 @@ export default function Pricing() {
               cursor: "pointer",
               fontFamily: "inherit",
             }}
+              onClick={() => navigate("/login")}
               onMouseEnter={e => e.currentTarget.style.borderColor = "#666"}
               onMouseLeave={e => e.currentTarget.style.borderColor = "#404040"}
             >
@@ -133,6 +136,7 @@ export default function Pricing() {
               cursor: "pointer",
               fontFamily: "inherit",
             }}
+              onClick={() => navigate("/login")}
               onMouseEnter={e => e.currentTarget.style.background = "#caff35"}
               onMouseLeave={e => e.currentTarget.style.background = "#b8ff00"}
             >

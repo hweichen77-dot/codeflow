@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44, aiAvailable } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2 } from "lucide-react";
 
 export default function AIExplainModal({ hint, studentCode, solutionCode, lessonTitle, onClose }) {
   const [explanation, setExplanation] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(aiAvailable);
 
   useEffect(() => {
+    if (!aiAvailable) return;
     async function fetchExplanation() {
       setLoading(true);
       const result = await base44.integrations.Core.InvokeLLM({

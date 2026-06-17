@@ -23,18 +23,30 @@ export const PROJECTS = MODULES.map(m => ({ ...m.project, brief: BRIEFS[m.projec
 export const LESSONS = MODULES.flatMap(m => m.lessons)
 
 // Derive a Challenge catalog from lessons that declare a challenge.
-export const CHALLENGES = LESSONS.filter(l => l.challenge_title).map(l => ({
-  id: l.id + '-ch',
-  title: l.challenge_title,
-  description: l.challenge_description,
-  difficulty: (PROJECTS.find(p => p.id === l.project_id) || {}).difficulty || 'beginner',
-  category: 'ai_ml',
-  order: l.order,
-  starter_code: l.challenge_starter_code,
-  solution_code: l.challenge_solution_code,
-  test_cases: l.challenge_test_cases,
-  project_id: l.project_id,
-}))
+const XP_BY_DIFFICULTY = { beginner: 15, intermediate: 25, advanced: 40 }
+
+export const CHALLENGES = LESSONS.filter(l => l.challenge_title).map((l, i) => {
+  const project = PROJECTS.find(p => p.id === l.project_id) || {}
+  const difficulty = project.difficulty || 'beginner'
+  // Topic = the project's primary tag, falling back to its category.
+  const topic = (project.tags && project.tags[0]) || project.category || 'ai'
+  return {
+    id: l.id + '-ch',
+    title: l.challenge_title,
+    description: l.challenge_description,
+    difficulty,
+    category: project.category || 'ai_ml',
+    topic,
+    xp: l.challenge_xp || XP_BY_DIFFICULTY[difficulty] || 15,
+    // Global ordering so the catalog is stable and numbered sensibly.
+    order: (project.order || 0) * 100 + (l.order || i),
+    starter_code: l.challenge_starter_code,
+    solution_code: l.challenge_solution_code,
+    test_cases: l.challenge_test_cases,
+    project_id: l.project_id,
+    project_title: project.title,
+  }
+})
 
 export const getProject = (id) => PROJECTS.find(p => p.id === id)
 export const getLessonsByProject = (id) =>

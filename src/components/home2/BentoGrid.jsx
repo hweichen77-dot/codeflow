@@ -101,7 +101,7 @@ export default function BentoGrid() {
         </div>
 
         {/* TALL: Real projects */}
-        <div style={{ ...card, gridColumn: "span 5", gridRow: "span 2" }}>
+        <div id="projects" style={{ ...card, gridColumn: "span 5", gridRow: "span 2" }}>
           <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#b8ff00", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
             PROJECT LIBRARY
           </div>

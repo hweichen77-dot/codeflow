@@ -1,7 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function HomeNav() {
+  const navigate = useNavigate();
   return (
     <nav style={{ borderBottom: "1px solid #1a1a1a", padding: "0 2rem" }}>
       <div style={{
@@ -33,7 +34,9 @@ export default function HomeNav() {
               </a>
             ))}
           </div>
-          <button style={{
+          <button
+            onClick={() => navigate("/login")}
+            style={{
             background: "#f59e0b",
             color: "#0a0a0a",
             border: "none",

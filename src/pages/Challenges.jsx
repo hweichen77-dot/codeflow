@@ -13,7 +13,8 @@ const categoryLabels = {
   general: "General",
 };
 
-const DIFF_NUM = { easy: "01", medium: "02", hard: "03" };
+const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };
+const DIFFICULTIES = ["all", "beginner", "intermediate", "advanced"];
 
 export default function Challenges() {
   const [search, setSearch] = useState("");
@@ -75,7 +76,7 @@ export default function Challenges() {
             />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {["all", "easy", "medium", "hard"].map(d => (
+            {DIFFICULTIES.map(d => (
               <button
                 key={d}
                 onClick={() => setDifficulty(d)}
@@ -166,25 +167,21 @@ export default function Challenges() {
                       )}
                     </div>
 
-                    {/* Category */}
+                    {/* Topic */}
                     <div>
                       <span
                         className="font-mono text-xs tracking-widest uppercase px-2.5 py-1"
                         style={{ color: "#d4d4d4", border: "1px solid #2a2a2a" }}
                       >
-                        {categoryLabels[challenge.category] || challenge.category}
+                        {categoryLabels[challenge.topic] || challenge.topic || challenge.category}
                       </span>
                     </div>
 
                     {/* XP */}
                     <div className="text-right">
-                      {challenge.xp_reward ? (
-                        <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>
-                          +{challenge.xp_reward}xp
-                        </span>
-                      ) : (
-                        <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>—</span>
-                      )}
+                      <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>
+                        +{challenge.xp || 15}xp
+                      </span>
                     </div>
                   </div>
                 </Link>
