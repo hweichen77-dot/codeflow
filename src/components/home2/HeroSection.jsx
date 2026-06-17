@@ -81,6 +81,7 @@ export default function HeroSection() {
           cursor: "pointer",
           fontFamily: "inherit",
         }}
+          onClick={() => document.getElementById('how')?.scrollIntoView({ behavior: 'smooth' })}
           onMouseEnter={e => e.currentTarget.style.borderColor = "#666"}
           onMouseLeave={e => e.currentTarget.style.borderColor = "#404040"}
         >

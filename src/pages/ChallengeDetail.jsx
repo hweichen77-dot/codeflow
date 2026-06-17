@@ -6,8 +6,9 @@ import { createPageUrl } from "../utils";
 import { motion, AnimatePresence } from "framer-motion";
 import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
+import { gradePython } from "../lib/pyRunner";
 
-const DIFF_NUM = { easy: "01", medium: "02", hard: "03" };
+const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };
 
 export default function ChallengeDetail() {
   const params = new URLSearchParams(window.location.search);
@@ -36,30 +37,21 @@ export default function ChallengeDetail() {
   const handleRun = async () => {
     setIsRunning(true);
     setPassed(false);
+    setOutput("Running…");
     try {
-      let testInfo = "";
-      if (challenge.test_cases && challenge.test_cases.length > 0) {
-        testInfo = `\n\nTest cases:\n${challenge.test_cases
-          .map((tc, i) => `Test ${i + 1}: Input: ${tc.input}, Expected: ${tc.expected_output}`)
-          .join("\n")}`;
+      const { output: out, passed: ok, results, isError } = await gradePython(code, challenge.test_cases);
+      let text = out || "(no output)";
+      if (results.length > 0) {
+        const lines = results.map((r, i) =>
+          `Test ${i + 1}: ${r.ok ? "PASS" : "FAIL"}` +
+          (r.ok ? "" : `\n  expected: ${r.expected}\n  got:      ${r.got}`)
+        );
+        text += `\n\n${lines.join("\n")}`;
       }
-      const result = await api.integrations.Core.InvokeLLM({
-        prompt: `You are a code execution simulator. Execute the following Python code and return the console output. Then check if it passes the test cases (if any).\n\nCode:\n\`\`\`python\n${code}\n\`\`\`\n${testInfo}\n\nReturn ONLY in this format:\nOUTPUT:\n[the console output here]\n\nTESTS:\n[PASS or FAIL for each test, or "No tests" if none]\n\nRESULT: [PASSED or FAILED]`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            output: { type: "string" },
-            tests_passed: { type: "boolean" },
-            test_results: { type: "string" },
-          },
-        },
-      });
-      const outputText = result.output || "No output";
-      const testResults = result.test_results || "";
-      setOutput(outputText + (testResults ? `\n\n${testResults}` : ""));
-      setPassed(result.tests_passed === true);
-    } catch {
-      setOutput("Error: Could not run code. Please try again.");
+      setOutput(text);
+      setPassed(ok && !isError);
+    } catch (e) {
+      setOutput("Error: " + String(e?.message || e));
     }
     setIsRunning(false);
   };
@@ -167,7 +159,7 @@ export default function ChallengeDetail() {
           onRun={handleRun}
           output={output}
           isRunning={isRunning}
-          filename={`challenge.js`}
+          filename={`challenge.py`}
         />
 
         {/* Passed banner */}

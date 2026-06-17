@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { api } from "@/api/apiClient";
+import { api, aiAvailable } from "@/api/apiClient";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2 } from "lucide-react";
 
 export default function AIExplainModal({ hint, studentCode, solutionCode, lessonTitle, onClose }) {
   const [explanation, setExplanation] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(aiAvailable);
 
   useEffect(() => {
+    if (!aiAvailable) return;
     async function fetchExplanation() {
       setLoading(true);
       const result = await api.integrations.Core.InvokeLLM({

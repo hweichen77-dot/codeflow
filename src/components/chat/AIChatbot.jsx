@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { api } from "@/api/apiClient";
+import { api, aiAvailable } from "@/api/apiClient";
 import { MessageCircle, X, Send, Loader2, Brain, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -227,26 +227,32 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
 
             {/* Input */}
             <div className="px-4 py-3 flex-shrink-0" style={{ borderTop: "1px solid #1a1a1a" }}>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Ask about this lesson..."
-                  className="flex-1 font-mono text-xs py-2.5 px-3 bg-transparent outline-none"
-                  style={{ border: "1px solid #1e1e1e", color: "#e8e8e8", caretColor: "#b8ff00" }}
-                  disabled={isLoading}
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  className="px-3 py-2.5 transition-all duration-150 disabled:opacity-30"
-                  style={{ background: "#b8ff00", border: "1px solid #b8ff00" }}
-                >
-                  <Send size={12} style={{ color: "#0a0a0a" }} />
-                </button>
-              </div>
+              {aiAvailable ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                    placeholder="Ask about this lesson..."
+                    className="flex-1 font-mono text-xs py-2.5 px-3 bg-transparent outline-none"
+                    style={{ border: "1px solid #1e1e1e", color: "#e8e8e8", caretColor: "#b8ff00" }}
+                    disabled={isLoading}
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={!input.trim() || isLoading}
+                    className="px-3 py-2.5 transition-all duration-150 disabled:opacity-30"
+                    style={{ background: "#b8ff00", border: "1px solid #b8ff00" }}
+                  >
+                    <Send size={12} style={{ color: "#0a0a0a" }} />
+                  </button>
+                </div>
+              ) : (
+                <p className="font-mono text-xs leading-relaxed" style={{ color: "#c4c4c4" }}>
+                  AI tutor is offline in this build — it lights up when the app is connected to its AI backend.
+                </p>
+              )}
             </div>
           </motion.div>
         )}

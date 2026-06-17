@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function FinalCTA() {
+  const navigate = useNavigate();
   return (
     <section style={{
       borderTop: "2px solid #b8ff00",
@@ -39,6 +41,7 @@ export default function FinalCTA() {
           cursor: "pointer",
           fontFamily: "inherit",
         }}
+          onClick={() => navigate("/login")}
           onMouseEnter={e => e.currentTarget.style.background = "#caff35"}
           onMouseLeave={e => e.currentTarget.style.background = "#b8ff00"}
         >

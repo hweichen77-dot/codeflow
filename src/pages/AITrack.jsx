@@ -125,6 +125,10 @@ export default function AITrack() {
     queryKey: ["all-lessons"],
     queryFn: () => api.entities.Lesson.list("order"),
   });
+  const { data: projects = [] } = useQuery({
+    queryKey: ["all-projects"],
+    queryFn: () => api.entities.Project.list("order"),
+  });
   const { data: progress = [] } = useQuery({
     queryKey: ["all-progress", user?.email],
     queryFn: () => api.entities.UserProgress.filter({ user_email: user.email }),
@@ -138,6 +142,18 @@ export default function AITrack() {
     const done = ls.filter((l) => completedIds.has(l.id)).length;
     return Math.round((done / ls.length) * 100);
   };
+
+  const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "Beginner");
+  // Build the curriculum straight from content so every module is listed.
+  const trackItems = projects.map((p, i) => ({
+    number: String(i + 1).padStart(2, "0"),
+    title: p.title,
+    difficulty: cap(p.difficulty),
+    time: p.estimated_time ? `${p.estimated_time} min` : "—",
+    description: p.description,
+    concepts: (p.tags || []).slice(0, 3),
+    projectId: p.id,
+  }));
 
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
@@ -163,7 +179,7 @@ export default function AITrack() {
         {/* Curriculum */}
         <div>
           <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#c4c4c4" }}>
-            CURRICULUM — 8 MODULES
+            CURRICULUM — {trackItems.length} MODULES
           </div>
 
           {/* Table header */}
@@ -176,11 +192,13 @@ export default function AITrack() {
             ))}
           </div>
 
-          {TRACK.map((item) => {
-            const dc = DIFF_COLOR[item.difficulty];
+          {trackItems.map((item) => {
+            const dc = DIFF_COLOR[item.difficulty] || DIFF_COLOR.Beginner;
+            const pct = modulePct(item.projectId);
+            const done = pct === 100;
             return (
               <Link
-                key={item.number}
+                key={item.projectId}
                 to={createPageUrl(`ProjectDetail?id=${item.projectId}`)}
                 className="group block"
               >
@@ -191,25 +209,22 @@ export default function AITrack() {
                   onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; }}
                 >
                   <div className="flex items-center" style={{ minWidth: "3rem" }}>
-                    {(() => {
-                      const pct = modulePct(item.projectId);
-                      return pct > 0 ? (
-                        <ProgressRing percent={pct} size={38} color="#b8ff00" />
-                      ) : (
-                        <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#e8e8e8", letterSpacing: "-0.05em" }}>
-                          {item.number}
-                        </span>
-                      );
-                    })()}
+                    {pct > 0 ? (
+                      <ProgressRing percent={pct} size={38} color="#b8ff00" />
+                    ) : (
+                      <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#e8e8e8", letterSpacing: "-0.05em" }}>
+                        {item.number}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="font-display font-bold text-base transition-colors duration-150 group-hover:text-white" style={{ color: "#ccc", letterSpacing: "-0.02em" }}>
+                      <span className="font-display font-bold text-base transition-colors duration-150 group-hover:text-white" style={{ color: done ? "#b8ff00" : "#ccc", letterSpacing: "-0.02em" }}>
                         {item.title}
                       </span>
-                      {item.type === "capstone" && (
+                      {done && (
                         <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
-                          CAPSTONE
+                          DONE
                         </span>
                       )}
                     </div>

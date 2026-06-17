@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { api } from "@/api/apiClient";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import CodeEditor from "../editor/CodeEditor";
+import { gradePython } from "../../lib/pyRunner";
 
 export default function LessonChallenge({ lesson }) {
   const [code, setCode] = useState(lesson.challenge_starter_code || "");
@@ -17,42 +17,21 @@ export default function LessonChallenge({ lesson }) {
   const handleRun = async () => {
     setIsRunning(true);
     setPassed(false);
+    setOutput("Running…");
     try {
-      let testInfo = "";
-      if (lesson.challenge_test_cases?.length > 0) {
-        testInfo = `\n\nTest cases:\n${lesson.challenge_test_cases
-          .map((tc, i) => `Test ${i + 1}: Input: ${tc.input}, Expected: ${tc.expected_output}`)
-          .join("\n")}`;
+      const { output: out, passed: ok, results, isError } = await gradePython(code, lesson.challenge_test_cases);
+      let text = out || "(no output)";
+      if (results.length > 0) {
+        const lines = results.map((r, i) =>
+          `Test ${i + 1}: ${r.ok ? "PASS" : "FAIL"}` +
+          (r.ok ? "" : `\n  expected: ${r.expected}\n  got:      ${r.got}`)
+        );
+        text += `\n\n${lines.join("\n")}`;
       }
-
-      const result = await api.integrations.Core.InvokeLLM({
-        prompt: `You are a code execution simulator. Run the following Python code and return the output.${testInfo}
-
-Code:
-\`\`\`python
-${code}
-\`\`\`
-
-Return ONLY this JSON:
-- output: what would print to console
-- tests_passed: true if all test cases pass (or true if no test cases)
-- test_results: brief summary of test results`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            output: { type: "string" },
-            tests_passed: { type: "boolean" },
-            test_results: { type: "string" },
-          },
-        },
-      });
-
-      const outputText = result.output || "No output";
-      const testResults = result.test_results || "";
-      setOutput(outputText + (testResults ? `\n\n${testResults}` : ""));
-      setPassed(result.tests_passed === true);
-    } catch {
-      setOutput("Error: Could not run code.");
+      setOutput(text);
+      setPassed(ok && !isError);
+    } catch (e) {
+      setOutput("Error: " + String(e?.message || e));
     }
     setIsRunning(false);
   };
@@ -115,7 +94,7 @@ Return ONLY this JSON:
             onRun={handleRun}
             output={output}
             isRunning={isRunning}
-            filename="challenge.js"
+            filename="challenge.py"
           />
         </div>
 

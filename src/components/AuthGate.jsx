@@ -36,7 +36,8 @@ export default function AuthGate() {
   const navigate = useNavigate();
 
   // 'signin' | 'signup' | 'forgot' | 'guest'
-  const [mode, setMode] = useState('signin');
+  // Until Supabase is configured, email auth can't work — lead with guest.
+  const [mode, setMode] = useState(supabaseConfigured ? 'signin' : 'guest');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -128,6 +129,12 @@ export default function AuthGate() {
         <p className="font-display text-sm mb-7" style={{ color: '#d4d4d4', fontWeight: 400 }}>
           {subtitles[mode]}
         </p>
+
+        {!supabaseConfigured && mode !== 'guest' && (
+          <div className="font-mono text-xs mb-6 px-3 py-2" style={{ color: '#ffb300', background: '#ffb30010', border: '1px solid #ffb30033' }}>
+            Email accounts aren’t set up on this build yet. Use <strong>Continue as guest</strong> to start now.
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 mb-7" style={{ borderBottom: '1px solid #1e1e1e' }}>

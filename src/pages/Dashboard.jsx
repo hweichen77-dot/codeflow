@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { getLevel } from "../components/gamification/XPLevelBar";
+import { getStreak } from "../lib/progressStats";
 import { useAuth } from "../hooks/useAuth";
 import { UserChallenges } from "../api/supabaseClient";
 import ProgressRing from "../components/gamification/ProgressRing";
@@ -141,18 +142,8 @@ export default function Dashboard() {
   ].find(l => l.min > lvl.min);
   const lvlPct = lvl.max === Infinity ? 100 : Math.min(100, Math.round(((totalXP - lvl.min) / (lvl.max - lvl.min)) * 100));
 
-  // Streak: count consecutive days ending today (or yesterday) with activity
-  const todayStr = new Date().toISOString().slice(0, 10);
-  let streak = 0;
-  let checkDate = new Date();
-  // If no activity today, start checking from yesterday
-  if (!activityMap[todayStr]) checkDate.setDate(checkDate.getDate() - 1);
-  while (true) {
-    const dateStr = checkDate.toISOString().slice(0, 10);
-    if (!activityMap[dateStr]) break;
-    streak++;
-    checkDate.setDate(checkDate.getDate() - 1);
-  }
+  // Day streak — shared source of truth with AuthHome / streak badge.
+  const streak = getStreak();
 
   const notStartedProjects = projects.filter((proj) => !progress.some((p) => p.project_id === proj.id));
   const inProgressProjects = projects
@@ -216,7 +207,7 @@ export default function Dashboard() {
           <h1
             style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 8px" }}
           >
-            {user.full_name?.split(" ")[0] || "Learner"}
+            {user.name?.split(" ")[0] || user.email?.split("@")[0] || "Learner"}
           </h1>
           <p className="font-display text-sm" style={{ color: "#d4d4d4", fontWeight: 400 }}>
             {user.email}
@@ -301,7 +292,7 @@ export default function Dashboard() {
             { val: statsLoading ? "—" : challengeStats.completed, label: "Challenges Done", accent: "#b8ff00" },
             { val: statsLoading ? "—" : challengeStats.inProgress, label: "In Progress", accent: null },
             { val: `${totalXP}`, label: "Total XP", accent: "#b8ff00" },
-            { val: statsLoading ? "—" : `${challengeStats.streak}`, label: "Challenge Streak", accent: challengeStats.streak >= 3 ? "#ff6b35" : null },
+            { val: `${streak}`, label: "Day Streak", accent: streak >= 3 ? "#ff6b35" : null },
             { val: `LVL ${lvl.level}`, label: lvl.name, accent: lvl.color },
             { val: `${overallPct}%`, label: "Overall Progress", accent: null },
           ].map((stat, i, arr) => (
