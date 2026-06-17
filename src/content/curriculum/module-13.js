@@ -4,7 +4,7 @@ export default {
     title: "Streaming, Latency & Caching",
     description: "Make AI apps feel fast: stream tokens as they arrive, cache repeated prompts, batch work for throughput, and measure the latency numbers that actually matter.",
     difficulty: "advanced",
-    category: "ai_ml",
+    category: "production_ops",
     estimated_time: 50,
     lessons_count: 5,
     tags: ["streaming", "latency", "caching", "throughput", "performance", "sse"],

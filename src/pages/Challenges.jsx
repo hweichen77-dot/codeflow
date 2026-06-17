@@ -6,11 +6,12 @@ import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 
 const categoryLabels = {
-  html_css: "HTML/CSS",
-  javascript: "JS",
-  react: "React",
-  python: "Python",
-  general: "General",
+  foundations: "Foundations",
+  prompting: "Prompting",
+  chatbots_agents: "Chatbots & Agents",
+  rag_search: "RAG & Search",
+  vision_multimodal: "Vision & Multimodal",
+  production_ops: "Production & Ops",
 };
 
 const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };

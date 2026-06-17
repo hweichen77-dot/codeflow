@@ -4,7 +4,7 @@ export default {
     title: "Guardrails & Safety",
     description: "Learn how AI systems get attacked through prompts and how to defend them with input filtering, output checks, PII handling, jailbreak resistance, and content moderation.",
     difficulty: "advanced",
-    category: "ai_ml",
+    category: "production_ops",
     estimated_time: 50,
     lessons_count: 5,
     tags: ["safety", "security", "prompt-injection", "moderation", "guardrails", "pii"],

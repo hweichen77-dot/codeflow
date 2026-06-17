@@ -4,7 +4,7 @@ export default {
     title: "Build a RAG System",
     description: "Stop your LLM from making things up — bolt a real document search onto it and build a Q&A tool that cites its sources.",
     difficulty: "advanced",
-    category: "ai_ml",
+    category: "rag_search",
     estimated_time: 180,
     lessons_count: 5,
     tags: ["rag", "retrieval", "embeddings", "vector-store", "chunking", "anthropic-api"],

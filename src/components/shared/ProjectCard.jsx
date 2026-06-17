@@ -6,11 +6,12 @@ import { Clock, BookOpen, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 const categoryLabels = {
-  html_css: "HTML & CSS",
-  javascript: "JavaScript",
-  react: "React",
-  python: "Python",
-  general: "General",
+  foundations: "Foundations",
+  prompting: "Prompting",
+  chatbots_agents: "Chatbots & Agents",
+  rag_search: "RAG & Search",
+  vision_multimodal: "Vision & Multimodal",
+  production_ops: "Production & Ops",
 };
 
 const difficultyColors = {

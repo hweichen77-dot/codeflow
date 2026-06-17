@@ -4,7 +4,7 @@ export default {
     title: "Embeddings & Semantic Search",
     description: "Turn words into numbers, measure how close they are, and build a movie recommender that actually gets your taste.",
     difficulty: "intermediate",
-    category: "ai_ml",
+    category: "rag_search",
     estimated_time: 150,
     lessons_count: 5,
     tags: ["embeddings", "vectors", "cosine-similarity", "semantic-search", "recommender"],

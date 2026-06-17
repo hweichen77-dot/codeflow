@@ -4,7 +4,7 @@ export default {
     title: "How AI Actually Works",
     description: "Build a real mental model of how language models predict text, why they sometimes lie, and what tokens actually are.",
     difficulty: "beginner",
-    category: "ai_ml",
+    category: "foundations",
     estimated_time: 45,
     lessons_count: 4,
     tags: ["llm", "intuition", "tokens", "prediction", "fundamentals"],

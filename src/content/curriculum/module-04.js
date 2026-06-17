@@ -4,7 +4,7 @@ export default {
     title: "Build a Chatbot",
     description: "Build a character chatbot that remembers the conversation, stays in persona, and streams its replies token by token.",
     difficulty: "intermediate",
-    category: "ai_ml",
+    category: "chatbots_agents",
     estimated_time: 120,
     lessons_count: 4,
     tags: ["chatbot", "message-history", "context-window", "streaming", "persona", "anthropic"],

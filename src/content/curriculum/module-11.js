@@ -4,7 +4,7 @@ export default {
     title: "Multimodal AI: Vision & Images",
     description: "See how models read images, pull text out of documents, and generate pictures from words. Build the mental model for working with vision and the cost of feeding pixels to a model.",
     difficulty: "intermediate",
-    category: "ai_ml",
+    category: "vision_multimodal",
     estimated_time: 50,
     lessons_count: 5,
     tags: ["multimodal", "vision", "images", "ocr", "generation"],
