@@ -7,13 +7,21 @@ import { createPageUrl } from "../utils";
 // Known category labels. Tabs are derived from the categories that actually
 // have projects, so empty tracks never render as dead "No results" filters.
 const CATEGORY_LABELS = {
-  ai_ml: "AI/ML",
-  html_css: "HTML/CSS",
-  javascript: "JavaScript",
-  react: "React",
-  python: "Python",
+  foundations: "Foundations",
+  prompting: "Prompting",
+  chatbots_agents: "Chatbots & Agents",
+  rag_search: "RAG & Search",
+  vision_multimodal: "Vision & Multimodal",
+  production_ops: "Production & Ops",
 };
-const CATEGORY_ORDER = ["ai_ml", "html_css", "javascript", "react", "python"];
+const CATEGORY_ORDER = [
+  "foundations",
+  "prompting",
+  "chatbots_agents",
+  "rag_search",
+  "vision_multimodal",
+  "production_ops",
+];
 
 const DIFFICULTY_LABEL = {
   beginner: "00",

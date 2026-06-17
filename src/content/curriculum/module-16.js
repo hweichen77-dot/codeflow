@@ -4,7 +4,7 @@ export default {
     title: "Deploying & Monitoring LLM Apps",
     description: "Take an LLM prototype from a notebook to a reliable production service: deploy it, trace every call, gate releases with evals, watch the cost, and survive failures with fallbacks.",
     difficulty: "advanced",
-    category: "ai_ml",
+    category: "production_ops",
     estimated_time: 55,
     lessons_count: 5,
     tags: ["deployment", "observability", "evals", "cost", "reliability", "production"],

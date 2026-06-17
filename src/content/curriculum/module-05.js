@@ -4,7 +4,7 @@ export default {
     title: "Computer Vision Basics",
     description: "Feed an image to a model, get structured data back — the practical way computers see now.",
     difficulty: "intermediate",
-    category: "ai_ml",
+    category: "vision_multimodal",
     estimated_time: 120,
     lessons_count: 4,
     tags: ["computer-vision", "cnn", "image-classification", "multimodal", "claude-api"],

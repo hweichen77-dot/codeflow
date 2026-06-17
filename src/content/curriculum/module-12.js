@@ -4,7 +4,7 @@ export default {
     title: "Vector Databases & Production Search",
     description: "Learn how vector databases turn embeddings into fast, filterable, production-grade search. Build the pieces of a real retrieval pipeline: ANN indexes, metadata filters, hybrid search, and re-ranking.",
     difficulty: "advanced",
-    category: "ai_ml",
+    category: "rag_search",
     estimated_time: 55,
     lessons_count: 5,
     tags: ["vector-db", "ann", "retrieval", "hybrid-search", "reranking", "search"],

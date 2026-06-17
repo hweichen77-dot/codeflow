@@ -14,10 +14,16 @@ import m13 from './curriculum/module-13.js'
 import m14 from './curriculum/module-14.js'
 import m15 from './curriculum/module-15.js'
 import m16 from './curriculum/module-16.js'
+import m17 from './curriculum/module-17.js'
+import m18 from './curriculum/module-18.js'
+import m19 from './curriculum/module-19.js'
+import m20 from './curriculum/module-20.js'
+import m21 from './curriculum/module-21.js'
+import m22 from './curriculum/module-22.js'
 
 import BRIEFS from './briefs.js'
 
-const MODULES = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16]
+const MODULES = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21, m22]
 
 export const PROJECTS = MODULES.map(m => ({ ...m.project, brief: BRIEFS[m.project.id] || null }))
 export const LESSONS = MODULES.flatMap(m => m.lessons)
@@ -35,7 +41,7 @@ export const CHALLENGES = LESSONS.filter(l => l.challenge_title).map((l, i) => {
     title: l.challenge_title,
     description: l.challenge_description,
     difficulty,
-    category: project.category || 'ai_ml',
+    category: project.category || 'foundations',
     topic,
     xp: l.challenge_xp || XP_BY_DIFFICULTY[difficulty] || 15,
     // Global ordering so the catalog is stable and numbered sensibly.

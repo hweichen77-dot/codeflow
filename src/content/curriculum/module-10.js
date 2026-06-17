@@ -4,7 +4,7 @@ export default {
     title: "Structured Outputs",
     description: "Stop wrestling with free-form model replies. Learn to force LLMs into clean, parseable JSON using JSON mode, schemas, function calling, and validation so the output plugs straight into real code.",
     difficulty: "intermediate",
-    category: "ai_ml",
+    category: "prompting",
     estimated_time: 50,
     lessons_count: 5,
     tags: ["json", "structured-output", "function-calling", "validation", "extraction"],

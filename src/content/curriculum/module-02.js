@@ -4,7 +4,7 @@ export default {
     title: "Your First API Call",
     description: "Send a message to Claude from a Python script and print the reply you get back.",
     difficulty: "beginner",
-    category: "ai_ml",
+    category: "foundations",
     estimated_time: 60,
     lessons_count: 4,
     tags: ["api", "json", "python", "claude", "requests"],

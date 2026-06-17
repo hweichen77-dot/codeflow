@@ -4,7 +4,7 @@ export default {
     title: "AI Agents & Tool Use",
     description: "Go beyond chat: learn how language models call tools, loop through reasoning and action, plan multi-step tasks, and where agents break so you can build them safely.",
     difficulty: "intermediate",
-    category: "ai_ml",
+    category: "chatbots_agents",
     estimated_time: 55,
     lessons_count: 5,
     tags: ["agents", "tool-use", "react", "planning", "guardrails"],

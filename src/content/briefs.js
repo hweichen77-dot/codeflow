@@ -382,4 +382,151 @@ export default {
     ],
     estimatedHours: 7,
   },
+
+  "ai-17": {
+    tagline: "See chat for what it really is: an ordered list of role-tagged messages.",
+    overview:
+      "This project reveals the structure behind every chat interface: a request is not a paragraph but an ordered list of messages, each tagged with a role (system, user, or assistant) and content. You will learn how system prompts set behavior, how multi-turn memory is really the app resending the full history each turn, and how to assemble the message array in code — the exact pattern every chatbot is built on.",
+    whatYouBuild: [
+      "A transcript printer that walks a list of role-tagged message dicts and labels each speaker",
+      "Two system prompts that visibly reshape the same assistant's persona and output format",
+      "A growing conversation history that appends user and assistant turns and resends the whole list each turn",
+      "A reusable build_chat helper that assembles an ordered message array from a system prompt and turns",
+    ],
+    milestones: [
+      { title: "The message list", detail: "Model a chat request as an ordered list of {role, content} dicts the model continues." },
+      { title: "System prompts", detail: "Place a system message first to set persona, rules, and output format for the whole chat." },
+      { title: "Multi-turn memory", detail: "Append each user and assistant turn to history and resend the full transcript every turn." },
+      { title: "Build the array", detail: "Assemble and grow the message array in code, keeping it flat and in order." },
+    ],
+    skills: ["message roles", "system prompts", "conversation history", "statelessness", "Python lists & dicts"],
+    rubric: [
+      { criterion: "Correct structure", description: "Messages are well-formed role/content dicts assembled as a flat, ordered list." },
+      { criterion: "Behavior control", description: "A system prompt is placed first and demonstrably changes the assistant's persona and format." },
+      { criterion: "History handling", description: "Both user and assistant turns are appended in order and the full list is resent each turn." },
+    ],
+    estimatedHours: 3,
+  },
+
+  "ai-18": {
+    tagline: "Master the model's working memory — the token budget behind every request.",
+    overview:
+      "This project builds a precise mental model of the context window: the fixed token budget a model can consider in one request, shared between your input and its output. You will learn exactly what consumes that budget, what happens when you exceed it, and the strategies for keeping the right information in view so your AI features stay coherent, cheap, and reliable.",
+    whatYouBuild: [
+      "A token-budget calculator that shows how much room is left for the answer after the system prompt, history, and message",
+      "A truncation simulator that drops the oldest turns until a conversation fits the window",
+      "A context manager that trims and summarizes history to keep long sessions inside the limit",
+    ],
+    milestones: [
+      { title: "Define the window", detail: "Understand the window as a shared token ceiling for input plus output." },
+      { title: "Account the budget", detail: "Tally how the system prompt, chat history, message, and reserved answer space all spend from it." },
+      { title: "Handle overflow", detail: "See how exceeding the window causes hard errors or silent oldest-first truncation." },
+      { title: "Manage context", detail: "Trim, summarize, and filter history to keep what matters inside the limit." },
+    ],
+    skills: ["context windows", "token budgeting", "truncation", "history summarization", "Python"],
+    rubric: [
+      { criterion: "Conceptual accuracy", description: "Correctly explains that the window is a shared input-plus-output token ceiling, not long-term memory." },
+      { criterion: "Budget reasoning", description: "Accurately accounts for every part of a request and computes the room left for history or the answer." },
+      { criterion: "Management strategy", description: "Applies trimming, summarization, and relevance filtering to keep long sessions within the limit." },
+    ],
+    estimatedHours: 3,
+  },
+
+  "ai-19": {
+    tagline: "Dial a model from precise to playful by controlling how it samples.",
+    overview:
+      "This project demystifies why the same prompt gives different answers and teaches the three levers that govern an LLM's randomness: temperature, top-p, and top-k. You will leave able to deliberately choose settings that make a model deterministic for facts and code, or creative for brainstorming and writing, instead of accepting whatever defaults you're handed.",
+    whatYouBuild: [
+      "A weighted-sampling simulator that draws next tokens from a probability distribution",
+      "A temperature-scaled softmax that visibly sharpens or flattens the same logits",
+      "A working top-k and top-p (nucleus) truncation implementation with renormalization",
+      "A task-to-settings recommender that maps goals onto temperature and top-p values",
+    ],
+    milestones: [
+      { title: "Sampling vs greedy", detail: "See why a model samples from a distribution instead of always taking the top token." },
+      { title: "Temperature dial", detail: "Reshape logits with temperature and watch the distribution sharpen or flatten." },
+      { title: "Top-p and top-k", detail: "Truncate the candidate pool by fixed count or cumulative probability, then renormalize." },
+      { title: "Match settings to task", detail: "Pick temperature and top-p based on whether a task has one right answer or many." },
+    ],
+    skills: ["sampling", "temperature", "softmax", "nucleus sampling (top-p)", "Python"],
+    rubric: [
+      { criterion: "Conceptual accuracy", description: "Correctly explains distributions, temperature scaling, and the difference between top-k and top-p." },
+      { criterion: "Working demos", description: "The sampling, softmax, and truncation scripts run and produce the expected outputs." },
+      { criterion: "Applied judgment", description: "Learner chooses sensible settings for convergent vs divergent tasks and justifies why." },
+    ],
+    estimatedHours: 3,
+  },
+
+  "ai-20": {
+    tagline: "Crack open an API response and read what the model actually handed back.",
+    overview:
+      "This project teaches you to parse a model API's response object end to end: where the generated text is nested, why generation stopped, and how many tokens the call spent. You will leave able to pull the answer out cleanly, detect truncated or blocked output, track cost from the usage block, and bound generation with stop sequences.",
+    whatYouBuild: [
+      "A parser that reaches the content text through the choices → message → content path",
+      "A finish-reason check that flags truncated ('length') and blocked outputs before you ship them",
+      "A cost calculator that reads the usage block and applies separate input/output token rates",
+      "A stop-sequence simulator that cuts generation at a boundary you define",
+    ],
+    milestones: [
+      { title: "Reach the content", detail: "Index choices[0] and read message.content out of the nested response." },
+      { title: "Read the finish reason", detail: "Tell a natural stop from a length cut-off, stop sequence, or content filter." },
+      { title: "Account for tokens", detail: "Pull prompt, completion, and total tokens from usage and turn them into cost." },
+      { title: "Bound the output", detail: "Use a stop sequence to halt generation cleanly at a defined marker." },
+    ],
+    skills: ["response parsing", "JSON/dict navigation", "finish reasons", "token accounting", "stop sequences"],
+    rubric: [
+      { criterion: "Correct extraction", description: "Code reliably reaches the content string through the choices/message/content path." },
+      { criterion: "Robust handling", description: "Truncated and blocked responses are detected via finish_reason rather than shipped blindly." },
+      { criterion: "Cost awareness", description: "The usage block is read correctly and converted to an accurate per-call cost." },
+    ],
+    estimatedHours: 3,
+  },
+
+  "ai-21": {
+    tagline: "Estimate, predict, and slash the cost of every LLM call.",
+    overview:
+      "This project builds a working intuition for how language model billing actually works — per-token pricing with input and output charged separately, why output dominates, and how chat history compounds cost by being resent every turn. You will move from being surprised by an invoice to estimating any feature's cost before you ship it and knowing exactly which levers cut the bill.",
+    whatYouBuild: [
+      "A per-call cost calculator that prices input and output tokens separately",
+      "A pre-launch estimator that turns a prompt into expected tokens, dollars, and a daily bill at scale",
+      "A history-cost simulator showing how resent transcripts compound, plus a trimming/capping tool that measures the savings",
+    ],
+    milestones: [
+      { title: "How pricing works", detail: "Understand per-token billing with separate input and output rates quoted per million." },
+      { title: "Estimate before you call", detail: "Approximate tokens from text (chars/4) and compute expected cost ahead of time." },
+      { title: "Find the cost drivers", detail: "See why long outputs and compounding chat history dominate real bills." },
+      { title: "Cut the bill", detail: "Apply trimming, output caps, prompt caching, and model choice to lower spend." },
+    ],
+    skills: ["token estimation", "cost modeling", "pricing math", "context management", "Python"],
+    rubric: [
+      { criterion: "Accurate cost math", description: "Calculations correctly price input and output tokens separately and format money precisely." },
+      { criterion: "Sound estimation", description: "Learner estimates per-call and at-scale cost before making a call." },
+      { criterion: "Effective optimization", description: "Learner identifies the dominant cost drivers and applies the right levers to reduce them." },
+    ],
+    estimatedHours: 3,
+  },
+
+  "ai-22": {
+    tagline: "Stop reaching for the biggest model and learn to pick the right tier for each task.",
+    overview:
+      "This project builds the practical judgment behind model selection: how providers ship families of small, medium, and large tiers, how cost, latency, and quality trade against each other, how to route easy tasks to cheap fast models and hard tasks to large ones, and how to choose between candidates with a tiny eval set. You will leave able to defend a model choice with evidence and switch models by changing a single id.",
+    whatYouBuild: [
+      "A tier 'menu' that scores small, medium, and large models on cost, latency, and quality",
+      "A task router that maps each request to the cheapest tier that can still do it well",
+      "A tiny eval harness that runs candidate models on known tasks and picks a winner",
+    ],
+    milestones: [
+      { title: "Tiers, not 'the AI'", detail: "See a model family as a menu of small/medium/large tiers with different trade-offs." },
+      { title: "The three trade-offs", detail: "Balance cost, latency, and quality, optimizing two at the expense of the third." },
+      { title: "Route by difficulty", detail: "Send simple classification/extraction to small tiers and hard reasoning to large ones." },
+      { title: "Measure and switch", detail: "Build an eval set, compare candidates, and keep code model-agnostic for one-line swaps." },
+    ],
+    skills: ["model selection", "cost/latency/quality trade-offs", "task routing", "evaluation", "Python"],
+    rubric: [
+      { criterion: "Right-sized choices", description: "Tasks are matched to the cheapest tier that meets quality needs, not the biggest by default." },
+      { criterion: "Trade-off reasoning", description: "Decisions explicitly weigh cost, latency, and quality against the use case." },
+      { criterion: "Evidence over vibes", description: "Model choices are backed by a runnable eval comparing candidates on real tasks." },
+    ],
+    estimatedHours: 3,
+  },
 };
