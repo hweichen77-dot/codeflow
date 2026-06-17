@@ -20,7 +20,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section style={{
+    <section id="how" style={{
       borderTop: "1px solid #1a1a1a",
       borderBottom: "1px solid #1a1a1a",
       padding: "80px 2rem",

@@ -3,20 +3,10 @@ import { Link } from "react-router-dom";
 import { api } from "@/api/apiClient";
 import { createPageUrl } from "../utils";
 import { useAuth } from "../lib/AuthContext";
-import { getLevel, LEVELS } from "../components/gamification/XPLevelBar";
+import { summarize, touchStreak } from "../lib/progressStats";
 
 const MONO = "'Space Mono', monospace";
 const SERIF = "Georgia, 'Times New Roman', serif";
-
-function readStreak() {
-  try {
-    const data = JSON.parse(localStorage.getItem("codeflow_streak") || "{}");
-    const today = new Date().toDateString();
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-    if (data.lastVisit === today || data.lastVisit === yesterday) return data.streak || 0;
-    return 0;
-  } catch { return 0; }
-}
 
 function StatCard({ label, value, sub, accent = "#b8ff00" }) {
   return (
@@ -38,6 +28,8 @@ export default function AuthHome() {
   const [projects, setProjects] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [progress, setProgress] = useState([]);
+
+  useEffect(() => { touchStreak(); }, []);
 
   useEffect(() => {
     let active = true;
@@ -62,26 +54,10 @@ export default function AuthHome() {
 
   const firstName = (user?.name || user?.email?.split("@")[0] || "learner").split(" ")[0];
 
-  const completed = progress.filter((p) => p.completed);
-  const completedLessonIds = new Set(completed.map((p) => p.lesson_id));
-  const totalXP = completed.reduce((s, p) => s + (p.points_earned || 10), 0);
-  const lvl = getLevel(totalXP);
-  const nextLvl = LEVELS.find((l) => l.min > lvl.min) || lvl;
-  const lvlPct = lvl.max === Infinity ? 100 : Math.min(100, Math.round(((totalXP - lvl.min) / (lvl.max - lvl.min)) * 100));
-  const streak = readStreak();
-
-  // Per-project completion
-  const projectStats = projects.map((p) => {
-    const pls = lessons.filter((l) => l.project_id === p.id);
-    const done = pls.filter((l) => completedLessonIds.has(l.id)).length;
-    return { ...p, total: pls.length, done, pct: pls.length ? Math.round((done / pls.length) * 100) : 0 };
-  });
-  const projectsCompleted = projectStats.filter((p) => p.total > 0 && p.done === p.total).length;
-
-  // Resume: first project that is started-but-not-finished, else first not-started.
-  const inProgress = projectStats.find((p) => p.done > 0 && p.done < p.total);
-  const notStarted = projectStats.find((p) => p.total > 0 && p.done === 0);
-  const resume = inProgress || notStarted || projectStats[0];
+  const {
+    completed, totalXP, lvl, nextLvl, lvlPct, streak,
+    projectStats, projectsDone: projectsCompleted, resume,
+  } = summarize(progress, projects, lessons);
 
   const greeting = (() => {
     const h = new Date().getHours();

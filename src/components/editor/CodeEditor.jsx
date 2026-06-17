@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { api } from "@/api/apiClient";
+import { api, aiAvailable } from "@/api/apiClient";
 import { Loader2 } from "lucide-react";
 import { runCodeInSandbox } from "@/lib/codeRunner";
 import CodeAnalysis from "./CodeAnalysis";
@@ -25,9 +25,12 @@ export default function CodeEditor({
 
   const lines = (code || "").split("\n");
 
+  // AI hints only when an AI backend is actually reachable.
+  const aiAnalysisOn = enableAIAnalysis && aiAvailable;
+
   // Debounced AI analysis
   const triggerAnalysis = useCallback(async (currentCode) => {
-    if (!enableAIAnalysis || !solutionCode || currentCode.trim().length < 30) return;
+    if (!aiAnalysisOn || !solutionCode || currentCode.trim().length < 30) return;
     try {
       const result = await api.integrations.Core.InvokeLLM({
         prompt: `A student is working on a coding lesson: "${lessonTitle}".
@@ -53,15 +56,15 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
     } catch (e) {
       // Silently ignore AI errors (rate limits, credit limits, etc.)
     }
-  }, [enableAIAnalysis, solutionCode, lessonTitle]);
+  }, [aiAnalysisOn, solutionCode, lessonTitle]);
 
   useEffect(() => {
-    if (!enableAIAnalysis) return;
+    if (!aiAnalysisOn) return;
     clearTimeout(analysisTimer.current);
     setAiHint(null);
     analysisTimer.current = setTimeout(() => triggerAnalysis(code), 2500);
     return () => clearTimeout(analysisTimer.current);
-  }, [code, enableAIAnalysis, triggerAnalysis]);
+  }, [code, aiAnalysisOn, triggerAnalysis]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -170,7 +173,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
         </div>
 
         {/* AI Analysis strip */}
-        {enableAIAnalysis && (
+        {aiAnalysisOn && (
           <CodeAnalysis
             hint={aiHint}
             onDismiss={() => setAiHint(null)}

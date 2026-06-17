@@ -32,17 +32,24 @@ export default function Footer() {
 
           {/* Links */}
           <div style={{ display: "flex", gap: "28px" }}>
-            {["Twitter", "GitHub", "Contact"].map(link => (
-              <a
-                key={link}
-                href="#"
-                style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
-                onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
-                onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
-              >
-                {link}
-              </a>
-            ))}
+            <a
+              href="https://github.com/hweichen77-dot/codeflow"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
+              onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
+              onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
+            >
+              GitHub
+            </a>
+            <a
+              href="mailto:hello@codeflow.app"
+              style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
+              onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
+              onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
+            >
+              Contact
+            </a>
           </div>
         </div>
 

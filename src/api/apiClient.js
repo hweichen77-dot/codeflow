@@ -9,6 +9,7 @@ import {
 } from '@/content/index.js'
 import { UserProgress, CapstoneSubmission } from './progressStore.js'
 import { getProfile, setProfile, clear as clearProfile } from './localProfile.js'
+import { auth } from './supabaseClient'
 
 const sortList = (arr, sort) => {
   if (!sort || typeof sort !== 'string') return arr
@@ -51,7 +52,11 @@ const Challenge = {
 // `invoke-llm` edge function (API key stays server-side). Otherwise degrade
 // to an offline message so the UI never crashes.
 const OFFLINE_MSG =
-  'AI assist is offline in this build. Read the lesson, write the code, and run it locally.'
+  "The AI tutor isn't available right now. You can still read the lesson, write code, and run it — your code runs for real."
+
+// True only when Supabase is configured (the AI backend is reachable). The UI
+// checks this to hide AI affordances instead of returning the offline string.
+export const aiAvailable = auth.isConfigured
 
 const InvokeLLM = async ({ prompt, max_tokens } = {}) => {
   try {
