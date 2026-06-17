@@ -4,7 +4,7 @@ export default {
     title: "Fine-Tuning & Evals",
     description: "Stop guessing whether your prompt got better — measure it, and learn when fine-tuning actually beats a good prompt.",
     difficulty: "advanced",
-    category: "ai_ml",
+    category: "production_ops",
     estimated_time: 180,
     lessons_count: 5,
     tags: ["fine-tuning", "evals", "prompt-engineering", "testing", "claude-api"],

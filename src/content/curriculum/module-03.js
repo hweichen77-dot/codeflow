@@ -4,7 +4,7 @@ export default {
     title: "Prompt Engineering",
     description: "Stop guessing at prompts — learn the dials (system prompts, temperature, tokens, few-shot, structured output) that turn an LLM from a slot machine into a tool.",
     difficulty: "beginner",
-    category: "ai_ml",
+    category: "prompting",
     estimated_time: 90,
     lessons_count: 5,
     tags: ["prompt-engineering", "llm", "claude", "system-prompts", "structured-output"],

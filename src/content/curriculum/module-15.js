@@ -4,7 +4,7 @@ export default {
     title: "Advanced Prompting Patterns",
     description: "Move past one-shot prompts into reliable patterns: chain of thought, few-shot, self-consistency, ReAct, and decomposition. Each pattern is a tool for squeezing more correctness out of the same model.",
     difficulty: "intermediate",
-    category: "ai_ml",
+    category: "prompting",
     estimated_time: 50,
     lessons_count: 5,
     tags: ["prompting", "chain-of-thought", "few-shot", "react", "reasoning"],
