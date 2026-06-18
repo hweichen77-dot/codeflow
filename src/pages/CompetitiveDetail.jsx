@@ -6,7 +6,6 @@ import CodeEditor from "../components/editor/CodeEditor";
 import ProblemStatement from "../components/challenge/ProblemStatement";
 import { getCompetitive } from "@/content";
 import { gradeCpp } from "../lib/cppRunner";
-import { auth } from "../api/supabaseClient";
 
 const DIFF_NUM = { easy: "01", medium: "02", hard: "03" };
 
@@ -30,13 +29,8 @@ export default function CompetitiveDetail() {
     setPassed(false);
     setOutput("Compiling + running…");
     try {
-      const { output: out, passed: ok, results, isError, unavailable } = await gradeCpp(code, problem.test_cases);
+      const { output: out, passed: ok, results, isError } = await gradeCpp(code, problem.test_cases);
       let text = out || "(no output)";
-      if (unavailable) {
-        setOutput(text);
-        setIsRunning(false);
-        return;
-      }
       if (results.length > 0) {
         const lines = results.map((r, i) =>
           `Test ${i + 1}: ${r.ok ? "PASS" : "FAIL"}` +
@@ -99,17 +93,6 @@ export default function CompetitiveDetail() {
       </div>
 
       <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8">
-        {/* Backend-not-configured notice */}
-        {!auth.isConfigured && (
-          <div className="px-5 py-4" style={{ border: "1px solid #ffb02033", background: "#ffb02008" }}>
-            <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#ffb020" }}>C++ runner offline</div>
-            <p className="font-display text-sm" style={{ color: "#bbb", fontWeight: 400 }}>
-              Live C++ compiling needs the cloud judge (Supabase). You can still read the problem, write a
-              solution, and reveal the editorial — judging activates once the backend is configured.
-            </p>
-          </div>
-        )}
-
         {/* Problem statement */}
         <ProblemStatement problem={problem} />
 

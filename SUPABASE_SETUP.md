@@ -54,25 +54,34 @@ Dashboard → Authentication → Providers → **Email**: enable it.
 
 ## C++ runner (Competitive Coding section)
 
-The Competitive Coding problems compile + run **C++** server-side via a Supabase
-Edge Function that proxies to the Compiler Explorer (godbolt.org) execution API
-— no compiler runs in the browser, and no extra API key is needed.
+**C++ judging works out of the box — no Supabase required.** The Competitive
+Coding editor compiles and runs C++ by calling the Compiler Explorer
+(godbolt.org) execute API **directly from the browser** (godbolt sends
+`Access-Control-Allow-Origin: *`, so this works on the static site with no
+backend and no API key). See `src/lib/cppRunner.js`.
 
-Deploy the function (one-time):
+### Optional: route C++ through Supabase instead
+
+To proxy compilation server-side (rate-limit, log, or swap compiler centrally),
+deploy the included `run-cpp` Edge Function. When `VITE_SUPABASE_URL` /
+`VITE_SUPABASE_ANON_KEY` are set, `cppRunner` automatically prefers the Edge
+Function and falls back to the direct call if it fails.
+
+The repo is already initialized for this — `supabase/config.toml` sets
+`verify_jwt = false` for `run-cpp` (it needs no secret). To deploy, run the
+helper (uses the Supabase CLI via `npx`, nothing installed globally):
 
 ```
-supabase functions deploy run-cpp --no-verify-jwt
+./scripts/deploy-supabase.sh
 ```
 
-That's it — `run-cpp` needs no secret. Once `VITE_SUPABASE_URL` /
-`VITE_SUPABASE_ANON_KEY` are set at build time (same as auth) and the function
-is deployed, the C++ editor in `/Competitive` compiles, runs, and grades
-submissions against each problem's hidden test cases.
+It logs you in, links your project, and runs
+`supabase functions deploy run-cpp --no-verify-jwt`. Then set the two
+`VITE_SUPABASE_*` vars (see `.env.local.example`) and rebuild.
 
-If Supabase is **not** configured, the Competitive section still renders fully
-(problem statements, write code, reveal editorial/solution) and shows a "C++
-runner offline" notice instead of judging. The AI **Challenges** are Python and
-run fully offline in the browser via Pyodide — they never depend on this.
+To swap the upstream compiler later (self-hosted Piston or Judge0), only
+`supabase/functions/run-cpp/index.ts` and the `runViaGodbolt` helper in
+`src/lib/cppRunner.js` change.
 
-To swap the upstream compiler later (e.g. self-hosted Piston or Judge0), only
-`supabase/functions/run-cpp/index.ts` and `src/lib/cppRunner.js` change.
+The AI **Challenges** are Python and run fully offline via Pyodide — they never
+depend on any of this.
