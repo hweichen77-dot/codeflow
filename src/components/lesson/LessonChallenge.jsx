@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import CodeEditor from "../editor/CodeEditor";
 import { gradePython } from "../../lib/pyRunner";
 
@@ -55,11 +57,77 @@ export default function LessonChallenge({ lesson }) {
       </div>
 
       <div className="px-6 py-5">
-        {/* Description */}
-        {lesson.challenge_description && (
-          <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#3f3f46", fontWeight: 400 }}>
-            {lesson.challenge_description}
-          </p>
+        <style>{`
+          .lc-md { color: #3f3f46; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 0.875rem; line-height: 1.7; }
+          .lc-md p { margin: 0 0 0.6rem; }
+          .lc-md ul, .lc-md ol { margin: 0.3rem 0 0.7rem 1.2rem; }
+          .lc-md li { margin-bottom: 0.2rem; }
+          .lc-md strong { color: #18181b; font-weight: 700; }
+          .lc-md code { font-family: 'IBM Plex Mono', monospace; font-size: 0.82em; background: #f4f4f5; color: #4d7c0f; padding: 0.1em 0.35em; border-radius: 3px; border: 1px solid #e4e4e7; }
+          .lc-md pre { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; background: #f6f6f7; border: 1px solid #e4e4e7; padding: 0.75rem 0.9rem; overflow-x: auto; border-radius: 3px; margin: 0 0 0.7rem; color: #1f2937; }
+        `}</style>
+
+        {/* Story hook (rich problems) */}
+        {lesson.challenge_story && (
+          <div className="mb-4 px-4 py-3" style={{ borderLeft: "2px solid #65a30d", background: "#65a30d0a", borderRadius: "2px" }}>
+            <div className="lc-md" style={{ fontStyle: "italic" }}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.challenge_story}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+
+        {/* Statement (rich) or one-line description (legacy) */}
+        {lesson.challenge_statement ? (
+          <div className="lc-md mb-4">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code: ({ className, children }) => {
+                  const isBlock = /language-/.test(className || "") || String(children).includes("\n");
+                  return isBlock ? <pre><code>{children}</code></pre> : <code>{children}</code>;
+                },
+                pre: ({ children }) => <>{children}</>,
+              }}
+            >
+              {lesson.challenge_statement}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          lesson.challenge_description && (
+            <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#3f3f46", fontWeight: 400 }}>
+              {lesson.challenge_description}
+            </p>
+          )
+        )}
+
+        {/* Input / Output format + constraints (rich) */}
+        {(lesson.challenge_input_format || lesson.challenge_output_format || lesson.challenge_constraints) && (
+          <div className="mb-4 grid sm:grid-cols-2 gap-3">
+            {lesson.challenge_input_format && (
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#4d7c0f" }}>Input</div>
+                <div className="lc-md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.challenge_input_format}</ReactMarkdown></div>
+              </div>
+            )}
+            {lesson.challenge_output_format && (
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#4d7c0f" }}>Output</div>
+                <div className="lc-md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.challenge_output_format}</ReactMarkdown></div>
+              </div>
+            )}
+            {Array.isArray(lesson.challenge_constraints) && lesson.challenge_constraints.length > 0 && (
+              <div className="sm:col-span-2">
+                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#4d7c0f" }}>Constraints</div>
+                <ul className="space-y-0.5">
+                  {lesson.challenge_constraints.map((c, i) => (
+                    <li key={i} className="font-mono text-xs flex gap-2" style={{ color: "#52525b" }}>
+                      <span style={{ color: "#65a30d" }}>•</span><span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Test cases */}
@@ -142,7 +210,7 @@ export default function LessonChallenge({ lesson }) {
                 >
                   <div style={{ border: "1px solid #e4e4e7", borderRadius: "4px", overflow: "hidden", background: "#f6f6f7" }}>
                     <div className="px-4 py-2.5" style={{ borderBottom: "1px solid #e4e4e7", background: "#fafafa" }}>
-                      <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#6b7280" }}>solution.js</span>
+                      <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#6b7280" }}>solution.py</span>
                     </div>
                     <pre
                       className="font-mono overflow-x-auto p-5"

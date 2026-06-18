@@ -228,26 +228,70 @@ large: smarts=9 speed=3 price=12`,
         "Inside the loop, props is a dict — read props['smarts'], props['speed'], props['price'].",
         "An f-string makes it easy to print the name and all three numbers on one line."
       ],
-      challenge_title: "Find the cheapest tier",
-      challenge_description: "Given the tiers dict, write code that finds and prints the name of the tier with the lowest price. Print it as: cheapest tier: <name>.",
-      challenge_starter_code: `tiers = {
-    "small":  {"smarts": 3, "speed": 9, "price": 1},
-    "medium": {"smarts": 6, "speed": 6, "price": 4},
-    "large":  {"smarts": 9, "speed": 3, "price": 12},
-}
-# TODO: find the tier with the lowest "price" and print its name.
-`,
-      challenge_solution_code: `tiers = {
-    "small":  {"smarts": 3, "speed": 9, "price": 1},
-    "medium": {"smarts": 6, "speed": 6, "price": 4},
-    "large":  {"smarts": 9, "speed": 3, "price": 12},
-}
+      challenge_title: "Tier Selector",
+      challenge_description: "Pick the cheapest model tier that is still good enough and fast enough for a production endpoint — the exact decision a routing layer makes on every request.",
+      challenge_story: "You run the inference platform behind a customer-support assistant. A provider exposes several **model tiers**, each with a known **quality** score, typical **latency** in milliseconds, and a **cost** in cents per call. Product set two hard rules for this endpoint: the reply must clear a **minimum quality** bar (anything dumber frustrates users) and must come back **within a latency budget** (anything slower breaks the live chat). Among every tier that satisfies *both* rules, finance wants the **cheapest** one — there's no reason to pay for a smarter model than the job needs. Build the selector.",
+      challenge_statement: "You are given a quality floor, a latency budget, and a list of tiers. Choose the tier to deploy:\n\n1. A tier is **eligible** if its `quality` is **at least** `min_quality` **and** its `latency` is **at most** `max_latency`.\n2. Among eligible tiers, pick the one with the **lowest cost**. If two eligible tiers tie on cost, pick the one whose name is **lexicographically smallest**.\n3. If no tier is eligible, the endpoint can't be served.\n\nPrint the chosen tier's name and its cost, or `NO TIER` if none qualify.",
+      challenge_input_format: "The first line has three integers `n min_quality max_latency`: the number of tiers, the quality floor, and the latency budget.\n\nEach of the next `n` lines describes one tier: a name (no spaces) followed by three integers `quality latency cost`.",
+      challenge_output_format: "If at least one tier is eligible, print one line: the chosen tier's name, a space, then its cost (e.g. `medium 4`). Otherwise print `NO TIER`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "1 ≤ min_quality ≤ 100",
+        "1 ≤ max_latency ≤ 100000",
+        "1 ≤ quality ≤ 100, 1 ≤ latency ≤ 100000, 1 ≤ cost ≤ 1000000",
+      ],
+      challenge_examples: [
+        { input: "3 6 500\nsmall 3 120 1\nmedium 6 300 4\nlarge 9 900 12", output: "medium 4", explanation: "`small` fails the quality floor (3 < 6); `large` fails the latency budget (900 > 500). Only `medium` is eligible, so it wins at cost 4." },
+        { input: "3 6 200\nsmall 3 120 1\nmedium 6 300 4\nlarge 9 900 12", output: "NO TIER", explanation: "`small` is too dumb, and both `medium` (300) and `large` (900) blow the 200 ms budget. Nothing qualifies." },
+      ],
+      challenge_notes: "This is the core of a real model router: never pay for more capability than the task and the latency SLA require. The quality bound is inclusive (`>=`) and the latency bound is inclusive (`<=`), so a tier sitting exactly on a limit still qualifies. The lexicographic tie-break keeps the answer deterministic when two tiers cost the same.",
+      challenge_hints: [
+        "Track the best (lowest-cost) eligible tier as you scan, instead of collecting them all first.",
+        "A tier qualifies only when BOTH `quality >= min_quality` AND `latency <= max_latency` hold.",
+        "On a cost tie, compare names with `<` to keep the lexicographically smaller one; if you never find an eligible tier, print `NO TIER`.",
+      ],
+      challenge_starter_code: `import sys
 
-cheapest = min(tiers, key=lambda name: tiers[name]["price"])
-print(f"cheapest tier: {cheapest}")
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, min_quality, max_latency = map(int, data[0].split())
+    # TODO: read the next n tiers, keep only those meeting the quality floor
+    #       and latency budget, and print the cheapest (name + cost) or "NO TIER".
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, min_quality, max_latency = map(int, data[idx].split())
+    idx += 1
+    best_name = None
+    best_cost = None
+    for _ in range(n):
+        parts = data[idx].split()
+        idx += 1
+        name = parts[0]
+        quality = int(parts[1])
+        latency = int(parts[2])
+        cost = int(parts[3])
+        if quality >= min_quality and latency <= max_latency:
+            if best_cost is None or cost < best_cost or (cost == best_cost and name < best_name):
+                best_cost = cost
+                best_name = name
+    if best_name is None:
+        print("NO TIER")
+    else:
+        print(f"{best_name} {best_cost}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "cheapest tier: small", description: "The small tier has price 1, the lowest of the three." }
+        { input: "3 6 500\nsmall 3 120 1\nmedium 6 300 4\nlarge 9 900 12", expected_output: "medium 4", description: "Quality floor and latency budget each knock out one tier; the survivor wins." },
+        { input: "3 6 200\nsmall 3 120 1\nmedium 6 300 4\nlarge 9 900 12", expected_output: "NO TIER", description: "Tightening the latency budget leaves no eligible tier." },
+        { input: "4 5 1000\na 7 100 5\nb 8 100 5\nc 9 100 9\nd 5 100 5\nx", expected_output: "a 5", description: "Three tiers tie at cost 5; the lexicographically smallest name wins." },
+        { input: "1 1 100\nonly 5 50 7", expected_output: "only 7", description: "A single eligible tier is selected outright." }
       ]
     },
     {
@@ -461,27 +505,70 @@ cost gap (large - small): 11`,
         "large['quality'] - small['quality'] gives the quality gap.",
         "Do the same with the 'cost' key for the cost gap, then print both."
       ],
-      challenge_title: "Score the trade-off",
-      challenge_description: "Given small and large tiers, write a function value(tier, w_quality, w_cost) that returns tier['quality'] * w_quality - tier['cost'] * w_cost. Using w_quality=1 and w_cost=0.5, print each tier's score and which one wins (higher score).",
-      challenge_starter_code: `small = {"name": "small", "cost": 1, "quality": 6}
-large = {"name": "large", "cost": 12, "quality": 9}
-# TODO: define value(tier, w_quality, w_cost) and print each score, then the winner.
+      challenge_title: "Trade-off Scorer",
+      challenge_description: "Turn the fuzzy 'fast, cheap, good — pick two' debate into one number per model, then let the weights of the day decide which model your app ships with.",
+      challenge_story: "Every model is a different point on the **quality / latency / cost** triangle, and which point is 'best' depends entirely on the app. A live voice assistant weighs latency heavily; an overnight batch job weighs cost; a legal-review tool weighs quality. Rather than argue, your team agreed on a **weighted score**: reward quality, penalize latency and cost, each by a configurable weight. Plug in the weights for the current use case and the score ranks every candidate model objectively. Build the scorer that the model-selection config calls.",
+      challenge_statement: "You are given three integer weights `wq wl wc` (for quality, latency, and cost) and a list of candidate models. For each model compute its score:\n\n```\nscore = wq * quality - wl * latency - wc * cost\n```\n\nHigher quality raises the score; higher latency and cost lower it. Then:\n\n1. Print every model and its score in input order.\n2. Print the **best** model — the one with the **highest score**. If two models tie on score, choose the one whose name is **lexicographically smallest**.",
+      challenge_input_format: "The first line has three integers `wq wl wc`: the quality, latency, and cost weights.\n\nThe second line has one integer `n`: the number of models.\n\nEach of the next `n` lines describes one model: a name (no spaces) followed by three integers `quality latency cost`.",
+      challenge_output_format: "First, `n` lines, one per model in input order: the model name, a space, then its score (e.g. `small 27`). Then a final line `best <name>` naming the highest-scoring model.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0 ≤ wq, wl, wc ≤ 1000",
+        "1 ≤ quality ≤ 100, 1 ≤ latency ≤ 1000, 1 ≤ cost ≤ 1000",
+        "All scores fit in a normal integer; they may be negative.",
+      ],
+      challenge_examples: [
+        { input: "10 1 2\n3\nsmall 3 1 1\nmedium 6 3 4\nlarge 9 9 12", output: "small 27\nmedium 49\nlarge 57\nbest large", explanation: "With quality weighted 10×, the smart `large` model wins despite its latency and cost penalties: 10·9 − 1·9 − 2·12 = 57." },
+        { input: "1 5 1\n2\nfast 5 1 8\nslow 7 6 2", output: "fast -8\nslow -25\nbest fast", explanation: "Latency is weighted heavily (5×), so the snappy `fast` model (−8) beats the slower but smarter `slow` model (−25)." },
+      ],
+      challenge_notes: "All weights and fields are integers on purpose, so every score is an exact integer — no float rounding to argue about. Changing the use case is just changing three numbers: crank `wl` for real-time apps, crank `wc` for batch jobs, crank `wq` for high-stakes work. The lexicographic tie-break makes the winner deterministic when two models score the same.",
+      challenge_hints: [
+        "Read the three weights first, then `n`, then loop over the model lines.",
+        "Compute `wq*quality - wl*latency - wc*cost` and print it right away, while you scan.",
+        "Track the best score and name as you go; on a tie, keep the lexicographically smaller name.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    wq, wl, wc = map(int, data[0].split())
+    n = int(data[1])
+    # TODO: for each of the n models, print "name score" where
+    #       score = wq*quality - wl*latency - wc*cost, then print "best <name>".
+
+main()
 `,
-      challenge_solution_code: `small = {"name": "small", "cost": 1, "quality": 6}
-large = {"name": "large", "cost": 12, "quality": 9}
+      challenge_solution_code: `import sys
 
-def value(tier, w_quality, w_cost):
-    return tier["quality"] * w_quality - tier["cost"] * w_cost
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    wq, wl, wc = map(int, data[idx].split())
+    idx += 1
+    n = int(data[idx])
+    idx += 1
+    best_name = None
+    best_score = None
+    for _ in range(n):
+        parts = data[idx].split()
+        idx += 1
+        name = parts[0]
+        quality = int(parts[1])
+        latency = int(parts[2])
+        cost = int(parts[3])
+        score = wq * quality - wl * latency - wc * cost
+        print(f"{name} {score}")
+        if best_score is None or score > best_score or (score == best_score and name < best_name):
+            best_score = score
+            best_name = name
+    print(f"best {best_name}")
 
-s = value(small, 1, 0.5)
-l = value(large, 1, 0.5)
-print(f"small score: {s}")
-print(f"large score: {l}")
-winner = small["name"] if s >= l else large["name"]
-print(f"winner: {winner}")
+main()
 `,
       challenge_test_cases: [
-        { input: "w_quality=1, w_cost=0.5", expected_output: "small score: 5.5\nlarge score: 3.0\nwinner: small", description: "small: 6 - 0.5 = 5.5; large: 9 - 6 = 3.0; small wins." }
+        { input: "10 1 2\n3\nsmall 3 1 1\nmedium 6 3 4\nlarge 9 9 12", expected_output: "small 27\nmedium 49\nlarge 57\nbest large", description: "Quality-heavy weights crown the smartest model." },
+        { input: "1 5 1\n2\nfast 5 1 8\nslow 7 6 2", expected_output: "fast -8\nslow -25\nbest fast", description: "Latency-heavy weights favor the fastest model; scores go negative." },
+        { input: "1 0 0\n2\nbeta 5 9 9\nalpha 5 0 0", expected_output: "beta 5\nalpha 5\nbest alpha", description: "Two models tie at score 5; the lexicographically smaller name wins." }
       ]
     },
     {
@@ -704,25 +791,87 @@ medium`,
         "Then check `if task_type in hard:` and return 'large'.",
         "If neither matches, fall through to `return 'medium'`."
       ],
-      challenge_title: "Build a task router",
-      challenge_description: "Write route(task) that returns 'small' for tasks in {'classify','extract'}, 'large' for tasks in {'reason','synthesize'}, and 'medium' otherwise. Then route a list of tasks ['classify','reason','translate'] and print each as 'task -> tier'.",
-      challenge_starter_code: `tasks = ["classify", "reason", "translate"]
-# TODO: define route(task) and print each "task -> tier".
+      challenge_title: "Routing Engine",
+      challenge_description: "Stand up the dispatcher that sends each incoming request to the right model tier, then report the per-tier load and the total bill it ran up — the heart of a cost-aware AI gateway.",
+      challenge_story: "Your AI gateway sees a flood of mixed requests: quick classifications, data extractions, heavy reasoning, long syntheses, and plenty of in-between work. Sending everything to the big model is accurate but ruinously expensive; sending everything to the small one is cheap but dumb. So you triage. Tasks on the **easy list** go to the **small** tier, tasks on the **hard list** go to the **large** tier, and anything unrecognized falls to a sensible **medium** default. Each tier charges a fixed cost per call. Process the day's request log, route every request, and report the load on each tier plus the total cost — the numbers your dashboard and finance both need.",
+      challenge_statement: "You are given the per-call cost of each tier, an easy-task list, a hard-task list, and a stream of requests. Route each request:\n\n1. If the task name is on the **easy list**, route to `small`.\n2. Otherwise, if it is on the **hard list**, route to `large`.\n3. Otherwise, route to `medium`.\n\nFor each request, print the routing decision. After the log, print how many requests each tier handled, then the total cost (sum of the per-call cost of the chosen tier across all requests).",
+      challenge_input_format: "The first line has three integers `cs cm cl`: the per-call cost of the small, medium, and large tiers.\n\nThe next line has an integer `e`, followed by `e` lines, each one easy-task name.\n\nThen a line with an integer `h`, followed by `h` lines, each one hard-task name.\n\nThen a line with an integer `q`, followed by `q` lines, each one request's task name.",
+      challenge_output_format: "First, `q` lines in input order, each `<task> -> <tier>`. Then a line `small <a> medium <b> large <c>` giving how many requests each tier handled. Then a final line `total <T>` giving the summed cost.",
+      challenge_constraints: [
+        "1 ≤ cs, cm, cl ≤ 1000",
+        "0 ≤ e, h ≤ 1000",
+        "1 ≤ q ≤ 100000",
+        "Task names contain no spaces. The easy and hard lists do not overlap.",
+      ],
+      challenge_examples: [
+        { input: "1 4 12\n2\nclassify\nextract\n2\nreason\nsynthesize\n3\nclassify\nreason\ntranslate", output: "classify -> small\nreason -> large\ntranslate -> medium\nsmall 1 medium 1 large 1\ntotal 17", explanation: "`classify` is easy → small (1), `reason` is hard → large (12), `translate` is unknown → medium (4). Total 1 + 12 + 4 = 17." },
+        { input: "2 5 20\n1\ntag\n1\nplan\n2\nfoo\nbar", output: "foo -> medium\nbar -> medium\nsmall 0 medium 2 large 0\ntotal 10", explanation: "Neither `foo` nor `bar` is listed, so both fall to the medium default at cost 5 each → 10." },
+      ],
+      challenge_notes: "Routing the edges and defaulting the middle is exactly how real gateways stay cheap without a hand-written rule for every possible task. Checking the easy list before the hard list makes the priority explicit (though here the lists never overlap). Using sets for the easy and hard lists keeps each lookup O(1), which matters when `q` reaches 100000 requests.",
+      challenge_hints: [
+        "Build the easy and hard task lists into Python `set`s so membership tests are fast.",
+        "Map each tier name to its cost (e.g. a dict) so you can add the right amount per request.",
+        "Keep a running count per tier and a running total; print the per-request lines as you go, then the summary lines.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    cs, cm, cl = map(int, data[idx].split())
+    idx += 1
+    # TODO: read the easy list, the hard list, then route each of the q requests.
+    #       Print each "task -> tier", then the per-tier counts, then "total <T>".
+
+main()
 `,
-      challenge_solution_code: `tasks = ["classify", "reason", "translate"]
+      challenge_solution_code: `import sys
 
-def route(task):
-    if task in {"classify", "extract"}:
-        return "small"
-    if task in {"reason", "synthesize"}:
-        return "large"
-    return "medium"
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    cs, cm, cl = map(int, data[idx].split())
+    idx += 1
+    e = int(data[idx])
+    idx += 1
+    easy = set()
+    for _ in range(e):
+        easy.add(data[idx].strip())
+        idx += 1
+    h = int(data[idx])
+    idx += 1
+    hard = set()
+    for _ in range(h):
+        hard.add(data[idx].strip())
+        idx += 1
+    q = int(data[idx])
+    idx += 1
+    counts = {"small": 0, "medium": 0, "large": 0}
+    cost_of = {"small": cs, "medium": cm, "large": cl}
+    total = 0
+    out = []
+    for _ in range(q):
+        task = data[idx].strip()
+        idx += 1
+        if task in easy:
+            tier = "small"
+        elif task in hard:
+            tier = "large"
+        else:
+            tier = "medium"
+        counts[tier] += 1
+        total += cost_of[tier]
+        out.append(f"{task} -> {tier}")
+    print("\\n".join(out))
+    print(f"small {counts['small']} medium {counts['medium']} large {counts['large']}")
+    print(f"total {total}")
 
-for task in tasks:
-    print(f"{task} -> {route(task)}")
+main()
 `,
       challenge_test_cases: [
-        { input: "tasks = ['classify', 'reason', 'translate']", expected_output: "classify -> small\nreason -> large\ntranslate -> medium", description: "classify is easy, reason is hard, translate falls to the medium default." }
+        { input: "1 4 12\n2\nclassify\nextract\n2\nreason\nsynthesize\n3\nclassify\nreason\ntranslate", expected_output: "classify -> small\nreason -> large\ntranslate -> medium\nsmall 1 medium 1 large 1\ntotal 17", description: "One request per tier; total sums the three per-call costs." },
+        { input: "2 5 20\n1\ntag\n1\nplan\n2\nfoo\nbar", expected_output: "foo -> medium\nbar -> medium\nsmall 0 medium 2 large 0\ntotal 10", description: "Unrecognized tasks all fall to the medium default." },
+        { input: "1 4 12\n1\nclassify\n1\nreason\n1\nclassify", expected_output: "classify -> small\nsmall 1 medium 0 large 0\ntotal 1", description: "A single easy request routes to small for a total of 1." }
       ]
     },
     {
@@ -947,42 +1096,85 @@ large scored 2 / 2`,
         "len(eval_set) gives the total number of cases.",
         "Print with an f-string: f'{model_id} scored {correct} / {len(eval_set)}'."
       ],
-      challenge_title: "Score and pick the winner",
-      challenge_description: "Given an eval_set and a run_model(model_id, text) function, score the models 'small' and 'large' (both answer every case correctly here). Print each as '<id>: X/N', then print 'winner: <id>' choosing the cheaper one (small) when scores tie.",
-      challenge_starter_code: `eval_set = [
-    {"input": "ping", "expected": "pong"},
-    {"input": "hi", "expected": "hello"},
-    {"input": "yo", "expected": "sup"},
-]
+      challenge_title: "Eval Harness",
+      challenge_description: "Run the blind taste test that decides which model ships: score every candidate against a graded answer key, then pick the winner on accuracy first and cost second — never on vibes.",
+      challenge_story: "A new model tier just dropped and three people on Slack swear it's smarter. You don't switch on rumors — you switch on an **eval**. You keep a small set of test cases, each with a known correct answer, and you run every candidate model over all of them. The model that answers the most cases correctly wins. When two models are equally accurate, you take the **cheaper** one, because there's no reason to pay more for the same quality. Build the harness that grades the candidates and names the model to deploy.",
+      challenge_statement: "You are given several candidate models (each with a per-call cost), an eval set (each case is an input and its expected answer), and, for each model, the answer it produced on every case in order. Grade and rank them:\n\n1. A model's **score** is the number of cases where its answer **exactly matches** the expected answer.\n2. Print each model's score in input order.\n3. Print the **winner**: the model with the **highest score**. Break ties by **lowest cost**; if cost also ties, break by **lexicographically smallest name**.",
+      challenge_input_format: "The first line has an integer `m`: the number of models. Each of the next `m` lines has a model name (no spaces) and an integer `cost`.\n\nThe next line has an integer `k`: the number of eval cases. Each of the next `k` lines has two tokens `input expected` (no spaces).\n\nThen `m` lines, one per model in the same order as the model list: the model name followed by `k` tokens — that model's answer to each case, in case order.",
+      challenge_output_format: "First, `m` lines in input order, each `<name>: <score>/<k>`. Then a final line `winner: <name>`.",
+      challenge_constraints: [
+        "1 ≤ m ≤ 100",
+        "1 ≤ k ≤ 1000",
+        "1 ≤ cost ≤ 1000000",
+        "Inputs, expected answers, and model answers contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "2\nsmall 1\nlarge 12\n3\nping pong\nhi hello\nyo sup\nsmall pong hello sup\nlarge pong hello sup", output: "small: 3/3\nlarge: 3/3\nwinner: small", explanation: "Both models answer all 3 cases correctly, so the tie breaks to `small` because it costs less (1 < 12)." },
+        { input: "2\nsmall 1\nlarge 12\n3\nping pong\nhi hello\nyo sup\nsmall pong WRONG sup\nlarge pong hello sup", output: "small: 2/3\nlarge: 3/3\nwinner: large", explanation: "`small` misses the second case (2/3) while `large` is perfect (3/3). Accuracy beats cost, so the pricier but more accurate `large` wins." },
+      ],
+      challenge_notes: "This is the whole argument for evals: decisions come from a graded scoreboard, not from who posted most confidently. Accuracy is the primary key and cost is only the tie-break, so you never trade quality for a cheaper bill — you only save money when quality is genuinely equal. Comparing answers with exact string equality keeps grading deterministic and unambiguous.",
+      challenge_hints: [
+        "Read the models and their costs first, then the `k` eval cases (keep each expected answer), then each model's `k` answers.",
+        "Score a model by counting positions where its answer equals the expected answer for that case.",
+        "Rank with a tuple key like `(-score, cost, name)` and take the minimum — that gives highest score, then lowest cost, then smallest name.",
+      ],
+      challenge_starter_code: `import sys
 
-def run_model(model_id, text):
-    table = {"ping": "pong", "hi": "hello", "yo": "sup"}
-    return table.get(text, "?")
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    m = int(data[idx])
+    idx += 1
+    # TODO: read m models (name + cost), k eval cases (input + expected),
+    #       then each model's k answers. Print "<name>: score/k" per model,
+    #       then "winner: <name>" (highest score, then lowest cost, then name).
 
-# TODO: score 'small' and 'large', print each "<id>: X/N", then "winner: <id>"
-# (pick 'small' when the scores tie, since it is cheaper).
+main()
 `,
-      challenge_solution_code: `eval_set = [
-    {"input": "ping", "expected": "pong"},
-    {"input": "hi", "expected": "hello"},
-    {"input": "yo", "expected": "sup"},
-]
+      challenge_solution_code: `import sys
 
-def run_model(model_id, text):
-    table = {"ping": "pong", "hi": "hello", "yo": "sup"}
-    return table.get(text, "?")
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    m = int(data[idx])
+    idx += 1
+    models = []
+    for _ in range(m):
+        parts = data[idx].split()
+        idx += 1
+        models.append((parts[0], int(parts[1])))
+    k = int(data[idx])
+    idx += 1
+    cases = []
+    for _ in range(k):
+        parts = data[idx].split()
+        idx += 1
+        cases.append((parts[0], parts[1]))
+    answers = {}
+    for _ in range(m):
+        parts = data[idx].split()
+        idx += 1
+        answers[parts[0]] = parts[1:1 + k]
 
-scores = {}
-for model_id in ["small", "large"]:
-    correct = sum(run_model(model_id, c["input"]) == c["expected"] for c in eval_set)
-    scores[model_id] = correct
-    print(f"{model_id}: {correct}/{len(eval_set)}")
+    results = []
+    for name, cost in models:
+        correct = sum(1 for i in range(k) if answers[name][i] == cases[i][1])
+        results.append((name, cost, correct))
+        print(f"{name}: {correct}/{k}")
 
-winner = "small" if scores["small"] >= scores["large"] else "large"
-print(f"winner: {winner}")
+    best = None
+    for name, cost, correct in results:
+        key = (-correct, cost, name)
+        if best is None or key < best[0]:
+            best = (key, name)
+    print(f"winner: {best[1]}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "small: 3/3\nlarge: 3/3\nwinner: small", description: "Both score 3/3; the tie breaks to small because it's cheaper." }
+        { input: "2\nsmall 1\nlarge 12\n3\nping pong\nhi hello\nyo sup\nsmall pong hello sup\nlarge pong hello sup", expected_output: "small: 3/3\nlarge: 3/3\nwinner: small", description: "Equal accuracy breaks the tie to the cheaper model." },
+        { input: "2\nsmall 1\nlarge 12\n3\nping pong\nhi hello\nyo sup\nsmall pong WRONG sup\nlarge pong hello sup", expected_output: "small: 2/3\nlarge: 3/3\nwinner: large", description: "Higher accuracy wins even though the model costs more." },
+        { input: "3\nsmall 1\nmid 4\nlarge 12\n2\na x\nb y\nsmall x y\nmid x y\nlarge x y", expected_output: "small: 2/2\nmid: 2/2\nlarge: 2/2\nwinner: small", description: "Three-way accuracy tie resolves to the cheapest model." }
       ]
     }
   ]

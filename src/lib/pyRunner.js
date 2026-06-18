@@ -57,11 +57,21 @@ export async function runPython(code, stdin = "") {
     py.setStdout({ batched: (s) => { out += s + "\n"; } });
     py.setStderr({ batched: (s) => { out += s + "\n"; } });
 
-    // Feed canned stdin lines to input() if provided.
-    if (stdin) {
-      const lines = JSON.stringify(String(stdin).split("\n"));
+    // Feed canned stdin so BOTH input() and sys.stdin work. Many problems read
+    // via sys.stdin.read()/sys.stdin loops, not just input(), so we back stdin
+    // with a fresh StringIO each run (also prevents leftover input leaking
+    // between graded test cases) and route input() through it.
+    {
+      const payload = JSON.stringify(String(stdin ?? ""));
       await py.runPythonAsync(
-        `import builtins\n__cf_in = iter(${lines})\nbuiltins.input = lambda *a: next(__cf_in, "")`
+`import sys, io, builtins
+sys.stdin = io.StringIO(${payload})
+def __cf_input(*_a):
+    line = sys.stdin.readline()
+    if line == "":
+        raise EOFError("EOF when reading a line")
+    return line.rstrip("\\n")
+builtins.input = __cf_input`
       );
     }
 

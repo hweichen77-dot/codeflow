@@ -227,28 +227,82 @@ print(text)
         "After choices[0], reach into the message dict, then its content key.",
         "Chain the keys: resp[\"choices\"][0][\"message\"][\"content\"]."
       ],
-      challenge_title: "Extract text from two candidates",
-      challenge_description: "A response has two answers in choices. Print the content of the first answer, then the content of the second answer, each on its own line.",
-      challenge_starter_code: `resp = {
-    "choices": [
-        {"message": {"content": "Option A"}},
-        {"message": {"content": "Option B"}},
-    ]
-}
-# TODO: print the content of the first choice, then the second.
-`,
-      challenge_solution_code: `resp = {
-    "choices": [
-        {"message": {"content": "Option A"}},
-        {"message": {"content": "Option B"}},
-    ]
-}
+      challenge_title: "Best-Candidate Response Router",
+      challenge_description: "Walk the choices array of every API response, throw out anything that didn't finish cleanly, and route each request to its highest-scoring usable answer.",
+      challenge_story: "Your inference service is configured to return **several candidate answers per request** (the model samples \`n\` completions and your reranker scores each one). The raw payload comes back as a response object with a \`choices\` array — but not every choice is shippable. A choice whose \`finish_reason\` isn't \`stop\` either got truncated, got filtered, or otherwise can't be trusted, so it must be discarded before scoring. Your job: write the **router** that opens each response, ignores the unusable choices, and forwards the best remaining candidate to the user.",
+      challenge_statement: "You are given a batch of API responses. Each response has a request id and a list of **choices**; each choice carries an integer rerank **score**, a **finish_reason**, and the answer **text**.\n\nFor each response, in input order:\n\n1. Consider only choices whose \`finish_reason\` is exactly \`stop\` — every other finish_reason marks the choice unusable.\n2. Among the usable choices, pick the one with the **highest score**. If two usable choices tie on score, pick the one with the **smaller choice index** (the earlier one in the list).\n3. If a usable choice exists, print \`<id>: [<index>] <text>\`. If no choice is usable, print \`<id>: NO_VALID_CHOICE\`.\n\nAfter all responses, print \`VALID <v>/<n>\` where \`v\` is how many responses produced a usable answer and \`n\` is the total number of responses.",
+      challenge_input_format: "The first line is the integer `n`: the number of responses.\n\nEach response starts with a line `<id> <k>` (a request id with no spaces, and `k`, the number of choices). The next `k` lines each describe one choice: an integer `score`, a `finish_reason` token, then the answer text (which may contain spaces), all space-separated.",
+      challenge_output_format: "One line per response, in input order, as described above. Then a final line `VALID <v>/<n>`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "1 ≤ k ≤ 100 choices per response",
+        "0 ≤ score ≤ 1000000",
+        "finish_reason is one of `stop`, `length`, `content_filter`, `stop_sequence`; only `stop` is usable here.",
+        "Answer text is non-empty and may contain spaces; choice indices start at 0.",
+      ],
+      challenge_examples: [
+        { input: "2\nr1 2\n8 stop Use a cache layer.\n5 stop Add an index.\nr2 1\n9 length Streaming the", output: "r1: [0] Use a cache layer.\nr2: NO_VALID_CHOICE\nVALID 1/2", explanation: "For r1 both choices are `stop`; choice 0 scores 8 > 5, so it wins. For r2 the only choice is `length` (truncated), so it's discarded and nothing is usable." },
+        { input: "1\nr1 3\n3 length cut off mid\n7 content_filter redacted\n2 stop Final answer here", output: "r1: [2] Final answer here\nVALID 1/1", explanation: "Choices 0 and 1 are unusable (`length`, `content_filter`). Only choice 2 is `stop`, so it wins despite its low score." },
+      ],
+      challenge_notes: "Filtering on `finish_reason` *before* scoring is the whole point: a high-scoring answer that got truncated is worthless to a user. The index tie-break makes the router deterministic so the same batch always routes the same way. Split each choice line into at most three pieces so answer text containing spaces stays intact.",
+      challenge_hints: [
+        "Read `k` for each response, then loop `k` times reading one choice per line. Use `split(maxsplit=2)` so the text keeps its spaces.",
+        "Skip any choice whose finish_reason isn't `stop` before you compare scores.",
+        "Track best score and best index together; on a score tie, keep the smaller index (which you'll already have since you scan in order).",
+      ],
+      challenge_starter_code: `import sys
 
-print(resp["choices"][0]["message"]["content"])
-print(resp["choices"][1]["message"]["content"])
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    # TODO: for each response, read its k choices, keep only finish_reason == "stop",
+    #       pick the highest score (smaller index breaks ties), and print the result.
+    #       Finish with a "VALID <v>/<n>" line.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    results = []
+    valid = 0
+    for _ in range(n):
+        header = data[idx].split(); idx += 1
+        rid = header[0]
+        k = int(header[1])
+        best_text = None
+        best_score = None
+        best_choice = None
+        for ci in range(k):
+            parts = data[idx].split(maxsplit=2); idx += 1
+            score = int(parts[0])
+            finish = parts[1]
+            text = parts[2] if len(parts) > 2 else ""
+            if finish != "stop":
+                continue
+            if best_score is None or score > best_score:
+                best_score = score
+                best_text = text
+                best_choice = ci
+        if best_text is None:
+            results.append(f"{rid}: NO_VALID_CHOICE")
+        else:
+            valid += 1
+            results.append(f"{rid}: [{best_choice}] {best_text}")
+    for r in results:
+        print(r)
+    print(f"VALID {valid}/{n}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "Option A\nOption B", description: "Reads content from choice 0 then choice 1." }
+        { input: "2\nr1 2\n8 stop Use a cache layer.\n5 stop Add an index.\nr2 1\n9 length Streaming the", expected_output: "r1: [0] Use a cache layer.\nr2: NO_VALID_CHOICE\nVALID 1/2", description: "Highest-scoring stop choice wins; a length-only response yields NO_VALID_CHOICE." },
+        { input: "1\nr1 3\n3 length cut off mid\n7 content_filter redacted\n2 stop Final answer here", expected_output: "r1: [2] Final answer here\nVALID 1/1", description: "Unusable finish_reasons are filtered before scoring, so the lone stop choice wins." },
+        { input: "1\nq 2\n5 stop alpha\n5 stop beta", expected_output: "q: [0] alpha\nVALID 1/1", description: "Score tie resolves to the smaller choice index." }
       ]
     },
     {
@@ -472,29 +526,87 @@ cut off`,
         "Use an if/elif to branch on the string value.",
         "\"stop\" prints complete; \"length\" prints cut off."
       ],
-      challenge_title: "Flag truncated answers",
-      challenge_description: "Given a list of responses (each a dict with a finish_reason), print 'OK' for each one whose finish_reason is 'stop', and 'TRUNCATED' for each one whose finish_reason is 'length'. One line per response, in order.",
-      challenge_starter_code: `responses = [
-    {"finish_reason": "stop"},
-    {"finish_reason": "length"},
-    {"finish_reason": "stop"},
-]
-# TODO: print "OK" or "TRUNCATED" for each, one per line.
-`,
-      challenge_solution_code: `responses = [
-    {"finish_reason": "stop"},
-    {"finish_reason": "length"},
-    {"finish_reason": "stop"},
-]
+      challenge_title: "Continuation Retry Engine",
+      challenge_description: "Simulate the retry loop that turns a truncated answer into a finished one: keep issuing continuation calls while finish_reason stays 'length', stop the moment it finishes, give up filtered or budget-blown requests, and tally the call count.",
+      challenge_story: "When the model hits its output cap, the API hands back \`finish_reason == \"length\"\` — a half-written answer. Production systems don't surface that to the user; they fire a **continuation call** to resume generation, and repeat until the model emits a real \`stop\`. But continuations cost money, so you cap them at \`max_retries\`. Your team also learned to **bail immediately** on \`content_filter\` (retrying a blocked completion just wastes calls). Build the retry engine that replays a recorded sequence of finish_reasons for each request and reports the outcome.",
+      challenge_statement: "You are given a retry budget \`max_retries\` and a list of requests. Each request records the **sequence of finish_reasons** its calls returned, in order: the first is the initial call, each later one is a continuation call.\n\nProcess each request's finish_reasons left to right, counting calls as you go:\n\n1. On \`stop\` or \`stop_sequence\`: the answer is complete → outcome \`DELIVERED\`. Stop.\n2. On \`content_filter\`: the content was blocked → outcome \`BLOCKED\`. Stop.\n3. On \`length\`: the answer was truncated. If you have already used \`max_retries\` continuation calls (i.e. the number of continuation calls made so far equals \`max_retries\`), give up with outcome \`TRUNCATED\` and stop. Otherwise issue the next continuation call and read the next finish_reason.\n4. If the recorded sequence runs out while still \`length\`, the outcome is \`TRUNCATED\`.\n\nFor each request print \`<id> <OUTCOME> <calls>\` where \`calls\` is how many calls were actually made. Then print three summary lines: \`DELIVERED <d>\`, \`FAILED <f>\` (everything not delivered), and \`CALLS <c>\` (total calls across all requests).",
+      challenge_input_format: "The first line has two integers `n max_retries`. Each of the next `n` lines describes one request: its id (no spaces) followed by one or more finish_reason tokens, all space-separated.",
+      challenge_output_format: "One line per request: `<id> <OUTCOME> <calls>`. Then `DELIVERED <d>`, `FAILED <f>`, and `CALLS <c>`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0 ≤ max_retries ≤ 100",
+        "Each request lists 1 to 200 finish_reason tokens.",
+        "finish_reason is one of `stop`, `stop_sequence`, `length`, `content_filter`.",
+        "The initial call always happens, so calls ≥ 1 for every request.",
+      ],
+      challenge_examples: [
+        { input: "2 2\nA stop\nB length length stop", output: "A DELIVERED 1\nB DELIVERED 3\nDELIVERED 2\nFAILED 0\nCALLS 4", explanation: "A finishes on its first call. B truncates twice (2 continuations, within the cap of 2) then finally returns stop on call 3." },
+        { input: "2 1\nC length length length\nD length content_filter", output: "C TRUNCATED 2\nD BLOCKED 2\nDELIVERED 0\nFAILED 2\nCALLS 4", explanation: "C truncates on call 1, retries once (the cap), truncates again on call 2 and is abandoned. D truncates then gets blocked on its continuation, so it bails immediately." },
+      ],
+      challenge_notes: "The retry cap counts *continuation* calls, not the initial one: with \`max_retries = 0\` a single \`length\` means instant \`TRUNCATED\` after one call. Bailing on \`content_filter\` instead of retrying is a real cost optimization — a filtered completion will just get filtered again. Notice that \`FAILED\` lumps together \`TRUNCATED\` and \`BLOCKED\`: from the user's perspective, both mean no answer.",
+      challenge_hints: [
+        "Track `calls` per request. After reading a `length`, the number of continuations used so far is `calls - 1`; compare that to `max_retries`.",
+        "Break out of the loop on `stop`/`stop_sequence` (DELIVERED) and on `content_filter` (BLOCKED).",
+        "If the loop ends without a decisive finish_reason, the outcome is TRUNCATED.",
+      ],
+      challenge_starter_code: `import sys
 
-for r in responses:
-    if r["finish_reason"] == "length":
-        print("TRUNCATED")
-    else:
-        print("OK")
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, max_retries = map(int, data[0].split())
+    # TODO: for each request, replay its finish_reasons, counting calls and capping
+    #       continuations at max_retries. Print "<id> <OUTCOME> <calls>" per request,
+    #       then DELIVERED / FAILED / CALLS summary lines.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    max_retries = int(first[1])
+    total_calls = 0
+    delivered = 0
+    failed = 0
+    lines = []
+    for _ in range(n):
+        toks = data[idx].split(); idx += 1
+        rid = toks[0]
+        seq = toks[1:]
+        calls = 0
+        status = "TRUNCATED"
+        for fr in seq:
+            calls += 1
+            if fr in ("stop", "stop_sequence"):
+                status = "DELIVERED"
+                break
+            if fr == "content_filter":
+                status = "BLOCKED"
+                break
+            if calls - 1 >= max_retries:
+                status = "TRUNCATED"
+                break
+        total_calls += calls
+        if status == "DELIVERED":
+            delivered += 1
+        else:
+            failed += 1
+        lines.append(f"{rid} {status} {calls}")
+    for l in lines:
+        print(l)
+    print(f"DELIVERED {delivered}")
+    print(f"FAILED {failed}")
+    print(f"CALLS {total_calls}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "OK\nTRUNCATED\nOK", description: "stop -> OK, length -> TRUNCATED, in order." }
+        { input: "2 2\nA stop\nB length length stop", expected_output: "A DELIVERED 1\nB DELIVERED 3\nDELIVERED 2\nFAILED 0\nCALLS 4", description: "Clean stop vs two truncations recovered by continuations within the cap." },
+        { input: "2 1\nC length length length\nD length content_filter", expected_output: "C TRUNCATED 2\nD BLOCKED 2\nDELIVERED 0\nFAILED 2\nCALLS 4", description: "Cap exhausted -> TRUNCATED; content_filter on a continuation -> BLOCKED." },
+        { input: "1 0\nE length stop", expected_output: "E TRUNCATED 1\nDELIVERED 0\nFAILED 1\nCALLS 1", description: "With zero retries, the first length truncates immediately." }
       ]
     },
     {
@@ -716,22 +828,80 @@ total tokens: 30`,
         "Read the three keys: prompt_tokens, completion_tokens, total_tokens.",
         "Print each on its own line with a label."
       ],
-      challenge_title: "Compute call cost from usage",
-      challenge_description: "Given a usage block, compute the cost of the call. Input is billed at $3 per million tokens, output at $15 per million tokens. Print the total formatted to 6 decimal places, like 'cost: $0.000xyz'.",
-      challenge_starter_code: `usage = {"prompt_tokens": 1000, "completion_tokens": 500, "total_tokens": 1500}
-# Input: $3 per 1,000,000 tokens. Output: $15 per 1,000,000 tokens.
-# TODO: compute the total cost and print it to 6 decimal places.
+      challenge_title: "Multi-Turn Budget Meter",
+      challenge_description: "Bill a whole chatbot conversation turn by turn, watching prompt_tokens balloon as the history re-feeds, and pull the plug the instant the next turn would blow the budget.",
+      challenge_story: "Your support bot re-sends the entire conversation as context on every turn, so the \`prompt_tokens\` in each \`usage\` block grows as the chat goes on — and finance handed you a hard cost ceiling per session. You need a **budget meter**: replay the conversation, compute each turn's cost from its usage, and stop accepting turns the moment the running total would cross the ceiling. Input tokens bill at **\$3 per 1,000,000**, output tokens at **\$15 per 1,000,000**.",
+      challenge_statement: "A session has a system prompt of \`system\` tokens that is always part of the context. Then \`t\` turns happen in order; turn \`i\` adds \`user_i\` new input tokens and produces \`out_i\` output tokens.\n\nThe **prompt tokens** billed for a turn are the entire context fed in: the system prompt, every prior turn's user *and* assistant tokens, plus this turn's new user tokens. After a turn completes, both its user tokens and its output tokens become part of the context for later turns.\n\nA turn's cost in **micro-dollars** (millionths of a dollar) is \`prompt_tokens * 3 + out_tokens * 15\`. You are given a \`budget\` in micro-dollars. Process turns in order; **before** committing each turn, check whether the running total plus this turn's cost would exceed \`budget\`. If it would, halt without running that turn or any later one.\n\nFor each turn you actually run, print \`turn <i>: prompt=<p> completion=<c> cost=$<x>\` where \`<x>\` is that turn's cost in dollars to exactly 6 decimals. Then print \`DELIVERED <count>\`, \`TOTAL $<sum>\` (the committed total to 6 decimals), and either \`WITHIN_BUDGET\` or \`HALTED turn <i>\` for the first turn that was refused.",
+      challenge_input_format: "The first line has two integers `t budget` (the turn count and the budget in micro-dollars). The second line is the integer `system` (system-prompt tokens). Each of the next `t` lines has two integers `user_i out_i`.",
+      challenge_output_format: "One line per delivered turn, then `DELIVERED <count>`, `TOTAL $<sum>`, and a final status line.",
+      challenge_constraints: [
+        "0 ≤ t ≤ 1000",
+        "0 ≤ system, user_i, out_i ≤ 1000000",
+        "0 ≤ budget ≤ 10^15 (micro-dollars)",
+        "Costs use exact integer arithmetic in micro-dollars; print dollar amounts to exactly 6 decimals.",
+        "A turn is allowed when running_total + turn_cost ≤ budget (the boundary is inclusive).",
+      ],
+      challenge_examples: [
+        { input: "2 1000000\n10\n5 20\n8 30", output: "turn 1: prompt=15 completion=20 cost=$0.000345\nturn 2: prompt=43 completion=30 cost=$0.000579\nDELIVERED 2\nTOTAL $0.000924\nWITHIN_BUDGET", explanation: "Turn 1 prompt = system(10)+user(5) = 15; cost = 15*3 + 20*15 = 345 micro = $0.000345. Context grows to 15+20 = 35, so turn 2 prompt = 35+8 = 43. Both fit the budget." },
+        { input: "3 1000\n10\n5 20\n100 200\n50 50", output: "turn 1: prompt=15 completion=20 cost=$0.000345\nDELIVERED 1\nTOTAL $0.000345\nHALTED turn 2", explanation: "Turn 1 costs 345 micro. Turn 2 would cost 135*3 + 200*15 = 3405 micro, pushing the total to 3750 > budget 1000, so the meter halts before running turn 2." },
+      ],
+      challenge_notes: "Keep all money in integer micro-dollars and only divide by 1,000,000 when you print — that avoids float drift and makes the budget boundary exact. The reason \`prompt_tokens\` climbs every turn is that the assistant's own previous replies get re-fed as context, so you pay for the whole transcript again and again. That is exactly why long chats get expensive and why summarizing old turns is a real cost lever.",
+      challenge_hints: [
+        "Carry a running `history` token count starting at `system`; a turn's prompt is `history + user_i`.",
+        "After committing a turn, set `history = prompt_tokens + out_tokens` so both sides of the exchange persist.",
+        "Check `running_total + cost > budget` BEFORE committing; if so, record the halt turn and break.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    t, budget = map(int, data[0].split())
+    system = int(data[1])
+    # TODO: replay the t turns, growing the context each turn, billing in micro-dollars,
+    #       and halting before any turn that would exceed the budget. Print each delivered
+    #       turn, then DELIVERED / TOTAL / status lines.
+
+main()
 `,
-      challenge_solution_code: `usage = {"prompt_tokens": 1000, "completion_tokens": 500, "total_tokens": 1500}
+      challenge_solution_code: `import sys
 
-input_cost = usage["prompt_tokens"] / 1_000_000 * 3
-output_cost = usage["completion_tokens"] / 1_000_000 * 15
-total = input_cost + output_cost
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    t = int(first[0])
+    budget = int(first[1])
+    system = int(data[idx]); idx += 1
+    history = system
+    total_cost = 0
+    delivered = 0
+    halted_turn = -1
+    for turn in range(1, t + 1):
+        parts = data[idx].split(); idx += 1
+        user_tokens = int(parts[0])
+        out_tokens = int(parts[1])
+        prompt_tokens = history + user_tokens
+        cost = prompt_tokens * 3 + out_tokens * 15
+        if total_cost + cost > budget:
+            halted_turn = turn
+            break
+        total_cost += cost
+        delivered += 1
+        history = prompt_tokens + out_tokens
+        print(f"turn {turn}: prompt={prompt_tokens} completion={out_tokens} cost=\${cost/1_000_000:.6f}")
+    print(f"DELIVERED {delivered}")
+    print(f"TOTAL \${total_cost/1_000_000:.6f}")
+    if halted_turn != -1:
+        print(f"HALTED turn {halted_turn}")
+    else:
+        print("WITHIN_BUDGET")
 
-print(f"cost: \${total:.6f}")
+main()
 `,
       challenge_test_cases: [
-        { input: "prompt=1000, completion=500", expected_output: "cost: $0.010500", description: "1000 input ($0.003) + 500 output ($0.0075) = $0.0105." }
+        { input: "2 1000000\n10\n5 20\n8 30", expected_output: "turn 1: prompt=15 completion=20 cost=$0.000345\nturn 2: prompt=43 completion=30 cost=$0.000579\nDELIVERED 2\nTOTAL $0.000924\nWITHIN_BUDGET", description: "Context grows across turns; both fit the budget." },
+        { input: "3 1000\n10\n5 20\n100 200\n50 50", expected_output: "turn 1: prompt=15 completion=20 cost=$0.000345\nDELIVERED 1\nTOTAL $0.000345\nHALTED turn 2", description: "Meter halts before the turn that would exceed the budget." },
+        { input: "1 344\n10\n5 20", expected_output: "DELIVERED 0\nTOTAL $0.000000\nHALTED turn 1", description: "A budget one micro-dollar short of the first turn's cost halts immediately." }
       ]
     },
     {
@@ -947,21 +1117,84 @@ print(generate_with_stop(raw, "\\nQ:"))
         "Slice the string up to that index with full_output[:idx] to keep only what comes before.",
         "If find returns -1, the stop string never appeared, so return the whole output unchanged."
       ],
-      challenge_title: "Apply a stop sequence",
-      challenge_description: "Write a function apply_stop(text, stop) that returns the portion of text before the first occurrence of stop. If stop is not found, return text unchanged. Test it on two cases and print each result.",
-      challenge_starter_code: `# TODO: define apply_stop(text, stop) and test it on two cases.
-`,
-      challenge_solution_code: `def apply_stop(text, stop):
-    idx = text.find(stop)
-    if idx == -1:
-        return text
-    return text[:idx]
+      challenge_title: "Earliest-Wins Stop Sequence Cutter",
+      challenge_description: "Apply a whole set of stop sequences to a generated buffer at once: find the one that fires earliest, slice the output there, and report whether the model stopped on a tripwire or just ran to the end.",
+      challenge_story: "You configured your API call with **several stop sequences** — a Q&A turn marker, a code-fence closer, a custom \`<<<END>>>\` sentinel — because any of them should end generation. The model streamed a raw buffer back to you; now you have to post-process it exactly like the API does: scan for **every** configured stop string and cut at whichever one appears **first** in the text. If none appears, the model never hit a tripwire and you'll treat it as having run to the length cap.",
+      challenge_statement: "You are given \`k\` stop sequences and one generated \`text\` buffer. In both the stop sequences and the text, the two-character escapes \`\\n\` and \`\\t\` represent a real newline and tab respectively — decode them before searching.\n\nFind, among all stop sequences, the one whose **first occurrence** in the text starts at the smallest index. If two stop sequences first appear at the same index, prefer the **shorter** one (it ends generation sooner). Keep only the text **before** that index.\n\n- If some stop sequence is found, the finish reason is \`stop_sequence\` and the kept text is everything before the match.\n- If no stop sequence appears anywhere, the finish reason is \`length\` and the kept text is the whole buffer.\n\nPrint three lines: the kept text (with real newlines/tabs re-escaped back to \`\\n\`/\`\\t\`), then \`FINISH <reason>\`, then \`KEPT <n>\` where \`n\` is the number of characters kept (counting a real newline/tab as one character).",
+      challenge_input_format: "The first line is the integer `k`. The next `k` lines are the stop sequences (one per line, escapes allowed). The line after that is the generated text buffer (escapes allowed).",
+      challenge_output_format: "Three lines: the kept text (escaped), `FINISH stop_sequence` or `FINISH length`, and `KEPT <n>`.",
+      challenge_constraints: [
+        "1 ≤ k ≤ 50",
+        "Each stop sequence is 1 to 50 characters after decoding and is non-empty.",
+        "The text buffer is 0 to 100000 characters after decoding.",
+        "Only `\\n` and `\\t` are escaped; all other characters are literal.",
+        "Position ties are broken by the shorter stop sequence.",
+      ],
+      challenge_examples: [
+        { input: "2\n\\nQ:\nEND\nParis.\\nQ: next", output: "Paris.\nFINISH stop_sequence\nKEPT 6", explanation: "Decoded, the text is `Paris.<newline>Q: next`. The stop `<newline>Q:` first appears at index 6 (the literal `END` never appears), so everything before it — `Paris.` (6 chars) — is kept." },
+        { input: "1\n###\nplain text no marker", output: "plain text no marker\nFINISH length\nKEPT 20", explanation: "The stop sequence `###` never appears, so nothing is cut: the whole 20-character buffer is kept and the finish reason is `length`." },
+      ],
+      challenge_notes: "Real APIs apply all your stop sequences simultaneously and cut at the earliest hit — that's why a too-common stop string (like a single space) can chop answers off almost immediately. Decoding \`\\n\`/\`\\t\` lets the test cases express multi-line buffers on a single input line. The shorter-on-tie rule keeps the cut deterministic when one stop sequence is a prefix of another at the same spot.",
+      challenge_hints: [
+        "Decode `\\n` and `\\t` in every stop sequence and in the text before you search.",
+        "Use `text.find(stop)`; it returns the first index or -1. Track the smallest non-negative index, breaking ties by shorter stop length.",
+        "Re-escape real newlines/tabs back to `\\n`/`\\t` when printing the kept text, but count characters on the decoded string.",
+      ],
+      challenge_starter_code: `import sys
 
-print(apply_stop("Paris.\\nQ: next question", "\\nQ:"))
-print(apply_stop("No marker here", "\\nQ:"))
+def main():
+    data = sys.stdin.read().split("\\n")
+    k = int(data[0])
+    # TODO: read k stop sequences and the text, decode the \\\\n and \\\\t escapes, find the
+    #       earliest stop (shorter wins ties), slice the text, and print the kept text
+    #       plus FINISH and KEPT lines.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def dec(s):
+    return s.replace("\\\\t", "\\t").replace("\\\\n", "\\n")
+
+def enc(s):
+    return s.replace("\\n", "\\\\n").replace("\\t", "\\\\t")
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    k = int(data[idx]); idx += 1
+    stops = []
+    for _ in range(k):
+        stops.append(dec(data[idx])); idx += 1
+    text = dec(data[idx]) if idx < len(data) else ""
+
+    best_idx = -1
+    best_len = None
+    for s in stops:
+        pos = text.find(s)
+        if pos == -1:
+            continue
+        if best_idx == -1 or pos < best_idx or (pos == best_idx and len(s) < best_len):
+            best_idx = pos
+            best_len = len(s)
+
+    if best_idx == -1:
+        kept = text
+        reason = "length"
+    else:
+        kept = text[:best_idx]
+        reason = "stop_sequence"
+
+    print(enc(kept))
+    print(f"FINISH {reason}")
+    print(f"KEPT {len(kept)}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "text contains the stop string", expected_output: "Paris.\nNo marker here", description: "First case cuts at the stop string; second returns the text unchanged." }
+        { input: "2\n\\nQ:\nEND\nParis.\\nQ: next", expected_output: "Paris.\nFINISH stop_sequence\nKEPT 6", description: "Earliest stop sequence wins; text before it is kept." },
+        { input: "1\n###\nplain text no marker", expected_output: "plain text no marker\nFINISH length\nKEPT 20", description: "No stop appears, so the finish reason is length and nothing is cut." },
+        { input: "1\nX\nXhello", expected_output: "\nFINISH stop_sequence\nKEPT 0", description: "A stop at index 0 keeps an empty string." }
       ]
     }
   ]

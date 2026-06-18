@@ -223,24 +223,68 @@ cat . car = 9`,
         "magnitude: square every component with x * x, sum them, then take math.sqrt.",
         "Round only for display: round(value, 3) keeps three decimals."
       ],
-      challenge_title: "Straight-line distance",
-      challenge_description: "Write euclidean(a, b) returning the straight-line distance between two equal-length vectors: sqrt of the sum of squared differences.",
-      challenge_starter_code: `import math
+      challenge_title: "Nearest Neighbor in Embedding Space",
+      challenge_description: "Given a query embedding and a catalog of named embeddings, print the one closest by Euclidean distance.",
+      challenge_story: "You are building the retrieval layer of an AI photo-tagging service. Every image has already been turned into an embedding vector by an upstream model, and so has the user's query image. The whole product hinges on one operation: *which stored image sits closest to this query in embedding space?* Closest dot on the map wins. You measure closeness the most literal way there is — straight-line (Euclidean) distance — and return the winning tag so the rest of the pipeline can act on it.",
+      challenge_statement: "You are given a **query vector** and a catalog of **N named vectors**, all of dimension **D**. Find the catalog entry whose vector has the **smallest Euclidean distance** to the query.\n\nThe Euclidean distance between vectors `a` and `b` is `sqrt(sum((a_i - b_i)^2))`.\n\nIf two or more entries tie for the smallest distance, choose the one whose **name is lexicographically smallest**. Print that name and its distance.",
+      challenge_input_format: "The first line holds two integers `N` and `D`.\nThe second line holds `D` integers: the query vector.\nEach of the next `N` lines holds a name (a string with no spaces) followed by `D` integers: that catalog entry's vector.",
+      challenge_output_format: "One line: the winning name, a single space, then the Euclidean distance to the query formatted to exactly **4 decimal places**.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "1 ≤ D ≤ 64",
+        "-1000 ≤ each coordinate ≤ 1000",
+        "Names are non-empty, contain no whitespace, and are unique"
+      ],
+      challenge_examples: [
+        { input: "3 2\n0 0\ncat 3 4\nkitten 1 1\ncar 6 8", output: "kitten 1.4142", explanation: "Distances from (0,0): cat = 5, kitten = sqrt(2) ≈ 1.4142, car = 10. Kitten is closest." },
+        { input: "1 2\n7 7\nonly 0 0", output: "only 9.8995", explanation: "With one entry it always wins; distance = sqrt(49+49) = sqrt(98) ≈ 9.8995." }
+      ],
+      challenge_notes: "Compare squared distances while searching to avoid needless `sqrt` calls, then take the square root only once for the final print. The lexicographic tie-break makes the answer deterministic when two vectors are equally close.",
+      challenge_hints: [
+        "Read all tokens at once with `sys.stdin.read().split()` and walk an index, since vectors span the line in fixed-size chunks of D.",
+        "Track the best distance as a squared value; only the relative order matters during the search.",
+        "On a tie (equal squared distance), keep the entry whose name compares smaller with `<`.",
+        "Format the final distance with an f-string: `f\"{dist:.4f}\"`."
+      ],
+      challenge_starter_code: `import sys, math
 
-def euclidean(a, b):
-    # sqrt of sum of (a_i - b_i) squared
-    pass
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    d = int(data[idx]); idx += 1
+    query = [int(data[idx + i]) for i in range(d)]; idx += d
+    # TODO: scan the N catalog entries, find the nearest by Euclidean distance,
+    # break ties by smallest name, then print "name distance" (4 decimals).
 
-print(round(euclidean([1, 2], [4, 6]), 1))`,
-      challenge_solution_code: `import math
+main()`,
+      challenge_solution_code: `import sys, math
 
-def euclidean(a, b):
-    return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    d = int(data[idx]); idx += 1
+    query = [int(data[idx + i]) for i in range(d)]; idx += d
+    best_name = None
+    best_dist_sq = None
+    for _ in range(n):
+        name = data[idx]; idx += 1
+        vec = [int(data[idx + i]) for i in range(d)]; idx += d
+        dist_sq = sum((a - b) ** 2 for a, b in zip(query, vec))
+        if (best_dist_sq is None
+                or dist_sq < best_dist_sq
+                or (dist_sq == best_dist_sq and name < best_name)):
+            best_dist_sq = dist_sq
+            best_name = name
+    print(f"{best_name} {math.sqrt(best_dist_sq):.4f}")
 
-print(round(euclidean([1, 2], [4, 6]), 1))`,
+main()`,
       challenge_test_cases: [
-        { input: "euclidean([1, 2], [4, 6])", expected_output: "5.0", description: "3-4-5 triangle: differences are 3 and 4, distance is 5." },
-        { input: "euclidean([0, 0, 0], [0, 0, 0])", expected_output: "0.0", description: "Identical vectors have zero distance." }
+        { input: "3 2\n0 0\ncat 3 4\nkitten 1 1\ncar 6 8", expected_output: "kitten 1.4142", description: "Example 1: kitten is closest to the origin query." },
+        { input: "1 2\n7 7\nonly 0 0", expected_output: "only 9.8995", description: "Example 2: single entry always wins." },
+        { input: "4 3\n2 2 2\nalpha 2 2 2\nbeta 5 5 5\ngamma 0 0 0\ndelta 3 3 3", expected_output: "alpha 0.0000", description: "Edge: an exact match yields distance 0." },
+        { input: "2 2\n0 0\nfar 3 0\nnear 2 0", expected_output: "near 2.0000", description: "Edge: straightforward 1-D-style separation along one axis." }
       ]
     },
     {
@@ -482,9 +526,31 @@ The Notebook: 0.256`,
         "Collect (name, score) tuples in a list so you can sort them.",
         "Sort descending with scores.sort(key=lambda x: -x[1]) so the closest match prints first."
       ],
-      challenge_title: "Find the best match",
-      challenge_description: "Write most_similar(target, items) that returns the name of the item whose vector has the highest cosine similarity to target. items is a dict of name to vector.",
-      challenge_starter_code: `import math
+      challenge_title: "Closest by Angle",
+      challenge_description: "Pick the catalog vector most aligned with a query by cosine similarity, ignoring length entirely.",
+      challenge_story: "Your semantic search backend keeps surfacing long documents over short ones simply because longer text produces longer vectors, and raw dot product rewards length. Product is furious: a three-word support ticket that perfectly answers the query keeps losing to a rambling, half-relevant FAQ. The fix is to rank by **direction, not length** — cosine similarity. Re-rank the candidates so the one pointing most truly at the query wins, no matter how long or short its vector is.",
+      challenge_statement: "You are given **N** named candidate vectors and one **query** vector, all of dimension **D**. Print the candidate with the **highest cosine similarity** to the query.\n\nCosine similarity is `dot(a, b) / (magnitude(a) * magnitude(b))`, the cosine of the angle between the two vectors.\n\nIf two candidates tie for the highest similarity, choose the one whose **name is lexicographically smallest**. Print that name and its cosine similarity.",
+      challenge_input_format: "The first line holds two integers `N` and `D`.\nEach of the next `N` lines holds a name (no spaces) followed by `D` numbers: that candidate's vector.\nThe final line holds `D` numbers: the query vector.",
+      challenge_output_format: "One line: the winning name, a single space, then the cosine similarity formatted to exactly **4 decimal places**.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "1 ≤ D ≤ 64",
+        "Coordinates are real numbers with magnitude up to 1000",
+        "No candidate vector and no query vector is all zeros",
+        "Names are non-empty, contain no whitespace, and are unique"
+      ],
+      challenge_examples: [
+        { input: "3 3\nDieHard 0.9 0.1 0.2\nNotebook 0.1 0.9 0.2\nMadMax 0.95 0.05 0.1\n0.9 0.1 0.2", output: "DieHard 1.0000", explanation: "The query is exactly DieHard's vector, so DieHard scores a perfect 1.0000 — same direction." },
+        { input: "2 2\nalpha 2 0\nbeta 4 0\n1 0", output: "alpha 1.0000", explanation: "Both alpha and beta point along the x-axis, so both score 1.0000; the lexicographic tie-break picks alpha." }
+      ],
+      challenge_notes: "Cosine ignores magnitude, which is exactly why alpha (length 2) and beta (length 4) tie above: only their shared direction matters. Compute `dot` and `magnitude` as small helpers and combine them — you will reuse this pattern in every later lesson.",
+      challenge_hints: [
+        "Read line by line so each candidate's name and numbers stay together.",
+        "cosine(a, b) = dot(a, b) / (magnitude(a) * magnitude(b)); build dot and magnitude as helpers.",
+        "Track the best score with a small epsilon so floating-point ties are detected, then break ties by smaller name.",
+        "Print with `f\"{name} {score:.4f}\"`."
+      ],
+      challenge_starter_code: `import sys, math
 
 def dot(a, b):
     return sum(x * y for x, y in zip(a, b))
@@ -495,13 +561,14 @@ def magnitude(v):
 def cosine(a, b):
     return dot(a, b) / (magnitude(a) * magnitude(b))
 
-def most_similar(target, items):
-    # return the name with the highest cosine to target
-    pass
+def main():
+    lines = sys.stdin.read().split("\\n")
+    n, d = map(int, lines[0].split())
+    # TODO: parse N candidates, then the query line, rank by cosine,
+    # break ties by smallest name, print "name score" (4 decimals).
 
-items = {"a": [1, 0], "b": [0, 1], "c": [0.9, 0.1]}
-print(most_similar([1, 0], items))`,
-      challenge_solution_code: `import math
+main()`,
+      challenge_solution_code: `import sys, math
 
 def dot(a, b):
     return sum(x * y for x, y in zip(a, b))
@@ -512,21 +579,34 @@ def magnitude(v):
 def cosine(a, b):
     return dot(a, b) / (magnitude(a) * magnitude(b))
 
-def most_similar(target, items):
-    best = None
-    best_score = -2
-    for name, vec in items.items():
-        score = cosine(target, vec)
-        if score > best_score:
+def main():
+    lines = sys.stdin.read().split("\\n")
+    pos = 0
+    n, d = map(int, lines[pos].split()); pos += 1
+    items = []
+    for _ in range(n):
+        parts = lines[pos].split(); pos += 1
+        name = parts[0]
+        vec = [float(x) for x in parts[1:1 + d]]
+        items.append((name, vec))
+    query = [float(x) for x in lines[pos].split()[:d]]
+    best_name = None
+    best_score = None
+    for name, vec in items:
+        score = cosine(query, vec)
+        if (best_score is None
+                or score > best_score + 1e-12
+                or (abs(score - best_score) <= 1e-12 and name < best_name)):
             best_score = score
-            best = name
-    return best
+            best_name = name
+    print(f"{best_name} {best_score:.4f}")
 
-items = {"a": [1, 0], "b": [0, 1], "c": [0.9, 0.1]}
-print(most_similar([1, 0], items))`,
+main()`,
       challenge_test_cases: [
-        { input: "most_similar([1, 0], {'a': [1, 0], 'b': [0, 1], 'c': [0.9, 0.1]})", expected_output: "a", description: "Exact match 'a' points the same direction as the target." },
-        { input: "most_similar([0, 1], {'a': [1, 0], 'b': [0, 1]})", expected_output: "b", description: "'b' aligns with the target while 'a' is perpendicular." }
+        { input: "3 3\nDieHard 0.9 0.1 0.2\nNotebook 0.1 0.9 0.2\nMadMax 0.95 0.05 0.1\n0.9 0.1 0.2", expected_output: "DieHard 1.0000", description: "Example 1: identical direction scores 1.0." },
+        { input: "2 2\nalpha 2 0\nbeta 4 0\n1 0", expected_output: "alpha 1.0000", description: "Example 2: cosine ignores length; tie broken by name." },
+        { input: "2 2\na 1 0\nb 0 1\n1 0", expected_output: "a 1.0000", description: "Edge: 'a' aligns, 'b' is perpendicular (score 0)." },
+        { input: "4 3\nA 1 2 2\nB 2 1 2\nC 0 0 5\nD 3 0 0\n2 2 1", expected_output: "A 0.8889", description: "Edge: best alignment is a non-trivial angle." }
       ]
     },
     {
@@ -765,31 +845,62 @@ cosine(a,b) = 0.96`,
         "A correctly normalized vector should report magnitude 1.0.",
         "The last two prints should match: that's the proof that normalized dot equals cosine."
       ],
-      challenge_title: "Build normalize",
-      challenge_description: "Implement normalize(v) so it returns a unit vector pointing the same direction as v. Assume v is never all zeros.",
-      challenge_starter_code: `import math
+      challenge_title: "Pre-Normalize the Index",
+      challenge_description: "Convert a batch of embeddings into unit vectors so query time can skip the square roots.",
+      challenge_story: "Your vector database is about to serve millions of queries a second, and every query currently pays for two magnitude computations (two square roots) per comparison. A senior engineer points out the classic trick: **normalize every vector once at index time**, store the unit vectors, and cosine similarity collapses into a plain dot product at query time. Your job is the offline batch step — take the raw embeddings being ingested and emit their normalized forms. A zero vector (rare, but it happens with corrupt rows) has no direction, so it stays all zeros.",
+      challenge_statement: "You are given **N** vectors of dimension **D**. For each one, output its **normalized (unit) vector**: divide every component by the vector's magnitude `sqrt(sum(x_i^2))`.\n\nIf a vector is **all zeros**, its magnitude is 0 and it has no direction — output it unchanged as a vector of zeros.",
+      challenge_input_format: "The first line holds two integers `N` and `D`.\nEach of the next `N` lines holds `D` numbers: one vector.",
+      challenge_output_format: "Output `N` lines. Line `i` holds the `D` components of the `i`-th normalized vector, space-separated, each formatted to exactly **4 decimal places**.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "1 ≤ D ≤ 64",
+        "Coordinates are real numbers with magnitude up to 1000"
+      ],
+      challenge_examples: [
+        { input: "3 2\n3 4\n0 5\n0 0", output: "0.6000 0.8000\n0.0000 1.0000\n0.0000 0.0000", explanation: "(3,4) has magnitude 5 → (0.6, 0.8). (0,5) has magnitude 5 → (0, 1). (0,0) has no direction, so it stays zero." },
+        { input: "1 3\n2 3 6", output: "0.2857 0.4286 0.8571", explanation: "Magnitude is sqrt(4+9+36)=7, so divide each component by 7." }
+      ],
+      challenge_notes: "Once vectors are unit-length, `cosine(a, b)` simplifies to `dot(a, b)` because both magnitudes are 1 — that is the whole point of normalizing the index ahead of time. Guard the zero vector explicitly so you never divide by zero.",
+      challenge_hints: [
+        "magnitude(v) = sqrt(sum(x*x for x in v)).",
+        "If the magnitude is exactly 0, emit a row of zeros instead of dividing.",
+        "Otherwise each component becomes x / magnitude.",
+        "Build each output line with `' '.join(f\"{u:.4f}\" for u in unit)`."
+      ],
+      challenge_starter_code: `import sys, math
 
-def magnitude(v):
-    return math.sqrt(sum(x * x for x in v))
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    d = int(data[idx]); idx += 1
+    # TODO: for each of the N vectors, print its unit vector (4 decimals),
+    # leaving an all-zero vector unchanged.
 
-def normalize(v):
-    # return the unit vector
-    pass
+main()`,
+      challenge_solution_code: `import sys, math
 
-print(normalize([3, 4]))`,
-      challenge_solution_code: `import math
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    d = int(data[idx]); idx += 1
+    out_lines = []
+    for _ in range(n):
+        vec = [float(data[idx + i]) for i in range(d)]; idx += d
+        m = math.sqrt(sum(x * x for x in vec))
+        if m == 0.0:
+            unit = [0.0] * d
+        else:
+            unit = [x / m for x in vec]
+        out_lines.append(" ".join(f"{u:.4f}" for u in unit))
+    print("\\n".join(out_lines))
 
-def magnitude(v):
-    return math.sqrt(sum(x * x for x in v))
-
-def normalize(v):
-    m = magnitude(v)
-    return [x / m for x in v]
-
-print(normalize([3, 4]))`,
+main()`,
       challenge_test_cases: [
-        { input: "normalize([3, 4])", expected_output: "[0.6, 0.8]", description: "Magnitude 5, so each component is divided by 5." },
-        { input: "normalize([0, 5])", expected_output: "[0.0, 1.0]", description: "Already axis-aligned: divides by magnitude 5 to length 1." }
+        { input: "3 2\n3 4\n0 5\n0 0", expected_output: "0.6000 0.8000\n0.0000 1.0000\n0.0000 0.0000", description: "Example 1: includes the zero-vector edge case." },
+        { input: "1 3\n2 3 6", expected_output: "0.2857 0.4286 0.8571", description: "Example 2: magnitude 7." },
+        { input: "2 2\n-3 4\n5 0", expected_output: "-0.6000 0.8000\n1.0000 0.0000", description: "Edge: negative components keep their sign after scaling." }
       ]
     },
     {
@@ -1052,22 +1163,93 @@ Because you liked Interstellar:
         "Sort descending: scored.sort(key=lambda x: -x[1]).",
         "Slice the top n with scored[:n] and return it."
       ],
-      challenge_title: "Recommend for a user",
-      challenge_description: "Write average_vectors(vecs) that returns the element-wise average of a list of equal-length vectors. This is the taste vector for a user who liked several movies.",
-      challenge_starter_code: `def average_vectors(vecs):
-    # element-wise average of all vectors in the list
-    pass
+      challenge_title: "Recommend From a Taste Profile",
+      challenge_description: "Average a user's liked-movie vectors into a taste profile, then recommend the unseen movie closest to it.",
+      challenge_statement: "You are building the core of a movie recommender. A user has rated some movies, and you have an embedding for every movie in the catalog.\n\nBuild the user's **taste vector** as the **element-wise average** of the vectors of the movies they liked. Then score every movie the user has **not** liked by cosine similarity to the taste vector, and recommend the highest-scoring one.\n\nNever recommend a movie the user already liked (it would score near-perfectly against a taste vector built partly from itself). If two unseen movies tie for the top score, choose the one whose **name is lexicographically smallest**.",
+      challenge_story: "It is launch week for the recommendations tab. The model team handed you embeddings for the whole catalog; your job is the logic that turns *\"movies this user loved\"* into *\"one movie to suggest next.\"* The trick everyone uses: blend the liked movies into a single **taste vector** (just average them), then find the unseen movie whose vector points most the same way. Skip anything they have already seen — recommending a movie back to the person who just rated it is the fastest way to look broken.",
+      challenge_input_format: "The first line holds two integers `N` and `D` — the catalog size and embedding dimension.\nEach of the next `N` lines holds a movie name (no spaces) followed by `D` numbers: that movie's vector.\nThe final line holds the space-separated names of the movies the user liked (at least one).",
+      challenge_output_format: "One line: the recommended movie's name, a single space, then its cosine similarity to the taste vector formatted to exactly **4 decimal places**.",
+      challenge_constraints: [
+        "1 ≤ number of liked movies < N ≤ 1000",
+        "1 ≤ D ≤ 64",
+        "Coordinates are real numbers with magnitude up to 1000",
+        "No catalog vector is all zeros, and the taste vector is never all zeros",
+        "Every liked name appears in the catalog; names are unique"
+      ],
+      challenge_examples: [
+        { input: "4 3\nDieHard 0.9 0.1 0.2\nNotebook 0.1 0.9 0.2\nMadMax 0.95 0.05 0.1\nBridesmaids 0.2 0.4 0.9\nDieHard MadMax", output: "Bridesmaids 0.3705", explanation: "Taste = average of DieHard and MadMax = (0.925, 0.075, 0.15). DieHard and MadMax are excluded as already liked, so the recommender ranks the two remaining films; Bridesmaids edges out Notebook." },
+        { input: "3 2\nA 1 0\nB 0 1\nC 0.9 0.1\nA", output: "C 0.9939", explanation: "Taste is just A's vector (1, 0). Of the unseen movies, C points almost the same way (score 0.9939) while B is perpendicular." }
+      ],
+      challenge_notes: "The taste vector is a blended 'smoothie' of everything the user liked; cosine then finds the unseen movie that 'tastes' most like that blend. Excluding the seed movies is the single most common bug in a first recommender — guard it with a set lookup.",
+      challenge_hints: [
+        "Store the catalog as a dict name → vector, and remember insertion order for deterministic iteration.",
+        "taste[i] = average of liked_vec[i] over all liked movies.",
+        "Put the liked names in a set and `continue` past them while scoring.",
+        "Rank by cosine with an epsilon tie-check, breaking ties on the smaller name."
+      ],
+      challenge_starter_code: `import sys, math
 
-print(average_vectors([[1.0, 0.0], [0.0, 1.0]]))`,
-      challenge_solution_code: `def average_vectors(vecs):
-    n = len(vecs)
-    dim = len(vecs[0])
-    return [sum(v[i] for v in vecs) / n for i in range(dim)]
+def dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
 
-print(average_vectors([[1.0, 0.0], [0.0, 1.0]]))`,
+def magnitude(v):
+    return math.sqrt(sum(x * x for x in v))
+
+def cosine(a, b):
+    return dot(a, b) / (magnitude(a) * magnitude(b))
+
+def main():
+    lines = sys.stdin.read().split("\\n")
+    n, d = map(int, lines[0].split())
+    # TODO: read the catalog, read the liked names, build the average taste
+    # vector, then recommend the best unseen movie (exclude liked ones).
+
+main()`,
+      challenge_solution_code: `import sys, math
+
+def dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
+
+def magnitude(v):
+    return math.sqrt(sum(x * x for x in v))
+
+def cosine(a, b):
+    return dot(a, b) / (magnitude(a) * magnitude(b))
+
+def main():
+    lines = sys.stdin.read().split("\\n")
+    pos = 0
+    n, d = map(int, lines[pos].split()); pos += 1
+    catalog = {}
+    order = []
+    for _ in range(n):
+        parts = lines[pos].split(); pos += 1
+        name = parts[0]
+        catalog[name] = [float(x) for x in parts[1:1 + d]]
+        order.append(name)
+    liked = lines[pos].split(); pos += 1
+    liked_vecs = [catalog[name] for name in liked]
+    k = len(liked_vecs)
+    taste = [sum(v[i] for v in liked_vecs) / k for i in range(d)]
+    liked_set = set(liked)
+    best_name = None
+    best_score = None
+    for name in order:
+        if name in liked_set:
+            continue
+        score = cosine(taste, catalog[name])
+        if (best_score is None
+                or score > best_score + 1e-12
+                or (abs(score - best_score) <= 1e-12 and name < best_name)):
+            best_score = score
+            best_name = name
+    print(f"{best_name} {best_score:.4f}")
+
+main()`,
       challenge_test_cases: [
-        { input: "average_vectors([[1.0, 0.0], [0.0, 1.0]])", expected_output: "[0.5, 0.5]", description: "Average of two opposite unit vectors lands in the middle." },
-        { input: "average_vectors([[2.0, 4.0], [4.0, 8.0]])", expected_output: "[3.0, 6.0]", description: "Component-wise mean of the two vectors." }
+        { input: "4 3\nDieHard 0.9 0.1 0.2\nNotebook 0.1 0.9 0.2\nMadMax 0.95 0.05 0.1\nBridesmaids 0.2 0.4 0.9\nDieHard MadMax", expected_output: "Bridesmaids 0.3705", description: "Example 1: two liked movies excluded; best of the rest recommended." },
+        { input: "3 2\nA 1 0\nB 0 1\nC 0.9 0.1\nA", expected_output: "C 0.9939", description: "Example 2: single liked movie, C is the closest unseen one." },
+        { input: "5 2\nm1 1 0\nm2 0 1\nm3 1 1\nm4 2 0\nm5 0 2\nm1 m2", expected_output: "m3 1.0000", description: "Edge: taste (0.5, 0.5) aligns perfectly with diagonal m3." }
       ]
     },
     {
@@ -1325,9 +1507,31 @@ Top matches (semantic):
         "Sort descending with key=lambda x: -x[1] so the closest doc is first.",
         "Notice the 'login' doc ranks 2nd despite sharing no words with the query: that's semantic matching."
       ],
-      challenge_title: "Top-K results",
-      challenge_description: "Write top_k(query_vec, docs, k) that returns a list of just the k document names with the highest cosine similarity to the query, best first.",
-      challenge_starter_code: `import math
+      challenge_title: "Top-K Semantic Retrieval",
+      challenge_description: "Return the K documents most semantically similar to a query embedding, best first — the retrieval core of a RAG system.",
+      challenge_story: "You are wiring up the retrieval step of a RAG (retrieval-augmented generation) assistant. Before the language model answers, your code has to pull the **K most relevant document chunks** out of the knowledge base and hand them over as context. Keyword search would miss a chunk about 'sign in' when the user types 'login isn't working' — but embeddings match on meaning, not spelling. Each chunk is already an embedding; so is the query. Rank by cosine similarity and return the top K, highest first.",
+      challenge_statement: "You are given **N** document embeddings, a positive integer **K**, and one **query** embedding, all of dimension **D**. Return the **K documents with the highest cosine similarity** to the query, ordered from highest to lowest.\n\nIf two documents have equal cosine similarity, order them by **lexicographically smallest name first**. It is guaranteed that `K ≤ N`.",
+      challenge_input_format: "The first line holds three integers `N`, `D`, and `K`.\nEach of the next `N` lines holds a document name (no spaces) followed by `D` numbers: that document's embedding.\nThe final line holds `D` numbers: the query embedding.",
+      challenge_output_format: "Output `K` lines, best match first. Each line holds a document name, a single space, then its cosine similarity to the query formatted to exactly **4 decimal places**.",
+      challenge_constraints: [
+        "1 ≤ K ≤ N ≤ 1000",
+        "1 ≤ D ≤ 64",
+        "Coordinates are real numbers with magnitude up to 1000",
+        "No document vector and no query vector is all zeros",
+        "Names are non-empty, contain no whitespace, and are unique"
+      ],
+      challenge_examples: [
+        { input: "4 3 3\nlogin_help 0.9 0.1 0.0\nreset_password 0.85 0.15 0.0\nbilling_faq 0.0 0.1 0.9\nsearch_tips 0.1 0.8 0.1\n0.9 0.1 0.0", output: "login_help 1.0000\nreset_password 0.9980\nsearch_tips 0.2311", explanation: "The query matches login_help exactly (1.0000). reset_password is nearly identical in direction (0.9980). search_tips edges out billing_faq for the third slot." },
+        { input: "3 2 2\nx 1 0\ny 0 1\nz 0.8 0.2\n1 0", output: "x 1.0000\nz 0.9701", explanation: "x is an exact direction match; z leans the same way; y is perpendicular and falls outside the top 2." }
+      ],
+      challenge_notes: "This is the retrieval half of RAG: the K rows you print become the context the language model reads. Sorting by `(-score, name)` gives both 'best first' and a deterministic tie-break in a single key. At real scale you would precompute normalized vectors (last lesson) so each comparison is a bare dot product.",
+      challenge_hints: [
+        "Score every document with cosine, collecting (name, score) pairs.",
+        "Sort with `key=lambda t: (-t[1], t[0])` so higher scores come first and ties break by name.",
+        "Slice the first K results after sorting.",
+        "Print each kept pair as `f\"{name} {score:.4f}\"`."
+      ],
+      challenge_starter_code: `import sys, math
 
 def dot(a, b):
     return sum(x * y for x, y in zip(a, b))
@@ -1338,13 +1542,14 @@ def magnitude(v):
 def cosine(a, b):
     return dot(a, b) / (magnitude(a) * magnitude(b))
 
-def top_k(query_vec, docs, k):
-    # return the k closest document names, best first
-    pass
+def main():
+    lines = sys.stdin.read().split("\\n")
+    n, d, k = map(int, lines[0].split())
+    # TODO: read N documents and the query, rank by cosine similarity,
+    # break ties by name, and print the top K as "name score" (4 decimals).
 
-docs = {"x": [1, 0], "y": [0, 1], "z": [0.8, 0.2]}
-print(top_k([1, 0], docs, 2))`,
-      challenge_solution_code: `import math
+main()`,
+      challenge_solution_code: `import sys, math
 
 def dot(a, b):
     return sum(x * y for x, y in zip(a, b))
@@ -1355,16 +1560,27 @@ def magnitude(v):
 def cosine(a, b):
     return dot(a, b) / (magnitude(a) * magnitude(b))
 
-def top_k(query_vec, docs, k):
-    scored = [(doc, cosine(query_vec, vec)) for doc, vec in docs.items()]
-    scored.sort(key=lambda x: -x[1])
-    return [doc for doc, _ in scored[:k]]
+def main():
+    lines = sys.stdin.read().split("\\n")
+    pos = 0
+    n, d, k = map(int, lines[pos].split()); pos += 1
+    docs = []
+    for _ in range(n):
+        parts = lines[pos].split(); pos += 1
+        name = parts[0]
+        vec = [float(x) for x in parts[1:1 + d]]
+        docs.append((name, vec))
+    query = [float(x) for x in lines[pos].split()[:d]]
+    scored = [(name, cosine(query, vec)) for name, vec in docs]
+    scored.sort(key=lambda t: (-t[1], t[0]))
+    out = [f"{name} {score:.4f}" for name, score in scored[:k]]
+    print("\\n".join(out))
 
-docs = {"x": [1, 0], "y": [0, 1], "z": [0.8, 0.2]}
-print(top_k([1, 0], docs, 2))`,
+main()`,
       challenge_test_cases: [
-        { input: "top_k([1, 0], {'x': [1, 0], 'y': [0, 1], 'z': [0.8, 0.2]}, 2)", expected_output: "['x', 'z']", description: "'x' matches exactly, 'z' leans the same way, 'y' is perpendicular." },
-        { input: "top_k([0, 1], {'x': [1, 0], 'y': [0, 1]}, 1)", expected_output: "['y']", description: "Only the single closest document is returned." }
+        { input: "4 3 3\nlogin_help 0.9 0.1 0.0\nreset_password 0.85 0.15 0.0\nbilling_faq 0.0 0.1 0.9\nsearch_tips 0.1 0.8 0.1\n0.9 0.1 0.0", expected_output: "login_help 1.0000\nreset_password 0.9980\nsearch_tips 0.2311", description: "Example 1: top 3 of 4 support docs, best first." },
+        { input: "3 2 2\nx 1 0\ny 0 1\nz 0.8 0.2\n1 0", expected_output: "x 1.0000\nz 0.9701", description: "Example 2: perpendicular doc excluded from top 2." },
+        { input: "4 2 2\nbeta 2 0\nalpha 4 0\ngamma 0 1\ndelta 0 3\n1 0", expected_output: "alpha 1.0000\nbeta 1.0000", description: "Edge: alpha and beta tie at 1.0; lexicographic tie-break puts alpha first." }
       ]
     }
   ]

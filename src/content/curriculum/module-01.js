@@ -238,32 +238,82 @@ i am running a little late`,
         "Use a while loop: keep going as long as the current prompt is a key in next_word.",
         "Each loop: get the next word, glue it onto prompt with a space, then print."
       ],
-      challenge_title: "Add a stop signal",
-      challenge_description: "Real models keep predicting until they emit a special stop token. Extend the loop so it appends '<END>' once no more words exist, and prints the final string with that marker.",
-      challenge_starter_code: `next_word = {
-    "hello": "there",
-    "hello there": "friend",
-}
+      challenge_title: "Greedy Decoder",
+      challenge_description: "Implement the autocomplete loop a real model runs: from a learned probability table, greedily pick the next token, append it, and repeat until you hit a stop signal or a length cap.",
+      challenge_story: "You're building the text-generation core of a tiny language model. Training already produced a **next-token table**: for every context token, it lists the candidate tokens that could follow and an integer score (how likely each is). Now you need the **decoder** — the loop that actually writes text. Your product team chose **greedy decoding**: at each step, emit the single highest-scoring token, glue it on, and feed it back in. Generation stops when the model emits the special \`<END>\` token or when the output reaches its length budget.",
+      challenge_statement: "You are given a next-token table and a starting token. Generate text using **greedy decoding**:\n\n1. Begin with the start token already emitted.\n2. Repeatedly look up the **current** (most recently emitted) token in the table. Among its candidate continuations, choose the one with the **highest score**. If two candidates tie on score, choose the one that is **lexicographically smallest**.\n3. If the chosen token is \`<END>\`, stop (do **not** emit \`<END>\`). If the current token has no entry in the table, stop. Otherwise emit the chosen token and continue.\n4. Stop once the generated sequence reaches \`max_len\` tokens total (including the start token).\n\nPrint the generated sequence, space-separated.",
+      challenge_input_format: "The first line has two integers `n max_len`: the number of table rows and the maximum sequence length.\n\nEach of the next `n` lines describes one context: a context token followed by one or more `token score` pairs, all space-separated (e.g. `the cat 7 dog 7`).\n\nThe final line is the single start token.",
+      challenge_output_format: "One line: the generated tokens separated by single spaces.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "1 ≤ max_len ≤ 1000",
+        "1 ≤ score ≤ 1000000",
+        "Tokens contain no spaces; the stop token is the literal `<END>`.",
+      ],
+      challenge_examples: [
+        { input: "3 5\nthe cat 7 dog 7\ncat sat 9\ndog ran 4\nthe", output: "the cat sat", explanation: "From `the`, `cat` and `dog` tie at 7, so pick lexicographically smaller `cat`. From `cat`, pick `sat`. `sat` has no row, so stop." },
+        { input: "2 6\nhello there 5 world 9\nworld <END> 3 again 2\nhello", output: "hello world", explanation: "From `hello`, `world` (9) beats `there` (5). From `world`, `<END>` (3) beats `again` (2), so generation stops without emitting `<END>`." },
+      ],
+      challenge_notes: "Greedy decoding is deterministic: same table, same output every time. Real models often *sample* instead, which is why you can get different answers to the same prompt. The lexicographic tie-break keeps this exercise's output unambiguous.",
+      challenge_hints: [
+        "Parse each table row by reading the first field as the context, then walking the rest two-at-a-time as (token, score) pairs.",
+        "To pick the best candidate, track the best score seen and, on a tie, keep the lexicographically smaller token.",
+        "Stop the loop on three conditions: chosen token is `<END>`, the current token isn't in the table, or you've reached `max_len` tokens.",
+      ],
+      challenge_starter_code: `import sys
 
-prompt = "hello"
-print(prompt)
-# TODO: loop, and when no next word exists, append "<END>" and print once more.
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, max_len = map(int, data[0].split())
+    # TODO: build the table from the next n lines, read the start token,
+    #       then greedily generate until <END>, a dead end, or max_len.
+
+main()
 `,
-      challenge_solution_code: `next_word = {
-    "hello": "there",
-    "hello there": "friend",
-}
+      challenge_solution_code: `import sys
 
-prompt = "hello"
-print(prompt)
-while prompt in next_word:
-    prompt = prompt + " " + next_word[prompt]
-    print(prompt)
-prompt = prompt + " <END>"
-print(prompt)
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, max_len = map(int, data[idx].split())
+    idx += 1
+    table = {}
+    for _ in range(n):
+        parts = data[idx].split()
+        idx += 1
+        context = parts[0]
+        candidates = []
+        i = 1
+        while i < len(parts):
+            candidates.append((parts[i], int(parts[i + 1])))
+            i += 2
+        table[context] = candidates
+    start = data[idx].strip()
+
+    output = [start]
+    current = start
+    for _ in range(max_len - 1):
+        if current not in table:
+            break
+        best_token = None
+        best_prob = -1
+        for token, prob in table[current]:
+            if prob > best_prob or (prob == best_prob and token < best_token):
+                best_prob = prob
+                best_token = token
+        if best_token == "<END>":
+            break
+        output.append(best_token)
+        current = best_token
+    print(" ".join(output))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "hello\nhello there\nhello there friend\nhello there friend <END>", description: "Walks the table then appends the stop marker." }
+        { input: "3 5\nthe cat 7 dog 7\ncat sat 9\ndog ran 4\nthe", expected_output: "the cat sat", description: "Score tie resolved lexicographically, then a dead-end stop." },
+        { input: "2 6\nhello there 5 world 9\nworld <END> 3 again 2\nhello", expected_output: "hello world", description: "Generation halts on the <END> token without emitting it." },
+        { input: "1 2\na b 1 c 9\na", expected_output: "a c", description: "max_len caps the sequence at 2 tokens even though more could follow." },
+        { input: "1 5\nx y 1\nz", expected_output: "z", description: "The start token has no table entry, so output is just the start." }
       ]
     },
     {
@@ -462,24 +512,44 @@ estimated tokens: 8`,
         "Divide the character count by 4 to approximate tokens.",
         "Use math.ceil() so a partial token rounds up to a whole one."
       ],
-      challenge_title: "Estimate API cost",
-      challenge_description: "Given an input of 1000 tokens and an output of 500 tokens, estimate the cost. Input costs $3 per million tokens, output costs $15 per million tokens. Print the total formatted to 6 decimal places.",
-      challenge_starter_code: `input_tokens = 1000
-output_tokens = 500
-# Input: $3 per 1,000,000 tokens. Output: $15 per 1,000,000 tokens.
-# TODO: compute total cost and print it to 6 decimal places.
+      challenge_title: "The Token Meter",
+      challenge_description: "Read a request's input and output token counts and print exactly what it costs to bill.",
+      challenge_story: "Your team just shipped an AI feature, and finance wants a per-request cost meter before the first invoice lands. Input tokens (your prompt) and output tokens (the model's reply) are billed at **different rates**, and output is the expensive one. Build the meter that turns a token count into dollars.",
+      challenge_statement: "Given the number of **input** tokens and **output** tokens used by one API call, compute the total cost.\n\n- Input tokens cost **$3.00 per 1,000,000 tokens**.\n- Output tokens cost **$15.00 per 1,000,000 tokens**.\n\nPrint the total cost as a dollar amount rounded to exactly **6 decimal places**, prefixed with a `$`.",
+      challenge_input_format: "A single line with two space-separated integers: `input_tokens output_tokens`.",
+      challenge_output_format: "One line: `$` followed by the total cost formatted to exactly 6 decimal places (e.g. `$0.010500`).",
+      challenge_constraints: [
+        "0 ≤ input_tokens ≤ 100000000",
+        "0 ≤ output_tokens ≤ 100000000",
+      ],
+      challenge_examples: [
+        { input: "1000 500", output: "$0.010500", explanation: "Input: 1000/1e6 × $3 = $0.003. Output: 500/1e6 × $15 = $0.0075. Total = $0.0105." },
+        { input: "1000000 1000000", output: "$18.000000", explanation: "1M input = $3, 1M output = $15, total $18." },
+      ],
+      challenge_notes: "Output tokens cost 5× more than input tokens — in real apps the reply, not the prompt, usually dominates the bill. Use an f-string like `f\"\${cost:.6f}\"` to format to 6 decimals.",
+      challenge_hints: [
+        "Read the line and split it into two integers with `map(int, input().split())`.",
+        "cost = input/1_000_000*3 + output/1_000_000*15.",
+        "Format with an f-string to 6 decimals and prefix a dollar sign.",
+      ],
+      challenge_starter_code: `# Read input_tokens and output_tokens from one line.
+# Input: $3 per 1,000,000 tokens.  Output: $15 per 1,000,000 tokens.
+# Print the total cost as $X.XXXXXX (6 decimal places).
+line = input()
+# TODO: parse the two numbers, compute the cost, and print it.
 `,
-      challenge_solution_code: `input_tokens = 1000
-output_tokens = 500
+      challenge_solution_code: `input_tokens, output_tokens = map(int, input().split())
 
 input_cost = input_tokens / 1_000_000 * 3
 output_cost = output_tokens / 1_000_000 * 15
 total = input_cost + output_cost
 
-print(f"total cost: \${total:.6f}")
+print(f"\${total:.6f}")
 `,
       challenge_test_cases: [
-        { input: "input=1000, output=500", expected_output: "total cost: $0.010500", description: "1000 input ($0.003) + 500 output ($0.0075) = $0.0105." }
+        { input: "1000 500", expected_output: "$0.010500", description: "1000 input ($0.003) + 500 output ($0.0075) = $0.0105." },
+        { input: "1000000 1000000", expected_output: "$18.000000", description: "1M input + 1M output." },
+        { input: "0 0", expected_output: "$0.000000", description: "A free call costs nothing." }
       ]
     },
     {
@@ -693,26 +763,58 @@ after: 0.5`,
         "Print result to see the output of inference.",
         "Print weights again afterward — it should be identical to 'before'."
       ],
-      challenge_title: "One training step",
-      challenge_description: "Write a function train_step that nudges the weight toward a target. Start weight at 0.5, target 1.0, learning rate 0.1. Apply one step: new = weight + 0.1 * (target - weight). Print the old and new weight to show training DOES change it.",
-      challenge_starter_code: `weight = 0.5
-target = 1.0
-lr = 0.1
-# TODO: define train_step(weight, target, lr) and apply it once.
+      challenge_title: "Gradient Descent Trainer",
+      challenge_description: "Run the inner loop of training: repeatedly nudge a weight toward its target and report where it lands after a fixed number of steps. This is the exact update rule that turns raw weights into a finished model.",
+      challenge_story: "You're on the team training a model, and you need to predict how a single weight will evolve before kicking off an expensive multi-week run. Each **training step** applies one nudge: it moves the weight a fraction of the way toward the target value it should learn. That fraction is the **learning rate**. Too small and training crawls; too large and it overshoots. Simulate the update for one weight so the team can sanity-check the learning rate before committing GPUs to it.",
+      challenge_statement: "You are given a starting weight `w`, a `target` value, a `learning_rate`, and a number of training `steps`.\n\nApply this update exactly `steps` times:\n\n```\nw = w + learning_rate * (target - w)\n```\n\nAfter all steps, print the final weight rounded to exactly **4 decimal places**.",
+      challenge_input_format: "A single line with four space-separated values: `w target learning_rate steps`. The first three are floating-point numbers; `steps` is a non-negative integer.",
+      challenge_output_format: "One line: the final weight formatted to exactly 4 decimal places (e.g. `0.5500`).",
+      challenge_constraints: [
+        "-1000.0 ≤ w, target ≤ 1000.0",
+        "0.0 ≤ learning_rate ≤ 1.0",
+        "0 ≤ steps ≤ 100000",
+      ],
+      challenge_examples: [
+        { input: "0.5 1.0 0.1 1", output: "0.5500", explanation: "One step: 0.5 + 0.1 × (1.0 − 0.5) = 0.55." },
+        { input: "0.0 1.0 0.5 3", output: "0.8750", explanation: "Step 1: 0.5. Step 2: 0.75. Step 3: 0.875 — each step closes half the remaining gap." },
+      ],
+      challenge_notes: "With `steps = 0`, no update happens and the weight stays at its starting value — that's inference, not training. Watch the gap `(target - w)` shrink each step: this is why training shows diminishing returns and never quite reaches the target exactly. Format with an f-string like `f\"{w:.4f}\"`.",
+      challenge_hints: [
+        "Read the line and unpack it; remember `steps` is an int while the other three are floats.",
+        "Loop `steps` times, reassigning `w` with the update rule each iteration.",
+        "Format the final value with `f\"{w:.4f}\"` so it always shows four decimals.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    w = float(data[0])
+    target = float(data[1])
+    learning_rate = float(data[2])
+    steps = int(data[3])
+    # TODO: apply the update rule 'steps' times, then print w to 4 decimals.
+
+main()
 `,
-      challenge_solution_code: `weight = 0.5
-target = 1.0
-lr = 0.1
+      challenge_solution_code: `import sys
 
-def train_step(weight, target, lr):
-    return weight + lr * (target - weight)
+def main():
+    data = sys.stdin.read().split()
+    w = float(data[0])
+    target = float(data[1])
+    learning_rate = float(data[2])
+    steps = int(data[3])
+    for _ in range(steps):
+        w = w + learning_rate * (target - w)
+    print(f"{w:.4f}")
 
-new_weight = train_step(weight, target, lr)
-print("old weight:", weight)
-print("new weight:", round(new_weight, 2))
+main()
 `,
       challenge_test_cases: [
-        { input: "weight=0.5, target=1.0, lr=0.1", expected_output: "old weight: 0.5\nnew weight: 0.55", description: "0.5 + 0.1*(1.0-0.5) = 0.55, showing training moves the weight." }
+        { input: "0.5 1.0 0.1 1", expected_output: "0.5500", description: "A single update step moves the weight from 0.5 to 0.55." },
+        { input: "0.0 1.0 0.5 3", expected_output: "0.8750", description: "Three steps, each closing half the remaining gap to the target." },
+        { input: "0.5 1.0 0.1 0", expected_output: "0.5000", description: "Zero steps leaves the weight unchanged — inference, not training." },
+        { input: "0.2 0.9 0.1 100", expected_output: "0.9000", description: "Over many steps the weight converges to the target." }
       ]
     },
     {
@@ -922,23 +1024,76 @@ The capital of Australia is Sydney. (confidence 0.95) -> HALLUCINATION`,
         "Use the 'true' field to decide the label, not the confidence.",
         "An f-string makes it easy to print text, confidence, and the flag together."
       ],
-      challenge_title: "Verify before trusting",
-      challenge_description: "Write a function check_claim(claim, known_facts) that returns 'verified' if the claim is in the known_facts set, otherwise 'needs verification'. Test it on two claims and print the results.",
-      challenge_starter_code: `known_facts = {"water boils at 100C at sea level", "the sun is a star"}
+      challenge_title: "Hallucination Gate",
+      challenge_description: "Build the safety filter that sits between a model and your users: decide whether each claim can be trusted, must be human-verified, or should be rejected outright — based on grounding first, confidence second.",
+      challenge_story: "Your AI assistant drafts answers, but you've learned the hard way that a high **confidence** score means *plausible*, not *true*. To stop a fabricated answer from reaching a user, you add a **gate**. The rule your team agreed on: if a claim is backed by a **grounded fact** (something you pasted in as a real source), trust it. Otherwise it's coming from the model's fuzzy memory — so if its confidence clears a review threshold, route it to a human to **verify**; if it's below the threshold, **reject** it. Implement the gate and report how many claims were auto-trusted.",
+      challenge_statement: "You are given a confidence `threshold`, a set of **grounded facts**, and a list of **claims** (each with an integer confidence and the claim text). For each claim, decide its verdict in this exact priority order:\n\n1. If the claim text exactly matches a grounded fact, the verdict is `TRUST`.\n2. Otherwise, if its confidence is **greater than or equal to** the threshold, the verdict is `VERIFY`.\n3. Otherwise, the verdict is `REJECT`.\n\nPrint each claim and its verdict in input order, then print how many claims were auto-trusted.",
+      challenge_input_format: "The first line is the integer `threshold`.\n\nThe second line is an integer `g`, the number of grounded facts. The next `g` lines each contain one grounded fact (full line, may contain spaces).\n\nThe next line is an integer `c`, the number of claims. Each of the next `c` lines starts with an integer confidence, a single space, then the claim text (which may contain spaces).",
+      challenge_output_format: "For each claim, in input order, a line `<claim text> -> <VERDICT>`. After all claims, a final line `TRUSTED <count>` giving the number of claims that received the `TRUST` verdict.",
+      challenge_constraints: [
+        "0 ≤ threshold ≤ 100",
+        "0 ≤ g ≤ 1000",
+        "1 ≤ c ≤ 1000",
+        "0 ≤ confidence ≤ 100",
+        "A grounded match must be exact, character for character.",
+      ],
+      challenge_examples: [
+        { input: "80\n2\nwater boils at 100C\nthe sun is a star\n3\n95 the sun is a star\n90 the moon is made of cheese\n40 dragons are real", output: "the sun is a star -> TRUST\nthe moon is made of cheese -> VERIFY\ndragons are real -> REJECT\nTRUSTED 1", explanation: "`the sun is a star` is grounded, so TRUST regardless of confidence. The cheese claim isn't grounded but 90 ≥ 80, so VERIFY. `dragons are real` at 40 < 80, so REJECT." },
+        { input: "50\n0\n2\n60 alpha\n30 beta", output: "alpha -> VERIFY\nbeta -> REJECT\nTRUSTED 0", explanation: "With no grounded facts, the gate falls back to the confidence threshold: 60 ≥ 50 VERIFY, 30 < 50 REJECT." },
+      ],
+      challenge_notes: "Grounding beats confidence on purpose: a real source is a better signal than how sure the model sounds. The threshold is inclusive (`>=`), so a confidence exactly equal to the threshold routes to `VERIFY`, not `REJECT`. Split each claim line only on the **first** space so claim text containing spaces stays intact.",
+      challenge_hints: [
+        "Read the grounded facts into a `set` so membership checks are fast and exact.",
+        "Split each claim line with `line.split(\" \", 1)` to separate the confidence from the (possibly multi-word) claim text.",
+        "Check grounding first, then the `>=` threshold; count only the `TRUST` verdicts for the final line.",
+      ],
+      challenge_starter_code: `import sys
 
-# TODO: define check_claim(claim, known_facts) and test it on two claims.
+def main():
+    lines = sys.stdin.read().split("\\n")
+    threshold = int(lines[0].strip())
+    # TODO: read the grounded facts, then each claim, and apply the gate:
+    #       grounded -> TRUST, else confidence >= threshold -> VERIFY, else REJECT.
+
+main()
 `,
-      challenge_solution_code: `known_facts = {"water boils at 100C at sea level", "the sun is a star"}
+      challenge_solution_code: `import sys
 
-def check_claim(claim, known_facts):
-    return "verified" if claim in known_facts else "needs verification"
+def main():
+    lines = sys.stdin.read().split("\\n")
+    idx = 0
+    threshold = int(lines[idx].strip())
+    idx += 1
+    g = int(lines[idx].strip())
+    idx += 1
+    grounded = set()
+    for _ in range(g):
+        grounded.add(lines[idx].strip())
+        idx += 1
+    c = int(lines[idx].strip())
+    idx += 1
+    trusted = 0
+    for _ in range(c):
+        line = lines[idx]
+        idx += 1
+        conf_str, claim = line.split(" ", 1)
+        conf = int(conf_str)
+        if claim in grounded:
+            verdict = "TRUST"
+            trusted += 1
+        elif conf >= threshold:
+            verdict = "VERIFY"
+        else:
+            verdict = "REJECT"
+        print(f"{claim} -> {verdict}")
+    print(f"TRUSTED {trusted}")
 
-print(check_claim("the sun is a star", known_facts))
-print(check_claim("the moon is made of cheese", known_facts))
+main()
 `,
       challenge_test_cases: [
-        { input: "claim in known_facts", expected_output: "verified", description: "A known claim returns 'verified'." },
-        { input: "claim not in known_facts", expected_output: "needs verification", description: "An unknown claim returns 'needs verification'." }
+        { input: "80\n2\nwater boils at 100C\nthe sun is a star\n3\n95 the sun is a star\n90 the moon is made of cheese\n40 dragons are real", expected_output: "the sun is a star -> TRUST\nthe moon is made of cheese -> VERIFY\ndragons are real -> REJECT\nTRUSTED 1", description: "Grounding wins over confidence; threshold splits the rest." },
+        { input: "50\n0\n2\n60 alpha\n30 beta", expected_output: "alpha -> VERIFY\nbeta -> REJECT\nTRUSTED 0", description: "No grounded facts: pure confidence gating." },
+        { input: "70\n1\nknown fact\n2\n70 unknown claim\n69 another claim", expected_output: "unknown claim -> VERIFY\nanother claim -> REJECT\nTRUSTED 0", description: "Threshold is inclusive: exactly 70 routes to VERIFY, 69 to REJECT." }
       ]
     }
   ]

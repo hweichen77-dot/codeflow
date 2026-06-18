@@ -225,30 +225,84 @@ sampled: blue`,
         "It returns a list, so index [0] to get the single token.",
         "Keep random.seed(1) at the top so the output is reproducible."
       ],
-      challenge_title: "Count many draws",
-      challenge_description: "Using random.seed(0), draw 1000 samples from tokens ['a','b','c'] with weights [0.7, 0.2, 0.1]. Count how many times each token appears and print the counts as a dict.",
-      challenge_starter_code: `import random
-random.seed(0)
+      challenge_title: "The Sampling Harness",
+      challenge_description: "Reproduce a model's sampling step deterministically: drive a fixed pseudo-random generator through thousands of weighted token draws and report the empirical counts.",
+      challenge_story: "Your inference team is debugging why a generation endpoint feels 'streaky' — sometimes a rare token shows up far more than its probability suggests. Before blaming the model, you build a **sampling harness**: a deterministic replay of the sampler so the same seed always produces the same draws. Real samplers pull from a hardware RNG, but for a reproducible test rig you wire in a classic **linear congruential generator (LCG)** so QA can compare runs byte-for-byte. Feed it a token distribution and a seed, draw many times, and tally the results — if the empirical counts drift from the weights, *that's* a bug worth chasing.",
+      challenge_statement: "You are given \`n\` tokens, each with an integer **weight**, a number of **draws**, and a **seed**. Simulate \`draws\` independent samples using this exact deterministic procedure:\n\n1. Let \`total\` be the sum of all weights. Start the generator at \`state = seed\`.\n2. For each draw, first advance the generator:\n\n   \`\`\`\n   state = (1664525 * state + 1013904223) mod 4294967296\n   \`\`\`\n\n   then compute \`r = state mod total\`.\n3. Walk the tokens **in input order**, accumulating their weights into a running prefix sum. The drawn token is the **first** one whose prefix sum is strictly greater than \`r\`.\n\nAfter all draws, print the final count for each token, in input order, separated by single spaces.",
+      challenge_input_format: "The first line has three integers: `n draws seed`.\n\nEach of the next `n` lines has a token (no spaces) and its integer `weight`.",
+      challenge_output_format: "One line: the `n` counts in input order, separated by single spaces. They sum to `draws`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0 ≤ draws ≤ 1000000",
+        "0 ≤ seed < 4294967296",
+        "1 ≤ weight ≤ 1000000",
+      ],
+      challenge_examples: [
+        { input: "3 1000 0\na 70\nb 20\nc 10", output: "703 200 97", explanation: "Total weight 100. Over 1000 deterministic LCG draws, `a` (70%) lands ~703 times, `c` (10%) only ~97 — close to the weights but not exact, which is the whole point of sampling." },
+        { input: "2 10000 42\nheads 1\ntails 1", output: "5000 5000", explanation: "Equal weights, and with seed 42 the LCG splits 10000 draws into an exact 5000/5000 here." },
+      ],
+      challenge_notes: "An LCG is the simplest reproducible RNG: one multiply, one add, one modulo. It's not cryptographically strong, but it's perfect for a *replayable* test harness — same seed, same stream, every machine. Note the half-open interval: `r` ranges over `0 .. total-1`, and the prefix-sum comparison is strictly greater-than, so every `r` maps to exactly one token.",
+      challenge_hints: [
+        "Build a prefix-sum (cumulative weight) array once, before the loop — recomputing it per draw is wasteful.",
+        "Advance `state` *before* using it each draw, exactly as written; the order matters for matching the expected output.",
+        "With `draws = 0` the loop never runs, so every count is 0.",
+      ],
+      challenge_starter_code: `import sys
 
-tokens = ["a", "b", "c"]
-probs  = [0.7, 0.2, 0.1]
-# TODO: draw 1000 samples, count each token, and print the counts dict.
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    draws = int(data[idx]); idx += 1
+    seed = int(data[idx]); idx += 1
+    tokens, weights = [], []
+    for _ in range(n):
+        tokens.append(data[idx]); idx += 1
+        weights.append(int(data[idx])); idx += 1
+    # TODO: build a prefix-sum table, run the LCG for each draw,
+    #       tally counts in input order, and print them space-separated.
+
+main()
 `,
-      challenge_solution_code: `import random
-random.seed(0)
+      challenge_solution_code: `import sys
 
-tokens = ["a", "b", "c"]
-probs  = [0.7, 0.2, 0.1]
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    draws = int(data[idx]); idx += 1
+    seed = int(data[idx]); idx += 1
+    tokens, weights = [], []
+    for _ in range(n):
+        tokens.append(data[idx]); idx += 1
+        weights.append(int(data[idx])); idx += 1
 
-counts = {t: 0 for t in tokens}
-for _ in range(1000):
-    pick = random.choices(tokens, weights=probs, k=1)[0]
-    counts[pick] += 1
+    total = sum(weights)
+    cum = []
+    running = 0
+    for w in weights:
+        running += w
+        cum.append(running)
 
-print(counts)
+    counts = [0] * n
+    state = seed
+    for _ in range(draws):
+        state = (1664525 * state + 1013904223) % 4294967296
+        r = state % total
+        for i in range(n):
+            if r < cum[i]:
+                counts[i] += 1
+                break
+
+    print(" ".join(str(c) for c in counts))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "seed=0, 1000 draws, weights [0.7,0.2,0.1]", expected_output: "{'a': 706, 'b': 190, 'c': 104}", description: "Counts track the weights: 'a' dominates, 'c' is rare." }
+        { input: "3 1000 0\na 70\nb 20\nc 10", expected_output: "703 200 97", description: "Empirical counts track the 70/20/10 weights over 1000 seeded draws." },
+        { input: "2 10000 42\nheads 1\ntails 1", expected_output: "5000 5000", description: "Even split; seed 42 yields an exact 5000/5000 here." },
+        { input: "1 5 99\nonly 7", expected_output: "5", description: "Single token absorbs every draw regardless of seed." },
+        { input: "3 0 0\na 1\nb 1\nc 1", expected_output: "0 0 0", description: "Zero draws means every count stays 0." }
       ]
     },
     {
@@ -482,29 +536,86 @@ flat T=2.0: [0.506, 0.307, 0.186]`,
         "Smaller T (0.5) should make the first probability bigger; larger T (2.0) smaller.",
         "The function already handles the math — you just call it with T=0.5 and T=2.0."
       ],
-      challenge_title: "Find the most-likely token's probability",
-      challenge_description: "Given logits [1.5, 0.5, 0.5] and temperature 0.5, compute the softmax probabilities (rounded to 3 decimals) and print just the highest probability. Use the same numerically-safe softmax (subtract the max before exp).",
-      challenge_starter_code: `import math
+      challenge_title: "The Temperature Dial",
+      challenge_description: "Implement the exact softmax-with-temperature the sampler runs, then report, at each requested temperature, which token leads and how confident the model is in it.",
+      challenge_story: "You're tuning the temperature dial on a content-generation service. Product wants one knob users can drag from 'precise' to 'playful', and you need a panel that shows, for a given set of next-token **logits**, how the winning token and its probability shift as temperature changes. Low temperature should make the model look decisive (one fat probability); high temperature should flatten everything toward a coin flip. Build the backend that powers that panel: a numerically-safe softmax that divides logits by temperature before exponentiating.",
+      challenge_statement: "You are given \`n\` tokens, each with a floating-point **logit**, and \`q\` **temperatures** to evaluate. For each temperature \`T\`, compute the temperature-scaled softmax:\n\n1. Divide every logit by \`T\` to get scaled logits.\n2. For numerical safety, subtract the **maximum** scaled logit from each before exponentiating.\n3. Exponentiate, then divide by the sum so the probabilities total 1.\n\nFor that temperature, print the token with the **highest probability** and that probability, formatted to exactly **4 decimal places**. If two tokens tie on probability, print the **lexicographically smallest** token.\n\nProduce one output line per temperature, in the order given.",
+      challenge_input_format: "The first line has two integers `n q`: the number of tokens and the number of temperatures.\n\nEach of the next `n` lines has a token (no spaces) and its floating-point `logit`.\n\nEach of the next `q` lines has a single floating-point temperature `T`.",
+      challenge_output_format: "`q` lines. Each is the winning `token` then its probability to exactly 4 decimal places, separated by one space (e.g. `blue 0.7870`).",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "1 ≤ q ≤ 100",
+        "-50.0 ≤ logit ≤ 50.0",
+        "0.01 ≤ T ≤ 100.0",
+      ],
+      challenge_examples: [
+        { input: "3 3\nblue 1.5\nclear 0.5\ndark 0.5\n0.5\n1.0\n2.0", output: "blue 0.7870\nblue 0.5761\nblue 0.4519", explanation: "`blue` always leads, but its probability melts from 0.79 (decisive, T=0.5) toward 0.45 (T=2.0) as temperature flattens the distribution." },
+        { input: "4 2\nthe 3.0\na 2.0\nan 2.0\nzebra 0.0\n0.7\n1.5", output: "the 0.6698\nthe 0.4625", explanation: "`the` wins both; higher temperature lets `a` and `an` close the gap, so the leader's share drops." },
+      ],
+      challenge_notes: "Subtracting the max before `exp` never changes the result — it just keeps the exponents small so they don't overflow to `inf`. This is the standard 'stable softmax' trick every production inference stack uses. Notice T appears only as `logit / T`: shrinking T magnifies differences (sharp), growing T shrinks them (flat).",
+      challenge_hints: [
+        "Write one helper `softmax_temp(logits, T)` and call it once per temperature.",
+        "Find the argmax by tracking the best probability so far; break exact ties by comparing token strings.",
+        "Use an f-string like `f\"{p:.4f}\"` so the probability always shows 4 decimals, even trailing zeros.",
+      ],
+      challenge_starter_code: `import sys, math
 
-logits = [1.5, 0.5, 0.5]
-T = 0.5
-# TODO: compute temperature-scaled softmax and print the max probability (3 decimals).
+def softmax_temp(logits, T):
+    # TODO: scale by T, subtract the max, exponentiate, normalize.
+    return []
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, q = map(int, data[0].split())
+    tokens, logits = [], []
+    for i in range(1, n + 1):
+        tok, lg = data[i].split()
+        tokens.append(tok)
+        logits.append(float(lg))
+    # TODO: for each of the q temperatures, print the winning token and its
+    #       probability to 4 decimals (lexicographic tie-break).
+
+main()
 `,
-      challenge_solution_code: `import math
+      challenge_solution_code: `import sys, math
 
-logits = [1.5, 0.5, 0.5]
-T = 0.5
+def softmax_temp(logits, T):
+    scaled = [x / T for x in logits]
+    m = max(scaled)
+    exps = [math.exp(x - m) for x in scaled]
+    s = sum(exps)
+    return [e / s for e in exps]
 
-scaled = [x / T for x in logits]
-m = max(scaled)
-exps = [math.exp(x - m) for x in scaled]
-total = sum(exps)
-probs = [round(e / total, 3) for e in exps]
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, q = map(int, data[0].split())
+    tokens, logits = [], []
+    for i in range(1, n + 1):
+        tok, lg = data[i].split()
+        tokens.append(tok)
+        logits.append(float(lg))
 
-print(max(probs))
+    out = []
+    for j in range(q):
+        T = float(data[n + 1 + j].strip())
+        probs = softmax_temp(logits, T)
+        best = 0
+        for i in range(1, n):
+            if probs[i] > probs[best] + 1e-12:
+                best = i
+            elif abs(probs[i] - probs[best]) <= 1e-12 and tokens[i] < tokens[best]:
+                best = i
+        out.append(f"{tokens[best]} {probs[best]:.4f}")
+
+    print("\\n".join(out))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "logits=[1.5,0.5,0.5], T=0.5", expected_output: "0.787", description: "Scaled logits [3,1,1]; softmax gives ~0.787 for the leader." }
+        { input: "3 3\nblue 1.5\nclear 0.5\ndark 0.5\n0.5\n1.0\n2.0", expected_output: "blue 0.7870\nblue 0.5761\nblue 0.4519", description: "Same logits at three temperatures: the leader's confidence falls as T rises." },
+        { input: "4 2\nthe 3.0\na 2.0\nan 2.0\nzebra 0.0\n0.7\n1.5", expected_output: "the 0.6698\nthe 0.4625", description: "Larger vocab; higher T narrows the leader's margin." },
+        { input: "1 1\nonly 5.0\n0.7", expected_output: "only 1.0000", description: "A single token always gets probability 1 at any temperature." },
+        { input: "2 1\nzebra 1.0\napple 1.0\n5.0", expected_output: "apple 0.5000", description: "Equal logits tie at 0.5; lexicographic tie-break picks `apple`." }
       ]
     },
     {
@@ -726,30 +837,78 @@ kept top-k: [('blue', 0.598), ('clear', 0.272), ('dark', 0.13)]`,
         "For top-k, slice the sorted list with [:k] to keep the first k.",
         "Renormalize: divide each kept probability by the sum of the kept probabilities."
       ],
-      challenge_title: "Implement top-p",
-      challenge_description: "Write top_p(tokens, probs, p) that keeps the smallest set of top tokens whose probabilities sum to at least p, then returns them renormalized (rounded to 3 decimals) as a list of (token, prob) tuples. Test with tokens ['a','b','c','d'], probs [0.5,0.3,0.15,0.05], p=0.75.",
-      challenge_starter_code: `tokens = ["a", "b", "c", "d"]
-probs  = [0.5, 0.3, 0.15, 0.05]
-# TODO: define top_p(tokens, probs, p) and print top_p(tokens, probs, 0.75).
-`,
-      challenge_solution_code: `tokens = ["a", "b", "c", "d"]
-probs  = [0.5, 0.3, 0.15, 0.05]
+      challenge_title: "The Nucleus Filter",
+      challenge_description: "Build the nucleus (top-p) filter a sampler runs before it draws: keep the smallest set of leading tokens whose probability covers p, drop the long tail, and renormalize what's left.",
+      challenge_story: "Your generation service keeps emitting the occasional bizarre word — a token from the deep tail of the distribution that should almost never have been picked. The fix the team agreed on is **nucleus sampling (top-p)**: before sampling, throw away the unlikely tail and only sample from the smallest group of top tokens that together cover a probability mass of \`p\`. You're implementing the filter stage. Given the model's next-token distribution, return exactly which tokens survive and their renormalized probabilities, so the downstream sampler only ever sees plausible options.",
+      challenge_statement: "You are given \`n\` tokens, each with a probability, and a threshold \`p\`. Apply top-p filtering:\n\n1. Sort tokens by probability **descending**. Break ties by **lexicographically smallest** token first.\n2. Walk the sorted list, adding tokens to the kept set and accumulating their probability, until the accumulated mass is **at least \`p\`**. Include the token that crosses the threshold, then stop.\n3. **Renormalize** the kept tokens: divide each kept probability by the sum of the kept probabilities so they total 1.\n\nPrint the number of kept tokens, then each kept token (in the sorted order) with its renormalized probability to exactly **4 decimal places**.",
+      challenge_input_format: "The first line has an integer `n` and a float `p`: `n p`.\n\nEach of the next `n` lines has a token (no spaces) and its float `probability`. The probabilities sum to 1.",
+      challenge_output_format: "First line: the count of kept tokens. Then one line per kept token (in descending-probability order): the `token` and its renormalized probability to exactly 4 decimal places.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0.0 < p ≤ 1.0",
+        "Each probability is in (0, 1]; the n probabilities sum to 1.",
+        "Renormalized probabilities are printed to 4 decimals.",
+      ],
+      challenge_examples: [
+        { input: "4 0.75\na 0.5\nb 0.3\nc 0.15\nd 0.05", output: "2\na 0.6250\nb 0.3750", explanation: "Cumulative mass: 0.5 (a), then 0.8 (b) which crosses 0.75, so keep {a, b}. Renormalized over 0.8: a → 0.625, b → 0.375. The tail c and d are dropped." },
+        { input: "5 0.9\nthe 0.4\nquick 0.25\nbrown 0.2\nfox 0.1\njumps 0.05", output: "4\nthe 0.4211\nquick 0.2632\nbrown 0.2105\nfox 0.1053", explanation: "0.4, 0.65, 0.85, then 0.95 crosses 0.9, so keep the top four. `jumps`, the unlikely tail token, is filtered out." },
+      ],
+      challenge_notes: "Top-p adapts the candidate pool to the distribution: when the model is confident, one or two tokens cover p and the pool is tiny; when it's unsure, the pool grows. That's the advantage over fixed top-k. Renormalizing matters — after dropping the tail the survivors no longer sum to 1, so you rescale before sampling.",
+      challenge_hints: [
+        "Sort with a key like `(-prob, token)` so ties fall back to lexicographic order automatically.",
+        "Accumulate into the kept list first, then compute the kept sum once at the end for renormalization.",
+        "Use a tiny epsilon (e.g. compare `total >= p - 1e-12`) so floating-point sums like 0.8 reliably clear a p of 0.8.",
+      ],
+      challenge_starter_code: `import sys
 
-def top_p(tokens, probs, p):
-    pairs = sorted(zip(tokens, probs), key=lambda x: -x[1])
-    kept, total = [], 0.0
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    n = int(first[0])
+    p = float(first[1])
+    pairs = []
+    for i in range(1, n + 1):
+        tok, pr = data[i].split()
+        pairs.append((tok, float(pr)))
+    # TODO: sort descending (lexicographic tie-break), keep the smallest set
+    #       covering p, renormalize, and print the count then each kept token.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    n = int(first[0])
+    p = float(first[1])
+    pairs = []
+    for i in range(1, n + 1):
+        tok, pr = data[i].split()
+        pairs.append((tok, float(pr)))
+
+    pairs.sort(key=lambda x: (-x[1], x[0]))
+    kept = []
+    total = 0.0
     for tok, pr in pairs:
         kept.append((tok, pr))
         total += pr
-        if total >= p:
+        if total >= p - 1e-12:
             break
-    s = sum(pr for _, pr in kept)
-    return [(tok, round(pr / s, 3)) for tok, pr in kept]
 
-print(top_p(tokens, probs, 0.75))
+    s = sum(pr for _, pr in kept)
+    out = [str(len(kept))]
+    for tok, pr in kept:
+        out.append(f"{tok} {pr / s:.4f}")
+    print("\\n".join(out))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "tokens=[a,b,c,d], probs=[0.5,0.3,0.15,0.05], p=0.75", expected_output: "[('a', 0.625), ('b', 0.375)]", description: "0.5 then 0.8 >= 0.75, so keep a and b; renormalized over 0.8." }
+        { input: "4 0.75\na 0.5\nb 0.3\nc 0.15\nd 0.05", expected_output: "2\na 0.6250\nb 0.3750", description: "Mass 0.8 crosses p=0.75; keep top two and renormalize." },
+        { input: "5 0.9\nthe 0.4\nquick 0.25\nbrown 0.2\nfox 0.1\njumps 0.05", expected_output: "4\nthe 0.4211\nquick 0.2632\nbrown 0.2105\nfox 0.1053", description: "Larger nucleus; only the deepest tail token is dropped." },
+        { input: "3 1.0\nx 0.6\ny 0.3\nz 0.1", expected_output: "3\nx 0.6000\ny 0.3000\nz 0.1000", description: "p=1.0 keeps every token; renormalization is a no-op." },
+        { input: "3 0.4\nx 0.6\ny 0.3\nz 0.1", expected_output: "1\nx 1.0000", description: "The leader alone already covers p=0.4, so the nucleus is a single token." }
       ]
     },
     {
@@ -963,21 +1122,80 @@ brainstorm -> 0.9`,
         "If the task is in that set, return 0.0; otherwise return a higher value like 0.9.",
         "Call recommend_temp twice — once with 'extraction', once with 'brainstorm'."
       ],
-      challenge_title: "Settings recommender",
-      challenge_description: "Write recommend(task) that returns a string. For tasks in {'extraction','classification','code'} return 'temp=0.0, top_p=0.9'; for everything else return 'temp=0.9, top_p=0.9'. Print the recommendation for 'classification' and for 'poetry'.",
-      challenge_starter_code: `# TODO: define recommend(task) and print results for 'classification' and 'poetry'.
-`,
-      challenge_solution_code: `def recommend(task):
-    convergent = {"extraction", "classification", "code"}
-    if task in convergent:
-        return "temp=0.0, top_p=0.9"
-    return "temp=0.9, top_p=0.9"
+      challenge_title: "The Settings Advisor",
+      challenge_description: "Build the rules engine that picks temperature and top-p for each job a model is asked to do, downgrading risky high-stakes tasks to safe, near-deterministic settings.",
+      challenge_story: "Your platform runs dozens of AI features — extraction, summarization, chat, brainstorming — and engineers keep guessing at sampling settings, sometimes shipping a customer-facing tool at temperature 1.0 (chaos) or a poetry toy at temperature 0 (boring). You're writing the **settings advisor**: a single rules engine that maps each task's category and risk level to a sane \`temperature\` and \`top_p\`. Convergent, single-right-answer tasks get pinned near 0; creative ones get room to roam — but anything flagged **high-risk** gets clamped down hard, because a wrong-but-confident extraction costs more than a dull one.",
+      challenge_statement: "You are given \`n\` tasks. Each task has a **category** and an integer **risk** from 0 to 10. For each task, compute a recommendation:\n\n1. The base temperature comes from the category:\n   - \`extraction\`, \`classification\`, \`code\`, \`math\` → **0.0**\n   - \`summary\` → **0.3**\n   - \`chat\` → **0.7**\n   - \`brainstorm\` → **1.0**\n   - \`poetry\` → **1.2**\n   - any **other** category → **0.7**\n2. **Risk clamp:** if \`risk ≥ 7\` and the base temperature is above 0.2, lower it to **0.2**.\n3. Set \`top_p\`: if the resulting temperature is exactly **0.0**, use **1.0** (sampling is off anyway); otherwise use **0.9**.\n\nPrint one line per task: \`temp=<t>, top_p=<tp>\`, each value to exactly **one decimal place**.",
+      challenge_input_format: "The first line has an integer `n`: the number of tasks.\n\nEach of the next `n` lines has a category (no spaces) and an integer `risk`.",
+      challenge_output_format: "`n` lines. Each: `temp=<t>, top_p=<tp>` with both numbers formatted to exactly one decimal place (e.g. `temp=0.0, top_p=1.0`).",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0 ≤ risk ≤ 10",
+        "Category is one lowercase word; unknown categories default to temperature 0.7.",
+      ],
+      challenge_examples: [
+        { input: "4\nclassification 2\npoetry 1\nchat 8\nextraction 9", output: "temp=0.0, top_p=1.0\ntemp=1.2, top_p=0.9\ntemp=0.2, top_p=0.9\ntemp=0.0, top_p=1.0", explanation: "`classification` and `extraction` are convergent → temp 0 (and extraction's risk 9 is moot since it's already 0). `poetry` stays at 1.2 (low risk). `chat` at risk 8 gets clamped from 0.7 down to 0.2." },
+        { input: "5\ncode 0\nsummary 3\nbrainstorm 0\nchat 9\nmath 5", output: "temp=0.0, top_p=1.0\ntemp=0.3, top_p=0.9\ntemp=1.0, top_p=0.9\ntemp=0.2, top_p=0.9\ntemp=0.0, top_p=1.0", explanation: "`code` and `math` pin to 0. `summary` and `brainstorm` keep their base temps at low risk. `chat` at risk 9 is clamped to 0.2." },
+      ],
+      challenge_notes: "The risk clamp encodes a real product instinct: a confidently wrong answer on a high-stakes task is worse than a bland one, so you trade creativity for reliability when it matters. Note top_p is set from the *final* temperature, so a clamped task (temp 0.2) still gets top_p 0.9, not 1.0.",
+      challenge_hints: [
+        "Store the category-to-base-temperature mapping in a dict, with `.get(category, 0.7)` to handle unknown categories.",
+        "Apply the risk clamp after looking up the base temperature, before deciding top_p.",
+        "Format with f-strings like `f\"temp={t:.1f}, top_p={tp:.1f}\"` so both numbers always show one decimal.",
+      ],
+      challenge_starter_code: `import sys
 
-print(recommend("classification"))
-print(recommend("poetry"))
+def recommend(category, risk):
+    # TODO: look up base temperature, apply the risk>=7 clamp,
+    #       choose top_p, and return the formatted string.
+    return ""
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0].strip())
+    out = []
+    for i in range(1, n + 1):
+        category, risk = data[i].split()
+        out.append(recommend(category, int(risk)))
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def recommend(category, risk):
+    base = {
+        "extraction": 0.0,
+        "classification": 0.0,
+        "code": 0.0,
+        "math": 0.0,
+        "summary": 0.3,
+        "chat": 0.7,
+        "brainstorm": 1.0,
+        "poetry": 1.2,
+    }
+    t = base.get(category, 0.7)
+    if risk >= 7 and t > 0.2:
+        t = 0.2
+    top_p = 1.0 if t == 0.0 else 0.9
+    return f"temp={t:.1f}, top_p={top_p:.1f}"
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0].strip())
+    out = []
+    for i in range(1, n + 1):
+        category, risk = data[i].split()
+        out.append(recommend(category, int(risk)))
+    print("\\n".join(out))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "task='classification' then 'poetry'", expected_output: "temp=0.0, top_p=0.9\ntemp=0.9, top_p=0.9", description: "Convergent task gets temp 0; creative task gets temp 0.9." }
+        { input: "4\nclassification 2\npoetry 1\nchat 8\nextraction 9", expected_output: "temp=0.0, top_p=1.0\ntemp=1.2, top_p=0.9\ntemp=0.2, top_p=0.9\ntemp=0.0, top_p=1.0", description: "Convergent tasks pin to 0; high-risk chat clamps to 0.2." },
+        { input: "5\ncode 0\nsummary 3\nbrainstorm 0\nchat 9\nmath 5", expected_output: "temp=0.0, top_p=1.0\ntemp=0.3, top_p=0.9\ntemp=1.0, top_p=0.9\ntemp=0.2, top_p=0.9\ntemp=0.0, top_p=1.0", description: "Mixed categories and risks across five tasks." },
+        { input: "1\nweirdtask 0", expected_output: "temp=0.7, top_p=0.9", description: "Unknown category defaults to temperature 0.7." },
+        { input: "1\nbrainstorm 10", expected_output: "temp=0.2, top_p=0.9", description: "Even a creative task is clamped to 0.2 at maximum risk." }
       ]
     }
   ]

@@ -246,31 +246,87 @@ print(handle_request("   "))
         "Validate the prompt with `not prompt.strip()` to catch both empty and whitespace-only input.",
         "Wrap call_model in try/except and return a dict with an 'error' key instead of letting it raise."
       ],
-      challenge_title: "Harden the handler",
-      challenge_description: "Write validate_request(prompt, api_key) that returns 'ok' only when api_key is non-empty AND prompt has non-whitespace content. Return 'missing key' when the key is empty, and 'empty prompt' when the prompt is blank. Check the key first.",
-      challenge_starter_code: `def validate_request(prompt, api_key):
-    # TODO: check api_key first, then prompt. Return 'ok', 'missing key', or 'empty prompt'.
-    pass
+      challenge_title: "The Production Gate",
+      challenge_description: "Run a batch of incoming requests through a validation gate and report how many pass, how many are rejected, and why.",
+      challenge_story: "Your team is promoting a notebook prototype to a real \`/chat\` endpoint. Before any request reaches the model, it must clear the **validation gate** — the boring wrapper code that keeps one bad request from taking down the worker serving everyone else. Overnight, a replay of production traffic is queued against your new gate. Build the gate, run the batch, and hand ops a clean tally of accepted vs. rejected requests so they can sign off on the deploy.",
+      challenge_statement: "Process \`N\` requests in order. Each request carries three integers: whether an API key is present, the prompt length, and the requested timeout in milliseconds.\n\nApply the gate's rules **in this exact priority order** and reject on the first rule that fails (a request fails for at most one reason):\n\n1. **missing_key** — the key is absent (\`key_present == 0\`).\n2. **empty_prompt** — the prompt has zero length (\`prompt_len == 0\`).\n3. **timeout_too_long** — the requested timeout exceeds **30000** ms.\n\nA request that clears all three rules is **accepted**. Report the accepted and rejected totals, then the count of rejections for each reason.",
+      challenge_input_format: "The first line contains a single integer `N`, the number of requests.\nEach of the next `N` lines contains three space-separated integers: `key_present prompt_len timeout_ms` (`key_present` is 0 or 1).",
+      challenge_output_format: "Five lines:\n- `accepted <count>`\n- `rejected <count>`\n- `missing_key <count>`\n- `empty_prompt <count>`\n- `timeout_too_long <count>`",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "key_present is 0 or 1",
+        "0 ≤ prompt_len ≤ 1000000",
+        "0 ≤ timeout_ms ≤ 1000000",
+        "Rules are checked in the fixed order key → prompt → timeout; a request counts toward exactly one reason."
+      ],
+      challenge_examples: [
+        { input: "5\n1 12 5000\n0 8 5000\n1 0 5000\n1 20 45000\n1 5 30000", output: "accepted 2\nrejected 3\nmissing_key 1\nempty_prompt 1\ntimeout_too_long 1", explanation: "Request 1 (key, prompt 12, 5s) and request 5 (timeout exactly 30000, allowed) pass. Request 2 has no key, request 3 has an empty prompt, request 4 asks for 45s > 30000." },
+        { input: "3\n1 10 1000\n1 7 25000\n1 3 30000", output: "accepted 3\nrejected 0\nmissing_key 0\nempty_prompt 0\ntimeout_too_long 0", explanation: "All three have a key, a non-empty prompt, and a timeout at or below 30000 ms, so every one is accepted." }
+      ],
+      challenge_notes: "The boundary is **inclusive**: a timeout of exactly 30000 ms is allowed; only `> 30000` is rejected. Because rules are checked in priority order, a request that is both missing a key and has an empty prompt counts only as `missing_key`.",
+      challenge_hints: [
+        "Read N, then loop N times reading three ints per line with `map(int, input().split())`.",
+        "Use an if/elif/elif/else chain so each request triggers at most one reason, matching the priority order.",
+        "Keep a small dict of reason counts and print them in the fixed order at the end."
+      ],
+      challenge_starter_code: `import sys
 
-print(validate_request("hi", "sk-1"))
-print(validate_request("   ", "sk-1"))
-print(validate_request("hi", ""))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    accepted = 0
+    rejected = 0
+    counts = {"missing_key": 0, "empty_prompt": 0, "timeout_too_long": 0}
+    for _ in range(n):
+        key_present, prompt_len, timeout_ms = map(int, data[idx].split()); idx += 1
+        # TODO: check key, then prompt, then timeout (in that order).
+        # Increment accepted, or rejected + the matching reason count.
+        pass
+
+    print(f"accepted {accepted}")
+    print(f"rejected {rejected}")
+    print(f"missing_key {counts['missing_key']}")
+    print(f"empty_prompt {counts['empty_prompt']}")
+    print(f"timeout_too_long {counts['timeout_too_long']}")
+
+main()
 `,
-      challenge_solution_code: `def validate_request(prompt, api_key):
-    if not api_key:
-        return "missing key"
-    if not prompt or not prompt.strip():
-        return "empty prompt"
-    return "ok"
+      challenge_solution_code: `import sys
 
-print(validate_request("hi", "sk-1"))
-print(validate_request("   ", "sk-1"))
-print(validate_request("hi", ""))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    accepted = 0
+    rejected = 0
+    counts = {"missing_key": 0, "empty_prompt": 0, "timeout_too_long": 0}
+    for _ in range(n):
+        key_present, prompt_len, timeout_ms = map(int, data[idx].split()); idx += 1
+        if key_present == 0:
+            rejected += 1
+            counts["missing_key"] += 1
+        elif prompt_len == 0:
+            rejected += 1
+            counts["empty_prompt"] += 1
+        elif timeout_ms > 30000:
+            rejected += 1
+            counts["timeout_too_long"] += 1
+        else:
+            accepted += 1
+
+    print(f"accepted {accepted}")
+    print(f"rejected {rejected}")
+    print(f"missing_key {counts['missing_key']}")
+    print(f"empty_prompt {counts['empty_prompt']}")
+    print(f"timeout_too_long {counts['timeout_too_long']}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "prompt='hi', api_key='sk-1'", expected_output: "ok", description: "Valid key and prompt return ok." },
-        { input: "prompt='   ', api_key='sk-1'", expected_output: "empty prompt", description: "Whitespace-only prompt is rejected." },
-        { input: "prompt='hi', api_key=''", expected_output: "missing key", description: "Missing key is caught before the prompt check." }
+        { input: "5\n1 12 5000\n0 8 5000\n1 0 5000\n1 20 45000\n1 5 30000", expected_output: "accepted 2\nrejected 3\nmissing_key 1\nempty_prompt 1\ntimeout_too_long 1", description: "Mixed batch: one of each rejection reason plus two accepts; 30000 ms is allowed." },
+        { input: "3\n1 10 1000\n1 7 25000\n1 3 30000", expected_output: "accepted 3\nrejected 0\nmissing_key 0\nempty_prompt 0\ntimeout_too_long 0", description: "All valid; the 30000 ms boundary passes." },
+        { input: "1\n0 0 99999", expected_output: "accepted 0\nrejected 1\nmissing_key 1\nempty_prompt 0\ntimeout_too_long 0", description: "Edge case: missing key AND empty prompt AND long timeout, but priority order counts it only as missing_key." }
       ]
     },
     {
@@ -509,35 +565,84 @@ print(sorted(traced_call("hi").keys()))
         "Multiply elapsed seconds by 1000 and round() to get whole milliseconds.",
         "Add the latency_ms field to the record dict alongside trace_id, prompt, and output."
       ],
-      challenge_title: "Summarize a batch of traces",
-      challenge_description: "Given a list of trace records (each a dict with 'latency_ms'), write summarize(traces) that returns a dict with 'count' and 'avg_latency' (rounded to 1 decimal). Print the summary for the sample list.",
-      challenge_starter_code: `traces = [
-    {"trace_id": "a", "latency_ms": 100},
-    {"trace_id": "b", "latency_ms": 300},
-    {"trace_id": "c", "latency_ms": 200},
-]
+      challenge_title: "The Trace Digest",
+      challenge_description: "Roll up a morning of request traces into the five numbers an on-call engineer actually needs: volume, average and tail latency, token spend, and error rate.",
+      challenge_story: "A user reports a garbage answer 'sometime this morning.' Right now your logs say \`INFO: request handled\` and nothing else — useless. You wire up real **tracing**: every request now emits a record with its latency, token count, and status. The first batch of traces just landed. Turn that raw stream into a digest the dashboard can show, including the **p95 latency** that the average always hides.",
+      challenge_statement: "Given \`N\` trace records, each with a latency (ms), a token count, and a status (\`0\` = ok, \`1\` = error), compute the digest:\n\n- **requests** — the total count `N`.\n- **avg_latency_ms** — mean latency, rounded to **1 decimal place**.\n- **p95_latency_ms** — the 95th-percentile latency using the **nearest-rank** method: sort latencies ascending, take the value at rank `ceil(0.95 * N)` (1-indexed).\n- **total_tokens** — sum of all token counts.\n- **error_rate_pct** — percentage of records with status `1`, rounded to **1 decimal place**.",
+      challenge_input_format: "The first line contains a single integer `N`.\nEach of the next `N` lines contains three space-separated integers: `latency_ms tokens status`.",
+      challenge_output_format: "Five lines:\n- `requests <N>`\n- `avg_latency_ms <avg to 1 decimal>`\n- `p95_latency_ms <integer>`\n- `total_tokens <sum>`\n- `error_rate_pct <rate to 1 decimal>`",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "0 ≤ latency_ms ≤ 1000000",
+        "0 ≤ tokens ≤ 1000000",
+        "status is 0 or 1",
+        "p95 uses nearest-rank: rank = ceil(0.95 × N), 1-indexed into the ascending-sorted latencies."
+      ],
+      challenge_examples: [
+        { input: "4\n100 50 0\n300 80 1\n200 60 0\n400 70 0", output: "requests 4\navg_latency_ms 250.0\np95_latency_ms 400\ntotal_tokens 260\nerror_rate_pct 25.0", explanation: "Average = (100+300+200+400)/4 = 250.0. Sorted = [100,200,300,400]; rank = ceil(0.95×4) = 4, so p95 = 400. Tokens sum to 260. One of four is an error = 25.0%." },
+        { input: "1\n250 100 1", output: "requests 1\navg_latency_ms 250.0\np95_latency_ms 250\ntotal_tokens 100\nerror_rate_pct 100.0", explanation: "A single trace: it is its own average and p95, and being an error makes the error rate 100.0%." }
+      ],
+      challenge_notes: "p95 is the number you page on, not the average — one slow request hides in a healthy-looking mean but jumps out at the tail. Nearest-rank avoids floating-point interpolation: rank `ceil(0.95 × N)` always lands on a real data point, so the output is an exact integer.",
+      challenge_hints: [
+        "Collect latencies in a list, sum tokens, and count statuses equal to 1 in one pass.",
+        "For p95: `s = sorted(latencies)` then `p95 = s[math.ceil(0.95 * n) - 1]` (subtract 1 for 0-indexing).",
+        "Format avg and error rate with `f\"{value:.1f}\"`."
+      ],
+      challenge_starter_code: `import sys
+import math
 
-def summarize(traces):
-    # TODO: return {"count": N, "avg_latency": rounded average}
-    pass
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    latencies = []
+    errors = 0
+    total_tokens = 0
+    for _ in range(n):
+        latency, tokens, status = map(int, data[idx].split()); idx += 1
+        # TODO: collect latency, add tokens, count errors
+        pass
 
-print(summarize(traces))
+    # TODO: compute avg, p95 (nearest-rank), error_rate and print all five lines.
+
+main()
 `,
-      challenge_solution_code: `traces = [
-    {"trace_id": "a", "latency_ms": 100},
-    {"trace_id": "b", "latency_ms": 300},
-    {"trace_id": "c", "latency_ms": 200},
-]
+      challenge_solution_code: `import sys
+import math
 
-def summarize(traces):
-    count = len(traces)
-    avg = sum(t["latency_ms"] for t in traces) / count
-    return {"count": count, "avg_latency": round(avg, 1)}
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    latencies = []
+    errors = 0
+    total_tokens = 0
+    for _ in range(n):
+        latency, tokens, status = map(int, data[idx].split()); idx += 1
+        latencies.append(latency)
+        total_tokens += tokens
+        if status == 1:
+            errors += 1
 
-print(summarize(traces))
+    count = n
+    avg = sum(latencies) / count
+    s = sorted(latencies)
+    rank = math.ceil(0.95 * count)
+    p95 = s[rank - 1]
+    error_rate = errors / count * 100
+
+    print(f"requests {count}")
+    print(f"avg_latency_ms {avg:.1f}")
+    print(f"p95_latency_ms {p95}")
+    print(f"total_tokens {total_tokens}")
+    print(f"error_rate_pct {error_rate:.1f}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "three traces of 100, 300, 200 ms", expected_output: "{'count': 3, 'avg_latency': 200.0}", description: "Average of 100, 300, 200 is 200.0 over a count of 3." }
+        { input: "4\n100 50 0\n300 80 1\n200 60 0\n400 70 0", expected_output: "requests 4\navg_latency_ms 250.0\np95_latency_ms 400\ntotal_tokens 260\nerror_rate_pct 25.0", description: "Four traces: avg 250.0, p95 lands on 400, 25% error rate." },
+        { input: "5\n120 30 0\n90 40 0\n300 20 1\n150 35 0\n80 25 0", expected_output: "requests 5\navg_latency_ms 148.0\np95_latency_ms 300\ntotal_tokens 150\nerror_rate_pct 20.0", description: "The single 300 ms outlier is the p95 even though the average is only 148.0." },
+        { input: "1\n250 100 1", expected_output: "requests 1\navg_latency_ms 250.0\np95_latency_ms 250\ntotal_tokens 100\nerror_rate_pct 100.0", description: "Edge case: a single error trace gives a 100.0% error rate." }
       ]
     },
     {
@@ -774,24 +879,72 @@ print(run_evals(cases))
         "Divide the number passed by len(cases) to get the fraction.",
         "Return the fraction directly; the contains-grader is case-insensitive via .lower()."
       ],
-      challenge_title: "Add a threshold gate",
-      challenge_description: "Write gate(score, threshold) that returns 'PASS' if score >= threshold, else 'FAIL'. Then call it for a score of 0.7 with threshold 0.8 and a score of 0.9 with threshold 0.8, printing each result.",
-      challenge_starter_code: `def gate(score, threshold):
-    # TODO: return 'PASS' if score >= threshold else 'FAIL'
-    pass
+      challenge_title: "The CI Eval Gate",
+      challenge_description: "Run a prompt's eval suite in CI: grade every case with a substring check, compute the pass rate, and gate the deploy against a threshold.",
+      challenge_story: "You changed one line of a prompt to fix a formatting bug. With normal code a unit test would catch any regression — with prompts, most teams ship on vibes. Not yours. You've built an **eval suite**: a frozen set of cases, each with an expected answer fragment, run automatically in **CI** on every change. A run just kicked off. Grade each case, compute the pass rate, and decide whether this build is allowed to merge.",
+      challenge_statement: "An eval run has \`N\` cases and a pass-rate \`threshold\` (an integer percent). Each case provides an **expected** fragment and the model's **actual** output, separated by the literal delimiter \`|||\`.\n\nGrade each case with a **case-insensitive substring** check: the case **passes** if the expected fragment appears anywhere in the actual output, ignoring letter case. Then:\n\n- count how many cases passed,\n- compute the pass rate as a percentage, rounded to **1 decimal place**,\n- output \`PASS\` if the pass rate is **at least** the threshold, otherwise \`FAIL\`.",
+      challenge_input_format: "The first line contains two space-separated integers: `N threshold`.\nEach of the next `N` lines is one case formatted as `expected|||actual` (the delimiter is three literal pipe characters). Either side may contain spaces; neither side contains `|||`.",
+      challenge_output_format: "Three lines:\n- `passed <p>/<N>`\n- `pass_rate <rate to 1 decimal>`\n- `PASS` or `FAIL`",
+      challenge_constraints: [
+        "1 ≤ N ≤ 10000",
+        "0 ≤ threshold ≤ 100",
+        "Grading is case-insensitive substring containment of expected within actual.",
+        "The gate passes when pass_rate ≥ threshold (inclusive)."
+      ],
+      challenge_examples: [
+        { input: "4 75\nparis|||The capital is Paris.\n4|||2 plus 2 equals 4\nyes|||Absolutely, yes!\nblue|||The sky is gray today", output: "passed 3/4\npass_rate 75.0\nPASS", explanation: "'paris' matches 'Paris' case-insensitively, '4' and 'yes' match too; only 'blue' is absent. 3/4 = 75.0%, which meets the 75 threshold." },
+        { input: "5 80\njson|||valid json output\nok|||status ok\nrefund|||processing your refund now\nyes|||no\ndone|||all done here", output: "passed 4/5\npass_rate 80.0\nPASS", explanation: "Four of five fragments appear; only 'yes' is missing from 'no'. 4/5 = 80.0%, exactly the threshold, so it passes." }
+      ],
+      challenge_notes: "The gate is **inclusive**: a pass rate exactly equal to the threshold still passes — CI should not block a build that meets the bar. Case-insensitive matching mirrors real graders, where 'Paris' and 'paris' are the same correct answer.",
+      challenge_hints: [
+        "Split the first line into N and threshold with `map(int, ...)`.",
+        "For each case, `expected, actual = line.split('|||')`, then test `expected.lower() in actual.lower()`.",
+        "pass_rate = passed / N * 100; print `PASS` when `pass_rate >= threshold`."
+      ],
+      challenge_starter_code: `import sys
 
-print(gate(0.7, 0.8))
-print(gate(0.9, 0.8))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, threshold = map(int, data[idx].split()); idx += 1
+    passed = 0
+    for _ in range(n):
+        line = data[idx]; idx += 1
+        expected, actual = line.split("|||")
+        # TODO: case-insensitive substring grade; increment passed when it matches
+        pass
+
+    # TODO: compute pass_rate, print the three lines, gate against threshold.
+
+main()
 `,
-      challenge_solution_code: `def gate(score, threshold):
-    return "PASS" if score >= threshold else "FAIL"
+      challenge_solution_code: `import sys
 
-print(gate(0.7, 0.8))
-print(gate(0.9, 0.8))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, threshold = map(int, data[idx].split()); idx += 1
+    passed = 0
+    for _ in range(n):
+        line = data[idx]; idx += 1
+        expected, actual = line.split("|||")
+        if expected.lower() in actual.lower():
+            passed += 1
+
+    total = n
+    pass_rate = passed / total * 100
+    verdict = "PASS" if pass_rate >= threshold else "FAIL"
+
+    print(f"passed {passed}/{total}")
+    print(f"pass_rate {pass_rate:.1f}")
+    print(verdict)
+
+main()
 `,
       challenge_test_cases: [
-        { input: "score=0.7, threshold=0.8", expected_output: "FAIL", description: "0.7 is below 0.8, so the gate fails." },
-        { input: "score=0.9, threshold=0.8", expected_output: "PASS", description: "0.9 meets the threshold, so the gate passes." }
+        { input: "4 75\nparis|||The capital is Paris.\n4|||2 plus 2 equals 4\nyes|||Absolutely, yes!\nblue|||The sky is gray today", expected_output: "passed 3/4\npass_rate 75.0\nPASS", description: "Case-insensitive match lets 'paris' pass against 'Paris'; 3/4 meets the threshold." },
+        { input: "5 80\njson|||valid json output\nok|||status ok\nrefund|||processing your refund now\nyes|||no\ndone|||all done here", expected_output: "passed 4/5\npass_rate 80.0\nPASS", description: "Pass rate exactly equals the threshold and still passes (inclusive)." },
+        { input: "1 100\nhello|||say HELLO world", expected_output: "passed 1/1\npass_rate 100.0\nPASS", description: "Single case, uppercase HELLO matches lowercase expected at a 100 threshold." }
       ]
     },
     {
@@ -1015,27 +1168,86 @@ print(round(call_cost("big", 1000, 500), 6))
         "Multiply in_tokens by the in price and out_tokens by the out price, then add them.",
         "Divide the total by 1,000,000 because prices are quoted per million tokens."
       ],
-      challenge_title: "Enforce a budget",
-      challenge_description: "Write charge(spent, limit, cost) that returns the new total when spent + cost stays at or under limit, otherwise returns the string 'budget exceeded'. Test: charge(0.40, 0.50, 0.05) and charge(0.48, 0.50, 0.05).",
-      challenge_starter_code: `def charge(spent, limit, cost):
-    # TODO: if spent + cost <= limit, return the new total; else 'budget exceeded'
-    pass
+      challenge_title: "The Budget Throttle",
+      challenge_description: "Meter a live stream of model calls against a hard spend cap: serve each request only if it keeps you under budget, and report the final ledger.",
+      challenge_story: "A free AI feature went viral over a weekend and a retry loop quietly rang up a five-figure bill — because nobody was watching the meter. Never again. You add a **budget throttle** in front of the model: every request's cost is computed up front, and a request is only served if it keeps cumulative spend at or under the day's cap. The throttle never blocks the whole stream — a request that would bust the budget is skipped, but a cheaper one later can still slip through. Run today's traffic and produce the ledger.",
+      challenge_statement: "You are given \`N\` requests, a \`budget\`, and two prices — all amounts in **micro-dollars** (millionths of a dollar) to keep the math exact. The prices are **per 1000 tokens**:\n\n- \`in_price\` — micro-dollars per 1000 input tokens.\n- \`out_price\` — micro-dollars per 1000 output tokens.\n\nFor each request with \`in_tok\` input tokens and \`out_tok\` output tokens, its cost in micro-dollars is:\n\n\`cost = in_tok * in_price // 1000 + out_tok * out_price // 1000\`  (integer floor division per term).\n\nProcess requests in order. Serve a request only if **cumulative spent + cost ≤ budget**; otherwise reject it (do not add its cost) and keep going. Report the totals and the spend converted to dollars.",
+      challenge_input_format: "The first line contains four space-separated integers: `N budget in_price out_price` (budget and prices in micro-dollars).\nEach of the next `N` lines contains two space-separated integers: `in_tok out_tok`.",
+      challenge_output_format: "Four lines:\n- `served <count>`\n- `rejected <count>`\n- `spent $<dollars to 6 decimals>`\n- `remaining $<dollars to 6 decimals>`\nwhere dollars = micro-dollars / 1,000,000, formatted to exactly 6 decimal places.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "0 ≤ budget ≤ 1000000000",
+        "0 ≤ in_price, out_price ≤ 1000000",
+        "0 ≤ in_tok, out_tok ≤ 1000000",
+        "Per-request cost uses integer floor division per term; the budget check is inclusive (spent + cost ≤ budget serves)."
+      ],
+      challenge_examples: [
+        { input: "4 50000 3000 15000\n1000 500\n2000 1000\n500 200\n100 800", output: "served 4\nrejected 0\nspent $0.048300\nremaining $0.001700", explanation: "Costs (micro-$): 3000+7500=10500, 6000+15000=21000, 1500+3000=4500, 300+12000=12300. Running total 48300 ≤ 50000 at every step, so all four serve. Spent = $0.048300, remaining $0.001700." },
+        { input: "4 40000 3000 15000\n1000 500\n5000 2000\n200 100\n1000 1000", output: "served 3\nrejected 1\nspent $0.030600\nremaining $0.009400", explanation: "Request 1 costs 10500 (total 10500). Request 2 costs 45000 → 55500 > 40000, rejected. Request 3 costs 2100 → 12600, served. Request 4 costs 18000 → 30600, served. The throttle skipped the expensive call but still let later cheap calls through." }
+      ],
+      challenge_notes: "Working in integer micro-dollars sidesteps floating-point drift entirely — you only convert to dollars at the very end. Note the throttle is per-request, not stop-on-first-overflow: a single huge request can be skipped while smaller ones after it still succeed.",
+      challenge_hints: [
+        "Keep `spent` as an integer in micro-dollars; only divide by 1,000,000 when printing.",
+        "Compute each cost as `in_tok * in_price // 1000 + out_tok * out_price // 1000`.",
+        "For exact 6-decimal output, use Decimal: `(Decimal(spent) / Decimal(1000000)).quantize(Decimal('0.000001'))`."
+      ],
+      challenge_starter_code: `import sys
+from decimal import Decimal, ROUND_HALF_UP
 
-print(charge(0.40, 0.50, 0.05))
-print(charge(0.48, 0.50, 0.05))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, budget, in_price, out_price = map(int, data[idx].split()); idx += 1
+    spent = 0
+    served = 0
+    rejected = 0
+    for _ in range(n):
+        in_tok, out_tok = map(int, data[idx].split()); idx += 1
+        cost = in_tok * in_price // 1000 + out_tok * out_price // 1000
+        # TODO: serve if spent + cost <= budget (add cost), else reject
+        pass
+
+    print(f"served {served}")
+    print(f"rejected {rejected}")
+    dollars = (Decimal(spent) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"spent \${dollars}")
+    remaining = (Decimal(budget - spent) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"remaining \${remaining}")
+
+main()
 `,
-      challenge_solution_code: `def charge(spent, limit, cost):
-    new_total = spent + cost
-    if new_total <= limit:
-        return round(new_total, 2)
-    return "budget exceeded"
+      challenge_solution_code: `import sys
+from decimal import Decimal, ROUND_HALF_UP
 
-print(charge(0.40, 0.50, 0.05))
-print(charge(0.48, 0.50, 0.05))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, budget, in_price, out_price = map(int, data[idx].split()); idx += 1
+    spent = 0
+    served = 0
+    rejected = 0
+    for _ in range(n):
+        in_tok, out_tok = map(int, data[idx].split()); idx += 1
+        cost = in_tok * in_price // 1000 + out_tok * out_price // 1000
+        if spent + cost <= budget:
+            spent += cost
+            served += 1
+        else:
+            rejected += 1
+
+    print(f"served {served}")
+    print(f"rejected {rejected}")
+    dollars = (Decimal(spent) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"spent \${dollars}")
+    remaining = (Decimal(budget - spent) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"remaining \${remaining}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "spent=0.40, limit=0.50, cost=0.05", expected_output: "0.45", description: "0.45 stays under the limit, so the new total is returned." },
-        { input: "spent=0.48, limit=0.50, cost=0.05", expected_output: "budget exceeded", description: "0.53 exceeds 0.50, so the charge is refused." }
+        { input: "4 50000 3000 15000\n1000 500\n2000 1000\n500 200\n100 800", expected_output: "served 4\nrejected 0\nspent $0.048300\nremaining $0.001700", description: "Every request fits under the cap; spend lands just below budget." },
+        { input: "4 40000 3000 15000\n1000 500\n5000 2000\n200 100\n1000 1000", expected_output: "served 3\nrejected 1\nspent $0.030600\nremaining $0.009400", description: "The expensive request 2 is throttled, but cheaper later requests still serve." },
+        { input: "1 100 3000 15000\n1000 1000", expected_output: "served 0\nrejected 1\nspent $0.000000\nremaining $0.000100", description: "Edge case: a single request that exceeds the tiny budget is rejected and nothing is spent." }
       ]
     },
     {
@@ -1254,28 +1466,81 @@ False`,
         "Return that membership check as the function's result.",
         "'timeout' is in the set so it returns True; 'invalid_api_key' is not, so it returns False."
       ],
-      challenge_title: "Retry then fall back",
-      challenge_description: "Write robust_call(attempts, succeed_on) that simulates calling a flaky service: it 'succeeds' on attempt number succeed_on (1-indexed). Try up to `attempts` times; return 'ok' if an attempt succeeds, otherwise return 'fallback'. Test with attempts=3, succeed_on=2 and attempts=2, succeed_on=5.",
-      challenge_starter_code: `def robust_call(attempts, succeed_on):
-    # TODO: loop attempts times; if the current 1-indexed try == succeed_on, return 'ok'.
-    # If no attempt succeeds, return 'fallback'.
-    pass
+      challenge_title: "The Resilient Caller",
+      challenge_description: "Drive a batch of requests through a retry-then-fallback policy and report how many recovered, how many fell back, and how many total attempts the provider absorbed.",
+      challenge_story: "A 40-minute provider outage once took your whole product down because every request hit one API with no plan B. You fix that with a **retry-then-fallback** policy: each request gets up to \`max_attempts\` tries against the flaky primary; if one succeeds you're done, and if all of them fail you serve a degraded **fallback** instead of an error page. A queue of requests is replayed against the policy. Each request is described by which attempt (if any) would have succeeded. Run the policy and report the outcome.",
+      challenge_statement: "You are given \`N\` requests and a retry limit \`max_attempts\`. Each request provides \`succeed_on\`: the **1-indexed** attempt number on which the primary would succeed, or \`0\` if the primary never succeeds.\n\nFor each request, make attempts \`1, 2, ..., max_attempts\` in order, counting **every attempt made**. Stop and mark the request \`succeeded\` the moment attempt number `succeed_on` is reached (when `succeed_on` is between 1 and `max_attempts`). If you exhaust all `max_attempts` without hitting `succeed_on` (including when `succeed_on` is 0 or larger than `max_attempts`), the request **falls back**.\n\nReport how many requests succeeded, how many fell back, and the total number of attempts made across all requests.",
+      challenge_input_format: "The first line contains two space-separated integers: `N max_attempts`.\nEach of the next `N` lines contains one integer `succeed_on` (0 means the primary never succeeds).",
+      challenge_output_format: "Three lines:\n- `succeeded <count>`\n- `fell_back <count>`\n- `total_attempts <count>`",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "1 ≤ max_attempts ≤ 1000",
+        "0 ≤ succeed_on ≤ 1000000",
+        "Attempts are counted up to and including the successful one; a fallback consumes all max_attempts tries.",
+        "succeed_on of 0, or greater than max_attempts, always falls back."
+      ],
+      challenge_examples: [
+        { input: "3 3\n2\n0\n1", output: "succeeded 2\nfell_back 1\ntotal_attempts 6", explanation: "Request 1 succeeds on attempt 2 (2 attempts). Request 2 never succeeds, so it uses all 3 attempts then falls back. Request 3 succeeds on attempt 1 (1 attempt). Total = 2+3+1 = 6, with 2 successes and 1 fallback." },
+        { input: "1 2\n5", output: "succeeded 0\nfell_back 1\ntotal_attempts 2", explanation: "succeed_on is 5 but only 2 attempts are allowed, so the request exhausts both attempts and falls back." }
+      ],
+      challenge_notes: "A retry that exhausts its budget still costs you every attempt — retries trade latency and load for reliability, so unbounded retries are their own outage. Counting attempts exactly is how you'd later size a circuit breaker or a per-request timeout budget.",
+      challenge_hints: [
+        "For each request loop `for a in range(1, max_attempts + 1)` and count `total_attempts` on every iteration.",
+        "If `succeed_on != 0 and a == succeed_on`, mark success and break out of the loop.",
+        "If the loop finishes without a success, increment the fallback counter."
+      ],
+      challenge_starter_code: `import sys
 
-print(robust_call(3, 2))
-print(robust_call(2, 5))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, max_attempts = map(int, data[idx].split()); idx += 1
+    succeeded = 0
+    fell_back = 0
+    total_attempts = 0
+    for _ in range(n):
+        succeed_on = int(data[idx].strip()); idx += 1
+        # TODO: try attempts 1..max_attempts, counting each; succeed on succeed_on, else fall back.
+        pass
+
+    print(f"succeeded {succeeded}")
+    print(f"fell_back {fell_back}")
+    print(f"total_attempts {total_attempts}")
+
+main()
 `,
-      challenge_solution_code: `def robust_call(attempts, succeed_on):
-    for i in range(1, attempts + 1):
-        if i == succeed_on:
-            return "ok"
-    return "fallback"
+      challenge_solution_code: `import sys
 
-print(robust_call(3, 2))
-print(robust_call(2, 5))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, max_attempts = map(int, data[idx].split()); idx += 1
+    succeeded = 0
+    fell_back = 0
+    total_attempts = 0
+    for _ in range(n):
+        succeed_on = int(data[idx].strip()); idx += 1
+        result = "fallback"
+        for a in range(1, max_attempts + 1):
+            total_attempts += 1
+            if succeed_on != 0 and a == succeed_on:
+                result = "ok"
+                break
+        if result == "ok":
+            succeeded += 1
+        else:
+            fell_back += 1
+
+    print(f"succeeded {succeeded}")
+    print(f"fell_back {fell_back}")
+    print(f"total_attempts {total_attempts}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "attempts=3, succeed_on=2", expected_output: "ok", description: "The second of three attempts succeeds." },
-        { input: "attempts=2, succeed_on=5", expected_output: "fallback", description: "Success never lands within 2 attempts, so the fallback runs." }
+        { input: "3 3\n2\n0\n1", expected_output: "succeeded 2\nfell_back 1\ntotal_attempts 6", description: "A success on attempt 2, a never-succeed fallback (3 attempts), and a first-try success." },
+        { input: "1 2\n5", expected_output: "succeeded 0\nfell_back 1\ntotal_attempts 2", description: "Edge case: succeed_on beyond max_attempts exhausts retries and falls back." },
+        { input: "4 2\n1\n2\n3\n0", expected_output: "succeeded 2\nfell_back 2\ntotal_attempts 7", description: "Edge case: succeed_on of 3 and 0 both exceed the 2-attempt budget and fall back (1+2+2+2 = 7 attempts)." }
       ]
     }
   ]
