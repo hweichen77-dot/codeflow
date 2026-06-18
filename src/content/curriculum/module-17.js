@@ -225,25 +225,65 @@ user: What is a token?`,
         "Each dict has keys 'role' and 'content' — access them with m['role'] and m['content'].",
         "An f-string like f\"{m['role']}: {m['content']}\" prints them on one line."
       ],
-      challenge_title: "Print the conversation transcript",
-      challenge_description: "Given a list of message dicts, print a clean transcript with each speaker's role capitalized, like 'System: ...'. Loop over the list in order.",
-      challenge_starter_code: `messages = [
-    {"role": "system", "content": "Be concise."},
-    {"role": "user", "content": "Hello"},
-    {"role": "assistant", "content": "Hi there."},
-]
-# TODO: print each line as "Role: content" with the role capitalized.
+      challenge_title: "Transcript Renderer",
+      challenge_description: "Turn a raw message list into a labeled, numbered transcript — the view every chat-debugging tool ships — and report how many messages each role contributed.",
+      challenge_story: "You're building the request inspector for an AI chat platform. When a conversation misbehaves, support engineers paste the raw message list and need to *see* it: who spoke, in what order, and how the back-and-forth flows. Your renderer takes the ordered list of \`{role, content}\` messages and prints a clean transcript. The **system** message is setup, not a turn, so it gets a \`[setup]\` tag. Every **user** and **assistant** message is a real turn and gets a sequential turn number. Finally you print a one-line role tally so engineers can spot a malformed request (say, two system messages, or a missing assistant reply) at a glance.",
+      challenge_statement: "You are given an ordered list of chat messages. Render a transcript:\n\n1. For each message in order, print one line.\n2. A message with role \`system\` is setup: print \`[setup] System: <content>\`.\n3. A message with role \`user\` or \`assistant\` is a **turn**. Number turns starting at 1 in the order they appear (system messages do **not** advance the turn counter). Print \`[<turn>] <Role>: <content>\`, where \`<Role>\` is the role capitalized (\`User\`, \`Assistant\`).\n4. After all messages, print one summary line: \`system=<s> user=<u> assistant=<a>\` with the count of each role.",
+      challenge_input_format: "The first line is an integer `n`: the number of messages.\n\nEach of the next `n` lines is one message: a role (`system`, `user`, or `assistant`), a single space, then the content (which may contain spaces).",
+      challenge_output_format: "Print `n` transcript lines as described, then one summary line `system=<s> user=<u> assistant=<a>`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "Each role is exactly one of `system`, `user`, `assistant`.",
+        "Content is non-empty and may contain spaces but no newline.",
+      ],
+      challenge_examples: [
+        { input: "4\nsystem Be concise.\nuser Hello\nassistant Hi there.\nuser Bye", output: "[setup] System: Be concise.\n[1] User: Hello\n[2] Assistant: Hi there.\n[3] User: Bye\nsystem=1 user=2 assistant=1", explanation: "The system line is tagged `[setup]` and never advances the turn counter; the three user/assistant turns are numbered 1, 2, 3." },
+        { input: "1\nsystem You are a router.", output: "[setup] System: You are a router.\nsystem=1 user=0 assistant=0", explanation: "A request can be system-only; there are no turns, so the tally shows zero user and zero assistant messages." },
+      ],
+      challenge_notes: "Splitting each line on the *first* space separates the role from content that may itself contain spaces — `line.split(' ', 1)` does exactly that. Keeping the turn counter independent of system messages mirrors how real APIs treat the system prompt as configuration, not conversation.",
+      challenge_hints: [
+        "Read `n`, then loop `n` times; split each line once on the first space into `role` and `content`.",
+        "Keep a separate `turn` counter that you increment only for `user`/`assistant` messages.",
+        "Track three integer counts as you go, then print the summary line after the loop.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: for each of the next n lines, split once on the first space into
+    #       role and content. Print [setup] for system, [turn] for user/assistant
+    #       (capitalize the role), then print the role tally.
+
+main()
 `,
-      challenge_solution_code: `messages = [
-    {"role": "system", "content": "Be concise."},
-    {"role": "user", "content": "Hello"},
-    {"role": "assistant", "content": "Hi there."},
-]
-for m in messages:
-    print(f"{m['role'].capitalize()}: {m['content']}")
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    counts = {"system": 0, "user": 0, "assistant": 0}
+    lines = []
+    turn = 0
+    for _ in range(n):
+        line = data[idx]; idx += 1
+        role, content = line.split(" ", 1)
+        counts[role] += 1
+        if role in ("user", "assistant"):
+            turn += 1
+            lines.append(f"[{turn}] {role.capitalize()}: {content}")
+        else:
+            lines.append(f"[setup] {role.capitalize()}: {content}")
+    print("\\n".join(lines))
+    print(f"system={counts['system']} user={counts['user']} assistant={counts['assistant']}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "System: Be concise.\nUser: Hello\nAssistant: Hi there.", description: "Prints each message in order with the role capitalized." }
+        { input: "4\nsystem Be concise.\nuser Hello\nassistant Hi there.\nuser Bye", expected_output: "[setup] System: Be concise.\n[1] User: Hello\n[2] Assistant: Hi there.\n[3] User: Bye\nsystem=1 user=2 assistant=1", description: "Setup tag plus numbered turns and a correct role tally." },
+        { input: "1\nsystem You are a router.", expected_output: "[setup] System: You are a router.\nsystem=1 user=0 assistant=0", description: "System-only request: no turns, zero user/assistant counts." },
+        { input: "3\nuser ping\nassistant pong\nuser ping again", expected_output: "[1] User: ping\n[2] Assistant: pong\n[3] User: ping again\nsystem=0 user=2 assistant=1", description: "Edge: no system message; turns start at 1 and content with spaces is preserved." }
       ]
     },
     {
@@ -457,27 +497,70 @@ first role: system`,
         "Each message is a dict: {\"role\": ..., \"content\": ...}.",
         "messages[0] is the first message; check its 'role' key to confirm it's 'system'."
       ],
-      challenge_title: "Apply two different system prompts",
-      challenge_description: "Write a function describe(system_prompt) that returns a messages list with the given system prompt plus a fixed user question 'Explain gravity.'. Call it twice with two different personas and print the first message's content each time.",
-      challenge_starter_code: `def describe(system_prompt):
-    # TODO: return a messages list: system message, then user "Explain gravity."
-    return []
+      challenge_title: "The System-Prompt Router",
+      challenge_description: "Build the dispatcher that reads an incoming user message, picks the right persona's system prompt by keyword, and falls back to a default — the routing layer behind every multi-skill AI assistant.",
+      challenge_story: "Your company runs one chat endpoint that wears many hats: billing questions need a calm **billing specialist**, broken-checkout reports need a **senior engineer**, and greetings get a **friendly greeter**. The model is the same every time — only the **system prompt** changes. You're writing the router that sits in front of the model: it scans each incoming user message for trigger keywords and selects the matching system prompt. If several rules match, the **highest-priority** rule wins (rules are listed in priority order, first = highest). If nothing matches, the message gets the **default** system prompt so no request goes unanswered.",
+      challenge_statement: "You are given a set of routing rules and a batch of incoming user messages. For each message, choose its system prompt:\n\n1. Each rule is a **keyword** plus the **system prompt** to use when that keyword appears. Rules are given in **priority order** (the first rule is highest priority).\n2. A rule matches a message if its keyword appears as a **case-insensitive substring** of the message.\n3. If one or more rules match a message, use the system prompt of the **highest-priority** matching rule (the one appearing earliest in the rule list).\n4. If no rule matches, use the **default** system prompt.\n\nPrint the chosen system prompt for each message, one per line, in input order.",
+      challenge_input_format: "The first line has two integers `n q`: the number of rules and the number of incoming messages.\n\nEach of the next `n` lines is one rule: a keyword (no spaces), a single space, then the system prompt text (which may contain spaces).\n\nThe next line is the default system prompt.\n\nEach of the final `q` lines is one incoming user message.",
+      challenge_output_format: "Print `q` lines: the chosen system prompt for each message, in order.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 500",
+        "1 ≤ q ≤ 500",
+        "Keywords contain no spaces; matching is case-insensitive.",
+        "Messages and prompts may contain spaces but no newline.",
+      ],
+      challenge_examples: [
+        { input: "3 4\nrefund You are a billing specialist.\nbug You are a senior engineer.\nhello You are a friendly greeter.\nYou are a general assistant.\nI need a refund please\nThere is a bug in checkout\nhello there\nWhat is the weather", output: "You are a billing specialist.\nYou are a senior engineer.\nYou are a friendly greeter.\nYou are a general assistant.", explanation: "Each of the first three messages hits exactly one keyword; the last matches nothing and falls back to the default." },
+        { input: "1 1\ncode You are a coder.\nYou are default.\nNothing matches here", output: "You are default.", explanation: "The keyword `code` does not appear in the message, so the default prompt is used." },
+      ],
+      challenge_notes: "Routing by keyword is the simplest form of *intent classification* — real systems use a small model or embeddings, but the dispatch pattern is identical: classify the request, then swap in the matching system prompt. Lowercasing both the keyword and the message before checking `in` makes the match case-insensitive.",
+      challenge_hints: [
+        "Store rules in a list so their index encodes priority; lower index = higher priority.",
+        "For each message, scan rules in order and take the first whose keyword is a substring of the lowercased message.",
+        "If the scan finds no match, emit the default prompt.",
+      ],
+      challenge_starter_code: `import sys
 
-# TODO: call describe twice with two different system prompts and print messages[0]["content"].
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, q = map(int, data[0].split())
+    # TODO: read n rules (keyword + prompt), then the default prompt, then q
+    #       messages. For each message print the highest-priority matching
+    #       rule's prompt, or the default if none match.
+
+main()
 `,
-      challenge_solution_code: `def describe(system_prompt):
-    return [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": "Explain gravity."},
-    ]
+      challenge_solution_code: `import sys
 
-a = describe("You are a poet.")
-b = describe("You are a physics professor.")
-print(a[0]["content"])
-print(b[0]["content"])
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, q = map(int, data[idx].split()); idx += 1
+    routes = []  # (keyword_lower, prompt) in priority order
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        keyword = parts[0]
+        prompt = " ".join(parts[1:])
+        routes.append((keyword.lower(), prompt))
+    default = data[idx]; idx += 1
+    out = []
+    for _ in range(q):
+        msg = data[idx]; idx += 1
+        low = msg.lower()
+        chosen = default
+        for keyword, prompt in routes:
+            if keyword in low:
+                chosen = prompt
+                break
+        out.append(chosen)
+    print("\\n".join(out))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "You are a poet.\nYou are a physics professor.", description: "Each call places its system prompt first; prints both setups." }
+        { input: "3 4\nrefund You are a billing specialist.\nbug You are a senior engineer.\nhello You are a friendly greeter.\nYou are a general assistant.\nI need a refund please\nThere is a bug in checkout\nhello there\nWhat is the weather", expected_output: "You are a billing specialist.\nYou are a senior engineer.\nYou are a friendly greeter.\nYou are a general assistant.", description: "Single-keyword matches plus a default fallback." },
+        { input: "1 1\ncode You are a coder.\nYou are default.\nNothing matches here", expected_output: "You are default.", description: "No rule matches, so the default prompt is used." },
+        { input: "2 2\nbug You are tier-2 support.\nbug You are tier-1 support.\nDefault helper.\nThe app has a BUG today\nall good", expected_output: "You are tier-2 support.\nDefault helper.", description: "Two rules share a keyword and casing differs; the earlier (higher-priority) rule wins, second message falls back." }
       ]
     },
     {
@@ -692,22 +775,75 @@ messages resent next turn: 3`,
         "After appending, len(history) is the number of messages that would be resent.",
         "Every turn resends the full list, so the resent count equals the current history length."
       ],
-      challenge_title: "Track the growing history",
-      challenge_description: "Simulate three turns. Start with a system message. For each of two user inputs, append the user message and a fixed assistant reply 'ok', then print the history length after each turn. The list should grow by two each turn.",
-      challenge_starter_code: `history = [{"role": "system", "content": "You are helpful."}]
-user_inputs = ["hi", "bye"]
-# TODO: for each user input, append the user message and an assistant "ok",
-# then print len(history) after each turn.
+      challenge_title: "Context-Window Budgeter",
+      challenge_description: "Trim a growing conversation to fit the model's token budget the way every production chatbot does: keep the system prompt, keep the freshest turns, and drop the stale ones.",
+      challenge_story: "Your chatbot has been chatting all day and the history is now too long for the model's **context window**. Every turn is resent, and once the transcript's token count exceeds the limit, the request is rejected. So before each call your app runs a **budgeter**: it always keeps the **system** message (the persona setup must survive), then keeps as many of the **most recent** turns as fit within the remaining token budget, dropping the oldest turns first. You're writing that budgeter. Given each message's role and token cost, decide what stays.",
+      challenge_statement: "You are given a conversation as a list of messages, each with a role and an integer token cost, plus a total token `budget`.\n\nApply this trimming policy:\n\n1. **All** \`system\` messages are kept unconditionally; their tokens are charged against the budget first.\n2. With the tokens left over (\`budget\` minus the system tokens), keep non-system messages **newest-first**: walk from the last message backward, keeping a message while it still fits in the remaining budget, and **stop** at the first message that does not fit (do not skip it to fit a smaller older one).\n3. If the system tokens alone exceed the budget, no non-system messages are kept.\n\nPrint three lines: \`kept <k>\` (total messages kept, including system), \`dropped <d>\` (messages dropped), and \`tokens <t>\` (total tokens of the kept messages).",
+      challenge_input_format: "The first line has two integers `n budget`: the number of messages and the token budget.\n\nEach of the next `n` lines has a role (`system`, `user`, or `assistant`) and an integer token cost, separated by a space. Messages are listed oldest-first.",
+      challenge_output_format: "Three lines: `kept <k>`, `dropped <d>`, `tokens <t>`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ budget ≤ 1000000000",
+        "1 ≤ token cost ≤ 100000",
+        "There is at least one message; system messages may appear anywhere but are always kept.",
+      ],
+      challenge_examples: [
+        { input: "5 100\nsystem 20\nuser 30\nassistant 40\nuser 25\nassistant 35", output: "kept 3\ndropped 2\ntokens 80", explanation: "System costs 20, leaving 80. Newest-first: assistant(35) fits → 35, user(25) fits → 60, assistant(40) would make 100 > 80 so stop. Kept = system + 2 turns = 3, tokens = 20+25+35 = 80." },
+        { input: "3 25\nsystem 20\nuser 30\nassistant 10", output: "kept 1\ndropped 2\ntokens 20", explanation: "System uses 20, leaving 5. The newest turn costs 10 > 5, so it does not fit and we stop. Only the system message survives." },
+      ],
+      challenge_notes: "Real budgeters do exactly this dance, sometimes summarizing dropped turns instead of deleting them. Charging the system prompt first reflects that the persona is non-negotiable, while the most recent turns carry the live context the model needs to answer well.",
+      challenge_hints: [
+        "Sum the tokens of all system messages first; the leftover is your working budget for the rest.",
+        "Iterate the non-system messages in reverse, accumulating tokens; break the moment the next one would overflow.",
+        "Total kept = (number of system messages) + (number of recent non-system messages that fit).",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, budget = map(int, data[0].split())
+    # TODO: read n (role, tokens) messages. Keep all system messages, then keep
+    #       non-system messages newest-first while they fit the remaining budget.
+    #       Print kept, dropped, and total kept tokens.
+
+main()
 `,
-      challenge_solution_code: `history = [{"role": "system", "content": "You are helpful."}]
-user_inputs = ["hi", "bye"]
-for text in user_inputs:
-    history.append({"role": "user", "content": text})
-    history.append({"role": "assistant", "content": "ok"})
-    print("history length:", len(history))
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, budget = map(int, data[idx].split()); idx += 1
+    msgs = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        msgs.append((parts[0], int(parts[1])))
+    system_tokens = sum(t for r, t in msgs if r == "system")
+    system_count = sum(1 for r, t in msgs if r == "system")
+    remaining = budget - system_tokens
+    non_system = [(r, t) for r, t in msgs if r != "system"]
+    kept = 0
+    used = 0
+    if remaining >= 0:
+        for r, t in reversed(non_system):
+            if used + t <= remaining:
+                used += t
+                kept += 1
+            else:
+                break
+    total_kept = system_count + kept
+    dropped = n - total_kept
+    total_tokens = system_tokens + used
+    print(f"kept {total_kept}")
+    print(f"dropped {dropped}")
+    print(f"tokens {total_tokens}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "history length: 3\nhistory length: 5", description: "Starts at 1 (system), grows by 2 each turn: 3 then 5." }
+        { input: "5 100\nsystem 20\nuser 30\nassistant 40\nuser 25\nassistant 35", expected_output: "kept 3\ndropped 2\ntokens 80", description: "System kept, two newest turns fit, oldest two dropped." },
+        { input: "3 25\nsystem 20\nuser 30\nassistant 10", expected_output: "kept 1\ndropped 2\ntokens 20", description: "Budget too tight for any turn after the system prompt." },
+        { input: "3 1000\nsystem 5\nuser 5\nassistant 5", expected_output: "kept 3\ndropped 0\ntokens 15", description: "Edge: everything fits, nothing is dropped." }
       ]
     },
     {
@@ -925,27 +1061,67 @@ assistant`,
         "messages.append(...) adds a message to the end of the list.",
         "After appending, loop over messages and print each m['role'] to check order."
       ],
-      challenge_title: "Build a chat array with a helper",
-      challenge_description: "Write build_chat(system, turns) where turns is a list of (role, content) tuples. Return a message list that starts with the system message, then each turn appended in order. Print each message as 'role: content'.",
-      challenge_starter_code: `def build_chat(system, turns):
-    # TODO: start with the system message, then append each (role, content) turn.
-    return []
+      challenge_title: "Sliding-Window Array Assembler",
+      challenge_description: "Assemble the exact message array your app sends to the model: system prompt first, then only the most recent K turns of history — the sliding-window memory that keeps long chats inside the context window.",
+      challenge_statement: "You are given a system prompt, a list of conversation turns (each a role and content, oldest-first), and a window size \`k\`. Assemble the message array the app will send:\n\n1. The \`system\` message is always **first**.\n2. Then append only the **last \`k\` turns**, in their original order. If there are \`k\` or fewer turns, include all of them. If \`k\` is \`0\`, include no turns (system only).\n3. Print the assembled array, one message per line, as \`<index> <role>: <content>\`, where \`<index>\` starts at \`0\` for the system message.\n4. After the array, print \`total <m>\`, the number of messages in the assembled array.",
+      challenge_story: "You're shipping the assembler at the heart of your chatbot's request builder. Conversations can run for hundreds of turns, but the model only needs recent context — so your app keeps a **sliding window**: the system prompt (always) plus the most recent \`k\` turns. Everything older is left out of the request. Build the function that takes the full history and the window size and produces the precise message array, in order, ready to send.",
+      challenge_input_format: "The first line has two integers `n k`: the number of turns and the window size.\n\nThe second line is the system prompt text (may contain spaces).\n\nEach of the next `n` lines is a turn: a role (`user` or `assistant`), a single space, then the content (may contain spaces). Turns are oldest-first.",
+      challenge_output_format: "Print the assembled messages, one per line as `<index> <role>: <content>` starting at index 0, then a final line `total <m>`.",
+      challenge_constraints: [
+        "0 ≤ k ≤ n ≤ 100000",
+        "1 ≤ length of system prompt and each content (no newline).",
+        "Roles are `user` or `assistant`.",
+      ],
+      challenge_examples: [
+        { input: "5 3\nBe brief.\nuser Hi\nassistant Hey\nuser How are you\nassistant Good\nuser Bye", output: "0 system: Be brief.\n1 user: How are you\n2 assistant: Good\n3 user: Bye\ntotal 4", explanation: "Window is 3, so only the last three turns survive; the system prompt leads, and the two oldest turns (`Hi`, `Hey`) are dropped." },
+        { input: "3 0\nSys.\nuser A\nassistant B\nuser C", output: "0 system: Sys.\ntotal 1", explanation: "With `k = 0` no turns are kept, so the array is the system message alone." },
+      ],
+      challenge_notes: "A sliding window is the simplest memory strategy: cheap, bounded, and predictable. Its weakness is that facts from dropped turns are gone forever — which is why richer systems pair it with summaries or retrieval. Slicing the last `k` items with `turns[len(turns)-k:]` (guarding `k == 0`) gives you the window.",
+      challenge_hints: [
+        "Read all `n` turns into a list, splitting each line once on the first space into role and content.",
+        "Take the window: if `k == 0` keep none, else keep the final `k` turns in order.",
+        "Prepend the system message, then print each message with its index and a final `total` line.",
+      ],
+      challenge_starter_code: `import sys
 
-chat = build_chat("Be brief.", [("user", "Hi"), ("assistant", "Hey"), ("user", "Bye")])
-# TODO: print each message as "role: content"
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, k = map(int, data[0].split())
+    system = data[1]
+    # TODO: read n turns, keep only the last k (none if k == 0), prepend the
+    #       system message, then print each "<index> <role>: <content>" and total.
+
+main()
 `,
-      challenge_solution_code: `def build_chat(system, turns):
-    messages = [{"role": "system", "content": system}]
-    for role, content in turns:
-        messages.append({"role": role, "content": content})
-    return messages
+      challenge_solution_code: `import sys
 
-chat = build_chat("Be brief.", [("user", "Hi"), ("assistant", "Hey"), ("user", "Bye")])
-for m in chat:
-    print(f"{m['role']}: {m['content']}")
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, k = map(int, data[idx].split()); idx += 1
+    system = data[idx]; idx += 1
+    turns = []
+    for _ in range(n):
+        line = data[idx]; idx += 1
+        role, content = line.split(" ", 1)
+        turns.append((role, content))
+    if k <= 0:
+        kept = []
+    elif k >= len(turns):
+        kept = turns
+    else:
+        kept = turns[len(turns) - k:]
+    messages = [("system", system)] + kept
+    for i, (role, content) in enumerate(messages):
+        print(f"{i} {role}: {content}")
+    print(f"total {len(messages)}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "(no input)", expected_output: "system: Be brief.\nuser: Hi\nassistant: Hey\nuser: Bye", description: "System message first, then each turn appended in order." }
+        { input: "5 3\nBe brief.\nuser Hi\nassistant Hey\nuser How are you\nassistant Good\nuser Bye", expected_output: "0 system: Be brief.\n1 user: How are you\n2 assistant: Good\n3 user: Bye\ntotal 4", description: "Window keeps the last three turns; oldest two dropped." },
+        { input: "3 0\nSys.\nuser A\nassistant B\nuser C", expected_output: "0 system: Sys.\ntotal 1", description: "k = 0 keeps only the system message." },
+        { input: "2 10\nYou help.\nuser A\nassistant B", expected_output: "0 system: You help.\n1 user: A\n2 assistant: B\ntotal 3", description: "Edge: window larger than history keeps every turn." }
       ]
     }
   ]

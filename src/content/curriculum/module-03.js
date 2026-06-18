@@ -253,26 +253,72 @@ System prompt set: True`,
         "Mention both the persona (pirate) and the length constraint (one short sentence).",
         "Set `system_prompt` to something like 'You are a pirate. Answer in one short sentence...'."
       ],
-      challenge_title: "Build a strict JSON-only assistant prompt",
-      challenge_description: "Write a function that returns a system prompt string instructing the model to behave as a customer-support bot that ALWAYS replies in valid JSON with the keys 'reply' and 'sentiment'. The function takes the company name and embeds it in the prompt.",
-      challenge_starter_code: `def support_system_prompt(company):
-    # TODO: return a system prompt string that names the company
-    # and demands JSON output with keys "reply" and "sentiment".
-    return ""
+      challenge_title: "Layered System Prompt Resolver",
+      challenge_description: "Merge stacked system-prompt layers into one effective directive set and count how many directives got overridden.",
+      challenge_story: "Your AI platform builds every system prompt from **layers**: an org-wide base layer, a team layer, and finally a per-session layer. Each layer sets directives like `tone=formal` or `format=json`. Layers are applied in order, and a **later** layer silently overrides an earlier one that set the same directive to a different value. Support keeps asking *\"what tone is this bot actually running with?\"* — so you're shipping a resolver that flattens the stack and reports how many directives were quietly overridden along the way.",
+      challenge_statement: "You are given **L** layers, applied top to bottom. Each layer sets some `key value` directives. Applying a directive sets that key's value to the new value (replacing any previous value).\n\nAn **override** happens each time a directive sets a key that already has a value **and the new value differs** from the current one (re-setting a key to the same value is not an override).\n\nAfter applying all layers in order, answer **Q** queries. Each query is a key; print its final value, or `UNSET` if it was never set. Finally, print the total number of overrides that occurred across all layers.",
+      challenge_input_format: "Line 1: integer `L`.\nNext `L` lines: each starts with integer `k` (number of directives in that layer), followed by `k` `key value` pairs, all space-separated.\nNext line: integer `Q`.\nNext `Q` lines: one key per line to look up.",
+      challenge_output_format: "`Q` lines: the final value of each queried key, or `UNSET`. Then one final line: the total override count.",
+      challenge_constraints: [
+        "1 ≤ L ≤ 1000",
+        "0 ≤ k ≤ 50 per layer",
+        "1 ≤ Q ≤ 1000",
+        "Keys and values are lowercase tokens of length 1..20 with no spaces",
+      ],
+      challenge_examples: [
+        { input: "3\n2 tone formal language en\n1 tone casual\n2 format json language fr\n3\ntone\nformat\nverbosity", output: "casual\njson\nUNSET\n2", explanation: "tone: formal then casual (override). language: en then fr (override) = 2 overrides. format=json. verbosity never set." },
+        { input: "1\n1 role assistant\n1\nrole", output: "assistant\n0", explanation: "A single directive, never overridden." },
+      ],
+      challenge_notes: "This mirrors real prompt composition: a base persona, a team policy, then session-specific instructions. Apply directives strictly in reading order — within a single layer, the pairs are also applied left to right, so a key set twice in one layer can override itself.",
+      challenge_hints: [
+        "Keep a dict `final` of key -> value and process every directive in order.",
+        "Before writing a key, check `if key in final and final[key] != val:` to count an override.",
+        "Read each layer line with `.split()`; the first token is `k`, then pairs follow.",
+      ],
+      challenge_starter_code: `import sys
 
-print(support_system_prompt("Acme"))`,
-      challenge_solution_code: `def support_system_prompt(company):
-    return (
-        f"You are a customer-support assistant for {company}. "
-        "Always respond with valid JSON containing exactly two keys: "
-        "'reply' (your message to the customer) and "
-        "'sentiment' (one of 'positive', 'neutral', 'negative')."
-    )
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    L = int(data[idx].strip()); idx += 1
+    # TODO: apply each layer's directives in order.
+    # Count an override whenever a key's value changes.
+    # Then answer Q key lookups, then print the override count.
 
-print(support_system_prompt("Acme"))`,
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().decode()
+    lines = data.split("\\n")
+    idx = 0
+    L = int(lines[idx].strip()); idx += 1
+    final = {}
+    overrides = 0
+    for _ in range(L):
+        parts = lines[idx].split(); idx += 1
+        k = int(parts[0])
+        for j in range(k):
+            key = parts[1 + 2 * j]
+            val = parts[2 + 2 * j]
+            if key in final and final[key] != val:
+                overrides += 1
+            final[key] = val
+    Q = int(lines[idx].strip()); idx += 1
+    out = []
+    for _ in range(Q):
+        key = lines[idx].strip(); idx += 1
+        out.append(final.get(key, "UNSET"))
+    out.append(str(overrides))
+    sys.stdout.write("\\n".join(out) + "\\n")
+
+main()
+`,
       challenge_test_cases: [
-        { input: "support_system_prompt(\"Acme\")", expected_output: "You are a customer-support assistant for Acme. Always respond with valid JSON containing exactly two keys: 'reply' (your message to the customer) and 'sentiment' (one of 'positive', 'neutral', 'negative').", description: "Company name is embedded and JSON keys are specified." },
-        { input: "support_system_prompt(\"Globex\")", expected_output: "You are a customer-support assistant for Globex. Always respond with valid JSON containing exactly two keys: 'reply' (your message to the customer) and 'sentiment' (one of 'positive', 'neutral', 'negative').", description: "Works with a different company name." }
+        { input: "3\n2 tone formal language en\n1 tone casual\n2 format json language fr\n3\ntone\nformat\nverbosity", expected_output: "casual\njson\nUNSET\n2", description: "Two overrides (tone, language); format set once; verbosity unset." },
+        { input: "1\n1 role assistant\n1\nrole", expected_output: "assistant\n0", description: "Single directive, no overrides." },
+        { input: "2\n0\n2 tone calm tone calm\n1\ntone", expected_output: "calm\n0", description: "Empty layer, then re-setting a key to the same value is not an override." }
       ]
     },
 
@@ -497,23 +543,83 @@ Estimated tokens: 10`,
         "Divide by 4 for the rough rule. Use integer division // to keep it a whole number.",
         "Return len(text) // 4."
       ],
-      challenge_title: "Estimate the cost of a prompt",
-      challenge_description: "Write a function that estimates the input cost of a prompt. Given the text and a price per 1,000 tokens (in dollars), estimate tokens at 1 per 4 characters and return the cost rounded to 6 decimal places.",
-      challenge_starter_code: `def estimate_cost(text, price_per_1k):
-    # TODO: estimate tokens (1 per 4 chars), then compute cost.
-    # cost = (tokens / 1000) * price_per_1k, rounded to 6 places.
-    return 0.0
+      challenge_title: "Context Window Budgeter",
+      challenge_description: "Fit a chat history into a fixed context window by dropping the oldest turns, then bill exactly what fits.",
+      challenge_story: "Your chatbot has a hard **context window** of `W` tokens. Every request must include the system prompt (`S` tokens, always sent) plus as much recent conversation as will fit. When the history grows too long, your client drops the **oldest** turns first, keeping the most recent ones — a classic sliding window. Finance also wants the exact token bill for what actually got sent. Build the budgeter that decides what fits and what it costs.",
+      challenge_statement: "Given a context window of `W` tokens, a system prompt of `S` tokens (always included), and `n` conversation turns listed **oldest first** with their token counts, keep the **most recent** turns that fit alongside the system prompt.\n\nWalk turns from newest to oldest, adding each turn whose token count fits in the remaining budget; **stop at the first turn that does not fit** (do not skip it to fit a smaller older turn — the window must stay contiguous and recent).\n\nThe billed token count is `S` plus the tokens of all kept turns. Billing rate is `price` **micro-dollars per 1000 tokens** (1 micro-dollar = $0.000001). Cost is computed with integer truncation: `micro = billed_tokens * price // 1000`.",
+      challenge_input_format: "All whitespace-separated: `W S n t_1 t_2 ... t_n price`, where `t_i` are turn token counts oldest-first.",
+      challenge_output_format: "Three lines:\n1. number of turns kept\n2. number of turns dropped\n3. total cost as dollars with exactly 6 decimal places (e.g. `0.012000`).",
+      challenge_constraints: [
+        "1 ≤ W ≤ 1_000_000",
+        "0 ≤ S ≤ W",
+        "0 ≤ n ≤ 100000",
+        "0 ≤ t_i ≤ W",
+        "0 ≤ price ≤ 1_000_000 (micro-dollars per 1000 tokens)",
+      ],
+      challenge_examples: [
+        { input: "1000 200 4 300 300 300 300 15000", output: "2\n2\n0.012000", explanation: "Budget after system = 800. Keep newest two turns (300+300=600); third 300 won't fit. Billed = 200+600 = 800 tokens. 800*15000//1000 = 12000 micro = $0.012000." },
+        { input: "5000 100 3 50 60 70 3000", output: "3\n0\n0.000840", explanation: "Everything fits. Billed = 100+50+60+70 = 280 tokens. 280*3000//1000 = 840 micro = $0.000840." },
+      ],
+      challenge_notes: "Real clients drop oldest turns first because recency matters most for coherence. Using integer micro-dollars avoids floating-point rounding bugs — split `micro` into whole dollars and a 6-digit fraction with `micro // 1_000_000` and `micro % 1_000_000`.",
+      challenge_hints: [
+        "Iterate `reversed(turns)` and accumulate while each fits in the remaining budget; `break` on the first that doesn't.",
+        "billed_tokens = S + sum(kept turns); dropped = n - kept.",
+        "Format cost from integer micro-dollars: `whole = micro // 1_000_000`, `frac = micro % 1_000_000`, print `f\"{whole}.{frac:06d}\"`.",
+      ],
+      challenge_starter_code: `import sys
 
-print(estimate_cost("hello world this is a test", 3.0))`,
-      challenge_solution_code: `def estimate_cost(text, price_per_1k):
-    tokens = len(text) // 4
-    cost = (tokens / 1000) * price_per_1k
-    return round(cost, 6)
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    W = int(data[idx]); idx += 1
+    S = int(data[idx]); idx += 1
+    n = int(data[idx]); idx += 1
+    turns = []
+    for _ in range(n):
+        turns.append(int(data[idx])); idx += 1
+    price = int(data[idx]); idx += 1
+    # TODO: keep newest turns that fit in W - S, then bill S + kept tokens.
 
-print(estimate_cost("hello world this is a test", 3.0))`,
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    W = int(data[idx]); idx += 1
+    S = int(data[idx]); idx += 1
+    n = int(data[idx]); idx += 1
+    turns = []
+    for _ in range(n):
+        turns.append(int(data[idx])); idx += 1
+    price = int(data[idx]); idx += 1
+
+    remaining = W - S
+    kept = 0
+    used = 0
+    for t in reversed(turns):
+        if t <= remaining:
+            remaining -= t
+            used += t
+            kept += 1
+        else:
+            break
+    dropped = n - kept
+    total_tokens = S + used
+    micro = total_tokens * price // 1000
+    whole = micro // 1_000_000
+    frac = micro % 1_000_000
+    print(kept)
+    print(dropped)
+    print(f"{whole}.{frac:06d}")
+
+main()
+`,
       challenge_test_cases: [
-        { input: "estimate_cost(\"hello world this is a test\", 3.0)", expected_output: "0.018", description: "26 chars -> 6 tokens -> (6/1000)*3.0 = 0.018." },
-        { input: "estimate_cost(\"\", 3.0)", expected_output: "0.0", description: "Empty text means zero tokens and zero cost." }
+        { input: "1000 200 4 300 300 300 300 15000", expected_output: "2\n2\n0.012000", description: "Two newest turns fit; third dropped." },
+        { input: "5000 100 3 50 60 70 3000", expected_output: "3\n0\n0.000840", description: "Whole short history fits." },
+        { input: "200 200 2 50 50 3000", expected_output: "0\n2\n0.000600", description: "System prompt fills the window; every turn is dropped but the system prompt is still billed." }
       ]
     },
 
@@ -745,28 +851,64 @@ print(recommend_temperature("summary"))`,
         "Handle 'brainstorm' returning 0.9 as a separate case.",
         "Everything else falls through to the default 0.3."
       ],
-      challenge_title: "Pick a temperature with reasoning",
-      challenge_description: "Write a function that returns a tuple of (temperature, reason) for a given task name. Extraction/classification -> (0.0, 'needs consistent output'). Brainstorm/creative -> (0.9, 'wants variety'). Everything else -> (0.4, 'balanced').",
-      challenge_starter_code: `def temp_with_reason(task):
-    # TODO: return (temperature, reason) based on the task.
-    return (0.4, "balanced")
+      challenge_title: "Greedy Pick and the Sampling Pool",
+      challenge_description: "From a row of next-token logits, find what greedy decoding emits and how wide the sampling pool gets as temperature rises.",
+      challenge_story: "At the final layer your model produces a **logit** (an integer score) for each candidate next token. At **temperature 0** the model is deterministic: it always emits the highest-scoring token (greedy decoding), breaking ties toward the lowest index. Crank the temperature up and lower-scoring tokens become reachable too — the *sampling pool* widens. Your eval harness needs to report, for a given step, exactly which token greedy would pick and how many tokens fall inside the pool defined by a score `margin`.",
+      challenge_statement: "You are given `n` token logits `logit[0..n-1]` and an integer `margin` that models how much temperature widens the pool.\n\n1. **Greedy token**: the index of the maximum logit. On ties, pick the **lowest** index.\n2. **Sampling pool**: every token index `i` with `logit[i] >= max_logit - margin`, in increasing index order. (At `margin = 0` the pool is just the tokens tied for the max.)\n\nReport the greedy token index, the pool size, and the pool indices.",
+      challenge_input_format: "Line 1: integer `n`.\nLine 2: `n` space-separated integers, the logits.\nLine 3: integer `margin`.",
+      challenge_output_format: "Three lines:\n1. greedy token index\n2. pool size\n3. the pool indices, space-separated, in increasing order.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "-1_000_000 ≤ logit[i] ≤ 1_000_000",
+        "0 ≤ margin ≤ 2_000_000",
+      ],
+      challenge_examples: [
+        { input: "5\n10 30 25 30 5\n10", output: "1\n3\n1 2 3", explanation: "Max logit 30 occurs at indices 1 and 3; greedy picks the lowest, index 1. Pool = logits ≥ 30-10 = 20: index 1 (30), 2 (25), 3 (30)." },
+        { input: "3\n7 7 7\n0", output: "0\n3\n0 1 2", explanation: "All tied at 7. Greedy is index 0; with margin 0 the pool is everything ≥ 7, all three." },
+      ],
+      challenge_notes: "Temperature 0 is why extraction and classification tasks are reproducible: the greedy token never changes. A larger `margin` is a stand-in for higher temperature — more tokens become plausible, so the pool grows and outputs get more varied.",
+      challenge_hints: [
+        "`mx = max(logits)`; greedy index is `logits.index(mx)` (which already returns the first/lowest matching index).",
+        "Build the pool with a list comprehension over `enumerate(logits)` keeping `v >= mx - margin`.",
+        "Print the pool indices joined by spaces.",
+      ],
+      challenge_starter_code: `import sys
 
-print(temp_with_reason("classification"))
-print(temp_with_reason("creative"))
-print(temp_with_reason("qa"))`,
-      challenge_solution_code: `def temp_with_reason(task):
-    if task in ("extraction", "classification"):
-        return (0.0, "needs consistent output")
-    if task in ("brainstorm", "creative"):
-        return (0.9, "wants variety")
-    return (0.4, "balanced")
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    logits = [int(data[idx + i]) for i in range(n)]
+    idx += n
+    margin = int(data[idx]); idx += 1
+    # TODO: print greedy index, pool size, and pool indices.
 
-print(temp_with_reason("classification"))
-print(temp_with_reason("creative"))
-print(temp_with_reason("qa"))`,
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    logits = []
+    for _ in range(n):
+        logits.append(int(data[idx])); idx += 1
+    margin = int(data[idx]); idx += 1
+
+    mx = max(logits)
+    greedy = logits.index(mx)
+    pool = [i for i, v in enumerate(logits) if v >= mx - margin]
+    print(greedy)
+    print(len(pool))
+    print(" ".join(str(i) for i in pool))
+
+main()
+`,
       challenge_test_cases: [
-        { input: "temp_with_reason(\"classification\")", expected_output: "(0.0, 'needs consistent output')", description: "Deterministic task returns 0.0 with reasoning." },
-        { input: "temp_with_reason(\"creative\")", expected_output: "(0.9, 'wants variety')", description: "Creative task returns 0.9 with reasoning." }
+        { input: "5\n10 30 25 30 5\n10", expected_output: "1\n3\n1 2 3", description: "Tie for max resolves to lowest index; margin widens the pool." },
+        { input: "3\n7 7 7\n0", expected_output: "0\n3\n0 1 2", description: "All tied; pool is everything even at margin 0." },
+        { input: "1\n-5\n100", expected_output: "0\n1\n0", description: "Single token: it is both the greedy pick and the whole pool." }
       ]
     },
 
@@ -1007,28 +1149,91 @@ Review: Great coffee here. ->`,
         "Use an f-string: f\"Review: {text} -> {label}\\n\" for each example.",
         "After the loop, append the new input line ending in '->' with no label."
       ],
-      challenge_title: "Generic few-shot builder",
-      challenge_description: "Write a function that builds a few-shot prompt from a task instruction, a list of (input, output) example tuples, and a new input. Format each example as '<input> => <output>' on its own line, and end with '<new_input> =>'.",
-      challenge_starter_code: `def few_shot(instruction, examples, new_input):
-    # TODO: build the prompt. Start with instruction + two newlines,
-    # then each example as "<input> => <output>\\n",
-    # then "<new_input> =>".
-    return ""
+      challenge_title: "Infer the Rule From the Examples",
+      challenge_description: "Few-shot examples all apply the same hidden letter-shift; infer it, verify it's unambiguous, then apply it to a new input.",
+      challenge_story: "You're building a few-shot evaluator. Each prompt shows the model a handful of `input -> output` examples that all apply **one** consistent transformation, then asks it to continue the pattern on a fresh query. For this benchmark the transformation is a fixed **Caesar shift**: every letter advances by the same amount `k` (wrapping z->a), while case is preserved and non-letters pass through untouched. Your job is the reference solver: read the demonstrations, recover `k`, confirm the examples don't contradict each other, and produce the answer the model *should* give.",
+      challenge_statement: "You are given `n` demonstration pairs `src dst` (each a single whitespace-free token). They are all supposed to encode the **same** Caesar shift `k` (0..25): for every letter, `dst_letter = src_letter shifted forward by k`, preserving case; non-letter characters must appear unchanged and aligned in both strings.\n\nInfer `k`. The examples are **AMBIGUOUS** if any pair is internally inconsistent, two pairs imply different shifts, lengths mismatch, or a non-letter doesn't line up. (With `n` valid pairs that all contain at least one letter, `k` is uniquely determined.)\n\nIf `k` is uniquely determined, apply it to the final query line and print the result. Otherwise print `AMBIGUOUS`.",
+      challenge_input_format: "Line 1: integer `n`.\nNext `n` lines: `src dst` (two whitespace-free tokens).\nFinal line: the query string to transform (whitespace-free token).",
+      challenge_output_format: "One line: the transformed query, or `AMBIGUOUS` if the shift cannot be uniquely inferred.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "Each token has length 1..50 and contains no spaces",
+        "Letters are ASCII a-z / A-Z; other printable ASCII may appear and must map to itself",
+      ],
+      challenge_examples: [
+        { input: "2\nabc def\nxyz abc\nhal", output: "kdo", explanation: "abc->def is +3, xyz->abc is +3 (wrapping). Consistent k=3. Apply to 'hal': h->k, a->d, l->o." },
+        { input: "2\nabc def\nabc ghi\nhal", output: "AMBIGUOUS", explanation: "Same input maps two different ways (+3 vs +6): contradictory, so no single rule." },
+      ],
+      challenge_notes: "This is what few-shot really asks of a model: induce the rule from examples, then generalize. Contradictory demonstrations are a real failure mode — if your examples disagree, the model can't know which pattern you meant, and neither can a solver. Compute each shift as `(ord(b) - ord(a)) % 26` after lowercasing.",
+      challenge_hints: [
+        "Track a candidate set of shifts; start with all of 0..25 and intersect with each pair's implied shift.",
+        "For a letter pair, the shift is `(ord(b.lower()) - ord(a.lower())) % 26`; all letters in all pairs must agree.",
+        "If lengths mismatch, a non-letter is misaligned, or the candidate set isn't exactly one value, print AMBIGUOUS.",
+      ],
+      challenge_starter_code: `import sys
 
-ex = [("hi", "hello"), ("bye", "goodbye")]
-print(few_shot("Make it formal.", ex, "yo"))`,
-      challenge_solution_code: `def few_shot(instruction, examples, new_input):
-    prompt = instruction + "\\n\\n"
-    for inp, out in examples:
-        prompt += f"{inp} => {out}\\n"
-    prompt += f"{new_input} =>"
-    return prompt
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    # TODO: read n "src dst" pairs, infer the single Caesar shift,
+    # then apply it to the final query line (or print AMBIGUOUS).
 
-ex = [("hi", "hello"), ("bye", "goodbye")]
-print(few_shot("Make it formal.", ex, "yo"))`,
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    candidates = set(range(26))
+    valid = True
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        src, dst = parts[0], parts[1]
+        if len(src) != len(dst):
+            valid = False
+            continue
+        local = None
+        ok = True
+        for a, b in zip(src, dst):
+            if not (a.isalpha() and b.isalpha()):
+                if a != b:
+                    ok = False
+                    break
+                continue
+            shift = (ord(b.lower()) - ord(a.lower())) % 26
+            if local is None:
+                local = shift
+            elif local != shift:
+                ok = False
+                break
+        if not ok:
+            valid = False
+        elif local is not None:
+            candidates &= {local}
+    query = data[idx].strip(); idx += 1
+
+    if not valid or len(candidates) != 1:
+        print("AMBIGUOUS")
+        return
+    k = next(iter(candidates))
+    res = []
+    for ch in query:
+        if ch.isalpha():
+            base = ord('a') if ch.islower() else ord('A')
+            res.append(chr((ord(ch) - base + k) % 26 + base))
+        else:
+            res.append(ch)
+    print("".join(res))
+
+main()
+`,
       challenge_test_cases: [
-        { input: "few_shot(\"Make it formal.\", [(\"hi\", \"hello\"), (\"bye\", \"goodbye\")], \"yo\")", expected_output: "Make it formal.\n\nhi => hello\nbye => goodbye\nyo =>", description: "Two examples plus the open new input." },
-        { input: "few_shot(\"Translate.\", [(\"cat\", \"chat\")], \"dog\")", expected_output: "Translate.\n\ncat => chat\ndog =>", description: "Works with a single example." }
+        { input: "2\nabc def\nxyz abc\nhal", expected_output: "kdo", description: "Two consistent examples give k=3, applied to the query." },
+        { input: "2\nabc def\nabc ghi\nhal", expected_output: "AMBIGUOUS", description: "Contradictory examples: no single shift." },
+        { input: "1\nIBM HAL\nzap", expected_output: "yzo", description: "Single example infers k=25 (-1), preserving case; query shifts z->y, a->z, p->o." }
       ]
     },
 
@@ -1275,41 +1480,96 @@ print(safe_parse('not json at all', default={}))`,
         "Catch json.JSONDecodeError specifically and return default in that case.",
         "Valid JSON returns a Python dict; invalid input returns whatever default you passed."
       ],
-      challenge_title: "Clean and parse fenced JSON",
-      challenge_description: "Models sometimes wrap JSON in ```json fences. Write a function that strips leading/trailing markdown code fences (```json and ```), then parses the JSON. Return the parsed object, or None if parsing fails.",
-      challenge_starter_code: `import json
+      challenge_title: "Harden the Structured-Output Pipeline",
+      challenge_description: "Salvage JSON from messy model responses (fences, stray prose), validate a strict schema, and aggregate the valid ones.",
+      challenge_story: "Your intent-classifier returns JSON, but the raw responses are a mess: some are wrapped in ```json fences, some have a chatty sentence in front, some are malformed. Downstream code needs clean, validated objects. You're shipping the hardening layer: for each response, strip the noise, parse the JSON object, enforce the schema `{\"intent\": string, \"confidence\": int in 0..100}`, and roll up stats over everything that passes. Garbage in must not crash the pipeline — it just doesn't count.",
+      challenge_statement: "Process `N` model responses. For each response:\n\n1. Strip a surrounding markdown code fence if the trimmed text starts with ```` ``` ```` (drop the opening fence line, e.g. ```` ```json ````, and a closing ```` ``` ```` line).\n2. Extract the JSON object as the substring from the first `{` to the last `}` (this discards leading prose like `Sure, here you go:`).\n3. Parse it. A response is **valid** only if it parses to an object with key `\"intent\"` (a string) and key `\"confidence\"` (an integer, not a boolean) in the range `0..100`.\n\nReport: the count of valid responses, the sum of `confidence` over valid responses, and the **most common** valid `intent` (ties broken lexicographically smallest), or `NONE` if there are no valid responses.",
+      challenge_input_format: "Line 1: integer `N`.\nThen, for each of the `N` responses: a line with integer `m` (number of text lines in that response), followed by `m` lines of raw response text.",
+      challenge_output_format: "Three lines:\n1. number of valid responses\n2. sum of confidence over valid responses\n3. most common valid intent (lexicographically smallest on a tie), or `NONE`.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "1 ≤ m ≤ 50 lines per response",
+        "Each text line has length 0..200",
+        "Confidence is valid only as an integer in 0..100; floats and booleans are rejected",
+      ],
+      challenge_examples: [
+        { input: "3\n3\n```json\n{\"intent\": \"refund\", \"confidence\": 90}\n```\n1\n{\"intent\": \"refund\", \"confidence\": 70}\n2\nSure! Here you go:\n{\"intent\": \"greeting\", \"confidence\": 40}", output: "3\n200\nrefund", explanation: "All three parse and validate. Confidence 90+70+40=200. 'refund' appears twice vs 'greeting' once." },
+        { input: "1\n1\nnot json at all", output: "0\n0\nNONE", explanation: "No braces to extract, nothing valid." },
+      ],
+      challenge_notes: "Defensive parsing is essential in production: models drift, add fences, or prepend chatter. Use `json.loads` inside a try/except so malformed output never crashes the batch. Watch the boolean trap — in Python `True` is an instance of `int`, so reject `bool` explicitly when validating an integer field.",
+      challenge_hints: [
+        "Strip fences first, then take `s[s.find('{'): s.rfind('}')+1]` to isolate the object.",
+        "Wrap `json.loads` in try/except json.JSONDecodeError and return None on failure.",
+        "Validate with `isinstance(x, int) and not isinstance(x, bool)` for confidence; track intent counts in a dict and pick `min(counts, key=lambda k: (-counts[k], k))`.",
+      ],
+      challenge_starter_code: `import sys
+import json
 
-def parse_fenced_json(text):
-    # TODO: strip the json code fences if present, then json.loads.
-    # Return None on failure.
-    return None
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    # TODO: for each response, read m lines, strip fences, extract {...},
+    # parse + validate {intent: str, confidence: int 0..100}, then aggregate.
 
-print(parse_fenced_json('\`\`\`json\\n{"ok": true}\\n\`\`\`'))
-print(parse_fenced_json('{"plain": 1}'))
-print(parse_fenced_json('broken'))`,
-      challenge_solution_code: `import json
+main()
+`,
+      challenge_solution_code: `import sys
+import json
 
-def parse_fenced_json(text):
-    cleaned = text.strip()
-    if cleaned.startswith("\`\`\`"):
-        # Drop the first line (e.g. \`\`\`json) and a trailing fence.
-        lines = cleaned.split("\\n")
+def extract(block):
+    s = block.strip()
+    if s.startswith("\`\`\`"):
+        lines = s.split("\\n")
         if lines[0].startswith("\`\`\`"):
             lines = lines[1:]
         if lines and lines[-1].strip() == "\`\`\`":
             lines = lines[:-1]
-        cleaned = "\\n".join(lines).strip()
+        s = "\\n".join(lines).strip()
+    start = s.find("{")
+    end = s.rfind("}")
+    if start == -1 or end == -1 or end < start:
+        return None
     try:
-        return json.loads(cleaned)
+        return json.loads(s[start:end + 1])
     except json.JSONDecodeError:
         return None
 
-print(parse_fenced_json('\`\`\`json\\n{"ok": true}\\n\`\`\`'))
-print(parse_fenced_json('{"plain": 1}'))
-print(parse_fenced_json('broken'))`,
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    valid = 0
+    total_conf = 0
+    counts = {}
+    for _ in range(n):
+        m = int(data[idx].strip()); idx += 1
+        block = "\\n".join(data[idx:idx + m])
+        idx += m
+        obj = extract(block)
+        if (isinstance(obj, dict)
+                and isinstance(obj.get("intent"), str)
+                and isinstance(obj.get("confidence"), int)
+                and not isinstance(obj.get("confidence"), bool)
+                and 0 <= obj["confidence"] <= 100):
+            valid += 1
+            total_conf += obj["confidence"]
+            counts[obj["intent"]] = counts.get(obj["intent"], 0) + 1
+
+    print(valid)
+    print(total_conf)
+    if counts:
+        best = min(counts.keys(), key=lambda k: (-counts[k], k))
+        print(best)
+    else:
+        print("NONE")
+
+main()
+`,
       challenge_test_cases: [
-        { input: "parse_fenced_json('```json\\n{\"ok\": true}\\n```')", expected_output: "{'ok': True}", description: "Strips json fences and parses the object." },
-        { input: "parse_fenced_json('broken')", expected_output: "None", description: "Unparseable input returns None." }
+        { input: "3\n3\n```json\n{\"intent\": \"refund\", \"confidence\": 90}\n```\n1\n{\"intent\": \"refund\", \"confidence\": 70}\n2\nSure! Here you go:\n{\"intent\": \"greeting\", \"confidence\": 40}", expected_output: "3\n200\nrefund", description: "Fences and prose stripped; refund is the mode." },
+        { input: "1\n1\nnot json at all", expected_output: "0\n0\nNONE", description: "No JSON present; nothing valid." },
+        { input: "2\n1\n{\"intent\": \"ask\", \"confidence\": 150}\n1\n{\"intent\": \"ask\", \"confidence\": true}", expected_output: "0\n0\nNONE", description: "Out-of-range confidence and a boolean are both rejected." }
       ]
     }
   ]

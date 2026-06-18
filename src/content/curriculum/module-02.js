@@ -217,18 +217,63 @@ Response: what comes back`,
         "Remember the two halves: a request goes out, a response comes back.",
         "print() each line on its own so the output has three lines."
       ],
-      challenge_title: "Name the two halves",
-      challenge_description: "Print exactly two lines: the first naming the message you send, the second naming the message you get back.",
-      challenge_starter_code: `# Print the two halves of an API call, one per line.
+      challenge_title: "Gateway Traffic Auditor",
+      challenge_description: "Read a raw API-gateway log and count how many lines are request halves versus response halves.",
+      challenge_story: "You run the gateway that sits between thousands of apps and Anthropic's servers. Every byte that crosses the wire is logged with a direction tag: \`SEND\` for the request half your apps push out, \`RECV\` for the response half that comes back. Before the on-call engineer can debug a latency spike, they need a clean tally: how much of the traffic was outbound requests, how much was inbound responses. Build the auditor that scans the log and counts the two halves.",
+      challenge_statement: "Every API call is exactly two halves: a **request** you send and a **response** you get back. You are given a gateway log of \`n\` entries. Each entry begins with a direction tag:\n\n- \`SEND\` — this line is part of a **request** (outbound).\n- \`RECV\` — this line is part of a **response** (inbound).\n\nAfter the tag there is a label describing the field (e.g. \`model\`, \`content\`). Count how many entries are requests and how many are responses.",
+      challenge_input_format: "The first line is an integer \`n\` — the number of log entries. Each of the next \`n\` lines starts with either \`SEND\` or \`RECV\`, followed by a space and a one-word field label.",
+      challenge_output_format: "Two lines:\n- \`request R\` where \`R\` is the number of \`SEND\` entries.\n- \`response S\` where \`S\` is the number of \`RECV\` entries.",
+      challenge_constraints: [
+        "0 ≤ n ≤ 100000",
+        "Each entry's direction tag is exactly `SEND` or `RECV`.",
+      ],
+      challenge_examples: [
+        { input: "5\nSEND model\nSEND messages\nRECV content\nSEND max_tokens\nRECV usage", output: "request 3\nresponse 2", explanation: "Three `SEND` lines (model, messages, max_tokens) and two `RECV` lines (content, usage)." },
+        { input: "1\nRECV answer", output: "request 0\nresponse 1", explanation: "A lone inbound line is one response half and zero request halves." },
+      ],
+      challenge_notes: "The request/response split never changes — every call has both halves. Here you're just classifying log lines by their direction tag. Read the count first, then loop exactly that many lines so trailing blank lines never trip you up.",
+      challenge_hints: [
+        "Read all of stdin, split on newlines, and take the first line as the integer count `n`.",
+        "Loop over the next `n` lines; the first whitespace-separated token is the direction tag.",
+        "Keep two counters; print `request R` then `response S` on separate lines.",
+      ],
+      challenge_starter_code: `import sys
+
+data = sys.stdin.read().split("\\n")
+n = int(data[0])
+# TODO: loop over the next n lines, count SEND vs RECV,
+# then print "request R" and "response S".
 `,
-      challenge_solution_code: `print("request")
-print("response")
+      challenge_solution_code: `import sys
+
+data = sys.stdin.read().split("\\n")
+n = int(data[0])
+req = 0
+res = 0
+for i in range(1, n + 1):
+    direction = data[i].strip().split()[0]
+    if direction == "SEND":
+        req += 1
+    else:
+        res += 1
+print(f"request {req}")
+print(f"response {res}")
 `,
       challenge_test_cases: [
         {
-          input: "(no input)",
-          expected_output: "request\nresponse",
-          description: "Two lines naming the halves of an API call."
+          input: "5\nSEND model\nSEND messages\nRECV content\nSEND max_tokens\nRECV usage",
+          expected_output: "request 3\nresponse 2",
+          description: "Three request halves and two response halves."
+        },
+        {
+          input: "1\nRECV answer",
+          expected_output: "request 0\nresponse 1",
+          description: "A single inbound line counts only as a response."
+        },
+        {
+          input: "2\nSEND a\nSEND b",
+          expected_output: "request 2\nresponse 0",
+          description: "Edge case: all outbound, zero responses."
         }
       ]
     },
@@ -463,24 +508,65 @@ Ada`,
         "json.dumps keeps the keys in the order you wrote them and uses double quotes.",
         "After json.loads, index the dict with back[\"name\"] to pull a single value."
       ],
-      challenge_title: "Round trip a message",
-      challenge_description: "Build a dict with the key \"content\" set to \"Hello\", dump it to JSON, load it back, and print just the content value.",
-      challenge_starter_code: `import json
+      challenge_title: "Parse the Request Body",
+      challenge_description: "Decode an incoming JSON request body, estimate its token cost, and emit a compact JSON summary.",
+      challenge_story: "Your serverless function sits at the edge of the API. Apps POST a JSON body containing a list of conversation messages, and before you forward anything to the model you want a cheap pre-flight estimate: roughly how many tokens this prompt will cost, and how many user turns it contains (useful for abuse detection). The body arrives as raw JSON text on stdin. Parse it with \`json.loads\`, do the math, and return your summary as JSON with \`json.dumps\` — the exact round trip every API layer performs.",
+      challenge_statement: "You receive one JSON object on stdin with a single key \`messages\`, whose value is a list of message objects. Each message has a string \`role\` (\`\"user\"\` or \`\"assistant\"\`) and a string \`content\`.\n\nCompute two values:\n\n- \`tokens\` — a token estimate. Sum the lengths (in characters) of **every** message's \`content\`, then divide by 4 and round **up** to the nearest integer (the classic ~4-chars-per-token rule).\n- \`user_turns\` — how many messages have role \`\"user\"\`.\n\nPrint the result as a single-line JSON object with keys sorted alphabetically and no spaces after separators.",
+      challenge_input_format: "A single JSON object on stdin: \`{\"messages\": [{\"role\": ..., \"content\": ...}, ...]}\`. The list may be empty.",
+      challenge_output_format: "One line of JSON: \`{\"tokens\":T,\"user_turns\":U}\` with keys sorted and compact separators (no spaces).",
+      challenge_constraints: [
+        "0 ≤ number of messages ≤ 10000",
+        "0 ≤ len(content) ≤ 100000 for each message",
+        "Each role is exactly `\"user\"` or `\"assistant\"`.",
+      ],
+      challenge_examples: [
+        { input: "{\"messages\":[{\"role\":\"user\",\"content\":\"What is 2 + 2?\"},{\"role\":\"assistant\",\"content\":\"4\"}]}", output: "{\"tokens\":4,\"user_turns\":1}", explanation: "Content chars: 14 + 1 = 15. ceil(15/4) = 4 tokens. One message has role user." },
+        { input: "{\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}", output: "{\"tokens\":1,\"user_turns\":1}", explanation: "2 chars, ceil(2/4) = 1 token, one user turn." },
+      ],
+      challenge_notes: "Use \`json.load(sys.stdin)\` to read and parse in one step, and \`json.dumps(obj, separators=(\",\", \":\"), sort_keys=True)\` to print compact, deterministic JSON. \`math.ceil\` gives you the round-up. An empty message list yields \`{\"tokens\":0,\"user_turns\":0}\`.",
+      challenge_hints: [
+        "Parse the body with `data = json.load(sys.stdin)`; the messages are at `data[\"messages\"]`.",
+        "Add up `len(m[\"content\"])` across all messages, then `math.ceil(total / 4)`.",
+        "Print with `json.dumps(out, separators=(\",\", \":\"), sort_keys=True)` so the format is exact.",
+      ],
+      challenge_starter_code: `import sys, json, math
 
-# Build the dict, dump it, load it, print the content value.
+data = json.load(sys.stdin)
+messages = data["messages"]
+# TODO: compute total content chars -> tokens (ceil chars/4),
+# count user turns, and print compact sorted JSON.
 `,
-      challenge_solution_code: `import json
+      challenge_solution_code: `import sys, json, math
 
-msg = {"content": "Hello"}
-text = json.dumps(msg)
-loaded = json.loads(text)
-print(loaded["content"])
+data = json.load(sys.stdin)
+messages = data["messages"]
+
+total_chars = 0
+user_turns = 0
+for m in messages:
+    total_chars += len(m["content"])
+    if m["role"] == "user":
+        user_turns += 1
+
+tokens = math.ceil(total_chars / 4)
+out = {"tokens": tokens, "user_turns": user_turns}
+print(json.dumps(out, separators=(",", ":"), sort_keys=True))
 `,
       challenge_test_cases: [
         {
-          input: "(no input)",
-          expected_output: "Hello",
-          description: "Round-trips a dict through JSON and prints the content value."
+          input: "{\"messages\":[{\"role\":\"user\",\"content\":\"What is 2 + 2?\"},{\"role\":\"assistant\",\"content\":\"4\"}]}",
+          expected_output: "{\"tokens\":4,\"user_turns\":1}",
+          description: "15 content chars -> 4 tokens, one user turn."
+        },
+        {
+          input: "{\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}",
+          expected_output: "{\"tokens\":1,\"user_turns\":1}",
+          description: "Tiny prompt rounds up to 1 token."
+        },
+        {
+          input: "{\"messages\":[]}",
+          expected_output: "{\"tokens\":0,\"user_turns\":0}",
+          description: "Edge case: an empty conversation costs nothing."
         }
       ]
     },
@@ -705,31 +791,73 @@ else:
         "An if/else on api_key lets you print a different message for found vs missing.",
         "In this sandbox the variable isn't set, so the else branch runs."
       ],
-      challenge_title: "Classify the status code",
-      challenge_description: "Given a status code stored in a variable, print \"unauthorized\" for 401, \"rate limited\" for 429, and \"ok\" for anything else.",
-      challenge_starter_code: `status = 429
+      challenge_title: "The Rate Limiter",
+      challenge_description: "Simulate a sliding-window rate limiter and report how many requests get 200 OK versus 429 Too Many Requests.",
+      challenge_story: "Anthropic's gateway protects the model from overload with a rate limit: only so many requests are allowed inside any rolling 60-second window. Send too fast and you get a \`429 Too Many Requests\` instead of a \`200 OK\` — not a failure, a please-wait. You're building the limiter itself. Requests arrive at known timestamps; you must decide, for each one, whether it slips through (200) or gets throttled (429), using a sliding window of accepted requests.",
+      challenge_statement: "A request is **accepted** (\`200\`) if, at its arrival second, **fewer than \`limit\`** previously-accepted requests fall within the trailing 60-second window (i.e. arrived strictly later than \`t - 60\`). Otherwise it is **throttled** (\`429\`) and does **not** occupy a slot.\n\nProcess the requests in arrival order. Count how many get \`200\` and how many get \`429\`.",
+      challenge_input_format: "Line 1: integer \`limit\` (max accepted requests per 60-second window).\nLine 2: integer \`n\` (number of requests).\nLine 3: \`n\` space-separated non-decreasing integer arrival times in seconds (omit/blank line if \`n = 0\`).",
+      challenge_output_format: "Two lines:\n- \`200 A\` where \`A\` is the number of accepted requests.\n- \`429 B\` where \`B\` is the number of throttled requests.",
+      challenge_constraints: [
+        "1 ≤ limit ≤ 100000",
+        "0 ≤ n ≤ 100000",
+        "0 ≤ arrival times ≤ 1000000000, given in non-decreasing order",
+      ],
+      challenge_examples: [
+        { input: "3\n5\n0 1 2 3 4", output: "200 3\n429 2", explanation: "Limit is 3 per 60s. All five arrive within one window, so the first 3 are accepted and the last 2 are throttled." },
+        { input: "2\n4\n0 10 70 80", output: "200 4\n429 0", explanation: "By second 70 the request at t=0 has aged out of the 60s window, freeing a slot, so every request fits." },
+      ],
+      challenge_notes: "Keep a list of accepted timestamps. Before each new request at time \`t\`, drop any accepted time \`x\` with \`x <= t - 60\` (it's outside the window). If the remaining count is below \`limit\`, accept and record \`t\`; otherwise throttle. A throttled request never takes a slot, which is what lets later requests recover.",
+      challenge_hints: [
+        "Read `limit`, then `n`, then parse the arrivals (guard the case `n == 0` with an empty list).",
+        "For each arrival `t`, filter your accepted list to keep only times `> t - 60`.",
+        "If `len(accepted) < limit`, append `t` and count a 200; else count a 429.",
+      ],
+      challenge_starter_code: `import sys
 
-# Print the right label for this status code.
+lines = sys.stdin.read().split("\\n")
+limit = int(lines[0])
+n = int(lines[1])
+arrivals = list(map(int, lines[2].split())) if n > 0 else []
+# TODO: slide a 60-second window of accepted requests,
+# count 200s and 429s, then print "200 A" and "429 B".
 `,
-      challenge_solution_code: `status = 429
+      challenge_solution_code: `import sys
 
-if status == 401:
-    print("unauthorized")
-elif status == 429:
-    print("rate limited")
-else:
-    print("ok")
+lines = sys.stdin.read().split("\\n")
+limit = int(lines[0])
+n = int(lines[1])
+arrivals = list(map(int, lines[2].split())) if n > 0 else []
+
+window = 60
+accepted_times = []
+ok = 0
+limited = 0
+for t in arrivals:
+    accepted_times = [x for x in accepted_times if x > t - window]
+    if len(accepted_times) < limit:
+        accepted_times.append(t)
+        ok += 1
+    else:
+        limited += 1
+
+print(f"200 {ok}")
+print(f"429 {limited}")
 `,
       challenge_test_cases: [
         {
-          input: "status = 429",
-          expected_output: "rate limited",
-          description: "429 maps to the rate-limited message."
+          input: "3\n5\n0 1 2 3 4",
+          expected_output: "200 3\n429 2",
+          description: "Burst exceeds the per-window limit; extras get 429."
         },
         {
-          input: "status = 401",
-          expected_output: "unauthorized",
-          description: "401 maps to the unauthorized message."
+          input: "2\n4\n0 10 70 80",
+          expected_output: "200 4\n429 0",
+          description: "Old requests age out of the window, freeing slots."
+        },
+        {
+          input: "5\n0\n",
+          expected_output: "200 0\n429 0",
+          description: "Edge case: no requests at all."
         }
       ]
     },
@@ -965,25 +1093,73 @@ print(response.content[0].text)
         "Each message is a dict with \"role\": \"user\" and \"content\": your question.",
         "Print response.content[0].text — content is a list, so grab the first block and read its .text."
       ],
-      challenge_title: "Build the messages list",
-      challenge_description: "Create a messages list with a single user turn whose content is \"What is 2 + 2?\", then print the role of that one message.",
-      challenge_starter_code: `# Build a one-message list and print the role of the first message.
+      challenge_title: "Validate the Conversation",
+      challenge_description: "Check whether a sequence of message roles is a legal Messages API conversation before it's sent to Claude.",
+      challenge_story: "The Messages API is strict about the shape of a conversation. Before your client library ships a request, it validates the \`messages\` list locally — a rejected call still costs you a round trip and a 400 error. The rules: the list can't be empty, it must **start with a \`user\` turn**, and roles must **strictly alternate** between \`user\` and \`assistant\` (no two user turns in a row, no two assistant turns in a row). Build the pre-flight validator that decides if a conversation is well-formed.",
+      challenge_statement: "You're given the ordered list of roles in a \`messages\` array. The conversation is **valid** only if all of these hold:\n\n1. It has at least one message.\n2. The first role is \`user\`.\n3. Roles strictly alternate — no two consecutive messages share the same role.\n\nEvery role is either \`user\` or \`assistant\`. Print \`valid\` if all rules hold, otherwise \`invalid\`.",
+      challenge_input_format: "Line 1: integer \`n\` — the number of messages. Each of the next \`n\` lines holds one role, either \`user\` or \`assistant\`.",
+      challenge_output_format: "A single line: \`valid\` or \`invalid\`.",
+      challenge_constraints: [
+        "0 ≤ n ≤ 100000",
+        "Each role is exactly `user` or `assistant`.",
+      ],
+      challenge_examples: [
+        { input: "3\nuser\nassistant\nuser", output: "valid", explanation: "Starts with user and alternates user -> assistant -> user. All rules satisfied." },
+        { input: "2\nuser\nuser", output: "invalid", explanation: "Two user turns in a row break the strict-alternation rule." },
+      ],
+      challenge_notes: "These are the real constraints the Messages API enforces. A common mistake is sending two user turns back-to-back after retrying — the API rejects it. An empty list (\`n = 0\`) is invalid because there's nothing to send.",
+      challenge_hints: [
+        "Read `n`, then read the next `n` lines into a list of roles.",
+        "Fail fast: `n == 0` is invalid, and `roles[0] != \"user\"` is invalid.",
+        "Loop from index 1 and check `roles[i] == roles[i - 1]` — if so, it's not alternating.",
+      ],
+      challenge_starter_code: `import sys
+
+lines = sys.stdin.read().split("\\n")
+n = int(lines[0])
+roles = [lines[i].strip() for i in range(1, n + 1)]
+# TODO: print "valid" if non-empty, starts with user, and strictly
+# alternates roles; otherwise print "invalid".
 `,
-      challenge_solution_code: `messages = [
-    {"role": "user", "content": "What is 2 + 2?"}
-]
-print(messages[0]["role"])
+      challenge_solution_code: `import sys
+
+lines = sys.stdin.read().split("\\n")
+n = int(lines[0])
+roles = [lines[i].strip() for i in range(1, n + 1)]
+
+valid = True
+if n == 0:
+    valid = False
+elif roles[0] != "user":
+    valid = False
+else:
+    for i in range(1, n):
+        if roles[i] == roles[i - 1]:
+            valid = False
+            break
+
+print("valid" if valid else "invalid")
 `,
       challenge_test_cases: [
         {
-          input: "(no input)",
-          expected_output: "user",
-          description: "The single message's role is printed."
+          input: "3\nuser\nassistant\nuser",
+          expected_output: "valid",
+          description: "Starts with user and alternates correctly."
         },
         {
-          input: "(no input)",
-          expected_output: "user",
-          description: "A user turn is the standard way to ask Claude a question."
+          input: "2\nuser\nuser",
+          expected_output: "invalid",
+          description: "Two user turns in a row are rejected."
+        },
+        {
+          input: "2\nassistant\nuser",
+          expected_output: "invalid",
+          description: "Edge case: a conversation must start with a user turn."
+        },
+        {
+          input: "0",
+          expected_output: "invalid",
+          description: "Edge case: an empty messages list has nothing to send."
         }
       ]
     }

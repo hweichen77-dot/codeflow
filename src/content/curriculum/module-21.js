@@ -224,27 +224,75 @@ total: $0.010500`,
         "input_cost uses input_price; output_cost uses output_price; total is their sum.",
         "Use an f-string with :.6f to print money to six decimal places."
       ],
-      challenge_title: "Price a single call",
-      challenge_description: "Given 1500 input tokens and 800 output tokens, with input at $3 per million and output at $15 per million, compute the total cost and print it to 6 decimal places as 'total cost: $X'.",
-      challenge_starter_code: `input_tokens = 1500
-output_tokens = 800
-input_price = 3    # dollars per 1,000,000 tokens
-output_price = 15  # dollars per 1,000,000 tokens
-# TODO: compute total cost and print it to 6 decimal places.
+      challenge_title: "The Billing Meter",
+      challenge_description: "Bill a batch of API calls per token, then flag the single most expensive call — the exact report your finance team needs before the first invoice lands.",
+      challenge_story: "Your AI feature went live last night and the logs are already filling up. Finance wants two numbers before the billing cycle closes: **what the whole batch cost**, and **which single call was the most expensive** so the team can investigate runaway prompts. Each log line records a call's id, its input tokens (the prompt you sent) and its output tokens (the model's reply). Input and output are billed at **different per-million rates**, and output is the pricey one. Build the meter that turns the raw log into those two numbers — exactly, to the cent and beyond.",
+      challenge_statement: "You are given the input and output **per-million** prices and a batch of logged API calls. For each call, its cost in dollars is:\n\n```\ncost = (input_tokens * input_price + output_tokens * output_price) / 1_000_000\n```\n\nDo two things:\n\n1. Print the **total cost of the whole batch**, formatted to exactly **6 decimal places**, prefixed with `$`.\n2. Print the **id of the single most expensive call**. If two calls tie on cost, print the **smaller id**.\n\nUse exact arithmetic — the prices and token counts are integers, so the cost numerator is an integer; divide only at the end to avoid floating-point drift.",
+      challenge_input_format: "The first line has three integers: `n input_price output_price` — the number of calls and the two per-million prices (in whole dollars).\n\nEach of the next `n` lines has three integers: `id input_tokens output_tokens`.",
+      challenge_output_format: "Two lines. Line 1: `$` followed by the total batch cost to exactly 6 decimal places. Line 2: the id of the most expensive call (smaller id wins ties).",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ input_price ≤ 1000",
+        "1 ≤ output_price ≤ 1000",
+        "1 ≤ id ≤ 1000000, ids are distinct",
+        "0 ≤ input_tokens, output_tokens ≤ 1000000",
+      ],
+      challenge_examples: [
+        { input: "3 3 15\n1 1500 800\n2 500 2000\n3 1000 100", output: "$0.052500\n2", explanation: "Costs (in numerator form): call 1 = 1500·3+800·15 = 16500, call 2 = 31500, call 3 = 4500. Total 52500 → $0.052500. Call 2 is dearest." },
+        { input: "2 5 10\n1 100 100\n2 100 100", output: "$0.003000\n1", explanation: "Both calls cost the same (1500 each), so the tie breaks to the smaller id, 1." },
+      ],
+      challenge_notes: "Output tokens cost more than input tokens — in real apps the reply, not the prompt, usually dominates the bill. Because every price and token count is an integer, the cost numerator `input_tokens*input_price + output_tokens*output_price` is an exact integer; sum those, then divide by 1,000,000 once at the end so rounding can't drift over 100k calls.",
+      challenge_hints: [
+        "Keep a running integer sum of each call's numerator (input·in_price + output·out_price); divide by 1,000,000 only when you print.",
+        "Track the best (largest) numerator seen and its id; on a tie, keep the row with the smaller id.",
+        "Format the dollars with an f-string like `f\"\${total:.6f}\"`, or use Decimal for guaranteed exact rounding.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    in_price = int(data[idx]); idx += 1
+    out_price = int(data[idx]); idx += 1
+    # TODO: for each of the n calls, accumulate the total cost numerator
+    #       and track the most expensive call's id (smaller id wins ties).
+    #       Print "$<total to 6 decimals>" then the winning id.
+
+main()
 `,
-      challenge_solution_code: `input_tokens = 1500
-output_tokens = 800
-input_price = 3    # dollars per 1,000,000 tokens
-output_price = 15  # dollars per 1,000,000 tokens
+      challenge_solution_code: `import sys
+from decimal import Decimal, ROUND_HALF_UP
 
-input_cost = input_tokens / 1_000_000 * input_price
-output_cost = output_tokens / 1_000_000 * output_price
-total = input_cost + output_cost
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    in_price = int(data[idx]); idx += 1
+    out_price = int(data[idx]); idx += 1
+    best_id = -1
+    best_num = -1
+    grand_num = 0
+    for _ in range(n):
+        cid = int(data[idx]); idx += 1
+        in_tok = int(data[idx]); idx += 1
+        out_tok = int(data[idx]); idx += 1
+        num = in_tok * in_price + out_tok * out_price
+        grand_num += num
+        if num > best_num or (num == best_num and cid < best_id):
+            best_num = num
+            best_id = cid
+    total = (Decimal(grand_num) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"\${total}")
+    print(best_id)
 
-print(f"total cost: \${total:.6f}")
+main()
 `,
       challenge_test_cases: [
-        { input: "input=1500, output=800", expected_output: "total cost: $0.016500", description: "1500 input ($0.0045) + 800 output ($0.012) = $0.0165." }
+        { input: "3 3 15\n1 1500 800\n2 500 2000\n3 1000 100", expected_output: "$0.052500\n2", description: "Batch total plus the most expensive call (call 2 dominated by output tokens)." },
+        { input: "2 5 10\n1 100 100\n2 100 100", expected_output: "$0.003000\n1", description: "Cost tie resolves to the smaller id." },
+        { input: "1 3 15\n7 1000000 1000000", expected_output: "$18.000000\n7", description: "Single max-size call: 1M input + 1M output = $18 exactly." },
+        { input: "2 1 1\n9 0 0\n4 0 0", expected_output: "$0.000000\n4", description: "Zero-token calls cost nothing; the tie still breaks to the smaller id." }
       ]
     },
     {
@@ -460,31 +508,76 @@ estimated cost: $0.001242`,
         "math.ceil(len(prompt) / 4) estimates input tokens, rounding partials up.",
         "Cost = est_input/1_000_000*input_price + est_output/1_000_000*output_price."
       ],
-      challenge_title: "Estimate before you ship",
-      challenge_description: "You have a 240-character prompt and plan to cap the answer at 100 output tokens. Input is $3/1M, output is $15/1M. Estimate input tokens with chars/4 rounded up, compute the expected per-call cost, and print it to 6 decimal places as 'estimated cost: $X'.",
-      challenge_starter_code: `import math
+      challenge_title: "The Pre-Flight Estimator",
+      challenge_description: "Estimate a batch of calls before you ship — turn raw prompt text into token counts, price the run, and count how many calls would blow a per-call budget cap.",
+      challenge_story: "Before your team ships a new AI endpoint, the rule is simple: **estimate the bill first**. You don't have the model's real tokenizer in your planning script, so you use the standard back-of-envelope rule — about **4 characters per token** — and round partial tokens **up**. Each planned call has a known prompt (you wrote it) and a hard cap on the reply length (you set it). Product also handed you a **per-call budget**: any single call estimated to cost *more* than the cap is a red flag worth reviewing before launch. Build the estimator that prices the whole batch and counts the red flags.",
+      challenge_statement: "You are given the per-million prices, a per-call budget, and a list of planned calls. For each call:\n\n1. Estimate its **input tokens** as `ceil(len(prompt) / 4)` (round partial tokens up).\n2. Its **output tokens** are exactly the given cap.\n3. Its estimated cost is `(input_tokens * input_price + output_tokens * output_price) / 1_000_000`.\n\nDo two things:\n\n1. Print the **total estimated cost** of the batch to exactly **6 decimal places**, prefixed with `$`.\n2. Print how many calls have an estimated cost **strictly greater than** the budget.",
+      challenge_input_format: "The first line has three integers: `n input_price output_price`.\n\nThe second line is the budget as a decimal dollar amount with 6 decimal places (e.g. `0.001000`).\n\nEach of the next `n` lines describes one call: the prompt text (which may contain spaces) followed by a single space and an integer — the output token cap. Split on the **last** space so prompt text stays intact.",
+      challenge_output_format: "Two lines. Line 1: `$` followed by the total estimated cost to exactly 6 decimal places. Line 2: the count of calls strictly over budget.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ input_price, output_price ≤ 1000",
+        "0 ≤ output token cap ≤ 1000000",
+        "1 ≤ len(prompt) ≤ 1000; the prompt contains no leading/trailing spaces",
+        "0.000000 ≤ budget ≤ 1000.000000",
+      ],
+      challenge_examples: [
+        { input: "3 3 15\n0.001000\nWhat is the capital of France 50\nSummarize this very long document please now 200\nhi 10", output: "$0.003960\n1", explanation: "Prompts are 29, 44, 2 chars → 8, 11, 1 input tokens. Numerators: 8·3+50·15=774, 11·3+200·15=3033, 1·3+10·15=153 → total 3960 → $0.003960. Only call 2 ($0.003033) exceeds the $0.001 budget." },
+        { input: "2 3 15\n0.000000\nabcd 0\nabcdefgh 0", output: "$0.000009\n2", explanation: "1 and 2 input tokens, no output. Numerators 3 and 6 → total 9 → $0.000009. Both exceed a $0 budget." },
+      ],
+      challenge_notes: "The 4-chars-per-token rule is a planning heuristic, not the real tokenizer — but it's accurate enough to catch budget blowups before you spend a cent. Rounding partial tokens **up** is the safe direction for an estimate: you'd rather over-predict the bill than be surprised by it. Keep the cost numerator as an integer and divide once at the end.",
+      challenge_hints: [
+        "Read the budget once as a Decimal so you can compare costs exactly without float rounding.",
+        "Split each call line with `rsplit(\" \", 1)` so a prompt containing spaces stays in one piece and the trailing integer comes off cleanly.",
+        "`math.ceil(len(prompt) / 4)` gives the estimated input tokens; compare each call's cost with `>` (strictly greater) against the budget.",
+      ],
+      challenge_starter_code: `import sys
+import math
 
-prompt_chars = 240
-est_output_tokens = 100
-input_price = 3    # $/1M
-output_price = 15  # $/1M
-# TODO: estimate input tokens, compute expected cost, print to 6 decimals.
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0]); in_price = int(first[1]); out_price = int(first[2])
+    budget_line = data[idx].strip(); idx += 1
+    # TODO: for each of the n calls, estimate input tokens from the prompt length,
+    #       add output cap, accumulate total cost, and count calls over budget.
+
+main()
 `,
-      challenge_solution_code: `import math
+      challenge_solution_code: `import sys
+import math
+from decimal import Decimal, ROUND_HALF_UP
 
-prompt_chars = 240
-est_output_tokens = 100
-input_price = 3    # $/1M
-output_price = 15  # $/1M
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0]); in_price = int(first[1]); out_price = int(first[2])
+    budget = Decimal(data[idx].strip()); idx += 1
+    total_num = 0
+    over_count = 0
+    for _ in range(n):
+        parts = data[idx].rsplit(" ", 1); idx += 1
+        prompt_text = parts[0]
+        max_out = int(parts[1])
+        est_in = math.ceil(len(prompt_text) / 4)
+        num = est_in * in_price + max_out * out_price
+        total_num += num
+        cost = Decimal(num) / Decimal(1000000)
+        if cost > budget:
+            over_count += 1
+    total = (Decimal(total_num) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"\${total}")
+    print(over_count)
 
-est_input_tokens = math.ceil(prompt_chars / 4)
-cost = (est_input_tokens / 1_000_000 * input_price
-        + est_output_tokens / 1_000_000 * output_price)
-
-print(f"estimated cost: \${cost:.6f}")
+main()
 `,
       challenge_test_cases: [
-        { input: "240 chars, 100 output tokens", expected_output: "estimated cost: $0.001680", description: "60 input tokens ($0.00018) + 100 output ($0.0015) = $0.00168." }
+        { input: "3 3 15\n0.001000\nWhat is the capital of France 50\nSummarize this very long document please now 200\nhi 10", expected_output: "$0.003960\n1", description: "Batch estimate with one call over the per-call budget." },
+        { input: "2 3 15\n0.000000\nabcd 0\nabcdefgh 0", expected_output: "$0.000009\n2", description: "Zero output caps; both calls exceed a $0 budget." },
+        { input: "1 3 15\n1.000000\na 1", expected_output: "$0.000018\n0", description: "Single tiny call (1 input token, 1 output) well under a generous budget." },
+        { input: "1 1000 1000\n0.001000\nabcd 1", expected_output: "$0.002000\n1", description: "High prices push even a tiny call over budget: (1+1)·1000 = 2000 → $0.002000." }
       ]
     },
     {
@@ -696,23 +789,73 @@ cumulative input tokens: 1500`,
         "Add history_tokens to total_input_tokens inside the loop.",
         "Print each turn's resend, then the cumulative total after the loop."
       ],
-      challenge_title: "Sum the resent history",
-      challenge_description: "A chat runs 6 turns. Each message is 50 tokens, and the whole transcript is resent every turn (turn N resends N*50 tokens). Compute the cumulative input tokens billed over all 6 turns and print 'cumulative input tokens: N'.",
-      challenge_starter_code: `tokens_per_turn = 50
-turns = 6
-# TODO: sum the resent history across all turns and print the cumulative total.
+      challenge_title: "The Stateless Transcript",
+      challenge_description: "Replay a real chat session turn by turn, billing the whole transcript that gets resent every turn — then find the turn where the input bill peaked.",
+      challenge_story: "The model is **stateless**: it remembers nothing between turns, so your chat app resends the **entire transcript** as input on every single turn to keep the conversation coherent. That means early messages get re-billed again and again as the session grows — the quiet way long chats blow up a budget. You're profiling a real session for the team. Each turn has a user message of some size and a model reply of some size, and there's a fixed **system prompt** prepended to the input every turn. Walk the session, total the input tokens billed across all turns, and pinpoint the turn where a single request's input was largest.",
+      challenge_statement: "A session runs `t` turns. A fixed **system prompt** of `s` tokens is part of the input on every turn. On turn `k` (1-indexed), the input sent to the model is:\n\n```\nsystem prompt  +  all user messages from turns 1..k  +  all model replies from turns 1..k-1\n```\n\n(The current turn's user message is included; that turn's reply hasn't been generated yet, so it isn't.)\n\nDo two things:\n\n1. Print the **cumulative input tokens** billed across all `t` turns (the sum of each turn's input size).\n2. Print the **turn number** whose input was largest. If two turns tie, print the **earlier** turn.",
+      challenge_input_format: "The first line has two integers: `t s` — the number of turns and the system-prompt token count.\n\nEach of the next `t` lines has two integers: `user_tokens reply_tokens` for that turn, in order.",
+      challenge_output_format: "Two lines. Line 1: the cumulative input tokens billed over all turns. Line 2: the turn number with the largest single-turn input (earliest wins ties).",
+      challenge_constraints: [
+        "1 ≤ t ≤ 100000",
+        "0 ≤ s ≤ 1000000",
+        "0 ≤ user_tokens, reply_tokens ≤ 1000000",
+        "The cumulative total fits in a 64-bit integer.",
+      ],
+      challenge_examples: [
+        { input: "3 20\n10 30\n15 25\n5 40", output: "210\n3", explanation: "Turn 1: 20+10 = 30. Turn 2: 20+(10+15)+30 = 75. Turn 3: 20+(10+15+5)+(30+25) = 105. Cumulative 30+75+105 = 210. The input grows every turn, so turn 3 is the peak." },
+        { input: "2 100\n10 10\n10 10", output: "240\n2", explanation: "Turn 1: 100+10 = 110. Turn 2: 100+20+10 = 130. Total 240; turn 2 carries the heavier transcript." },
+      ],
+      challenge_notes: "Because the input is monotonically growing in this model, the last turn is usually the peak — but the explicit peak-finding makes the cost of a long session concrete. This is exactly why **trimming or summarizing history** is the first cost lever teams reach for: every token you stop resending is re-saved on every future turn.",
+      challenge_hints: [
+        "Keep a running sum of user tokens seen and a running sum of replies seen; the input on turn k is `s + running_user + running_reply` computed *before* you add the current reply.",
+        "Add the current turn's user tokens to the running user sum first, compute the input, then add that turn's reply to the running reply sum for next turn.",
+        "Track the max input and its turn number; only update on a strictly larger value so the earliest peak wins ties.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    t = int(first[0]); s = int(first[1])
+    # TODO: walk the t turns, accumulating the resent transcript size each turn.
+    #       Print the cumulative input tokens, then the peak turn (earliest wins ties).
+
+main()
 `,
-      challenge_solution_code: `tokens_per_turn = 50
-turns = 6
+      challenge_solution_code: `import sys
 
-total_input_tokens = 0
-for turn in range(1, turns + 1):
-    total_input_tokens += tokens_per_turn * turn
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    t = int(first[0]); s = int(first[1])
+    total_input = 0
+    running_user = 0
+    running_reply = 0
+    peak_input = -1
+    peak_turn = 0
+    for k in range(1, t + 1):
+        parts = data[idx].split(); idx += 1
+        user_tok = int(parts[0])
+        reply_tok = int(parts[1])
+        running_user += user_tok
+        input_this = s + running_user + running_reply
+        total_input += input_this
+        if input_this > peak_input:
+            peak_input = input_this
+            peak_turn = k
+        running_reply += reply_tok
+    print(total_input)
+    print(peak_turn)
 
-print(f"cumulative input tokens: {total_input_tokens}")
+main()
 `,
       challenge_test_cases: [
-        { input: "50 tokens/turn, 6 turns", expected_output: "cumulative input tokens: 1050", description: "50*(1+2+3+4+5+6) = 50*21 = 1050." }
+        { input: "3 20\n10 30\n15 25\n5 40", expected_output: "210\n3", description: "Growing transcript; cumulative input billed and peak turn." },
+        { input: "2 100\n10 10\n10 10", expected_output: "240\n2", description: "Fixed system prompt dominates; turn 2 carries more history." },
+        { input: "1 0\n50 50", expected_output: "50\n1", description: "Single turn, no system prompt: only the first user message is billed." },
+        { input: "4 0\n0 0\n0 0\n0 0\n0 0", expected_output: "0\n1", description: "All-zero session: cumulative 0, and the earliest turn wins the peak tie." }
       ]
     },
     {
@@ -919,25 +1062,75 @@ saved input tokens: 700`,
         "trimmed_history = tokens_per_turn * keep_recent.",
         "saved is the difference between the full and trimmed history."
       ],
-      challenge_title: "Measure the savings from trimming",
-      challenge_description: "A chat resends history at 120 tokens per turn. After 8 turns you switch from resending all turns to keeping only the last 2. Compute the input tokens saved this turn and print 'saved input tokens: N'.",
-      challenge_starter_code: `tokens_per_turn = 120
-turns_so_far = 8
-keep_recent = 2
-# TODO: compute full vs trimmed history and the tokens saved this turn.
+      challenge_title: "The Optimization Audit",
+      challenge_description: "Run a before/after audit on a chat feature: apply two cost levers — trim history to the last K turns and cap the reply length — then report the input tokens, output tokens, and dollars saved.",
+      challenge_story: "Your chat feature works, but the bill is climbing, so you run an optimization audit before the next billing cycle. You have two safe levers that don't touch model quality: **trim the resent history** down to the last `K` turns (instead of resending the whole transcript every turn), and **cap each reply** at a fixed output length (instead of letting answers run as long as they want). You project the feature over `t` turns under both the baseline and the optimized plan, then hand the team three numbers: input tokens saved, output tokens saved, and dollars saved. Numbers that justify the change.",
+      challenge_statement: "A feature is projected over `t` turns. Each turn adds `m` tokens of history, so under the **baseline** plan turn `k` resends `m * k` input tokens (the full transcript). Under the **optimized** plan, turn `k` resends only the last `K` turns: `m * min(k, K)` input tokens.\n\nFor output: the **baseline** lets each reply run to `out_full` tokens; the **optimized** plan caps each reply at `out_cap` tokens. Every turn produces one reply.\n\nCompute, summed across all `t` turns:\n\n1. `saved_input`  = baseline input tokens − optimized input tokens.\n2. `saved_output` = baseline output tokens − optimized output tokens.\n3. `saved_cost`   = `(saved_input * input_price + saved_output * output_price) / 1_000_000`.\n\nPrint `saved_input`, then `saved_output`, then `$saved_cost` to exactly 6 decimal places.",
+      challenge_input_format: "The first line has five integers: `t m K input_price output_price` — turns, tokens added per turn, history window, and the two per-million prices.\n\nThe second line has two integers: `out_full out_cap` — the baseline reply length and the capped reply length.",
+      challenge_output_format: "Three lines: `saved_input`, then `saved_output`, then `$` followed by the dollars saved to exactly 6 decimal places.",
+      challenge_constraints: [
+        "1 ≤ t ≤ 100000",
+        "1 ≤ m ≤ 1000000",
+        "1 ≤ K ≤ t",
+        "1 ≤ input_price, output_price ≤ 1000",
+        "0 ≤ out_cap ≤ out_full ≤ 1000000",
+      ],
+      challenge_examples: [
+        { input: "8 120 2 3 15\n300 100", output: "2520\n1600\n$0.031560", explanation: "Baseline input = 120·(1+…+8) = 4320; optimized = 120·(1+2+2+2+2+2+2+2) = 1800 → saved 2520. Output: 300·8 − 100·8 = 1600 saved. Cost: (2520·3 + 1600·15)/1e6 = 31560/1e6 = $0.031560." },
+        { input: "3 100 1 3 15\n200 50", output: "300\n450\n$0.007650", explanation: "Baseline input 100·(1+2+3)=600; optimized 100·(1+1+1)=300 → 300 saved. Output 200·3 − 50·3 = 450. Cost (300·3+450·15)/1e6 = 7650/1e6 = $0.007650." },
+      ],
+      challenge_notes: "Trimming history and capping output are the **first** levers to reach for because they cut cost without changing what the model can do — unlike switching to a smaller model, which risks output quality. Notice how the savings compound: trimming a per-turn history of `m` saves on every future turn beyond the window `K`, which is why long sessions benefit most.",
+      challenge_hints: [
+        "Baseline input is `m * (1+2+…+t)`; optimized input is `m * sum(min(k, K) for k in 1..t)`. A loop is fine, or use the closed form.",
+        "Output is simpler: baseline `out_full * t`, optimized `out_cap * t`.",
+        "Build the saved-cost numerator as `saved_input*input_price + saved_output*output_price` (an exact integer), then divide by 1,000,000 once at the end.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    t = int(first[0]); m = int(first[1]); K = int(first[2])
+    in_price = int(first[3]); out_price = int(first[4])
+    second = data[1].split()
+    out_full = int(second[0]); out_cap = int(second[1])
+    # TODO: sum baseline vs optimized input/output across t turns,
+    #       then print saved_input, saved_output, and "$<saved_cost to 6 decimals>".
+
+main()
 `,
-      challenge_solution_code: `tokens_per_turn = 120
-turns_so_far = 8
-keep_recent = 2
+      challenge_solution_code: `import sys
+from decimal import Decimal, ROUND_HALF_UP
 
-full_history = tokens_per_turn * turns_so_far
-trimmed_history = tokens_per_turn * keep_recent
-saved = full_history - trimmed_history
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    t = int(first[0]); m = int(first[1]); K = int(first[2])
+    in_price = int(first[3]); out_price = int(first[4])
+    second = data[1].split()
+    out_full = int(second[0]); out_cap = int(second[1])
+    base_in = 0
+    opt_in = 0
+    for k in range(1, t + 1):
+        base_in += m * k
+        opt_in += m * min(k, K)
+    base_out = out_full * t
+    opt_out = out_cap * t
+    saved_in = base_in - opt_in
+    saved_out = base_out - opt_out
+    saved_num = saved_in * in_price + saved_out * out_price
+    saved_cost = (Decimal(saved_num) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(saved_in)
+    print(saved_out)
+    print(f"\${saved_cost}")
 
-print(f"saved input tokens: {saved}")
+main()
 `,
       challenge_test_cases: [
-        { input: "120 tokens/turn, 8 turns, keep 2", expected_output: "saved input tokens: 720", description: "full 120*8=960, trimmed 120*2=240, saved 960-240=720." }
+        { input: "8 120 2 3 15\n300 100", expected_output: "2520\n1600\n$0.031560", description: "Both levers applied over 8 turns; full savings report." },
+        { input: "3 100 1 3 15\n200 50", expected_output: "300\n450\n$0.007650", description: "Window of 1 keeps only the current turn's history." },
+        { input: "1 50 1 3 15\n100 100", expected_output: "0\n0\n$0.000000", description: "Single turn with no cap change: nothing is saved." },
+        { input: "5 200 2 3 15\n400 400", expected_output: "1200\n0\n$0.003600", description: "History trimmed but output cap unchanged: only input savings." }
       ]
     }
   ]

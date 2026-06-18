@@ -244,27 +244,76 @@ Normalized:
           sampleAnswer: "Neighboring pixels are physically related — they share edges, textures, and shapes. The grid encodes which pixels are next to which. If you flatten the image into a flat list, the model loses the 2D nearness information, so it can no longer tell that a pixel and the one just below it belong to the same edge or object."
         }
       ],
-      challenge_title: "Normalize a color pixel",
-      challenge_description: "You're given a single RGB pixel as a list of three values (0–255). Write code that prints each value divided by 255, rounded to 2 decimal places, as a list.",
-      challenge_starter_code: `pixel = [255, 128, 0]
+      challenge_title: "The Brightness Gate",
+      challenge_description: "Normalize a batch of RGB pixels, compute perceptual luminance, and count how many pass a brightness gate.",
+      challenge_story: "You're building the preprocessing stage of an image classifier. Before a single pixel reaches the neural network, raw camera bytes (0–255 per channel) must be **normalized** to the 0–1 range the model was trained on. Your team also wants a cheap quality gate: dark, underexposed frames waste GPU time, so the pipeline should flag how many pixels are 'bright enough' using the standard **perceptual luminance** formula before the batch is even uploaded.",
+      challenge_statement: "You are given `n` RGB pixels. For each pixel with channels `r g b` (each `0`–`255`):\n\n1. Normalize each channel to `0.0`–`1.0` by dividing by `255`.\n2. Compute its **luminance** using the Rec. 601 weights:\n   \`luminance = 0.299·r' + 0.587·g' + 0.114·b'\` where `r' g' b'` are the normalized channels.\n\nA pixel **passes the brightness gate** if its luminance is **greater than or equal to** the threshold `t`.\n\nPrint two lines:\n1. The **average luminance** across all `n` pixels, rounded to exactly **4 decimal places**.\n2. The **count** of pixels that pass the gate.",
+      challenge_input_format: "The first line has an integer `n` and a float `t` (the threshold), separated by a space. Each of the next `n` lines has three integers `r g b`.",
+      challenge_output_format: "Line 1: average luminance formatted to exactly 4 decimal places.\nLine 2: an integer, the number of pixels with luminance ≥ `t`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0 ≤ r, g, b ≤ 255",
+        "0.0 ≤ t ≤ 1.0",
+      ],
+      challenge_examples: [
+        { input: "3 0.5\n255 255 255\n0 0 0\n100 150 200", output: "0.5173\n2", explanation: "White → luminance 1.0 (passes). Black → 0.0 (fails). (100,150,200) → ≈0.5519 (passes). Average = (1.0 + 0.0 + 0.5519)/3 ≈ 0.5173; two pixels pass the 0.5 gate." },
+        { input: "1 0.0\n0 0 0", output: "0.0000\n1", explanation: "A single black pixel has luminance 0.0, and 0.0 ≥ 0.0, so it passes the gate." },
+      ],
+      challenge_notes: "The Rec. 601 weights are not equal because human eyes are far more sensitive to green than to blue — that's why green is weighted ~0.587 and blue only ~0.114. Use `f\"{avg:.4f}\"` to format the average; use `>=` so a pixel exactly on the threshold passes.",
+      challenge_hints: [
+        "Read the first line and split it into an int `n` and a float `t`.",
+        "For each pixel, divide each channel by 255 before applying the luminance weights.",
+        "Keep a running sum of luminance for the average and a separate counter for pixels passing the gate.",
+      ],
+      challenge_starter_code: `import sys
 
-# TODO: print each value divided by 255, rounded to 2 decimals, as a list
+def main():
+    data = sys.stdin.read().split('\\n')
+    first = data[0].split()
+    n = int(first[0])
+    t = float(first[1])
+    # TODO: for each of the n pixels, normalize, compute luminance,
+    # track the running sum and the count that pass the gate (>= t).
+    # Print the average luminance to 4 decimals, then the count.
+
+main()
 `,
-      challenge_solution_code: `pixel = [255, 128, 0]
+      challenge_solution_code: `import sys
 
-normalized = [round(v / 255, 2) for v in pixel]
-print(normalized)
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    t = float(data[idx]); idx += 1
+    total = 0.0
+    bright = 0
+    for _ in range(n):
+        r = int(data[idx]); g = int(data[idx + 1]); b = int(data[idx + 2])
+        idx += 3
+        lum = 0.299 * (r / 255) + 0.587 * (g / 255) + 0.114 * (b / 255)
+        total += lum
+        if lum >= t:
+            bright += 1
+    print(f"{total / n:.4f}")
+    print(bright)
+
+main()
 `,
       challenge_test_cases: [
         {
-          input: "pixel = [255, 128, 0]",
-          expected_output: "[1.0, 0.5, 0.0]",
-          description: "Pure red-ish pixel normalized to 0–1."
+          input: "3 0.5\n255 255 255\n0 0 0\n100 150 200",
+          expected_output: "0.5173\n2",
+          description: "White and the mid pixel pass the 0.5 gate; black fails."
         },
         {
-          input: "pixel = [0, 0, 0]",
-          expected_output: "[0.0, 0.0, 0.0]",
-          description: "Black pixel stays all zeros."
+          input: "1 0.0\n0 0 0",
+          expected_output: "0.0000\n1",
+          description: "Edge: a black pixel at threshold 0.0 still passes (0.0 ≥ 0.0)."
+        },
+        {
+          input: "4 0.30\n0 255 0\n0 0 255\n0 0 255\n0 0 255",
+          expected_output: "0.2322\n1",
+          description: "Edge: green (luminance 0.587) clears the 0.30 gate while pure-blue pixels (0.114) do not."
         }
       ]
     },
@@ -525,38 +574,81 @@ print("Filter response:", response)
           sampleAnswer: "Weight sharing means the same small filter is slid across every position of the image instead of learning a separate set of weights for each pixel location. Because one filter is reused everywhere, the model only has to store and learn that filter's few weights, not millions of unique connections. A pattern learned once (like a vertical edge) is then detected anywhere in the image for free."
         }
       ],
-      challenge_title: "Detect a strong edge",
-      challenge_description: "Apply the same horizontal-edge kernel to a different patch where the top is bright and the bottom is dark. Print the filter response. A large magnitude means a strong edge was found.",
-      challenge_starter_code: `import numpy as np
+      challenge_title: "Find the Strongest Edge",
+      challenge_description: "Slide a 3×3 convolution kernel across a grayscale image and locate the single position with the strongest edge response.",
+      challenge_story: "You're implementing the very first layer of a convolutional neural network — by hand, before any framework does it for you. A CNN learns kernels (small weight grids) and **slides** each one across the image, multiplying-and-summing at every position. A large-magnitude response means that kernel just lit up on a feature it cares about. Your debugging tool needs to take one grayscale frame and one learned kernel and report *where* and *how strongly* the filter fires, so the team can see what the first layer is actually detecting.",
+      challenge_statement: "You are given a grayscale image of height `H` and width `W`, and a `3×3` kernel. Perform a **valid convolution** (no padding): the kernel can only sit at positions where it fits entirely inside the image, so there are `(H-2)·(W-2)` output positions.\n\nAt each top-left position `(i, j)` (with `0 ≤ i ≤ H-3`, `0 ≤ j ≤ W-3`), the response is the sum over the 3×3 overlap of `image[i+di][j+dj] · kernel[di][dj]`.\n\nFind the position whose response has the **largest absolute value** (the strongest edge). If several positions tie, choose the one with the smallest `i`, then the smallest `j` (row-major / reading order).\n\nPrint two lines:\n1. The largest absolute response (an integer).\n2. The position `i j` of that response.",
+      challenge_input_format: "The first line has two integers `H W`. The next `H` lines each have `W` integers — the image pixels. The final `3` lines each have `3` integers — the kernel.",
+      challenge_output_format: "Line 1: the maximum absolute response (integer).\nLine 2: two integers `i j`, the top-left position of that response.",
+      challenge_constraints: [
+        "3 ≤ H, W ≤ 200",
+        "0 ≤ image[i][j] ≤ 255",
+        "-10 ≤ kernel[di][dj] ≤ 10",
+      ],
+      challenge_examples: [
+        { input: "3 3\n100 100 100\n50 50 50\n0 0 0\n1 1 1\n0 0 0\n-1 -1 -1", output: "300\n0 0", explanation: "Only one valid position. Top row (100·3) minus bottom row (0·3) = 300 — a strong horizontal edge." },
+        { input: "4 4\n10 10 0 0\n10 10 0 0\n10 10 0 0\n10 10 0 0\n-1 0 1\n-1 0 1\n-1 0 1", output: "30\n0 0", explanation: "A vertical Sobel kernel. The strongest |response| is 30 where the bright-to-dark column boundary sits; the tie at (0,1) loses to the earlier (0,0)." },
+      ],
+      challenge_notes: "Absolute value matters because edges come in both polarities: a bright-to-dark transition and a dark-to-bright transition are equally strong edges, just with opposite signs. Track the max with `abs(response)` and update only when you find a strictly larger value, so the first position wins ties automatically.",
+      challenge_hints: [
+        "Read `H` and `W`, then read `H` image rows and `3` kernel rows into lists of integers.",
+        "Loop `i` from 0 to `H-3` and `j` from 0 to `W-3`; for each, sum the nine products.",
+        "Keep `best = -1`; update `best`, `best_i`, `best_j` only when `abs(response) > best` — this keeps the first position on ties.",
+      ],
+      challenge_starter_code: `import sys
 
-patch = np.array([[100, 100, 100],
-                  [50,  50,  50],
-                  [0,   0,   0]])
+def main():
+    rows = [r for r in sys.stdin.read().split('\\n') if r.strip() != '']
+    h, w = map(int, rows[0].split())
+    image = [list(map(int, rows[1 + i].split())) for i in range(h)]
+    kernel = [list(map(int, rows[1 + h + i].split())) for i in range(3)]
+    # TODO: slide the kernel over every valid position, compute each response,
+    # and track the position with the largest absolute response.
+    # Print the max absolute response, then the position "i j".
 
-kernel = np.array([[ 1,  1,  1],
-                   [ 0,  0,  0],
-                   [-1, -1, -1]])
-
-# TODO: print the filter response (element-wise multiply, then sum)
+main()
 `,
-      challenge_solution_code: `import numpy as np
+      challenge_solution_code: `import sys
 
-patch = np.array([[100, 100, 100],
-                  [50,  50,  50],
-                  [0,   0,   0]])
+def main():
+    rows = [r for r in sys.stdin.read().split('\\n') if r.strip() != '']
+    h, w = map(int, rows[0].split())
+    image = [list(map(int, rows[1 + i].split())) for i in range(h)]
+    kernel = [list(map(int, rows[1 + h + i].split())) for i in range(3)]
 
-kernel = np.array([[ 1,  1,  1],
-                   [ 0,  0,  0],
-                   [-1, -1, -1]])
+    best = -1
+    best_i = best_j = 0
+    for i in range(h - 2):
+        for j in range(w - 2):
+            s = 0
+            for di in range(3):
+                for dj in range(3):
+                    s += image[i + di][j + dj] * kernel[di][dj]
+            val = abs(s)
+            if val > best:
+                best = val
+                best_i = i
+                best_j = j
+    print(best)
+    print(f"{best_i} {best_j}")
 
-response = np.sum(patch * kernel)
-print("Filter response:", response)
+main()
 `,
       challenge_test_cases: [
         {
-          input: "Top row 100, bottom row 0",
-          expected_output: "Filter response: 300",
-          description: "Bright-over-dark patch gives a strong positive response (300)."
+          input: "3 3\n100 100 100\n50 50 50\n0 0 0\n1 1 1\n0 0 0\n-1 -1 -1",
+          expected_output: "300\n0 0",
+          description: "Single position; horizontal edge kernel fires at 300."
+        },
+        {
+          input: "4 4\n10 10 0 0\n10 10 0 0\n10 10 0 0\n10 10 0 0\n-1 0 1\n-1 0 1\n-1 0 1",
+          expected_output: "30\n0 0",
+          description: "Vertical edge; the first tied position (0,0) wins."
+        },
+        {
+          input: "3 3\n5 5 5\n5 5 5\n5 5 5\n1 1 1\n0 0 0\n-1 -1 -1",
+          expected_output: "0\n0 0",
+          description: "Edge: a perfectly flat patch produces zero response everywhere."
         }
       ]
     },
@@ -844,50 +936,83 @@ print(response.content[0].text)
           sampleAnswer: "With a custom CNN, the task is baked into the trained weights, so changing what you want to detect means collecting new labeled data and training again. With a multimodal model the perception ability is already general; the specific task lives in the prompt you send. Asking a different question simply points that general ability at a new goal, so you swap the text instead of running a training loop."
         }
       ],
-      challenge_title: "Ask a yes/no vision question",
-      challenge_description: "Reuse the request pattern but change the question to a safety check: 'Is the person in this photo wearing a helmet? Answer only yes or no.' Print the answer. (Assume the image variable is already loaded as image_data.)",
-      challenge_starter_code: `from anthropic import Anthropic
+      challenge_title: "Triage the Vision Model's Verdicts",
+      challenge_description: "Aggregate a batch of confidence-scored yes/no answers from a multimodal safety model and decide which frames to flag, escalate, or auto-approve.",
+      challenge_story: "You shipped a construction-site safety monitor: a multimodal vision model looks at each camera frame and answers 'Is the worker wearing a helmet?' with a confidence score. The raw model output is too noisy to act on directly — a low-confidence 'no' shouldn't trigger an alarm, but a high-confidence 'no' absolutely should. Your job is the **decision layer** that sits after the model: turn its per-frame verdicts into three buckets the operations dashboard understands.",
+      challenge_statement: "You are given `n` frame verdicts from the vision model. Each verdict has a frame id, an answer (`yes` or `no`, case-insensitive), and a confidence score in `[0, 1]`. You are also given a confidence threshold `t`.\n\nApply this policy to every verdict:\n\n- If the confidence is **below** `t`, the model isn't sure → send it to **human review**.\n- Otherwise (confidence ≥ `t`), if the answer is **no** (no helmet) → **flag** it as a safety violation.\n- Otherwise (confident **yes**) → **auto-approve** it.\n\nPrint three lines, in this order:\n1. The number of **flagged** frames.\n2. The number sent to **human review**.\n3. The number **auto-approved**.",
+      challenge_input_format: "The first line has an integer `n` and a float `t`. Each of the next `n` lines has a frame id (a token with no spaces), an answer (`yes`/`no`, any case), and a confidence score (a float), separated by spaces.",
+      challenge_output_format: "Three lines: the flagged count, the human-review count, and the auto-approved count — each an integer on its own line.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0.0 ≤ confidence ≤ 1.0",
+        "0.0 ≤ t ≤ 1.0",
+        "answer is 'yes' or 'no' in any letter case",
+      ],
+      challenge_examples: [
+        { input: "4 0.80\nframe001 yes 0.95\nframe002 no 0.99\nframe003 yes 0.40\nframe004 no 0.60", output: "1\n2\n1", explanation: "frame002 is a confident 'no' → flagged. frame003 and frame004 fall below 0.80 → human review. frame001 is a confident 'yes' → auto-approved." },
+        { input: "2 0.99\nA yes 0.5\nB no 0.5", output: "0\n2\n0", explanation: "Both confidences are below the strict 0.99 threshold, so nothing is decided automatically — both go to human review." },
+      ],
+      challenge_notes: "Check the confidence gate **before** the answer: an uncertain verdict shouldn't be trusted in either direction. Use `>=` for the threshold and lowercase the answer (`answer.lower()`) so 'No', 'NO', and 'no' are all treated the same.",
+      challenge_hints: [
+        "Read `n` and `t` from the first line; loop over the next `n` lines.",
+        "Split each line into three parts; convert the confidence to a float and lowercase the answer.",
+        "Branch in order: below threshold → review; else 'no' → flag; else → approve. Keep three counters.",
+      ],
+      challenge_starter_code: `import sys
 
-client = Anthropic()
-image_data = "...already base64-encoded jpeg..."
+def main():
+    rows = [r for r in sys.stdin.read().split('\\n') if r.strip() != '']
+    first = rows[0].split()
+    n = int(first[0])
+    t = float(first[1])
+    # TODO: for each of the n verdicts, apply the policy and count
+    # flagged / human-review / auto-approved. Print the three counts.
 
-# TODO: send the image with the question
-# "Is the person in this photo wearing a helmet? Answer only yes or no."
-# model "claude-sonnet-4-6", max_tokens 10, then print response.content[0].text
+main()
 `,
-      challenge_solution_code: `from anthropic import Anthropic
+      challenge_solution_code: `import sys
 
-client = Anthropic()
-image_data = "...already base64-encoded jpeg..."
+def main():
+    rows = [r for r in sys.stdin.read().split('\\n') if r.strip() != '']
+    first = rows[0].split()
+    n = int(first[0])
+    t = float(first[1])
 
-response = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=10,
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": "image/jpeg",
-                        "data": image_data,
-                    },
-                },
-                {"type": "text", "text": "Is the person in this photo wearing a helmet? Answer only yes or no."},
-            ],
-        }
-    ],
-)
+    flagged = 0
+    review = 0
+    approved = 0
+    for i in range(1, n + 1):
+        parts = rows[i].split()
+        answer = parts[1].lower()
+        confidence = float(parts[2])
+        if confidence < t:
+            review += 1
+        elif answer == "no":
+            flagged += 1
+        else:
+            approved += 1
 
-print(response.content[0].text)
+    print(flagged)
+    print(review)
+    print(approved)
+
+main()
 `,
       challenge_test_cases: [
         {
-          input: "Photo of a cyclist wearing a helmet",
-          expected_output: "Yes",
-          description: "Model returns a one-word answer because the prompt constrains it."
+          input: "4 0.80\nframe001 yes 0.95\nframe002 no 0.99\nframe003 yes 0.40\nframe004 no 0.60",
+          expected_output: "1\n2\n1",
+          description: "One confident violation, two uncertain frames, one confident approval."
+        },
+        {
+          input: "2 0.99\nA yes 0.5\nB no 0.5",
+          expected_output: "0\n2\n0",
+          description: "Edge: with a strict threshold every verdict is uncertain."
+        },
+        {
+          input: "3 0.50\ncam1 NO 0.50\ncam2 No 0.85\ncam3 nO 0.49",
+          expected_output: "2\n1\n0",
+          description: "Edge: mixed-case 'no' all parse equally; the 0.50 confidence sits exactly on the gate and is flagged."
         }
       ]
     },
@@ -1155,44 +1280,84 @@ print(data["store"], "->", data["total"])
           sampleAnswer: "The model generates its JSON by prediction, so it is not guaranteed to be perfect. It might omit a field, return a string where you expected a number, or occasionally wrap the JSON in stray text. If you parse it naively, any of those breaks your program with a crash. Wrapping json.loads in a try/except and checking for required keys turns a rare bad response into a handled miss instead of a 2am outage."
         }
       ],
-      challenge_title: "Parse safely and total the receipts",
-      challenge_description: "You're given a list of JSON reply strings, one per receipt. Parse each safely (skip any that fail or lack a 'total'), and print the sum of all totals rounded to 2 decimals.",
-      challenge_starter_code: `import json
+      challenge_title: "Audit the Model's JSON Receipts",
+      challenge_description: "Parse a batch of structured JSON replies from a receipt-extraction model, skip the malformed ones, and report a per-category expense breakdown.",
+      challenge_story: "Your finance automation pipeline photographs receipts and asks a vision model to return **structured JSON**: `{\"store\": ..., \"category\": ..., \"total\": ...}`. In the real world the model occasionally hallucinates broken JSON, drops a field, or returns a non-numeric total — and your accounting export can't crash on a single bad row. You're writing the **robust ingestion layer**: parse everything that's valid, quietly skip everything that isn't, and roll the valid receipts up into a category report the bookkeeper can paste straight into the ledger.",
+      challenge_statement: "You are given `n` lines, each a JSON reply from the extraction model. A reply is **valid** only if it parses as JSON **and** contains both a `category` (string) and a `total` that can be read as a number. Any reply that fails to parse, is missing either field, or has a non-numeric `total` must be **skipped** (it must not crash your program).\n\nFor every valid reply, add its `total` to a running sum for its `category`.\n\nPrint:\n1. The number of **valid** receipts.\n2. The number of **skipped** receipts.\n3. Then, for each category that has at least one valid receipt, a line `category sum` — where `sum` is that category's total formatted to exactly **2 decimal places**. Output these category lines in **alphabetical order** of category name.",
+      challenge_input_format: "The first line is an integer `n`. Each of the next `n` lines is one JSON reply string (possibly malformed).",
+      challenge_output_format: "Line 1: the count of valid receipts.\nLine 2: the count of skipped receipts.\nThen one line per category (alphabetical): the category name, a space, and its total to 2 decimal places.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 10000",
+        "Each input line is at most 500 characters.",
+        "category names contain no spaces.",
+        "A 'total', when present and numeric, satisfies 0 ≤ total ≤ 1000000.",
+      ],
+      challenge_examples: [
+        { input: "5\n{\"store\": \"Blue Bottle\", \"category\": \"coffee\", \"total\": 12.50}\n{\"store\": \"Philz\", \"category\": \"coffee\", \"total\": 8.25}\noops not json\n{\"store\": \"Sightglass\", \"category\": \"coffee\"}\n{\"store\": \"Office Depot\", \"category\": \"supplies\", \"total\": 30.00}", output: "3\n2\ncoffee 20.75\nsupplies 30.00", explanation: "Two coffee receipts (12.50 + 8.25 = 20.75) and one supplies receipt (30.00) are valid. The unparseable line and the one missing 'total' are skipped." },
+        { input: "2\ngarbage\n{\"category\": \"x\"}", output: "0\n2", explanation: "Neither reply is valid — one is not JSON, the other has no total — so there are no category lines at all." },
+      ],
+      challenge_notes: "Wrap each parse in a `try`/`except` that catches `json.JSONDecodeError`, `KeyError`, `ValueError`, and `TypeError` so a single bad row can never take down the batch. Accumulate sums in a dict keyed by category, then emit them with `sorted(...)` for deterministic, alphabetical output.",
+      challenge_hints: [
+        "Read `n`, then loop over exactly the next `n` lines (don't strip lines you'll feed to `json.loads`).",
+        "Inside a `try`, do `obj = json.loads(line)` then `obj[\"category\"]` and `float(obj[\"total\"])`; on any exception, count it as skipped and `continue`.",
+        "Use a dict `totals[category] = totals.get(category, 0.0) + amount`, then print `f\"{cat} {totals[cat]:.2f}\"` for each `cat` in `sorted(totals)`.",
+      ],
+      challenge_starter_code: `import sys
+import json
 
-replies = [
-    '{"store": "Blue Bottle", "total": 12.50}',
-    '{"store": "Philz", "total": 8.25}',
-    'oops not json',
-    '{"store": "Sightglass"}',
-]
+def main():
+    data = sys.stdin.read().split('\\n')
+    n = int(data[0].strip())
+    # TODO: parse data[1..n], skipping any reply that fails to parse
+    # or lacks a numeric 'category'/'total'. Sum totals per category.
+    # Print valid count, skipped count, then "category sum" lines (alphabetical).
 
-# TODO: sum every valid 'total', skipping bad or incomplete entries.
-# Print the total rounded to 2 decimals.
+main()
 `,
-      challenge_solution_code: `import json
+      challenge_solution_code: `import sys
+import json
 
-replies = [
-    '{"store": "Blue Bottle", "total": 12.50}',
-    '{"store": "Philz", "total": 8.25}',
-    'oops not json',
-    '{"store": "Sightglass"}',
-]
+def main():
+    data = sys.stdin.read().split('\\n')
+    n = int(data[0].strip())
 
-total = 0.0
-for reply in replies:
-    try:
-        data = json.loads(reply)
-        total += float(data["total"])
-    except (json.JSONDecodeError, KeyError, ValueError):
-        continue
+    totals = {}
+    valid = 0
+    skipped = 0
+    for i in range(1, n + 1):
+        line = data[i] if i < len(data) else ''
+        try:
+            obj = json.loads(line)
+            category = obj["category"]
+            amount = float(obj["total"])
+        except (json.JSONDecodeError, KeyError, ValueError, TypeError):
+            skipped += 1
+            continue
+        valid += 1
+        totals[category] = totals.get(category, 0.0) + amount
 
-print(round(total, 2))
+    print(valid)
+    print(skipped)
+    for cat in sorted(totals):
+        print(f"{cat} {totals[cat]:.2f}")
+
+main()
 `,
       challenge_test_cases: [
         {
-          input: "4 replies: two valid, one bad JSON, one missing 'total'",
-          expected_output: "20.75",
-          description: "12.50 + 8.25 = 20.75; the bad and incomplete entries are skipped."
+          input: "5\n{\"store\": \"Blue Bottle\", \"category\": \"coffee\", \"total\": 12.50}\n{\"store\": \"Philz\", \"category\": \"coffee\", \"total\": 8.25}\noops not json\n{\"store\": \"Sightglass\", \"category\": \"coffee\"}\n{\"store\": \"Office Depot\", \"category\": \"supplies\", \"total\": 30.00}",
+          expected_output: "3\n2\ncoffee 20.75\nsupplies 30.00",
+          description: "Two categories aggregate; bad JSON and a missing field are skipped."
+        },
+        {
+          input: "2\ngarbage\n{\"category\": \"x\"}",
+          expected_output: "0\n2",
+          description: "Edge: nothing valid → no category lines."
+        },
+        {
+          input: "3\n{\"category\": \"travel\", \"total\": \"not-a-number\"}\n{\"category\": \"travel\", \"total\": 100}\n{\"category\": \"food\", \"total\": 9.5}",
+          expected_output: "2\n1\nfood 9.50\ntravel 100.00",
+          description: "Edge: a non-numeric total is skipped; valid ones still aggregate and sort alphabetically."
         }
       ]
     }

@@ -51,3 +51,28 @@ Dashboard → Authentication → Providers → **Email**: enable it.
   home screen; it does **not** yet sync progress across devices. Cross-device
   sync would use the `user_progress` Supabase tables already scaffolded in
   `src/api/supabaseClient.js`.
+
+## C++ runner (Competitive Coding section)
+
+The Competitive Coding problems compile + run **C++** server-side via a Supabase
+Edge Function that proxies to the Compiler Explorer (godbolt.org) execution API
+— no compiler runs in the browser, and no extra API key is needed.
+
+Deploy the function (one-time):
+
+```
+supabase functions deploy run-cpp --no-verify-jwt
+```
+
+That's it — `run-cpp` needs no secret. Once `VITE_SUPABASE_URL` /
+`VITE_SUPABASE_ANON_KEY` are set at build time (same as auth) and the function
+is deployed, the C++ editor in `/Competitive` compiles, runs, and grades
+submissions against each problem's hidden test cases.
+
+If Supabase is **not** configured, the Competitive section still renders fully
+(problem statements, write code, reveal editorial/solution) and shows a "C++
+runner offline" notice instead of judging. The AI **Challenges** are Python and
+run fully offline in the browser via Pyodide — they never depend on this.
+
+To swap the upstream compiler later (e.g. self-hosted Piston or Judge0), only
+`supabase/functions/run-cpp/index.ts` and `src/lib/cppRunner.js` change.

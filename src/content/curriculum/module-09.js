@@ -250,26 +250,89 @@ final answer: 42`,
         "When the decision is a tool call, pass the name and arg to run_tool().",
         "Append 'result: ' plus the value to history so the next decision sees it."
       ],
-      challenge_title: "Add a second tool",
-      challenge_description: "Extend run_tool so it also handles a 'square' tool that returns arg * arg. Then call run_tool twice: square 5, and double 10, printing each result.",
-      challenge_starter_code: `def run_tool(name, arg):
-    if name == "double":
-        return arg * 2
-    # TODO: handle a "square" tool that returns arg * arg
+      challenge_title: "The Tool Dispatcher",
+      challenge_description: "Register the agent's tools, then run a batch of tool calls and print each result.",
+      challenge_story: "You're building the runtime for a customer-support agent. The model never runs anything itself — it only *names* a tool and hands you an argument. Your dispatcher owns the real table of tools: each one is a tiny operation (\`add\`, \`mul\`, or \`sub\`) bound to a fixed constant. The model then fires off a queue of calls, and your job is to execute each one against the registered tools and report the result. If the model hallucinates a tool you never registered, you must refuse it safely instead of crashing the whole loop.",
+      challenge_statement: "First read **N** tool definitions. Each defines a tool by `name`, an operation (`add`, `mul`, or `sub`), and an integer `constant`.\n\n- `add`  → result = `arg + constant`\n- `mul`  → result = `arg * constant`\n- `sub`  → result = `arg - constant`\n\nThen read **Q** tool calls, each a `name` and an integer `arg`. For each call, run the matching registered tool and print its result on its own line. If the call names a tool that was **not** registered, print `ERROR` for that call instead.",
+      challenge_input_format: "Line 1: integer `N`, the number of tool definitions.\nNext `N` lines: `name op constant` (op is one of `add`, `mul`, `sub`).\nNext line: integer `Q`, the number of calls.\nNext `Q` lines: `name arg`.",
+      challenge_output_format: "Exactly `Q` lines. For each call in order, print the integer result, or `ERROR` if the tool is not registered.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100",
+        "1 ≤ Q ≤ 1000",
+        "-1000000 ≤ constant, arg ≤ 1000000",
+        "Tool names are lowercase letters, length 1–20, and unique",
+      ],
+      challenge_examples: [
+        { input: "3\ndouble mul 2\nincrement add 1\nshift sub 5\n4\ndouble 10\nincrement 41\nshift 5\nsquare 9", output: "20\n42\n0\nERROR", explanation: "double=10*2=20, increment=41+1=42, shift=5-5=0, and `square` was never registered so it is ERROR." },
+        { input: "1\ndouble mul 2\n2\ndouble 0\nghost 7", output: "0\nERROR", explanation: "double=0*2=0; `ghost` is unknown." },
+      ],
+      challenge_notes: "The model only requests tools; the runtime (your code) is the only thing that actually executes them. Always validate the requested name against the registry before running — a real agent must survive a model that asks for tools that don't exist.",
+      challenge_hints: [
+        "Store the tools in a dict: `tools[name] = (op, constant)`.",
+        "Read all N definitions before you start processing calls.",
+        "For an unknown name, print `ERROR` and continue to the next call — never raise.",
+      ],
+      challenge_starter_code: `import sys
 
-# TODO: call run_tool for square 5 and double 10, printing each result.
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    tools = {}
+    # TODO: read n tool definitions into tools[name] = (op, constant)
+
+    q = int(data[idx].strip()); idx += 1
+    out = []
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        arg = int(parts[1])
+        # TODO: if name not registered -> "ERROR"; else apply add/mul/sub
+    print("\\n".join(out))
+
+main()
 `,
-      challenge_solution_code: `def run_tool(name, arg):
-    if name == "double":
-        return arg * 2
-    if name == "square":
-        return arg * arg
+      challenge_solution_code: `import sys
 
-print(run_tool("square", 5))
-print(run_tool("double", 10))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    tools = {}
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        op = parts[1]
+        const = int(parts[2])
+        tools[name] = (op, const)
+    q = int(data[idx].strip()); idx += 1
+    out = []
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        arg = int(parts[1])
+        if name not in tools:
+            out.append("ERROR")
+            continue
+        op, const = tools[name]
+        if op == "add":
+            res = arg + const
+        elif op == "mul":
+            res = arg * const
+        elif op == "sub":
+            res = arg - const
+        else:
+            out.append("ERROR")
+            continue
+        out.append(str(res))
+    print("\\n".join(out))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "square 5, double 10", expected_output: "25\n20", description: "square 5 = 25, double 10 = 20." }
+        { input: "3\ndouble mul 2\nincrement add 1\nshift sub 5\n4\ndouble 10\nincrement 41\nshift 5\nsquare 9", expected_output: "20\n42\n0\nERROR", description: "Three valid tool calls plus one unregistered tool." },
+        { input: "1\ndouble mul 2\n2\ndouble 0\nghost 7", expected_output: "0\nERROR", description: "Unknown tool name must yield ERROR, not a crash." },
+        { input: "2\nadd1 add 1\nmul3 mul 3\n3\nadd1 -5\nmul3 -2\nadd1 0", expected_output: "-4\n-6\n1", description: "Negative args and constants handled correctly." }
       ]
     },
     {
@@ -498,29 +561,80 @@ tool result: {'city': 'Tokyo', 'temp': 18, 'units': 'celsius'}`,
         "Check call['name'] to find which tool to run.",
         "Use **call['arguments'] to unpack the arguments into the function."
       ],
-      challenge_title: "Route to the right tool",
-      challenge_description: "Write run_call(call) that takes a dict with 'name' and 'arguments'. If name is 'add', return the sum of arguments a and b. If name is 'multiply', return their product. Test both and print the results.",
-      challenge_starter_code: `def run_call(call):
-    name = call["name"]
-    args = call["arguments"]
-    # TODO: handle 'add' and 'multiply' using args["a"] and args["b"]
+      challenge_title: "The Tool Router",
+      challenge_description: "Route a stream of model-emitted tool calls to the right function and tally the running total.",
+      challenge_story: "Your data-analysis agent answers questions by emitting tool calls — the model picks the tool and fills in two numeric arguments, but it's *your* router that actually executes them. Today the agent is crunching a spreadsheet, firing off a sequence of arithmetic tool calls (`add`, `subtract`, `multiply`, `max`). You must dispatch each call to the correct operation, print every intermediate result, and keep a running sum of all results so the agent can report one final aggregate. And because language models drift, an occasional call names a tool you don't support — you must flag it without derailing the rest of the run.",
+      challenge_statement: "Read **N** tool calls. Each call is a tool `name` followed by two integers `a` and `b`. Execute each call:\n\n- `add` → `a + b`\n- `subtract` → `a - b`\n- `multiply` → `a * b`\n- `max` → the larger of `a` and `b` (if equal, that value)\n\nFor each call, print the integer result on its own line. If the tool name is none of the four above, print `UNKNOWN_TOOL` for that call and **do not** add anything to the running total. After all calls, print `TOTAL` followed by the sum of every successful result.",
+      challenge_input_format: "Line 1: integer `N`.\nNext `N` lines: `name a b`.",
+      challenge_output_format: "`N` lines, one per call (the integer result, or `UNKNOWN_TOOL`), followed by one final line `TOTAL X` where X is the sum of all successful results.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "-1000000 ≤ a, b ≤ 1000000",
+        "Tool names are lowercase letters",
+      ],
+      challenge_examples: [
+        { input: "3\nadd 3 4\nmultiply 5 6\nsubtract 10 7", output: "7\n30\n3\nTOTAL 40", explanation: "7 + 30 + 3 = 40." },
+        { input: "1\ndivide 8 2", output: "UNKNOWN_TOOL\nTOTAL 0", explanation: "`divide` is not a supported tool, so nothing is added and the total stays 0." },
+      ],
+      challenge_notes: "This is the core of tool use: the model decides *which* tool and *what* arguments; your code owns the dispatch table and the execution. Skipping unsupported tools (rather than crashing) is exactly how production agents stay robust against an unpredictable model.",
+      challenge_hints: [
+        "Use if/elif on `name` to choose the operation.",
+        "Only add to `total` when the call actually succeeds.",
+        "Collect output lines in a list and join with newlines at the end.",
+      ],
+      challenge_starter_code: `import sys
 
-print(run_call({"name": "add", "arguments": {"a": 3, "b": 4}}))
-print(run_call({"name": "multiply", "arguments": {"a": 3, "b": 4}}))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    total = 0
+    out = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        a = int(parts[1]); b = int(parts[2])
+        # TODO: route to add/subtract/multiply/max, else UNKNOWN_TOOL
+        # add successful results to total
+    out.append("TOTAL " + str(total))
+    print("\\n".join(out))
+
+main()
 `,
-      challenge_solution_code: `def run_call(call):
-    name = call["name"]
-    args = call["arguments"]
-    if name == "add":
-        return args["a"] + args["b"]
-    if name == "multiply":
-        return args["a"] * args["b"]
+      challenge_solution_code: `import sys
 
-print(run_call({"name": "add", "arguments": {"a": 3, "b": 4}}))
-print(run_call({"name": "multiply", "arguments": {"a": 3, "b": 4}}))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    total = 0
+    out = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        a = int(parts[1]); b = int(parts[2])
+        if name == "add":
+            res = a + b
+        elif name == "multiply":
+            res = a * b
+        elif name == "subtract":
+            res = a - b
+        elif name == "max":
+            res = a if a >= b else b
+        else:
+            out.append("UNKNOWN_TOOL")
+            continue
+        total += res
+        out.append(str(res))
+    out.append("TOTAL " + str(total))
+    print("\\n".join(out))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "add a=3 b=4, multiply a=3 b=4", expected_output: "7\n12", description: "add 3+4 = 7, multiply 3*4 = 12." }
+        { input: "3\nadd 3 4\nmultiply 5 6\nsubtract 10 7", expected_output: "7\n30\n3\nTOTAL 40", description: "Three routed tools and their summed total." },
+        { input: "1\ndivide 8 2", expected_output: "UNKNOWN_TOOL\nTOTAL 0", description: "Unsupported tool is flagged and excluded from the total." },
+        { input: "2\nmax -3 -8\nadd -5 5", expected_output: "-3\n0\nTOTAL -3", description: "max of two negatives and a zero-sum add." }
       ]
     },
     {
@@ -766,44 +880,91 @@ Answer: Lyon, about 520000 people`,
         "Use the query 'population lyon' to match the db key exactly.",
         "End by appending a line that starts with 'Answer:' and includes the population."
       ],
-      challenge_title: "Build a two-step ReAct trace",
-      challenge_description: "Write react(question) that returns a list of trace lines. For 'capital population of Peru', append: a Thought, an Action find_capital('Peru') giving 'Lima', a Thought, an Action find_population('Lima') giving '9700000', and a final Answer line. Print each line.",
-      challenge_starter_code: `def find_capital(country):
-    return {"Peru": "Lima"}[country]
+      challenge_title: "The ReAct Trace Walker",
+      challenge_description: "Drive a Reason–Act–Observe loop that chases links through a knowledge graph until it reaches the goal.",
+      challenge_story: "Your research agent answers multi-hop questions like *\"what continent is the country whose capital is Lima on?\"* It can't leap straight to the answer — each fact only unlocks the next. So it runs a **ReAct** loop: it thinks, fires a `lookup` action against a knowledge graph, observes the single fact that comes back, then repeats with that new fact. You must emit the exact reasoning trace as the agent hops from the starting entity toward the goal — and you must defend against the two classic failures of an unguarded loop: hitting a **dead end** (a fact with no further link) and getting trapped in a **cycle** (looping back to a node it already visited).",
+      challenge_statement: "You're given a knowledge graph as **N** directed links, each `from to` meaning a `lookup(from)` returns `to`. Then you're given a `start` entity and a `goal` entity.\n\nRun the ReAct loop from `start`:\n\n1. Print `Thought: start at <start>`.\n2. While the current entity is not the goal, perform a `lookup`:\n   - Print `Action: lookup(<current>)` then `Observation: <result>`.\n   - If the current entity has **no** outgoing link, stop and print `Answer: DEAD_END after <k> steps` (where `k` counts the lookups actually performed).\n   - If the observed result is an entity already visited, stop and print `Answer: LOOP after <k> steps`.\n3. When you reach the goal, print `Answer: reached <goal> in <k> steps`.\n\nIf `start` already equals `goal`, no lookups happen: print only the Thought line and `Answer: reached <goal> in 0 steps`.",
+      challenge_input_format: "Line 1: integer `N`.\nNext `N` lines: `from to` (each entity is a unique key with exactly one outgoing link; entities are tokens without spaces).\nNext line: `start`.\nNext line: `goal`.",
+      challenge_output_format: "The full trace: a `Thought:` line, alternating `Action:` / `Observation:` lines for each lookup, and a final `Answer:` line describing how the run ended.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "Each `from` key appears at most once (deterministic lookups)",
+        "Entity names contain no whitespace, length 1–30",
+      ],
+      challenge_examples: [
+        { input: "3\nPeru Lima\nLima SouthAmerica\nSouthAmerica Earth\nPeru\nEarth", output: "Thought: start at Peru\nAction: lookup(Peru)\nObservation: Lima\nAction: lookup(Lima)\nObservation: SouthAmerica\nAction: lookup(SouthAmerica)\nObservation: Earth\nAnswer: reached Earth in 3 steps", explanation: "Three hops chain Peru → Lima → SouthAmerica → Earth, reaching the goal." },
+        { input: "2\nA B\nB A\nA\nC", output: "Thought: start at A\nAction: lookup(A)\nObservation: B\nAction: lookup(B)\nObservation: A\nAnswer: LOOP after 2 steps", explanation: "A → B → A revisits A, so the loop guard fires after 2 lookups." },
+      ],
+      challenge_notes: "This is the engine inside every ReAct agent: think, act, observe, repeat. The cycle and dead-end guards are not decoration — without them a real agent will spin forever or crash. Counting steps is how you'd later enforce a budget.",
+      challenge_hints: [
+        "Store links in a dict `nxt[from] = to`; a missing key means a dead end.",
+        "Track visited entities in a set so you can detect a revisit (a loop).",
+        "Increment your step counter only when you actually perform a lookup.",
+      ],
+      challenge_starter_code: `import sys
 
-def find_population(city):
-    return {"Lima": "9700000"}[city]
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    nxt = {}
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        nxt[parts[0]] = parts[1]
+    start = data[idx].strip(); idx += 1
+    goal = data[idx].strip(); idx += 1
+    out = []
+    current = start
+    steps = 0
+    seen = set([current])
+    out.append("Thought: start at " + current)
+    # TODO: run the ReAct loop with dead-end and loop guards
+    print("\\n".join(out))
 
-def react(question):
-    trace = []
-    # TODO: build Thought/Action/Observation lines, end with an Answer line
-    return trace
-
-for line in react("capital population of Peru"):
-    print(line)
+main()
 `,
-      challenge_solution_code: `def find_capital(country):
-    return {"Peru": "Lima"}[country]
+      challenge_solution_code: `import sys
 
-def find_population(city):
-    return {"Lima": "9700000"}[city]
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    nxt = {}
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        nxt[parts[0]] = parts[1]
+    start = data[idx].strip(); idx += 1
+    goal = data[idx].strip(); idx += 1
 
-def react(question):
-    trace = []
-    trace.append("Thought: find the capital first")
-    cap = find_capital("Peru")
-    trace.append("Observation: " + cap)
-    trace.append("Thought: now find its population")
-    pop = find_population(cap)
-    trace.append("Observation: " + pop)
-    trace.append("Answer: " + cap + " has about " + pop + " people")
-    return trace
+    out = []
+    current = start
+    steps = 0
+    seen = set([current])
+    out.append("Thought: start at " + current)
+    while current != goal:
+        if current not in nxt:
+            out.append("Answer: DEAD_END after " + str(steps) + " steps")
+            print("\\n".join(out))
+            return
+        nextnode = nxt[current]
+        steps += 1
+        out.append("Action: lookup(" + current + ")")
+        out.append("Observation: " + nextnode)
+        if nextnode in seen:
+            out.append("Answer: LOOP after " + str(steps) + " steps")
+            print("\\n".join(out))
+            return
+        seen.add(nextnode)
+        current = nextnode
+    out.append("Answer: reached " + goal + " in " + str(steps) + " steps")
+    print("\\n".join(out))
 
-for line in react("capital population of Peru"):
-    print(line)
+main()
 `,
       challenge_test_cases: [
-        { input: "capital population of Peru", expected_output: "Thought: find the capital first\nObservation: Lima\nThought: now find its population\nObservation: 9700000\nAnswer: Lima has about 9700000 people", description: "Two reason-act-observe cycles ending in an answer." }
+        { input: "3\nPeru Lima\nLima SouthAmerica\nSouthAmerica Earth\nPeru\nEarth", expected_output: "Thought: start at Peru\nAction: lookup(Peru)\nObservation: Lima\nAction: lookup(Lima)\nObservation: SouthAmerica\nAction: lookup(SouthAmerica)\nObservation: Earth\nAnswer: reached Earth in 3 steps", description: "A clean three-hop chain to the goal." },
+        { input: "2\nA B\nC D\nA\nD", expected_output: "Thought: start at A\nAction: lookup(A)\nObservation: B\nAnswer: DEAD_END after 1 steps", description: "B has no outgoing link, so the run dead-ends." },
+        { input: "2\nA B\nB A\nA\nC", expected_output: "Thought: start at A\nAction: lookup(A)\nObservation: B\nAction: lookup(B)\nObservation: A\nAnswer: LOOP after 2 steps", description: "Revisiting A trips the cycle guard." }
       ]
     },
     {
@@ -1046,33 +1207,88 @@ final: calendar event for booked: Hotel Lisboa, 120/night`,
         "After each step, store the result with memory[step] = result.",
         "The later steps read earlier results out of memory by their step name."
       ],
-      challenge_title: "Run a dependent plan",
-      challenge_description: "Write run_plan(plan, steps) where steps is a dict mapping each step name to a function taking memory and returning a result. Execute the plan in order, saving each result in a memory dict under its name, and return the memory dict.",
-      challenge_starter_code: `def run_plan(plan, steps):
-    memory = {}
-    # TODO: for each step in plan, call steps[step](memory), save in memory
-    return memory
+      challenge_title: "The Dependent Pipeline",
+      challenge_description: "Execute a multi-step agent plan where each step reads earlier results out of working memory.",
+      challenge_story: "Your agent has decomposed a big task into a pipeline of named steps — `fetch`, `clean`, `summarize`, and so on — and it runs them one at a time, stashing every result in a shared **working memory** dict. The catch is that later steps *depend* on earlier ones: `summarize` can't run until `fetch` and `clean` have each left their results in memory. Each step contributes its own base value plus the sum of the values its dependencies already produced. Run the plan in the given order, recording every step's result, and print the final pipeline output. If a step ever needs a dependency that isn't in memory yet, the plan is broken and must halt safely.",
+      challenge_statement: "Read **N** steps in execution order. Each step has a `name`, an integer `base` value, a dependency count `d`, and then `d` dependency names.\n\nExecute the steps in the order given. A step's result is:\n\n```\nresult = base + (sum of the results of all its dependencies)\n```\n\nStore each result in working memory under the step's name and print `name = result`. If any dependency of a step is **not** already in working memory, immediately print `name MISSING_DEP` and stop (print nothing further). If all steps succeed, finally print `FINAL` followed by the result of the **last** step in the plan.",
+      challenge_input_format: "Line 1: integer `N`.\nNext `N` lines: `name base d dep1 dep2 ... depd` (when `d` is 0 there are no dependency tokens).",
+      challenge_output_format: "One `name = result` line per executed step, then a final `FINAL X` line — unless a missing dependency is hit, in which case the last line is `name MISSING_DEP`.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "-1000000 ≤ base ≤ 1000000",
+        "0 ≤ d ≤ N",
+        "Step names are unique tokens without whitespace",
+      ],
+      challenge_examples: [
+        { input: "3\nfetch 10 0\nclean 5 1 fetch\nsummarize 2 2 fetch clean", output: "fetch = 10\nclean = 15\nsummarize = 27\nFINAL 27", explanation: "fetch=10; clean=5+10=15; summarize=2+10+15=27; FINAL echoes the last step." },
+        { input: "1\nx 5 1 ghost", output: "x MISSING_DEP", explanation: "`x` depends on `ghost`, which was never computed, so the plan halts." },
+      ],
+      challenge_notes: "Working memory is what turns a list of tool calls into a real plan: each step's output becomes available context for the next. The missing-dependency check models an agent catching its own broken plan instead of feeding a tool a value that doesn't exist.",
+      challenge_hints: [
+        "Keep a `memory` dict mapping each completed step name to its result.",
+        "Before computing a step, verify every dependency is already in `memory`.",
+        "The FINAL value is just `memory[<last step's name>]`.",
+      ],
+      challenge_starter_code: `import sys
 
-steps = {
-    "fetch": lambda m: "data",
-    "process": lambda m: m["fetch"] + "-clean",
-}
-print(run_plan(["fetch", "process"], steps))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    order = []
+    defs = {}
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        base = int(parts[1])
+        d = int(parts[2])
+        deps = parts[3:3+d]
+        order.append(name)
+        defs[name] = (base, deps)
+    memory = {}
+    out = []
+    # TODO: run steps in order, guarding against missing deps,
+    #       then print FINAL <last step result>
+    print("\\n".join(out))
+
+main()
 `,
-      challenge_solution_code: `def run_plan(plan, steps):
-    memory = {}
-    for step in plan:
-        memory[step] = steps[step](memory)
-    return memory
+      challenge_solution_code: `import sys
 
-steps = {
-    "fetch": lambda m: "data",
-    "process": lambda m: m["fetch"] + "-clean",
-}
-print(run_plan(["fetch", "process"], steps))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    order = []
+    defs = {}
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        base = int(parts[1])
+        d = int(parts[2])
+        deps = parts[3:3+d]
+        order.append(name)
+        defs[name] = (base, deps)
+    memory = {}
+    out = []
+    for name in order:
+        base, deps = defs[name]
+        if any(dep not in memory for dep in deps):
+            out.append(name + " MISSING_DEP")
+            print("\\n".join(out))
+            return
+        val = base + sum(memory[dep] for dep in deps)
+        memory[name] = val
+        out.append(name + " = " + str(val))
+    print("\\n".join(out))
+    print("FINAL " + str(memory[order[-1]]))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "plan=[fetch, process]", expected_output: "{'fetch': 'data', 'process': 'data-clean'}", description: "process reads the fetch result from memory, proving results carry forward." }
+        { input: "3\nfetch 10 0\nclean 5 1 fetch\nsummarize 2 2 fetch clean", expected_output: "fetch = 10\nclean = 15\nsummarize = 27\nFINAL 27", description: "Each step accumulates its dependencies' results from memory." },
+        { input: "2\na 3 0\nb 0 1 a", expected_output: "a = 3\nb = 3\nFINAL 3", description: "b inherits a's value through working memory." },
+        { input: "1\nx 5 1 ghost", expected_output: "x MISSING_DEP", description: "A dependency never produced halts the plan safely." }
       ]
     },
     {
@@ -1311,30 +1527,96 @@ stopped by cap: True`,
         "Increment ran each pass; break early if agent_decide returns 'done'.",
         "Since this agent never returns 'done', it always hits the cap, so stopped_by_cap stays True."
       ],
-      challenge_title: "Enforce a step limit",
-      challenge_description: "Write run_agent(decide, max_steps) that loops at most max_steps times, calling decide(step) each pass. If decide returns 'done', stop and return ('finished', steps_run). If the cap is hit first, return ('stopped', steps_run).",
-      challenge_starter_code: `def run_agent(decide, max_steps):
-    # TODO: loop up to max_steps; return ('finished', n) if decide=='done',
-    #       otherwise ('stopped', n) when the cap is reached.
-    pass
+      challenge_title: "The Guardrailed Agent Loop",
+      challenge_description: "Run an agent's action queue under both a step limit and a spend budget, stopping the instant either guardrail trips.",
+      challenge_story: "Your autonomous agent is about to run unattended overnight, and an unguarded loop is a liability: it could spin forever, or burn the entire API budget on a runaway plan. So you wrap its action queue in two guardrails. A **step limit** caps how many actions it may ever take. A **budget** caps total spend, where each action costs a known amount. The agent works through its queued actions in order, paying for each before it runs; the special `done` action signals success. Your loop must stop on the *first* condition met — finishing, hitting the step cap, or being about to blow the budget — and report exactly how it ended, how many steps it ran, and how much it spent.",
+      challenge_statement: "Line 1 gives two integers: `max_steps` and `budget`. Then read **N** queued actions, each a `name` and an integer `cost`.\n\nProcess actions in order. Before running an action:\n\n- If you have already run `max_steps` actions, stop with outcome `STEP_LIMIT`.\n- If running this action would push total spend **above** `budget` (i.e. `spent + cost > budget`), stop with outcome `OVER_BUDGET` (do **not** run it; spend stays as is).\n\nOtherwise pay `cost` (add to spend), count the step, and run it. If the action's name is `done`, stop with outcome `FINISHED`. If the queue runs out before any stop condition triggers, the outcome is `EXHAUSTED` (unless the step count exactly reached the limit on the last action, in which case it is `STEP_LIMIT`).\n\nPrint three lines: the outcome, then `steps <k>`, then `spent <s>`.",
+      challenge_input_format: "Line 1: `max_steps budget` (two integers).\nLine 2: integer `N`.\nNext `N` lines: `name cost`.",
+      challenge_output_format: "Three lines: the outcome (`FINISHED`, `STEP_LIMIT`, `OVER_BUDGET`, or `EXHAUSTED`), then `steps <k>`, then `spent <s>`.",
+      challenge_constraints: [
+        "0 ≤ max_steps ≤ 1000",
+        "0 ≤ budget ≤ 1000000",
+        "1 ≤ N ≤ 1000",
+        "0 ≤ cost ≤ 1000000",
+      ],
+      challenge_examples: [
+        { input: "10 100\n3\nsearch 5\nread 5\ndone 0", output: "FINISHED\nsteps 3\nspent 10", explanation: "Three actions run for a total cost of 10; the `done` action ends the loop successfully." },
+        { input: "10 8\n3\ngo 5\ngo 5\ndone 0", output: "OVER_BUDGET\nsteps 1\nspent 5", explanation: "After the first action spend is 5; the second would make 10 > 8, so the budget guard fires before running it." },
+      ],
+      challenge_notes: "Step limits and budgets are the seatbelts of agent design. The order of the checks matters: you test the guardrails *before* committing to an action, so the agent can never overspend or overstep. This is exactly how production runtimes keep an autonomous loop from running away.",
+      challenge_hints: [
+        "Track `steps` and `spent` as you go; check both guards at the top of each iteration.",
+        "`spent + cost > budget` must block the action *before* you pay for it.",
+        "If the loop finishes the queue with no stop, decide between EXHAUSTED and STEP_LIMIT by whether steps reached max_steps.",
+      ],
+      challenge_starter_code: `import sys
 
-print(run_agent(lambda s: "go", 3))       # never finishes
-print(run_agent(lambda s: "done", 3))     # finishes immediately
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    max_steps = int(first[0]); budget = int(first[1])
+    n = int(data[idx].strip()); idx += 1
+    actions = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        actions.append((parts[0], int(parts[1])))
+
+    spent = 0
+    steps = 0
+    outcome = None
+    # TODO: loop actions; check STEP_LIMIT then OVER_BUDGET before running;
+    #       FINISHED on 'done'; EXHAUSTED if queue empties.
+    print(outcome)
+    print("steps " + str(steps))
+    print("spent " + str(spent))
+
+main()
 `,
-      challenge_solution_code: `def run_agent(decide, max_steps):
-    steps_run = 0
-    for step in range(max_steps):
-        steps_run += 1
-        if decide(step) == "done":
-            return ("finished", steps_run)
-    return ("stopped", steps_run)
+      challenge_solution_code: `import sys
 
-print(run_agent(lambda s: "go", 3))
-print(run_agent(lambda s: "done", 3))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    max_steps = int(first[0]); budget = int(first[1])
+    n = int(data[idx].strip()); idx += 1
+    actions = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        actions.append((parts[0], int(parts[1])))
+
+    spent = 0
+    steps = 0
+    outcome = None
+    for i in range(n):
+        name, cost = actions[i]
+        if steps >= max_steps:
+            outcome = "STEP_LIMIT"
+            break
+        if spent + cost > budget:
+            outcome = "OVER_BUDGET"
+            break
+        spent += cost
+        steps += 1
+        if name == "done":
+            outcome = "FINISHED"
+            break
+    if outcome is None:
+        if steps >= max_steps:
+            outcome = "STEP_LIMIT"
+        else:
+            outcome = "EXHAUSTED"
+    print(outcome)
+    print("steps " + str(steps))
+    print("spent " + str(spent))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "decide always 'go', max_steps=3", expected_output: "('stopped', 3)", description: "Never finishes, so the cap stops it after 3 steps." },
-        { input: "decide always 'done', max_steps=3", expected_output: "('finished', 1)", description: "Finishes on the first step, before the cap." }
+        { input: "10 100\n3\nsearch 5\nread 5\ndone 0", expected_output: "FINISHED\nsteps 3\nspent 10", description: "The `done` action ends the loop successfully under both guards." },
+        { input: "2 100\n4\ngo 1\ngo 1\ngo 1\ndone 0", expected_output: "STEP_LIMIT\nsteps 2\nspent 2", description: "The step cap stops the agent before it can finish." },
+        { input: "10 8\n3\ngo 5\ngo 5\ndone 0", expected_output: "OVER_BUDGET\nsteps 1\nspent 5", description: "The budget guard blocks the second action before paying for it." }
       ]
     }
   ]

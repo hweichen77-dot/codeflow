@@ -225,29 +225,87 @@ note: this breaks if the model rewords the sentence`,
         "float() converts the captured string of digits into a number."
       ],
       challenge_title: "Count the parsing landmines",
-      challenge_description: "Given a list of model replies, write a function count_numbers(reply) that returns how many separate dollar amounts appear. More than one number means a naive 'grab the first' parser is unsafe. Print the count for each reply.",
-      challenge_starter_code: `import re
-replies = [
-    "The total is \\$42.50.",
-    "Tax \\$3.00, subtotal \\$339.00, total \\$342.00.",
-]
-# TODO: define count_numbers(reply) and print the count for each reply.
+      challenge_description: "Audit a batch of model replies and find which ones a naive 'grab the first dollar amount' parser would silently corrupt.",
+      challenge_story: "You run the billing pipeline at an AI customer-support startup. The model answers refund questions in free text, and a regex downstream grabs the **first** dollar amount it sees and charges it. It worked in the demo. Then a reply said `Tax $3.00, subtotal $339.00, total $342.00` — and a customer got refunded **$3.00** instead of $342.00. No crash, no log, just a furious ticket.\n\nBefore you rip out the regex, you need to know how bad it is. Scan every reply in last night's batch and find which ones contain **more than one** dollar amount (the dangerous ones), and which single reply is the worst offender.",
+      challenge_statement: "You are given a batch of `n` model replies, one per line. A **dollar amount** is a `$` immediately followed by a run of characters made up of digits, `.`, and `,`, where **at least one digit** appears in that run (so a bare `$` or `$.` does not count).\n\nA reply is **risky** if it contains **2 or more** dollar amounts, because a first-match parser could pick the wrong one.\n\nCompute:\n1. The number of risky replies.\n2. The 1-based index of the reply containing the **most** dollar amounts, and that count. If several replies tie for the most, report the one with the **smallest index**.",
+      challenge_input_format: "The first line contains an integer `n`, the number of replies. Each of the next `n` lines is one reply (it may contain spaces and punctuation).",
+      challenge_output_format: "Line 1: the number of risky replies (replies with 2+ dollar amounts).\nLine 2: two space-separated integers — the 1-based index of the reply with the most dollar amounts, and that maximum count.",
+      challenge_constraints: [
+        "1 <= n <= 1000",
+        "Each reply line has length 0 to 500 characters.",
+        "A dollar amount is `$` followed by one or more of the characters `0-9`, `.`, `,`, with at least one digit in that run.",
+        "If no reply contains any dollar amount, the maximum count is 0 and the winning index is the first reply."
+      ],
+      challenge_examples: [
+        {
+          input: "2\nThe total is $42.50.\nTax $3.00, subtotal $339.00, total $342.00.",
+          output: "1\n2 3",
+          explanation: "Reply 1 has one amount ($42.50) so it is safe. Reply 2 has three amounts, making it risky and the worst offender with 3 amounts at index 2."
+        },
+        {
+          input: "1\nYour refund of $9.99 is processed.",
+          output: "0\n1 1",
+          explanation: "A single amount means a first-match parser is safe. No risky replies; the only reply has the max count of 1."
+        }
+      ],
+      challenge_notes: "Walk each line character by character. When you hit a `$`, scan the following digits/`.`/`,` and only count it if you saw at least one digit. Track risky replies and the running maximum together in one pass.",
+      challenge_hints: [
+        "You do not need regex — a simple left-to-right scan that reacts to `$` is enough and easier to reason about.",
+        "Keep the max count and its index updated as you go; only replace the max when you find a strictly larger count, so ties keep the smaller index.",
+        "Remember the 'at least one digit' rule — a stray `$` in prose like 'the $ sign' must not be counted."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    lines = data[1:1 + n]
+    # TODO: for each line, count dollar amounts ($ + digits/.,, with >=1 digit).
+    # Count risky replies (2+ amounts) and track the worst offender.
+
+main()
 `,
-      challenge_solution_code: `import re
-replies = [
-    "The total is \\$42.50.",
-    "Tax \\$3.00, subtotal \\$339.00, total \\$342.00.",
-]
+      challenge_solution_code: `import sys
 
-def count_numbers(reply):
-    return len(re.findall(r"\\$[0-9.]+", reply))
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    lines = data[1:1 + n]
+    risky = 0
+    worst_idx = 0
+    worst_count = -1
+    for i, line in enumerate(lines):
+        count = 0
+        j = 0
+        L = len(line)
+        while j < L:
+            if line[j] == "$":
+                k = j + 1
+                seen_digit = False
+                while k < L and (line[k].isdigit() or line[k] == "." or line[k] == ","):
+                    if line[k].isdigit():
+                        seen_digit = True
+                    k += 1
+                if seen_digit:
+                    count += 1
+                j = k
+            else:
+                j += 1
+        if count > 1:
+            risky += 1
+        if count > worst_count:
+            worst_count = count
+            worst_idx = i
+    print(risky)
+    print(worst_idx + 1, worst_count)
 
-for r in replies:
-    print(count_numbers(r))
+main()
 `,
       challenge_test_cases: [
-        { input: "single amount reply", expected_output: "1", description: "One dollar amount means a first-match parser is probably safe." },
-        { input: "three-amount reply", expected_output: "3", description: "Multiple amounts mean 'grab the first' is unsafe." }
+        { input: "2\nThe total is $42.50.\nTax $3.00, subtotal $339.00, total $342.00.", expected_output: "1\n2 3", description: "Example 1: one risky reply; reply 2 has the most amounts." },
+        { input: "1\nYour refund of $9.99 is processed.", expected_output: "0\n1 1", description: "Example 2: a single amount is safe to first-match parse." },
+        { input: "1\nNo charges were applied to your account.", expected_output: "0\n1 0", description: "Edge: a reply with zero amounts still reports index 1 and count 0." },
+        { input: "3\nPaid $5 and $6 today.\nClean line here.\nLater $1, $2, $3 owed.", expected_output: "2\n3 3", description: "Edge: two risky replies; reply 3 wins with 3 amounts." }
       ]
     },
     {
@@ -465,28 +523,80 @@ active: True`,
         "JSON true becomes Python True after parsing, so printing active shows True."
       ],
       challenge_title: "Validate required keys",
-      challenge_description: "Write a function load_user(reply) that parses the JSON and returns the dict only if it contains the keys 'name' and 'age'; otherwise return the string 'missing fields'. Test it on a complete and an incomplete response.",
-      challenge_starter_code: `import json
-good = '{"name": "Dana", "age": 34}'
-bad = '{"name": "Dana"}'
-# TODO: define load_user(reply) that requires keys 'name' and 'age'.
+      challenge_description: "Enforce a JSON schema's required keys across a batch of model responses and report exactly what each one is missing.",
+      challenge_story: "Your extraction service asked the model for user records in JSON mode, but JSON mode only guarantees the output is **valid JSON** — not that it has the keys your database needs. Last week a response came back as the perfectly-valid array `[1, 2, 3]`, and a downstream `data['name']` lookup blew up a worker mid-batch.\n\nYou are adding a schema gate in front of the database writer. Given the list of required keys, every incoming record must be checked: is it even a JSON object? If so, does it carry every required key? Anything that fails gets logged precisely so the on-call engineer knows whether to re-prompt or page the model team.",
+      challenge_statement: "You are given a list of **required keys** and a batch of `n` model responses, one per line.\n\nFor each response, in order, print exactly one verdict:\n- If the line is not valid JSON, **or** the parsed value is not a JSON object (e.g. an array or a number), print `INVALID_JSON`.\n- Otherwise, if the object is missing one or more required keys, print `MISSING ` followed by the missing keys **in the order they appear in the required-keys list**, space-separated.\n- Otherwise (all required keys present) print `OK`.\n\nAfter all `n` verdicts, print the number of responses that printed `OK`.",
+      challenge_input_format: "Line 1: the required keys, space-separated (at least one key, no spaces inside a key).\nLine 2: an integer `n`, the number of responses.\nNext `n` lines: one JSON response each.",
+      challenge_output_format: "`n` verdict lines (`OK`, `INVALID_JSON`, or `MISSING k1 k2 ...`), followed by one final line with the integer count of `OK` responses.",
+      challenge_constraints: [
+        "1 <= number of required keys <= 10",
+        "1 <= n <= 1000",
+        "Each response line is at most 2000 characters.",
+        "Missing keys must be listed in the same order as the required-keys line.",
+        "A valid JSON value that is not an object (array, string, number, etc.) counts as INVALID_JSON."
+      ],
+      challenge_examples: [
+        {
+          input: 'name age\n2\n{"name": "Dana", "age": 34}\n{"name": "Dana"}',
+          output: "OK\nMISSING age\n1",
+          explanation: "The first record has both required keys. The second is missing `age`. One record was OK."
+        },
+        {
+          input: 'name age email\n3\n{not json}\n{"name": "X"}\n{"name": "Y", "age": 9, "email": "y@z.com"}',
+          output: "INVALID_JSON\nMISSING age email\nOK\n1",
+          explanation: "Record 1 fails to parse. Record 2 is missing two keys, listed in required order. Record 3 is complete."
+        }
+      ],
+      challenge_notes: "Use `json.loads` inside a try/except for `ValueError`. After parsing, check `isinstance(obj, dict)` before looking for keys — JSON mode happily returns arrays and numbers that would crash a key lookup.",
+      challenge_hints: [
+        "Wrap `json.loads(line)` in try/except ValueError; a parse failure means `INVALID_JSON`.",
+        "Even when JSON parses, confirm it is a dict — `[1, 2, 3]` is valid JSON but has no keys.",
+        "Build the missing list by iterating the required-keys list (not the object's keys) so the order is deterministic."
+      ],
+      challenge_starter_code: `import sys, json
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    required = data[0].split()
+    n = int(data[1])
+    responses = data[2:2 + n]
+    # TODO: for each response, print OK / INVALID_JSON / MISSING ...
+    # Then print how many were OK.
+
+main()
 `,
-      challenge_solution_code: `import json
+      challenge_solution_code: `import sys, json
 
-def load_user(reply):
-    data = json.loads(reply)
-    if "name" in data and "age" in data:
-        return data
-    return "missing fields"
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    required = data[idx].split()
+    idx += 1
+    n = int(data[idx]); idx += 1
+    valid = 0
+    for _ in range(n):
+        line = data[idx]; idx += 1
+        try:
+            obj = json.loads(line)
+            if not isinstance(obj, dict):
+                raise ValueError
+        except ValueError:
+            print("INVALID_JSON")
+            continue
+        missing = [k for k in required if k not in obj]
+        if missing:
+            print("MISSING " + " ".join(missing))
+        else:
+            print("OK")
+            valid += 1
+    print(valid)
 
-good = '{"name": "Dana", "age": 34}'
-bad = '{"name": "Dana"}'
-print(load_user(good))
-print(load_user(bad))
+main()
 `,
       challenge_test_cases: [
-        { input: '{"name": "Dana", "age": 34}', expected_output: "{'name': 'Dana', 'age': 34}", description: "All required keys present returns the parsed dict." },
-        { input: '{"name": "Dana"}', expected_output: "missing fields", description: "A missing required key returns the error string." }
+        { input: 'name age\n2\n{"name": "Dana", "age": 34}\n{"name": "Dana"}', expected_output: "OK\nMISSING age\n1", description: "Example 1: one complete record, one missing a key." },
+        { input: 'name age email\n3\n{not json}\n{"name": "X"}\n{"name": "Y", "age": 9, "email": "y@z.com"}', expected_output: "INVALID_JSON\nMISSING age email\nOK\n1", description: "Example 2: bad JSON, multi-missing in order, and a complete record." },
+        { input: 'name\n1\n[1, 2, 3]', expected_output: "INVALID_JSON\n0", description: "Edge: valid JSON that is an array, not an object, is rejected." }
       ]
     },
     {
@@ -718,28 +828,77 @@ total: 42.5`,
         "Print the customer and total by indexing that arguments dictionary."
       ],
       challenge_title: "Route the right tool",
-      challenge_description: "You have two tools: 'issue_refund' and 'check_status'. Write a function handle(tool_call) that returns 'refunding order N' if the tool is issue_refund (using the order_id argument), or 'checking order N' if it is check_status. Test it on one of each.",
-      challenge_starter_code: `refund = {"name": "issue_refund", "arguments": {"order_id": 90, "amount": 10}}
-status = {"name": "check_status", "arguments": {"order_id": 88}}
-# TODO: define handle(tool_call) that routes by tool name.
+      challenge_description: "Build the dispatcher that turns a model's function calls into real, allow-listed actions — and refuses anything it doesn't recognize.",
+      challenge_story: "Your support agent finally graduated from a chatbot that *talks* to an agent that *acts*. The model emits **function calls** — structured `{name, arguments}` objects — and your dispatcher runs the matching code. You expose exactly two tools: `issue_refund(order_id, amount_cents)` and `check_status(order_id)`.\n\nBut the model is not always well-behaved: a jailbreak attempt or a hallucination can produce a call to a tool you never defined, like `delete_db`. Your dispatcher is the security boundary. It must execute only the tools on the allow-list, reject everything else, and keep a running tally of how much money it actually refunded — money is in **integer cents** so there is never a float to round.",
+      challenge_statement: "You are given `n` function calls from the model, one per line, each a JSON object with a `name` and an `arguments` object. Process them in order:\n\n- If `name` is `issue_refund`, execute it: print `REFUND order O amount C` where `O` is `arguments.order_id` and `C` is `arguments.amount_cents`. Add `C` to the running refund total.\n- If `name` is `check_status`, execute it: print `STATUS order O` where `O` is `arguments.order_id`.\n- For any other `name`, reject it: print `REJECT name` (the offending tool name). Do not execute it.\n\nAfter all calls, print two space-separated integers: the number of calls **executed** (refund or status, not rejected) and the **total cents refunded**.",
+      challenge_input_format: "Line 1: an integer `n`, the number of function calls.\nNext `n` lines: one JSON object each, with keys `name` (string) and `arguments` (object). `issue_refund` arguments contain integer `order_id` and `amount_cents`; `check_status` arguments contain integer `order_id`.",
+      challenge_output_format: "One line per call (`REFUND ...`, `STATUS ...`, or `REJECT ...`), then a final line with two space-separated integers: executed-count and total-cents-refunded.",
+      challenge_constraints: [
+        "1 <= n <= 1000",
+        "0 <= order_id <= 10^9",
+        "0 <= amount_cents <= 10^9",
+        "Only `issue_refund` and `check_status` are on the allow-list; every other name is rejected and never executed.",
+        "All money is in integer cents — no floating point anywhere."
+      ],
+      challenge_examples: [
+        {
+          input: '2\n{"name": "issue_refund", "arguments": {"order_id": 90, "amount_cents": 1000}}\n{"name": "check_status", "arguments": {"order_id": 88}}',
+          output: "REFUND order 90 amount 1000\nSTATUS order 88\n2 1000",
+          explanation: "Both tools are allow-listed and execute. Two calls executed, 1000 cents refunded."
+        },
+        {
+          input: '3\n{"name": "issue_refund", "arguments": {"order_id": 5, "amount_cents": 250}}\n{"name": "delete_db", "arguments": {}}\n{"name": "issue_refund", "arguments": {"order_id": 7, "amount_cents": 99}}',
+          output: "REFUND order 5 amount 250\nREJECT delete_db\nREFUND order 7 amount 99\n2 349",
+          explanation: "The `delete_db` call is not on the allow-list, so it is rejected and not counted. Two refunds executed totaling 349 cents."
+        }
+      ],
+      challenge_notes: "The allow-list pattern is the whole point of safe tool use: the model proposes, your dispatcher disposes. Never `eval` or dynamically dispatch on a model-supplied name — branch explicitly on the names you trust.",
+      challenge_hints: [
+        "Parse each line with `json.loads`, then branch on `call['name']`.",
+        "Keep two accumulators: a count of executed calls and a sum of refunded cents.",
+        "Anything not matching your two known names falls through to the REJECT branch — and must not touch the accumulators."
+      ],
+      challenge_starter_code: `import sys, json
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: route each call to REFUND / STATUS / REJECT,
+    # tally executed count and total cents refunded.
+
+main()
 `,
-      challenge_solution_code: `refund = {"name": "issue_refund", "arguments": {"order_id": 90, "amount": 10}}
-status = {"name": "check_status", "arguments": {"order_id": 88}}
+      challenge_solution_code: `import sys, json
 
-def handle(tool_call):
-    order = tool_call["arguments"]["order_id"]
-    if tool_call["name"] == "issue_refund":
-        return f"refunding order {order}"
-    if tool_call["name"] == "check_status":
-        return f"checking order {order}"
-    return "unknown tool"
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    executed = 0
+    refunded_cents = 0
+    for i in range(1, n + 1):
+        call = json.loads(data[i])
+        name = call["name"]
+        args = call["arguments"]
+        if name == "issue_refund":
+            order = args["order_id"]
+            cents = args["amount_cents"]
+            refunded_cents += cents
+            executed += 1
+            print(f"REFUND order {order} amount {cents}")
+        elif name == "check_status":
+            order = args["order_id"]
+            executed += 1
+            print(f"STATUS order {order}")
+        else:
+            print(f"REJECT {name}")
+    print(f"{executed} {refunded_cents}")
 
-print(handle(refund))
-print(handle(status))
+main()
 `,
       challenge_test_cases: [
-        { input: "issue_refund call for order 90", expected_output: "refunding order 90", description: "Routes a refund tool call to the refund branch." },
-        { input: "check_status call for order 88", expected_output: "checking order 88", description: "Routes a status tool call to the status branch." }
+        { input: '2\n{"name": "issue_refund", "arguments": {"order_id": 90, "amount_cents": 1000}}\n{"name": "check_status", "arguments": {"order_id": 88}}', expected_output: "REFUND order 90 amount 1000\nSTATUS order 88\n2 1000", description: "Example 1: both allow-listed tools execute." },
+        { input: '3\n{"name": "issue_refund", "arguments": {"order_id": 5, "amount_cents": 250}}\n{"name": "delete_db", "arguments": {}}\n{"name": "issue_refund", "arguments": {"order_id": 7, "amount_cents": 99}}', expected_output: "REFUND order 5 amount 250\nREJECT delete_db\nREFUND order 7 amount 99\n2 349", description: "Example 2: an unknown tool is rejected, not executed." },
+        { input: '1\n{"name": "check_status", "arguments": {"order_id": 42}}', expected_output: "STATUS order 42\n1 0", description: "Edge: a status-only batch refunds zero cents." }
       ]
     },
     {
@@ -962,28 +1121,87 @@ valid: False`,
         "Append a clear message to errors for each rule that fails, then check if the list is empty."
       ],
       challenge_title: "Validate with allowed values",
-      challenge_description: "Write a function validate_order(order) that returns a list of errors. Rules: 'total' must be a number greater than 0, and 'status' must be one of 'pending', 'shipped', 'delivered'. Test it on a bad order and print the errors.",
-      challenge_starter_code: `order = {"total": 0, "status": "shippd"}
-ALLOWED = {"pending", "shipped", "delivered"}
-# TODO: define validate_order(order) returning a list of error strings.
-`,
-      challenge_solution_code: `order = {"total": 0, "status": "shippd"}
-ALLOWED = {"pending", "shipped", "delivered"}
+      challenge_description: "Catch the orders that parse perfectly but make no sense — wrong totals, made-up statuses — before they poison your database.",
+      challenge_story: "Schema validation got you well-formed JSON, but well-formed is not the same as correct. The model can hand you `{\"total\": 0, \"status\": \"shippd\"}` — valid JSON, right types-ish, and total nonsense. A $0 order and a typo'd status will sail straight past a parser and corrupt your analytics.\n\nYou are writing the **business-rules gate** that runs after parsing. Each order must have a `total` that is a positive number and a `status` drawn from a fixed allow-list. Tricky part: JSON booleans parse to Python `True`/`False`, which are technically integers — `True` must **not** count as a valid total. The gate accepts clean orders, rejects the rest with a precise reason, and reports the acceptance rate.",
+      challenge_statement: "You are given `n` orders, one JSON object per line. For each order, in order, apply two rules:\n1. `total` must be a number (int or float) **greater than 0**. A boolean is **not** a valid number here.\n2. `status` must be exactly one of `pending`, `shipped`, `delivered`.\n\nFor each order print one line:\n- If it passes both rules: `ACCEPT i` (where `i` is the 1-based order index).\n- Otherwise: `REJECT i: ` followed by the failed-rule messages joined by `; `, in this fixed order — first the total message `total must be a positive number` (if total failed), then the status message `status must be one of pending, shipped, delivered` (if status failed).\n\nAfter all orders, print `a/n` where `a` is the number of accepted orders and `n` is the total.",
+      challenge_input_format: "Line 1: an integer `n`. Next `n` lines: one JSON object each, with keys `total` and `status` (a key may be present with a wrong-typed or out-of-range value).",
+      challenge_output_format: "`n` lines of `ACCEPT i` or `REJECT i: <messages>`, then a final line `a/n` (accepted over total).",
+      challenge_constraints: [
+        "1 <= n <= 1000",
+        "Allowed statuses are exactly: pending, shipped, delivered.",
+        "`total` must be int or float and strictly greater than 0; a JSON boolean (Python bool) is NOT accepted as a number.",
+        "When both rules fail, the total message comes first, then the status message, joined by '; '.",
+        "Each line is at most 2000 characters."
+      ],
+      challenge_examples: [
+        {
+          input: '2\n{"total": 0, "status": "shippd"}\n{"total": 42.5, "status": "shipped"}',
+          output: "REJECT 1: total must be a positive number; status must be one of pending, shipped, delivered\nACCEPT 2\n1/2",
+          explanation: "Order 1 fails both rules (total 0, status typo). Order 2 is clean. One of two accepted."
+        },
+        {
+          input: '3\n{"total": 1, "status": "pending"}\n{"total": 10, "status": "shipped"}\n{"total": 99.99, "status": "delivered"}',
+          output: "ACCEPT 1\nACCEPT 2\nACCEPT 3\n3/3",
+          explanation: "Every order satisfies both rules, so all three are accepted."
+        }
+      ],
+      challenge_notes: "Guard the total check with `isinstance(total, bool)` first: in Python `True == 1`, so without the bool guard a status flag would sneak through as a valid total. This exact trap appears constantly in real validators.",
+      challenge_hints: [
+        "Use `order.get('total')` and `order.get('status')` so a missing key becomes `None` instead of a KeyError.",
+        "For the total: reject if it is not an int/float, is a bool, or is <= 0.",
+        "Append messages in the fixed order (total, then status) and join with '; ' only the ones that failed."
+      ],
+      challenge_starter_code: `import sys, json
 
-def validate_order(order):
+ALLOWED = ["pending", "shipped", "delivered"]
+
+def validate(order):
+    errors = []
+    # TODO: rule 1 - total is a positive number (not a bool)
+    # TODO: rule 2 - status is in ALLOWED
+    return errors
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: print ACCEPT/REJECT per order, then accepted/total.
+
+main()
+`,
+      challenge_solution_code: `import sys, json
+
+ALLOWED = ["pending", "shipped", "delivered"]
+
+def validate(order):
     errors = []
     total = order.get("total")
-    if not isinstance(total, (int, float)) or total <= 0:
-        errors.append("total must be a number greater than 0")
-    if order.get("status") not in ALLOWED:
+    if not isinstance(total, (int, float)) or isinstance(total, bool) or total <= 0:
+        errors.append("total must be a positive number")
+    status = order.get("status")
+    if status not in ALLOWED:
         errors.append("status must be one of pending, shipped, delivered")
     return errors
 
-print(validate_order(order))
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    accepted = 0
+    for i in range(1, n + 1):
+        order = json.loads(data[i])
+        errors = validate(order)
+        if errors:
+            print(f"REJECT {i}: " + "; ".join(errors))
+        else:
+            print(f"ACCEPT {i}")
+            accepted += 1
+    print(f"{accepted}/{n}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: '{"total": 0, "status": "shippd"}', expected_output: "['total must be a number greater than 0', 'status must be one of pending, shipped, delivered']", description: "Both rules fail, so both errors are returned." },
-        { input: '{"total": 42.5, "status": "shipped"}', expected_output: "[]", description: "A valid order returns an empty error list." }
+        { input: '2\n{"total": 0, "status": "shippd"}\n{"total": 42.5, "status": "shipped"}', expected_output: "REJECT 1: total must be a positive number; status must be one of pending, shipped, delivered\nACCEPT 2\n1/2", description: "Example 1: one order fails both rules, one passes." },
+        { input: '3\n{"total": 1, "status": "pending"}\n{"total": 10, "status": "shipped"}\n{"total": 99.99, "status": "delivered"}', expected_output: "ACCEPT 1\nACCEPT 2\nACCEPT 3\n3/3", description: "Example 2: all orders valid." },
+        { input: '1\n{"total": true, "status": "pending"}', expected_output: "REJECT 1: total must be a positive number\n0/1", description: "Edge: a JSON boolean total is rejected despite True == 1." }
       ]
     },
     {
@@ -1225,39 +1443,96 @@ else:
         "Append an error message for each failed rule, then branch on whether errors is empty."
       ],
       challenge_title: "Full extraction with verdict",
-      challenge_description: "Write extract(reply) that parses the JSON (return {'ok': False, 'error': 'bad json'} on failure), then validates: 'name' non-empty, 'email' contains '@', 'amount' is a positive number. Return {'ok': True, 'record': data} if valid, else {'ok': False, 'error': '; '.join(errors)}. Test on a valid and an invalid reply.",
-      challenge_starter_code: `import json
-good = '{"name": "Dana", "email": "d@x.com", "amount": 42.5}'
-bad = '{"name": "", "email": "dx.com", "amount": -1}'
-# TODO: define extract(reply) returning an ok/record or ok/error dict.
+      challenge_description: "Run a whole batch of messy model replies through the assembly line — enforce JSON, parse, validate — and ship only the clean records, with a total.",
+      challenge_story: "This is the factory floor: raw model replies enter one end, clean database records leave the other. Each reply passes three stations — does it parse as a JSON object? does it carry a non-empty name and a plausible email? is the amount a positive number? A quality gate at the exit rejects anything defective so only trustworthy records reach finance.\n\nYou are wiring the full pipeline plus the end-of-shift report: how many records came out clean, and what dollar total they sum to. Money must be reported to exactly two decimals so the books never show a ragged float. The same bool-isn't-a-number trap from validation still applies — `true` is not an amount.",
+      challenge_statement: "You are given `n` model replies, one per line. Run each through the pipeline in order and print one verdict line:\n\n1. **Parse:** if the line is not valid JSON, or parses to something that is not an object, the verdict is `FAIL i: bad json`.\n2. **Validate** (only if it parsed to an object), collecting messages in this fixed order:\n   - `name` must be a non-empty string (after stripping whitespace); else `missing name`.\n   - `email` must be a string containing `@`; else `bad email`.\n   - `amount` must be a number (not a bool) and > 0; else `amount must be positive`.\n3. If any validation messages exist, print `FAIL i: ` + the messages joined by `; `. Otherwise print `OK i` and add the record's `amount` to the running total.\n\nAfter all replies print two summary lines:\n- `c/n clean` where `c` is the number of OK records.\n- `total T` where `T` is the sum of accepted amounts, formatted to exactly 2 decimal places.",
+      challenge_input_format: "Line 1: an integer `n`. Next `n` lines: one model reply each (intended to be a JSON object with `name`, `email`, `amount`, but may be malformed or wrong-typed).",
+      challenge_output_format: "`n` verdict lines (`OK i` or `FAIL i: <reason>`), then `c/n clean`, then `total T` (T to exactly 2 decimals).",
+      challenge_constraints: [
+        "1 <= n <= 1000",
+        "Validation message order is fixed: name, then email, then amount.",
+        "`amount` must be int or float (not bool) and strictly greater than 0.",
+        "Only accepted (OK) amounts contribute to the total.",
+        "The total is always printed with exactly 2 decimal places, even when it is 0.00.",
+        "Each line is at most 2000 characters."
+      ],
+      challenge_examples: [
+        {
+          input: '2\n{"name": "Dana", "email": "d@x.com", "amount": 42.5}\n{"name": "", "email": "dx.com", "amount": -1}',
+          output: "OK 1\nFAIL 2: missing name; bad email; amount must be positive\n1/2 clean\ntotal 42.50",
+          explanation: "Record 1 passes all stations. Record 2 fails all three checks, listed in fixed order. One clean record totaling 42.50."
+        },
+        {
+          input: '3\n{"name": "A", "email": "a@b.com", "amount": 10}\n{broken\n{"name": "B", "email": "b@c.com", "amount": 5.25}',
+          output: "OK 1\nFAIL 2: bad json\nOK 3\n2/3 clean\ntotal 15.25",
+          explanation: "Record 2 fails to parse and never reaches validation. Records 1 and 3 are clean and sum to 15.25."
+        }
+      ],
+      challenge_notes: "This is the capstone pattern: a creative model handles the messy human part (understanding text), and a strict pipeline handles the rigid part (shape and sense). Format the total with `f\"\${total:.2f}\"` so the books stay clean.",
+      challenge_hints: [
+        "Parse inside try/except ValueError, and also reject non-dict JSON as `bad json`.",
+        "Strip the name before the emptiness check so a whitespace-only name fails.",
+        "Accumulate the total as a float but only print it once at the end with `.2f`."
+      ],
+      challenge_starter_code: `import sys, json
+
+def extract(reply):
+    # Return (ok, error_or_None, amount_or_None).
+    # TODO: parse JSON object; validate name, email, amount in order.
+    pass
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: print OK/FAIL per reply, then clean count and total (.2f).
+
+main()
 `,
-      challenge_solution_code: `import json
+      challenge_solution_code: `import sys, json
 
 def extract(reply):
     try:
         data = json.loads(reply)
     except ValueError:
-        return {"ok": False, "error": "bad json"}
+        return (False, "bad json", None)
+    if not isinstance(data, dict):
+        return (False, "bad json", None)
     errors = []
-    if not data.get("name"):
+    name = data.get("name")
+    if not isinstance(name, str) or name.strip() == "":
         errors.append("missing name")
-    if "@" not in data.get("email", ""):
+    email = data.get("email")
+    if not isinstance(email, str) or "@" not in email:
         errors.append("bad email")
     amount = data.get("amount")
-    if not isinstance(amount, (int, float)) or amount <= 0:
+    if not isinstance(amount, (int, float)) or isinstance(amount, bool) or amount <= 0:
         errors.append("amount must be positive")
     if errors:
-        return {"ok": False, "error": "; ".join(errors)}
-    return {"ok": True, "record": data}
+        return (False, "; ".join(errors), None)
+    return (True, None, amount)
 
-good = '{"name": "Dana", "email": "d@x.com", "amount": 42.5}'
-bad = '{"name": "", "email": "dx.com", "amount": -1}'
-print(extract(good))
-print(extract(bad))
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    clean = 0
+    total = 0.0
+    for i in range(1, n + 1):
+        ok, err, amount = extract(data[i])
+        if ok:
+            clean += 1
+            total += amount
+            print(f"OK {i}")
+        else:
+            print(f"FAIL {i}: {err}")
+    print(f"{clean}/{n} clean")
+    print(f"total {total:.2f}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: 'valid reply', expected_output: "{'ok': True, 'record': {'name': 'Dana', 'email': 'd@x.com', 'amount': 42.5}}", description: "A reply passing every rule returns ok True with the record." },
-        { input: 'invalid reply', expected_output: "{'ok': False, 'error': 'missing name; bad email; amount must be positive'}", description: "A reply failing all three rules returns ok False with joined errors." }
+        { input: '2\n{"name": "Dana", "email": "d@x.com", "amount": 42.5}\n{"name": "", "email": "dx.com", "amount": -1}', expected_output: "OK 1\nFAIL 2: missing name; bad email; amount must be positive\n1/2 clean\ntotal 42.50", description: "Example 1: one clean record, one failing all three checks." },
+        { input: '3\n{"name": "A", "email": "a@b.com", "amount": 10}\n{broken\n{"name": "B", "email": "b@c.com", "amount": 5.25}', expected_output: "OK 1\nFAIL 2: bad json\nOK 3\n2/3 clean\ntotal 15.25", description: "Example 2: a bad-JSON reply is failed at the parse station." },
+        { input: '1\n{"name": "Zoe", "email": "z@q.io", "amount": 100}', expected_output: "OK 1\n1/1 clean\ntotal 100.00", description: "Edge: a single clean record totals exactly 100.00." }
       ]
     }
   ]
