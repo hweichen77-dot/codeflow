@@ -6,7 +6,7 @@ export default {
     difficulty: "advanced",
     category: "production_ops",
     estimated_time: 50,
-    lessons_count: 5,
+    lessons_count: 8,
     tags: ["streaming", "latency", "caching", "throughput", "performance", "sse"],
     order: 13,
     cover_image: ""
@@ -1429,6 +1429,862 @@ main()
         { input: "10 95 500\n100 120 90 800 110 130 95 105 115 125", expected_output: "179\n800\nFAIL", description: "Tail sample blows the p95 SLO while the mean looks healthy." },
         { input: "20 90 300\n100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 900", expected_output: "140\n100\nPASS", description: "Outlier inflates the mean but p90 still passes." },
         { input: "1 99 1000\n1500", expected_output: "1500\n1500\nFAIL", description: "Single sample: it is both the mean and the percentile, and it exceeds the SLO." }
+      ]
+    },
+    {
+      id: "ai-13-l6",
+      project_id: "ai-13",
+      order: 6,
+      title: "Token Throughput",
+      concept: "Throughput",
+      xp_reward: 10,
+      explanation: `A model with a snappy 200ms time to first token can still take twelve full seconds to answer — because the reply is 1,500 tokens long and the model only emits 130 of them per second. Once the first word lands, the whole rest of the wait is governed by a single number you rarely see on a dashboard: **token throughput**.
+
+## What it is
+
+**Token throughput** is the rate at which a model emits output tokens, measured in **tokens per second (TPS)**. Lesson 4 looked at *job-level* throughput across many requests; this is the throughput *inside one response* — how fast a single answer types itself out after generation begins.
+
+It is the inverse of the inter-token latency from lesson 1: if each token arrives every 8 milliseconds, that is \`1 / 0.008 = 125\` tokens per second. The longer the answer, the more this rate dominates the clock.
+
+## How it works
+
+Total response time splits into two parts: the one-time **TTFT** to produce the first token, and then the steady stream of remaining tokens at the throughput rate.
+
+\`\`\`python
+# total seconds = ttft + (output_tokens - 1) / tokens_per_second
+ttft = 0.2            # 200ms to first token
+tps  = 125            # tokens per second once streaming
+out  = 1500           # tokens in the reply
+
+stream_time = (out - 1) / tps      # ~11.99s
+total = ttft + stream_time         # ~12.19s
+print(round(total, 2))             # 12.19
+\`\`\`
+
+The decisive insight is the **mix**. For a 10-token reply, TTFT (0.2s) swamps the 0.07s of streaming, so first-token speed is everything. For a 1,500-token reply, TTFT is a rounding error and throughput owns the wall clock. Two models can have identical TTFT yet wildly different total times purely from TPS.
+
+This is why **output length is the most controllable latency lever you have**. You cannot easily change the model's TPS, but you can ask for a shorter answer, cap \`max_tokens\`, or stop the stream early — each directly shrinks the throughput-dominated portion.
+
+## Why it matters
+
+- **Long outputs dominate total latency.** Summaries, code generation, and long-form drafts spend almost all their time in the throughput phase, not the TTFT phase.
+- **TPS picks the model for the job.** A high-TPS model is worth more for verbose tasks; a low-TTFT model wins for short, chatty replies.
+- **Capping length is a real speedup.** Halving \`max_tokens\` roughly halves the throughput-bound time, often the single biggest latency win available.
+
+## The mental model to keep
+
+**TTFT is the cost to start talking; throughput is the speed of talking. Short answers are bottlenecked by TTFT, long answers by tokens per second — so for anything verbose, fewer tokens is faster.**`,
+      key_terms: [
+        { term: "Token throughput", definition: "The rate at which a model emits output tokens, measured in tokens per second (TPS)." },
+        { term: "Tokens per second (TPS)", definition: "How many output tokens stream out each second; the inverse of inter-token latency." },
+        { term: "Output length", definition: "The number of tokens in the reply; the main lever you control to cut throughput-bound latency." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Reading aloud vs clearing your throat", content: "TTFT is the pause before someone starts reading aloud; throughput is how fast they read once they begin. For a one-line note the pause dominates, but for a ten-page document the reading speed is all that matters.", position: "before" },
+        { type: "tip", title: "Cut the tokens, cut the wait", content: "You usually cannot change a model's tokens-per-second, but you can change how many tokens it must emit. Capping max_tokens or asking for brevity is often the biggest latency win you can make.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Where the time goes in one response",
+        steps: [
+          { label: "Pay the TTFT once", desc: "A fixed delay before the first token appears." },
+          { label: "Stream at the TPS rate", desc: "Remaining tokens arrive at tokens-per-second speed." },
+          { label: "Length sets the mix", desc: "Short replies are TTFT-bound; long replies are throughput-bound." },
+          { label: "Shorten to speed up", desc: "Fewer output tokens directly shrink the throughput phase." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "If a model emits a token every 5 milliseconds, what is its throughput?",
+          options: ["5 tokens per second", "200 tokens per second", "500 tokens per second"],
+          correct_index: 1,
+          explanation: "Throughput is the inverse of inter-token latency: 1 / 0.005 = 200 tokens per second."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "For a very long (1,500-token) response, which factor dominates the total time?",
+          options: [
+            "Time to first token (TTFT)",
+            "Token throughput (tokens per second)",
+            "The size of the context window",
+            "The number of cache hits"
+          ],
+          correct_index: 1,
+          explanation: "TTFT is paid once and becomes negligible over a long reply; the steady tokens-per-second rate governs almost all of the wall-clock time."
+        },
+        {
+          question: "Two models have the same TTFT but different tokens-per-second. For a long answer, what happens?",
+          options: [
+            "Their total times are identical because TTFT is equal",
+            "The higher-TPS model finishes noticeably sooner",
+            "The lower-TPS model finishes sooner",
+            "Throughput has no effect on total time"
+          ],
+          correct_index: 1,
+          explanation: "Once TTFT is equal, the throughput-bound streaming phase decides the total; the model that emits tokens faster finishes the long reply first."
+        },
+        {
+          question: "What is the most controllable lever for reducing throughput-bound latency?",
+          options: [
+            "Increasing the temperature",
+            "Reducing the number of output tokens the model must generate",
+            "Enlarging the context window",
+            "Switching from SSE to WebSockets"
+          ],
+          correct_index: 1,
+          explanation: "You rarely control a model's raw TPS, but capping max_tokens or asking for a shorter answer directly shrinks the throughput-dominated portion of the response."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Throughput sense-check",
+          questions: [
+            { question: "For a 10-token reply, token throughput usually matters more than TTFT.", type: "true_false", correct_answer: "false", explanation: "Short replies are dominated by TTFT; throughput dominates only as the output grows long." },
+            { question: "Token throughput is measured in tokens per ______.", type: "fill_in", correct_answer: "second", explanation: "Tokens per second (TPS) is the rate at which output tokens stream out." }
+          ]
+        }
+      ],
+      starter_code: `# Compute total response time from TTFT and token throughput.
+ttft = 0.2              # seconds to first token
+tps = 125               # tokens per second once streaming
+out = 1500              # output tokens
+
+# TODO: stream_time = (out - 1) / tps; total = ttft + stream_time.
+# Print throughput-bound stream time and total time.
+print("tps:", tps)
+`,
+      solution_code: `ttft = 0.2              # seconds to first token
+tps = 125               # tokens per second once streaming
+out = 1500              # output tokens
+
+stream_time = (out - 1) / tps
+total = ttft + stream_time
+
+print("tps:", tps)
+print("stream_time:", round(stream_time, 2))
+print("total:", round(total, 2))
+`,
+      expected_output: `tps: 125
+stream_time: 11.99
+total: 12.19`,
+      step_throughs: [
+        {
+          title: "splitting one response into TTFT plus throughput",
+          steps: [
+            { label: "Pay the TTFT", detail: "A fixed delay before the first token appears. It happens exactly once per response.", code: "ttft = 0.2  # 200ms, paid once" },
+            { label: "Find the per-token gap", detail: "Throughput is tokens per second; its inverse is the gap between tokens.", code: "tps = 125  ->  gap = 1/125 = 0.008s" },
+            { label: "Stream the rest", detail: "After the first token, the remaining out-1 tokens arrive at the throughput rate.", code: "stream = (1500 - 1) / 125  # 11.99s" },
+            { label: "Add them up", detail: "Total is the one-time TTFT plus the throughput-bound streaming time. For a long reply the second term dwarfs the first.", code: "total = 0.2 + 11.99 = 12.19s" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A response streams 240 output tokens in 4 seconds of streaming time. What is its token throughput?",
+          steps: [
+            "Throughput is output tokens divided by the streaming time.",
+            "That is 240 tokens / 4 seconds.",
+            "Which equals 60 tokens per second."
+          ],
+          output: "60 tokens per second"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Model A: TTFT 0.1s, 50 tokens per second. Model B: TTFT 0.5s, 200 tokens per second. For a 1,000-token answer, which is faster, and why does the answer flip for a 5-token answer?",
+          steps: [
+            "For 1,000 tokens: A's stream time is 999/50 = 19.98s, total ~20.08s. B's is 999/200 = 5.0s, total ~5.5s, so B wins big.",
+            "The long reply is throughput-bound, and B's 200 TPS crushes A's 50 TPS.",
+            "For 5 tokens: A's stream is 4/50 = 0.08s, total 0.18s. B's is 4/200 = 0.02s, total 0.52s.",
+            "Now the reply is TTFT-bound; A's lower 0.1s TTFT beats B's 0.5s, so A wins. The dominant term flips with output length."
+          ],
+          output: "B wins the 1,000-token reply (throughput-bound); A wins the 5-token reply (TTFT-bound)."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "TTFT-bound vs throughput-bound responses",
+          columns: ["Aspect", "Short reply (TTFT-bound)", "Long reply (throughput-bound)"],
+          rows: [
+            { cells: ["Dominant term", "TTFT", "Tokens per second"] },
+            { cells: ["Best model trait", "Low TTFT", "High TPS"] },
+            { cells: ["Effect of cutting tokens", "Small", "Large"] },
+            { cells: ["Where total time lives", "In the startup pause", "In the streaming phase"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "what changes total time for long vs short replies",
+          bins: [
+            { id: "tps", label: "Throughput dominates (long reply)" },
+            { id: "ttft", label: "TTFT dominates (short reply)" }
+          ],
+          items: [
+            { id: "i1", text: "Generating a 2,000-token summary", bin: "tps" },
+            { id: "i2", text: "Answering yes or no in one token", bin: "ttft" },
+            { id: "i3", text: "Writing a long code file", bin: "tps" },
+            { id: "i4", text: "A one-line chat reply", bin: "ttft" },
+            { id: "i5", text: "Drafting a multi-paragraph email", bin: "tps" },
+            { id: "i6", text: "Returning a short classification label", bin: "ttft" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does asking the model for a shorter answer reduce latency more than almost anything else you can control?",
+          sampleAnswer: "For any reply beyond a few tokens, most of the wall-clock time is the streaming phase, which is governed by tokens per second times the number of output tokens. You usually cannot change the model's raw throughput, but you can change how many tokens it must emit. Halving the output roughly halves the throughput-bound time, so capping max_tokens or asking for brevity attacks the largest, most controllable part of the total latency."
+        }
+      ],
+      hints: [
+        "Throughput in tokens per second is the inverse of the inter-token gap.",
+        "There are (out - 1) tokens after the first, so stream_time = (out - 1) / tps.",
+        "Total time is ttft + stream_time; round for clean output."
+      ],
+      challenge_title: "The Throughput SLO Gate",
+      challenge_description: "Measure each model's real token throughput from its output size and streaming time, count how many clear a throughput target, and name the slowest streamer.",
+      challenge_story: "Your platform team is choosing between several model deployments for a verbose feature (long summaries), where token throughput, not first-token speed, decides the experience. Each deployment reports how many **output tokens** it produced and how many **milliseconds** of streaming that took. Product set a throughput SLO in **tokens per second**: a deployment is acceptable only if it streams at least that fast. You're building the gate that computes each deployment's TPS, counts how many pass the SLO, and flags the **slowest** streamer so it can be retired.",
+      challenge_statement: "You are given `n` deployments and a throughput `target` in tokens per second. Each deployment reports its output token count `out` and its streaming time `ms` in milliseconds. Compute each one's throughput as **integer** tokens per second using floor division:\n\n```\ntps = out * 1000 // ms\n```\n\nThen:\n\n1. Count how many deployments have `tps >= target` (these PASS the SLO).\n2. Find the deployment with the **smallest** tps. Break ties by the name that is **lexicographically smaller**.\n\nPrint the pass count on the first line, then the slowest deployment's name and its tps separated by a single space on the second line.",
+      challenge_input_format: "The first line has two integers `n target`.\n\nEach of the next `n` lines describes a deployment: a name (no spaces) followed by two integers `out ms`.",
+      challenge_output_format: "Two lines. Line 1: the integer count of deployments meeting the SLO. Line 2: the slowest deployment's name and its tps, space-separated.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0 ≤ target ≤ 1000000",
+        "1 ≤ out ≤ 1000000000",
+        "1 ≤ ms ≤ 1000000000",
+        "Deployment names are unique and contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "3 30\nmodelA 120 4000\nmodelB 200 2000\nmodelC 60 3000", output: "2\nmodelC 20", explanation: "TPS: A=120·1000//4000=30 (pass), B=200·1000//2000=100 (pass), C=60·1000//3000=20 (fail). Two pass; C is the slowest at 20 tps." },
+        { input: "2 50\nx 100 1000\ny 100 5000", output: "1\ny 20", explanation: "x=100·1000//1000=100 (pass), y=100·1000//5000=20 (fail). One passes; y is slowest at 20 tps." },
+      ],
+      challenge_notes: "Token throughput is the inverse of inter-token latency and the number that dominates long replies. Floor division keeps the metric an exact integer; real dashboards usually report a windowed average TPS the same way.",
+      challenge_hints: [
+        "Read n and target, then loop the n deployment lines parsing name, out, and ms.",
+        "Throughput is out * 1000 // ms so the tokens-per-second value stays an integer.",
+        "Track both a pass counter and the running minimum tps, breaking ties on the lexicographically smaller name.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, target = map(int, data[0].split())
+    # TODO: for each deployment compute tps = out * 1000 // ms,
+    #       count those >= target, and track the slowest (tie: smaller name).
+    #       Print the pass count, then "name tps" of the slowest.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, target = map(int, data[0].split())
+    passing = 0
+    slowest_name = None
+    slowest_tps = None
+    for i in range(n):
+        parts = data[1 + i].split()
+        name = parts[0]
+        out = int(parts[1]); ms = int(parts[2])
+        tps = out * 1000 // ms
+        if tps >= target:
+            passing += 1
+        if slowest_tps is None or tps < slowest_tps or (tps == slowest_tps and name < slowest_name):
+            slowest_tps = tps
+            slowest_name = name
+    print(passing)
+    print(f"{slowest_name} {slowest_tps}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 30\nmodelA 120 4000\nmodelB 200 2000\nmodelC 60 3000", expected_output: "2\nmodelC 20", description: "Two deployments meet the 30 TPS SLO; the 20 TPS one is slowest." },
+        { input: "2 50\nx 100 1000\ny 100 5000", expected_output: "1\ny 20", description: "Same output token count, very different streaming time, so very different TPS." },
+        { input: "1 1000\nonly 500 1000", expected_output: "0\nonly 500", description: "A single deployment at 500 TPS fails a steep 1000 TPS target but is still the slowest by default." },
+        { input: "3 100\na 1000 1000\nb 1000 1000\nc 50 1000", expected_output: "2\nc 50", description: "Two tie at 1000 TPS and pass; c is clearly slowest at 50." }
+      ]
+    },
+    {
+      id: "ai-13-l7",
+      project_id: "ai-13",
+      order: 7,
+      title: "Semantic Caching",
+      concept: "SemanticCache",
+      xp_reward: 10,
+      explanation: `Two users ask "How do I reset my password?" and "What's the process for changing my password?" Word for word they share almost nothing, so the exact-match prompt cache from lesson 3 misses both times and you pay for two full model calls. But the *meaning* is identical. A **semantic cache** catches that — it matches by what a query means, not by the letters it is made of.
+
+## What it is
+
+A **semantic cache** stores past queries and their answers keyed by an **embedding** — a vector of numbers that captures meaning. A new query is embedded too, and if its vector is **close enough** to a stored one, you return the cached answer instead of calling the model. Prompt caching (lesson 3) needs a byte-for-byte prefix match; semantic caching tolerates completely different wording as long as the intent lines up.
+
+## How it works
+
+The closeness test is **cosine similarity**: the cosine of the angle between two vectors, ranging from -1 (opposite) to 1 (identical direction). Near 1 means "these mean nearly the same thing." You set a **similarity threshold**; at or above it is a hit, below it is a miss.
+
+\`\`\`python
+import math
+
+def cosine(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    return dot / (na * nb)
+
+q1 = [0.9, 0.1]    # "reset my password"
+q2 = [0.88, 0.12]  # "change my password" - different words, similar meaning
+print(round(cosine(q1, q2), 4))   # ~0.9998 -> a hit above a 0.95 threshold
+\`\`\`
+
+The flow per query: embed it, compare against every cached embedding, take the best similarity. If that best is at or above the threshold, serve the cached answer (a **hit**); otherwise call the model, then store this query's embedding and answer for next time (a **miss**).
+
+The **threshold** is the whole ballgame. Set it too low and you serve the wrong answer to a question that only *seemed* similar (a false hit). Set it too high and almost nothing matches, so you barely save anything. Tuning it trades savings against correctness.
+
+## Why it matters
+
+- **Catches paraphrases.** FAQ-style and support traffic is full of the same question asked a thousand ways. Semantic caching collapses them into one model call.
+- **Bigger savings than exact match.** Real user wording varies endlessly, so an exact cache hits rarely; a semantic cache hits far more often.
+- **It can be dangerously wrong.** A too-loose threshold returns a confidently wrong cached answer. "Cancel my order" and "Can I change my order?" are close in vector space but need different replies, so the threshold must be conservative.
+
+## The mental model to keep
+
+**Exact caching matches the letters; semantic caching matches the meaning. Embed the query, measure cosine similarity to past queries, and reuse the answer only when the match clears a threshold you have tuned carefully enough to avoid false hits.**`,
+      key_terms: [
+        { term: "Semantic cache", definition: "A cache that reuses a stored answer when a new query is close in meaning to a past one, judged by embedding similarity." },
+        { term: "Embedding", definition: "A vector of numbers that represents the meaning of text, so similar meanings sit close together." },
+        { term: "Cosine similarity", definition: "The cosine of the angle between two vectors, from -1 to 1; near 1 means nearly the same direction (meaning)." },
+        { term: "Similarity threshold", definition: "The cutoff at or above which two queries count as a match; it trades cache savings against the risk of false hits." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A librarian who knows synonyms", content: "An exact-match cache is a clerk who only finds a book if you quote its title perfectly. A semantic cache is a librarian who hears 'that book about a boy wizard' and fetches the right one. It matches what you mean, not the exact words.", position: "before" },
+        { type: "warning", title: "A loose threshold serves wrong answers", content: "Set the similarity bar too low and 'cancel my order' can match 'change my order' and return the wrong cached reply with full confidence. Keep the threshold conservative; a false hit is worse than a miss.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How a semantic cache decides hit or miss",
+        steps: [
+          { label: "Embed the query", desc: "Turn the new question into a meaning vector." },
+          { label: "Compare to cached vectors", desc: "Compute cosine similarity against every stored query." },
+          { label: "Check the threshold", desc: "Best similarity at or above the cutoff is a hit; below is a miss." },
+          { label: "Serve or store", desc: "Hit: return the cached answer. Miss: call the model and store this query." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What does a semantic cache match on, unlike an exact-string prompt cache?",
+          options: ["The exact byte sequence of the prompt", "The meaning of the query, via embedding similarity", "The length of the prompt in tokens"],
+          correct_index: 1,
+          explanation: "A semantic cache compares meaning using embeddings and cosine similarity, so differently worded but equivalent questions can still hit."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why can a semantic cache hit when an exact-string prompt cache misses?",
+          options: [
+            "It ignores the query entirely",
+            "It matches on meaning via embeddings, so different wording can still be close",
+            "It stores answers for every possible question in advance",
+            "It lowers the model's temperature"
+          ],
+          correct_index: 1,
+          explanation: "Exact caching needs identical text, but semantic caching compares embedding vectors, so paraphrases with the same meaning land close enough to match."
+        },
+        {
+          question: "What does a cosine similarity near 1 between two query embeddings indicate?",
+          options: [
+            "The queries are opposite in meaning",
+            "The queries point in nearly the same direction, so they mean nearly the same thing",
+            "The queries are exactly the same string",
+            "The queries are both empty"
+          ],
+          correct_index: 1,
+          explanation: "Cosine similarity measures the angle between vectors; close to 1 means a tiny angle, i.e. nearly the same meaning."
+        },
+        {
+          question: "What is the danger of setting the similarity threshold too low?",
+          options: [
+            "The cache never hits anything",
+            "It serves a cached answer to a question that only seemed similar, returning a wrong answer",
+            "Embeddings stop working",
+            "It increases the context window"
+          ],
+          correct_index: 1,
+          explanation: "A too-loose threshold produces false hits: it reuses an answer for a query that is merely near in vector space but actually needs a different response."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Semantic cache check",
+          questions: [
+            { question: "A semantic cache requires the new query to match a stored one byte for byte.", type: "true_false", correct_answer: "false", explanation: "It matches on meaning via embedding similarity, so different wording can still hit." },
+            { question: "The closeness of two query embeddings is commonly measured with ______ similarity.", type: "fill_in", correct_answer: "cosine", explanation: "Cosine similarity scores how aligned two meaning vectors are, from -1 to 1." }
+          ]
+        }
+      ],
+      starter_code: `# Decide if a new query hits a semantic cache by cosine similarity.
+import math
+
+def cosine(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    return dot / (na * nb)
+
+cached = [0.9, 0.1]      # "reset my password"
+query = [0.88, 0.12]     # "change my password"
+threshold = 0.95
+
+# TODO: compute similarity, then print "HIT" if it is >= threshold else "MISS".
+print("similarity:", round(cosine(cached, query), 4))
+`,
+      solution_code: `import math
+
+def cosine(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    return dot / (na * nb)
+
+cached = [0.9, 0.1]
+query = [0.88, 0.12]
+threshold = 0.95
+
+sim = cosine(cached, query)
+print("similarity:", round(sim, 4))
+print("HIT" if sim >= threshold else "MISS")
+`,
+      expected_output: `similarity: 0.9998
+HIT`,
+      step_throughs: [
+        {
+          title: "checking one query against the cache",
+          steps: [
+            { label: "Embed the new query", detail: "Convert the question text into a meaning vector. Different wording with the same intent lands nearby.", code: 'query = embed("change my password")  # [0.88, 0.12]' },
+            { label: "Score it against a cached query", detail: "Compute cosine similarity between the new vector and a stored one.", code: "sim = cosine(query, cached)  # 0.9998" },
+            { label: "Compare to the threshold", detail: "At or above the threshold is a hit; below is a miss. The threshold controls strictness.", code: "0.9998 >= 0.95  ->  HIT" },
+            { label: "Serve or store", detail: "On a hit, return the cached answer with no model call. On a miss, call the model and store this query and answer.", code: "return cached_answer  # no model call needed" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A new query has cosine similarity 0.91 to the closest cached query, and the threshold is 0.95. Hit or miss?",
+          steps: [
+            "Compare the best similarity to the threshold.",
+            "0.91 is below 0.95.",
+            "Below the threshold means the cache does not match."
+          ],
+          output: "Miss - the model must be called."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Your cache holds 'how do I reset my password' (answer: reset steps). A user asks 'how do I cancel my subscription', whose embedding has similarity 0.93 to the cached query. With a threshold of 0.90 you serve the cached answer. What went wrong, and how do you fix it?",
+          steps: [
+            "The two questions are loosely related (both account actions) so their embeddings are somewhat close, scoring 0.93.",
+            "A threshold of 0.90 treats 0.93 as a hit, so the user asking to cancel gets password-reset steps - a false hit.",
+            "The fix is to raise the threshold (for example to 0.97) so only genuinely equivalent paraphrases match.",
+            "A higher threshold reduces savings slightly but prevents confidently returning the wrong cached answer."
+          ],
+          output: "A too-low threshold caused a false hit; raise it so only true paraphrases match."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "exact prompt cache vs semantic cache",
+          columns: ["Aspect", "Exact prompt cache", "Semantic cache"],
+          rows: [
+            { cells: ["Match criterion", "Identical byte prefix", "Close embedding meaning"] },
+            { cells: ["Catches paraphrases", "No", "Yes"] },
+            { cells: ["Hit rate on varied wording", "Low", "Higher"] },
+            { cells: ["Main risk", "Misses on tiny edits", "False hits if threshold too low"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "exact-match caching vs semantic caching",
+          bins: [
+            { id: "exact", label: "Exact prompt cache" },
+            { id: "semantic", label: "Semantic cache" }
+          ],
+          items: [
+            { id: "i1", text: "Needs a byte-for-byte prefix match", bin: "exact" },
+            { id: "i2", text: "Matches differently worded but equivalent questions", bin: "semantic" },
+            { id: "i3", text: "Uses cosine similarity over embeddings", bin: "semantic" },
+            { id: "i4", text: "Misses if a single token changes", bin: "exact" },
+            { id: "i5", text: "Tuned with a similarity threshold", bin: "semantic" },
+            { id: "i6", text: "Can return a wrong answer on a false hit", bin: "semantic" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is choosing the similarity threshold the hardest part of running a semantic cache?",
+          sampleAnswer: "The threshold directly trades money against correctness, and the two pull in opposite directions. Set it low and the cache hits often, saving lots of model calls, but it starts matching questions that only look related and returns confidently wrong answers. Set it high and every answer is correct, but the cache barely matches anything beyond near-identical phrasing, so the savings shrink. There is no universal right value; you have to tune it against real traffic to catch true paraphrases without ever serving a false hit."
+        }
+      ],
+      hints: [
+        "Cosine similarity is the dot product divided by the product of the two vector magnitudes.",
+        "Magnitude of a vector is sqrt of the sum of its squared components.",
+        "Compare the similarity to the threshold: >= is a hit, otherwise a miss."
+      ],
+      challenge_title: "The Semantic Cache Simulator",
+      challenge_description: "Replay a stream of query embeddings through a semantic cache: serve a hit when any stored query is similar enough, otherwise miss and store the new query. Report the hit and miss counts.",
+      challenge_story: "Your support bot gets the same handful of questions phrased a thousand different ways, so you add a **semantic cache** in front of the model. Each incoming query arrives already embedded as a vector. The cache starts empty. For each query you compute its **cosine similarity** to every embedding already stored; if the best similarity is **at or above** a threshold, it is a **hit** and you serve the cached answer with no model call. Otherwise it is a **miss**: you call the model and add this query's embedding to the cache so future paraphrases can hit it. You're building the simulator that, given the stream and the threshold, reports how many calls the cache saved.",
+      challenge_statement: "You are given `n` query embeddings, each a `d`-dimensional vector, and a similarity `threshold`. Process the queries **in order** through an initially empty cache:\n\n1. For the current query, compute the **cosine similarity** to every embedding already in the cache. Cosine similarity of vectors a and b is `dot(a,b) / (norm(a) * norm(b))`.\n2. If the cache is non-empty and the **maximum** similarity found is **>= threshold**, count a **hit** and do **not** store the query.\n3. Otherwise count a **miss** and **append** the query's embedding to the cache.\n\nPrint the total number of hits, then the total number of misses.",
+      challenge_input_format: "The first line has two integers and one float: `n d threshold`.\n\nEach of the next `n` lines has `d` space-separated floats: one query embedding.",
+      challenge_output_format: "Two lines. Line 1: the integer number of hits. Line 2: the integer number of misses.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 2000",
+        "1 ≤ d ≤ 64",
+        "-1.0 ≤ threshold ≤ 1.0",
+        "Every embedding has a non-zero magnitude.",
+      ],
+      challenge_examples: [
+        { input: "5 2 0.95\n10 0\n9 1\n0 10\n10 1\n1 1", output: "2\n3", explanation: "q1 (10,0) miss, stored. q2 (9,1) is ~0.994 similar to q1, a hit. q3 (0,10) miss, stored. q4 (10,1) is ~0.995 similar to q1, a hit. q5 (1,1) is ~0.707 to both stored vectors, below 0.95, a miss. Hits=2, misses=3." },
+        { input: "3 2 0.99\n1 0\n0 1\n1 0\n", output: "1\n2", explanation: "q1 (1,0) miss, stored. q2 (0,1) is 0.0 similar, a miss, stored. q3 (1,0) is exactly 1.0 similar to the first stored vector, a hit. Hits=1, misses=2." },
+      ],
+      challenge_notes: "This is the core loop inside real semantic-cache libraries, just with a brute-force scan instead of a vector index. The threshold is the dial that trades savings (more hits) against correctness (avoiding false hits), exactly as in production.",
+      challenge_hints: [
+        "Write a cosine helper: dot product divided by the product of the two magnitudes (sqrt of sum of squares).",
+        "Keep a list of stored vectors; for each query take the maximum cosine over that list (treat an empty cache as no match).",
+        "If the best similarity is >= threshold count a hit and store nothing; otherwise count a miss and append the query.",
+      ],
+      challenge_starter_code: `import sys
+import math
+
+def cosine(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    return dot / (na * nb)
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    n = int(first[0]); d = int(first[1]); threshold = float(first[2])
+    # TODO: process n query vectors through an empty cache, counting hits and misses.
+
+main()
+`,
+      challenge_solution_code: `import sys
+import math
+
+def cosine(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    return dot / (na * nb)
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    n = int(first[0]); d = int(first[1]); threshold = float(first[2])
+    cached = []
+    hits = 0
+    misses = 0
+    for i in range(n):
+        vec = list(map(float, data[1 + i].split()))
+        best = -2.0
+        for c in cached:
+            sim = cosine(vec, c)
+            if sim > best:
+                best = sim
+        if cached and best >= threshold:
+            hits += 1
+        else:
+            misses += 1
+            cached.append(vec)
+    print(hits)
+    print(misses)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "5 2 0.95\n10 0\n9 1\n0 10\n10 1\n1 1", expected_output: "2\n3", description: "Near-aligned paraphrases hit; orthogonal and 45-degree queries miss." },
+        { input: "3 2 0.99\n1 0\n0 1\n1 0", expected_output: "1\n2", description: "An exact-direction repeat hits; the orthogonal query misses." },
+        { input: "1 3 0.5\n1 2 3", expected_output: "0\n1", description: "First query against an empty cache is always a miss." },
+        { input: "4 2 0.99\n1 0\n1 0\n1 0\n1 0", expected_output: "3\n1", description: "Identical queries hit after the first is stored." }
+      ]
+    },
+    {
+      id: "ai-13-l8",
+      project_id: "ai-13",
+      order: 8,
+      title: "Cost vs Latency Tradeoffs",
+      concept: "Tradeoffs",
+      xp_reward: 10,
+      explanation: `Every technique in this module pulls on the same two dials: how fast the answer feels and how much it costs. A giant model gives the best answers but is slow and expensive. A tiny model is fast and cheap but weaker. Streaming, caching, and model choice are the levers you combine to find the sweet spot — and there is no single right setting, only the right setting for *this* request.
+
+## What it is
+
+A **cost vs latency tradeoff** is the engineering decision of how to balance response speed, dollar cost, and answer quality, given that improving one usually worsens another. The three big dials:
+
+- **Model tier.** Bigger models are smarter but slower and pricier per token; smaller models are faster and cheaper but less capable.
+- **Streaming.** Makes a response *feel* faster (lower perceived latency) without changing cost.
+- **Caching.** Cuts both cost and latency for repeated or similar requests, but only when there is reuse to exploit.
+
+## How it works
+
+You estimate the **expected** cost and latency of a strategy by weighting the cache-hit path against the cache-miss path. If a request hits the cache, it skips the model entirely: near-zero latency and near-zero cost. If it misses, you pay the full model latency and price.
+
+\`\`\`python
+# expected latency = hit_rate * hit_latency + miss_rate * cold_latency
+hit_rate = 0.40
+cold_latency = 800   # ms: TTFT + streaming the tokens
+hit_latency = 5      # ms: served straight from cache
+
+expected = hit_rate * hit_latency + (1 - hit_rate) * cold_latency
+print(round(expected, 1))   # 482.0 ms
+\`\`\`
+
+This is why the levers stack. A semantic cache raises the hit rate, which pulls the expected cost and latency down. A smaller model lowers the cold-path cost and latency for the misses. Streaming lowers the *perceived* latency on every miss. Combine them and a request that would cost a lot and feel slow becomes cheap and snappy on average — without any single magic setting.
+
+The discipline is matching the strategy to the request. A simple, common question should route to a small cheap model behind an aggressive cache. A rare, hard question should route to the big model, stream the answer, and skip the cache (it would miss anyway).
+
+## Why it matters
+
+- **There is no free lunch.** Push latency down hard and you usually pay more or accept a weaker model; squeeze cost and you usually wait longer.
+- **Routing beats one-size-fits-all.** Sending easy requests to a cheap path and hard ones to a strong path beats forcing every request through the same model.
+- **The dials compound.** Caching plus a right-sized model plus streaming together can cut both expected cost and felt latency far more than any one lever alone.
+
+## The mental model to keep
+
+**Speed, cost, and quality form a triangle; you cannot max all three at once. Pick the model tier for the job, stream to mask the wait, and cache to dodge repeated work — then route each request to the cheapest path that is still good and fast enough.**`,
+      key_terms: [
+        { term: "Cost vs latency tradeoff", definition: "The balancing act between response speed, dollar cost, and answer quality, where improving one usually worsens another." },
+        { term: "Model tier", definition: "The size or class of model chosen; larger tiers are smarter but slower and costlier per token." },
+        { term: "Expected latency", definition: "The hit-rate-weighted average of the fast cache-hit path and the slow cache-miss path." },
+        { term: "Routing", definition: "Sending each request to the model and caching strategy best matched to its difficulty." }
+      ],
+      callouts: [
+        { type: "insight", title: "You cannot max all three", content: "Speed, cost, and quality form a triangle. Pushing any corner all the way out drags the others in. Good systems do not seek perfection on one axis; they pick an acceptable point on all three for the request at hand.", position: "before" },
+        { type: "tip", title: "Route, do not standardize", content: "Send easy, repeated questions to a small model behind an aggressive cache, and hard, novel ones to a big streamed model. Matching the path to the request beats forcing every call through one setting.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Stacking the levers to balance cost and latency",
+        steps: [
+          { label: "Pick the model tier", desc: "Match model size to the difficulty of the request." },
+          { label: "Add a cache", desc: "Reuse answers for repeated or similar queries to cut cost and latency." },
+          { label: "Stream the misses", desc: "Mask the wait on cache misses with token-by-token output." },
+          { label: "Weight the paths", desc: "Expected cost and latency blend the hit path and the miss path by hit rate." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "With a 40% cache hit rate, a 5ms hit latency, and an 800ms cold latency, what is the expected latency?",
+          options: ["402.5 ms", "482.0 ms", "800.0 ms"],
+          correct_index: 1,
+          explanation: "Expected = 0.40 * 5 + 0.60 * 800 = 2 + 480 = 482.0 ms."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why is there no single 'best' setting across speed, cost, and quality?",
+          options: [
+            "Because all three can always be maximized together",
+            "Because improving one of the three usually worsens another, so it is a tradeoff",
+            "Because cost is the only thing that matters",
+            "Because latency is fixed by the network"
+          ],
+          correct_index: 1,
+          explanation: "Speed, cost, and quality form a triangle: pushing one corner out tends to pull the others in, so the right point depends on the request."
+        },
+        {
+          question: "How does raising a cache's hit rate affect expected cost and latency?",
+          options: [
+            "It raises both because caching is expensive",
+            "It lowers both, since more requests skip the model on the cheap fast hit path",
+            "It only affects quality, not cost or latency",
+            "It has no effect on the expected values"
+          ],
+          correct_index: 1,
+          explanation: "A higher hit rate shifts more requests onto the near-zero-cost, near-zero-latency cache path, pulling the weighted expected cost and latency down."
+        },
+        {
+          question: "Which routing strategy best balances the tradeoffs?",
+          options: [
+            "Send every request through the largest model with no cache",
+            "Route easy, repeated requests to a small cached model and hard, novel ones to a big streamed model",
+            "Always use the smallest model regardless of difficulty",
+            "Disable streaming and caching to keep things simple"
+          ],
+          correct_index: 1,
+          explanation: "Matching the path to the request - cheap cached small model for easy traffic, strong streamed model for hard traffic - beats forcing every request through one fixed setting."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Tradeoff check",
+          questions: [
+            { question: "Streaming lowers the dollar cost of a response.", type: "true_false", correct_answer: "false", explanation: "Streaming lowers perceived latency but does not change the number of tokens billed." },
+            { question: "The hit-rate-weighted average of the fast and slow paths is called the expected ______.", type: "fill_in", correct_answer: "latency", explanation: "Expected latency blends the cache-hit path and cache-miss path by the hit rate." }
+          ]
+        }
+      ],
+      starter_code: `# Compute expected latency and cost blending cache hit and miss paths.
+hit_rate = 0.40
+cold_latency = 800     # ms on a cache miss (full model call)
+hit_latency = 5        # ms on a cache hit
+cold_cost = 2000       # micro-dollars on a miss
+hit_cost = 0           # micro-dollars on a hit (served from cache)
+
+# TODO: expected = hit_rate * hit_value + (1 - hit_rate) * cold_value, for both.
+print("hit_rate:", hit_rate)
+`,
+      solution_code: `hit_rate = 0.40
+cold_latency = 800
+hit_latency = 5
+cold_cost = 2000
+hit_cost = 0
+
+exp_latency = hit_rate * hit_latency + (1 - hit_rate) * cold_latency
+exp_cost = hit_rate * hit_cost + (1 - hit_rate) * cold_cost
+
+print("hit_rate:", hit_rate)
+print("expected_latency:", round(exp_latency, 1))
+print("expected_cost:", round(exp_cost, 1))
+`,
+      expected_output: `hit_rate: 0.4
+expected_latency: 482.0
+expected_cost: 1200.0`,
+      step_throughs: [
+        {
+          title: "blending the hit and miss paths into an expected cost",
+          steps: [
+            { label: "Price the miss path", detail: "A cache miss is a full model call: pay its latency and its per-call cost.", code: "cold_latency = 800ms ; cold_cost = 2000" },
+            { label: "Price the hit path", detail: "A cache hit skips the model: near-zero latency and near-zero cost.", code: "hit_latency = 5ms ; hit_cost = 0" },
+            { label: "Weight by hit rate", detail: "Expected value blends the two paths by how often each occurs.", code: "exp = hit_rate * hit + (1 - hit_rate) * cold" },
+            { label: "Read the tradeoff", detail: "Raising the hit rate or shrinking the cold path pulls both expected cost and latency down.", code: "0.4*5 + 0.6*800 = 482ms expected" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A cache has a 50% hit rate. Hits take 0ms and cost 0; misses take 600ms and cost 1000 micro-dollars. What is the expected latency?",
+          steps: [
+            "Expected latency = hit_rate * hit_latency + (1 - hit_rate) * cold_latency.",
+            "That is 0.5 * 0 + 0.5 * 600.",
+            "Which equals 300 ms."
+          ],
+          output: "300 ms expected latency"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You serve a verbose feature. Option A: big model, no cache, 1200ms and 3000 cost per call. Option B: small model behind a 60% semantic cache; misses are 400ms and 500 cost, hits are 5ms and 0 cost. Compare expected latency and cost.",
+          steps: [
+            "Option A has no cache, so every call is the cold path: 1200ms and 3000 cost.",
+            "Option B expected latency = 0.6 * 5 + 0.4 * 400 = 3 + 160 = 163ms.",
+            "Option B expected cost = 0.6 * 0 + 0.4 * 500 = 200 micro-dollars.",
+            "Option B is far cheaper and faster on average; the only question is whether the small model's quality is acceptable for this feature."
+          ],
+          output: "B: ~163ms and 200 cost vs A's 1200ms and 3000 - caching plus a smaller model wins on both axes if quality holds."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "what each lever changes",
+          columns: ["Lever", "Cost", "Actual latency", "Perceived latency", "Quality"],
+          rows: [
+            { cells: ["Bigger model tier", "Up", "Up", "Up", "Up"] },
+            { cells: ["Smaller model tier", "Down", "Down", "Down", "Down"] },
+            { cells: ["Streaming", "Same", "Same", "Down", "Same"] },
+            { cells: ["Caching (on reuse)", "Down", "Down", "Down", "Same"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which lever to reach for",
+          bins: [
+            { id: "cache", label: "Reach for caching" },
+            { id: "model", label: "Reach for a smaller model tier" }
+          ],
+          items: [
+            { id: "i1", text: "The same FAQ asked thousands of ways", bin: "cache" },
+            { id: "i2", text: "A simple classification that a small model nails", bin: "model" },
+            { id: "i3", text: "Repeated questions over one fixed document", bin: "cache" },
+            { id: "i4", text: "High per-call cost on an easy task", bin: "model" },
+            { id: "i5", text: "Many near-duplicate support tickets", bin: "cache" },
+            { id: "i6", text: "A latency-sensitive task that does not need the best model", bin: "model" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does routing each request to a different strategy beat picking one model and setting for everything?",
+          sampleAnswer: "Requests are not uniform: most traffic is easy and repetitive, while a few are hard and novel. A single fixed setting either overpays and over-waits by sending easy requests through a big model, or underperforms by sending hard requests through a weak one. Routing sends the easy, repeated questions down a cheap cached small-model path and the rare hard ones down a strong streamed path, so each request gets the cheapest, fastest option that is still good enough. That matches spend and speed to actual difficulty instead of paying worst-case prices everywhere."
+        }
+      ],
+      hints: [
+        "Expected value weights each path by how often it happens: hit_rate and (1 - hit_rate).",
+        "Apply the same weighting to both latency and cost.",
+        "Round the results for clean output."
+      ],
+      challenge_title: "The Strategy Picker",
+      challenge_description: "Given several serving strategies and a cache hit rate, compute each one's expected latency, drop the ones that blow the latency budget, and pick the cheapest survivor.",
+      challenge_story: "You run the router in front of an AI feature and must choose one **serving strategy** per request class. Each strategy is a bundle: a model tier (its cold-path TTFT, per-token time, and output length), wrapped in a cache. On a **cache hit** the model is skipped, so latency is just the streaming time with no TTFT and the cost drops to a tenth. On a **miss** you pay the full cold latency and full cost. Given the cache **hit rate**, you weight the two paths into an **expected** latency and an **expected** cost. Product gives you a hard latency budget; among only the strategies whose expected latency fits, you pick the one with the lowest expected cost.",
+      challenge_statement: "You are given `n` strategies, a latency `budget` in milliseconds, and an integer `hit_rate` percentage (0 to 100). Each strategy has a name and four integers: cold `ttft` (ms), output tokens `out`, per-token time `per` (ms), and cold per-call `cost` (micro-dollars).\n\nFor each strategy:\n\n- `cold_latency = ttft + per * out` and `hit_latency = per * out` (a hit skips the TTFT prefill).\n- `hit_cost = cost // 10` (a hit costs a tenth) and `cold_cost = cost`.\n- `expected_latency = (hit_rate * hit_latency + (100 - hit_rate) * cold_latency) // 100`.\n- `expected_cost = (hit_rate * hit_cost + (100 - hit_rate) * cold_cost) // 100`.\n\nA strategy is **eligible** only if its `expected_latency <= budget`. Among eligible strategies print the name with the **smallest expected_cost**; break ties by smallest expected_latency, then by the lexicographically smaller name. If none are eligible, print `NONE`.",
+      challenge_input_format: "The first line has three integers `n budget hit_rate`.\n\nEach of the next `n` lines describes a strategy: a name (no spaces) followed by four integers `ttft out per cost`.",
+      challenge_output_format: "One line: the chosen strategy's name, or `NONE` if none fit the budget.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0 ≤ budget ≤ 2000000000",
+        "0 ≤ hit_rate ≤ 100",
+        "0 ≤ ttft, out, per, cost ≤ 100000",
+        "Strategy names are unique and contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "3 1000 50\nbig 300 100 5 2000\nsmall 100 100 2 400\nhuge 500 100 8 5000", output: "small", explanation: "expected_latency: big=(50·500+50·800)//100=650, small=(50·200+50·300)//100=250, huge=(50·800+50·1300)//100=1050 (over budget, dropped). Among {big,small}: expected_cost big=(50·200+50·2000)//100=1100, small=(50·40+50·400)//100=220, so small wins." },
+        { input: "2 100 0\na 200 50 1 1000\nb 300 10 1 400", output: "NONE", explanation: "With a 0% hit rate every request is the cold path: a=200+50=250ms, b=300+10=310ms, both above the 100ms budget, so nothing is eligible." },
+      ],
+      challenge_notes: "This is the gate-then-minimize pattern of a real model router: filter strategies by an expected-latency SLO, then choose the cheapest. Raising the hit rate (a better cache) shifts both expected latency and expected cost downward, often making a smaller, cheaper strategy newly eligible.",
+      challenge_hints: [
+        "Compute cold_latency = ttft + per*out and hit_latency = per*out; the hit path skips the TTFT.",
+        "Blend with integer math: expected = (hit_rate*hit + (100-hit_rate)*cold) // 100 for both latency and cost.",
+        "Filter by expected_latency <= budget first, then keep the minimum (expected_cost, expected_latency, name).",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, budget, hit_rate = map(int, data[0].split())
+    # TODO: for each strategy compute expected latency and cost,
+    #       keep only those within budget, and print the cheapest (tie: latency, then name).
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, budget, hit_rate = map(int, data[0].split())
+    best = None
+    for i in range(n):
+        parts = data[1 + i].split()
+        name = parts[0]
+        ttft = int(parts[1]); out = int(parts[2]); per = int(parts[3]); cost = int(parts[4])
+        cold_latency = ttft + per * out
+        hit_latency = per * out
+        cold_cost = cost
+        hit_cost = cost // 10
+        exp_latency = (hit_rate * hit_latency + (100 - hit_rate) * cold_latency) // 100
+        exp_cost = (hit_rate * hit_cost + (100 - hit_rate) * cold_cost) // 100
+        if exp_latency > budget:
+            continue
+        key = (exp_cost, exp_latency, name)
+        if best is None or key < best:
+            best = key
+    print(best[2] if best is not None else "NONE")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 1000 50\nbig 300 100 5 2000\nsmall 100 100 2 400\nhuge 500 100 8 5000", expected_output: "small", description: "Over-budget strategy dropped; cheapest expected cost among the rest wins." },
+        { input: "2 100 0\na 200 50 1 1000\nb 300 10 1 400", expected_output: "NONE", description: "Zero hit rate forces the cold path; nothing fits the tight budget." },
+        { input: "2 2000 100\nx 1000 100 5 9000\ny 1000 100 5 9000", expected_output: "x", description: "Identical strategies at a 100% hit rate tie on cost and latency; lexicographic name breaks it." },
+        { input: "3 500 50\np 100 50 2 600\nq 100 50 2 600\nr 50 50 2 200", expected_output: "r", description: "All eligible; the cheapest cold cost gives the lowest expected cost." }
       ]
     }
   ]

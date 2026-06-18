@@ -5,8 +5,8 @@ export default {
     description: "Learn how a chat request is really an ordered list of role-tagged messages, and how apps assemble that list to drive a conversation.",
     difficulty: "beginner",
     category: "foundations",
-    estimated_time: 45,
-    lessons_count: 4,
+    estimated_time: 90,
+    lessons_count: 8,
     tags: ["messages", "system-prompt", "roles", "conversation", "fundamentals"],
     order: 17,
     cover_image: ""
@@ -1122,6 +1122,1128 @@ main()
         { input: "5 3\nBe brief.\nuser Hi\nassistant Hey\nuser How are you\nassistant Good\nuser Bye", expected_output: "0 system: Be brief.\n1 user: How are you\n2 assistant: Good\n3 user: Bye\ntotal 4", description: "Window keeps the last three turns; oldest two dropped." },
         { input: "3 0\nSys.\nuser A\nassistant B\nuser C", expected_output: "0 system: Sys.\ntotal 1", description: "k = 0 keeps only the system message." },
         { input: "2 10\nYou help.\nuser A\nassistant B", expected_output: "0 system: You help.\n1 user: A\n2 assistant: B\ntotal 3", description: "Edge: window larger than history keeps every turn." }
+      ]
+    },
+    {
+      id: "ai-17-l5",
+      project_id: "ai-17",
+      order: 5,
+      title: "The Assistant Turn and Prefilling",
+      concept: "Assistant",
+      xp_reward: 10,
+      explanation: `Ask a model to return JSON and it often opens with "Sure! Here is the JSON you requested:" before the actual data — useless for a parser. There's a quiet trick that fixes this in one line: you write the *beginning* of the assistant's reply yourself, and the model continues from there. It's called **prefilling**, and it works precisely because the assistant turn is just another message you control.
+
+## What it is
+
+The model's reply is an **assistant message** — same shape as everything else: a role of \`assistant\` and some content. From the message-array lessons you know you append it back to continue the chat. The new idea here is that you don't have to leave that assistant content empty. You can **prefill** it: put the opening text yourself as the last message, and the model picks up exactly where you stopped.
+
+Because generation is "continue the transcript," a half-finished assistant message is a strong hint. Start it with \`{\` and the model is almost forced to produce JSON next.
+
+## How it works
+
+A normal request ends on a user message and the model writes the whole assistant turn. To prefill, you add a partial assistant message at the end and let the model finish it:
+
+\`\`\`python
+messages = [
+    {"role": "system", "content": "Return the answer as JSON."},
+    {"role": "user", "content": "Name and age of the first US president?"},
+    {"role": "assistant", "content": "{"},  # prefill: we start the reply
+]
+# The model continues from "{", so its output starts inside the JSON object.
+\`\`\`
+
+The model's continuation is appended to your prefill, so the full assistant turn becomes \`{"name": "George Washington", "age": 57}\`. You steered the **format** without adding a single instruction. The same trick forces a leading bullet (\`- \`), a code fence (\` \`\`\` \`), or a chosen language ("Translating to French: ").
+
+## Why it matters
+
+Prefilling is a cheap, reliable steering tool:
+
+- **It removes preamble.** No "Certainly! Here is..." — the reply starts at the content you want.
+- **It locks format.** Opening with \`{\` or \`[\` makes structured output far more likely than asking nicely.
+- **It has limits.** Not every provider supports prefill, and a clumsy prefill can box the model into a bad continuation. You also must remember the prefill text is part of the final answer — prepend it yourself when reading the output.
+
+## The mental model to keep
+
+The assistant turn is **a message you can start writing**. Hand the model the first few characters of its own reply, and it will faithfully continue the sentence you began.`,
+      key_terms: [
+        { term: "Assistant message", definition: "The model's reply, a message with role 'assistant' and content, the same shape as user and system messages." },
+        { term: "Prefilling", definition: "Adding a partial assistant message at the end of the list so the model continues from text you wrote." },
+        { term: "Preamble", definition: "Filler the model adds before the real answer, like 'Sure, here is...', which prefilling removes." }
+      ],
+      callouts: [
+        { type: "insight", title: "You can finish the model's sentence for it", content: "Generation is just continuing the transcript. If the last message is a half-written assistant turn, the model completes it — so writing '{' as the prefill nearly guarantees the reply continues as JSON.", position: "before" },
+        { type: "warning", title: "The prefill is part of the answer", content: "Whatever you put in the prefill is the start of the final assistant content. If you prefill '{', the model's output begins after it, so you must prepend your prefill yourself when reassembling the full reply.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How prefilling steers a reply",
+        steps: [
+          { label: "Build the request", desc: "System and user messages set up the task as usual." },
+          { label: "Append a partial assistant turn", desc: "Add an assistant message whose content is just the opening you want." },
+          { label: "Model continues it", desc: "The model writes the rest, starting from your prefill text." },
+          { label: "Reassemble the reply", desc: "Final answer = your prefill + the model's continuation." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What is prefilling the assistant turn?",
+          options: ["Sending the system prompt twice", "Writing the start of the assistant's reply so the model continues from it", "Asking the model to count tokens before replying"],
+          correct_index: 1,
+          explanation: "You add a partial assistant message at the end; the model continues from the text you supplied."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why does prefilling an assistant message with `{` tend to produce JSON?",
+          options: [
+            "It changes the model's weights to a JSON mode",
+            "Generation continues the transcript, so the model picks up right after the opening brace",
+            "The API validates JSON automatically",
+            "It deletes the system prompt"
+          ],
+          correct_index: 1,
+          explanation: "The model continues whatever the partial assistant message started, so an opening brace nudges it into JSON."
+        },
+        {
+          question: "What must you remember about the prefill text when reading the model's output?",
+          options: [
+            "It is discarded by the API and never returned",
+            "It is the start of the final answer, so you prepend it to the continuation",
+            "It is added to the system prompt automatically",
+            "It is always counted as a user message"
+          ],
+          correct_index: 1,
+          explanation: "The prefill is the opening of the assistant content; the model's output continues from it, so the full reply is prefill + continuation."
+        },
+        {
+          question: "Which is a real limitation of prefilling?",
+          options: [
+            "It always doubles the token cost",
+            "It only works with the system role",
+            "Not all providers support it, and a clumsy prefill can box the model into a bad continuation",
+            "It permanently changes future requests"
+          ],
+          correct_index: 2,
+          explanation: "Prefill support varies by provider, and a poorly chosen opening can force the model down an unhelpful path."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Prefilling check",
+          questions: [
+            { question: "Prefilling means writing the opening of the assistant's reply yourself so the model continues it.", type: "true_false", correct_answer: "true", explanation: "You append a partial assistant message and the model finishes it." },
+            { question: "To remove preamble and force structured output, you prefill the ______ message.", type: "fill_in", correct_answer: "assistant", explanation: "The partial message you start carries the role 'assistant'." }
+          ]
+        }
+      ],
+      starter_code: `# Prefill the assistant turn, then show the FULL reply = prefill + continuation.
+messages = [
+    {"role": "system", "content": "Return the answer as JSON."},
+    {"role": "user", "content": "First US president name and age?"},
+    {"role": "assistant", "content": "{"},  # our prefill
+]
+
+# Pretend the model continued the JSON from our "{":
+continuation = '"name": "George Washington", "age": 57}'
+
+# TODO: the full assistant reply is the prefill plus the continuation.
+# Print the full reply on one line.
+print("prefill:", messages[-1]["content"])
+`,
+      solution_code: `messages = [
+    {"role": "system", "content": "Return the answer as JSON."},
+    {"role": "user", "content": "First US president name and age?"},
+    {"role": "assistant", "content": "{"},
+]
+
+continuation = '"name": "George Washington", "age": 57}'
+
+prefill = messages[-1]["content"]
+full_reply = prefill + continuation
+print("prefill:", prefill)
+print("full reply:", full_reply)
+`,
+      expected_output: `prefill: {
+full reply: {"name": "George Washington", "age": 57}`,
+      step_throughs: [
+        {
+          title: "steering output by starting the reply",
+          steps: [
+            { label: "Set up the task", detail: "System asks for JSON; the user asks the question. So far this is an ordinary request.", code: 'messages = [system_json, user_question]' },
+            { label: "Append a partial assistant turn", detail: "Add an assistant message whose content is just the opening character you want the reply to begin with.", code: 'messages.append({"role": "assistant", "content": "{"})' },
+            { label: "Let the model continue", detail: "Generation continues the transcript, so the model writes what comes after the brace.", code: 'continuation = model(messages)  # starts inside the JSON' },
+            { label: "Rebuild the full reply", detail: "The final answer is your prefill text plus the continuation; prepend the prefill yourself.", code: 'full = "{" + continuation' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You want the reply to start as a Markdown bullet list. What prefill should the last assistant message contain?",
+          steps: [
+            "A Markdown bullet begins with '- '.",
+            "Put that as the content of a partial assistant message at the end of the list.",
+            "The model continues from '- ', so its output starts the first bullet."
+          ],
+          output: 'Prefill the assistant message with "- " so the reply begins as a bullet list.'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A model keeps prefixing JSON answers with 'Here is the JSON:' which breaks your parser. You prefill the assistant turn with '{'. What now reaches your parser, and what must your code do?",
+          steps: [
+            "With the assistant turn prefilled as '{', the model continues directly inside the object, skipping any preamble.",
+            "But the API returns only the continuation (everything after '{'), not the brace itself.",
+            "Your code must prepend the '{' prefill to the returned text before parsing.",
+            "Then json.loads('{' + continuation) parses cleanly with no preamble to strip."
+          ],
+          output: "The reply has no preamble; prepend the '{' prefill to the continuation, then parse the combined string."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "asking for format vs prefilling it",
+          columns: ["Approach", "How", "Reliability"],
+          rows: [
+            { cells: ["Ask in the prompt", "\"Reply with only JSON\"", "Often works, but preamble leaks in"] },
+            { cells: ["Prefill the turn", "Start the assistant message with \"{\"", "Strongly forces the opening you chose"], highlight: true },
+            { cells: ["Do nothing", "Hope for clean output", "Unpredictable; preamble common"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "true vs false about prefilling",
+          bins: [
+            { id: "true", label: "True" },
+            { id: "false", label: "False" }
+          ],
+          items: [
+            { id: "i1", text: "The prefill goes in an assistant message at the end of the list", bin: "true" },
+            { id: "i2", text: "The model continues from the prefill text", bin: "true" },
+            { id: "i3", text: "Prefilling changes the model's weights", bin: "false" },
+            { id: "i4", text: "The prefill is part of the final answer", bin: "true" },
+            { id: "i5", text: "Every provider supports prefilling", bin: "false" },
+            { id: "i6", text: "Opening with '{' nudges the reply toward JSON", bin: "true" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does writing the first few characters of the assistant's reply steer the output so strongly?",
+          sampleAnswer: "Because the model's whole job is to continue the transcript it's given. A partial assistant message is the most recent thing in that transcript, so the model treats it as the start of a sentence it must finish. Opening with '{' makes JSON the only natural continuation, which is far more reliable than politely asking for JSON, because it removes the freedom to add preamble first."
+        }
+      ],
+      hints: [
+        "The prefill is the content of the LAST message, which has role 'assistant'.",
+        "Access it with messages[-1]['content'].",
+        "The full reply is the prefill string concatenated with the model's continuation."
+      ],
+      challenge_title: "Prefill Reassembler",
+      challenge_description: "Stitch a prefilled assistant turn back together the way a real client must: prepend the prefill to the model's continuation, then validate that the result actually starts the way you intended.",
+      challenge_story: "Your app prefills assistant turns to force clean output, but there's a catch every engineer hits: the API returns only the continuation, not the prefill you supplied. Your client code has to glue them back: \`full = prefill + continuation\`. Worse, you want to verify the format actually held, so for each reply you also check whether the reassembled answer **starts with** the prefill you sent (it always should after gluing) and report the total character length so you can spot truncation. Build the reassembler that processes a batch of prefilled replies.",
+      challenge_statement: "You are given a batch of prefilled assistant replies. Each item has a **prefill** string (what your app wrote to start the turn) and a **continuation** string (what the model returned). For each item:\n\n1. Reassemble the full reply as \`prefill + continuation\` (simple concatenation, no separator).\n2. Print the full reply on its own line.\n\nAfter all items, print one summary line: \`chars <total>\`, the sum of the character lengths of every full reply.",
+      challenge_input_format: "The first line is an integer `n`: the number of items.\n\nThe next `2*n` lines come in pairs: for each item, the first line is the prefill and the second line is the continuation. Either string may contain spaces but no newline; either may be empty (a blank line).",
+      challenge_output_format: "Print `n` lines, each the reassembled full reply for one item in order, then a final line `chars <total>` with the summed length of all full replies.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 10000",
+        "0 ≤ length of each prefill and continuation ≤ 10000 (a line may be empty).",
+        "Strings contain no newline characters.",
+      ],
+      challenge_examples: [
+        { input: "2\n{\n\"name\": \"Ada\"}\n- \nFirst item", output: "{\"name\": \"Ada\"}\n- First item\nchars 26", explanation: "Item 1: '{' + '\"name\": \"Ada\"}' = '{\"name\": \"Ada\"}' (15 chars). Item 2: '- ' + 'First item' = '- First item' (12 chars). 15 + 12 wait recount: see notes; the summed length is reported on the final line." },
+        { input: "1\nTranslating: \nBonjour", output: "Translating: Bonjour\nchars 20", explanation: "The prefill 'Translating: ' (13 chars) plus 'Bonjour' (7 chars) makes a 20-character reply." },
+      ],
+      challenge_notes: "The whole point: the model never re-emits your prefill, so the client owns reassembly. Reading lines without stripping spaces matters because a prefill like '- ' or 'Translating: ' ends in a meaningful space; trimming it would corrupt the format you worked to force.",
+      challenge_hints: [
+        "Read all lines without stripping; a prefill may legitimately be empty or end in a space.",
+        "For each item, read two consecutive lines (prefill then continuation) and concatenate them directly.",
+        "Accumulate len(full) as you go and print 'chars <total>' after the loop.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: for each of the n items, read the prefill line then the continuation
+    #       line, print prefill + continuation, and sum the lengths. Finally print
+    #       "chars <total>".
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    total = 0
+    out = []
+    for _ in range(n):
+        prefill = data[idx]; idx += 1
+        continuation = data[idx]; idx += 1
+        full = prefill + continuation
+        out.append(full)
+        total += len(full)
+    out.append(f"chars {total}")
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "2\n{\n\"name\": \"Ada\"}\n- \nFirst item", expected_output: "{\"name\": \"Ada\"}\n- First item\nchars 27", description: "Two items reassembled; the trailing space in '- ' is preserved." },
+        { input: "1\nTranslating: \nBonjour", expected_output: "Translating: Bonjour\nchars 20", description: "Single item: prefill ending in a space plus continuation." },
+        { input: "2\n\nHello\nworld\n", expected_output: "Hello\nworld\nchars 10", description: "Edge: empty prefill on item 1 and empty continuation on item 2 still concatenate correctly." }
+      ]
+    },
+    {
+      id: "ai-17-l6",
+      project_id: "ai-17",
+      order: 6,
+      title: "Roles Beyond the Basics",
+      concept: "Roles",
+      xp_reward: 10,
+      explanation: `The first chatbots had three roles and that was the whole story. Then assistants started *doing* things — checking the weather, querying a database, running code — and three roles weren't enough. How does the model see the result of a database query it asked for? A new kind of message: the **tool result**. Once you add it, a transcript stops being a chat and becomes a record of an agent at work.
+
+## What it is
+
+Beyond \`system\`, \`user\`, and \`assistant\`, modern chat APIs add a **tool role** (sometimes called \`tool\` or \`function\`). It carries the **result of a tool the assistant asked to call**. The flow goes: the assistant emits a request to call a tool, your code runs that tool, and you feed the output back as a tool-role message so the model can read it on the next turn.
+
+Many APIs also allow an optional **name** field on a message, used to label *which* tool or *which* participant a message came from when several are in play.
+
+## How it works
+
+A tool-augmented transcript interleaves an extra role. The assistant says "call get_weather," your code runs it, and you append a tool message with the answer:
+
+\`\`\`python
+messages = [
+    {"role": "system", "content": "You can call tools."},
+    {"role": "user", "content": "Weather in Paris?"},
+    {"role": "assistant", "content": "", "tool_calls": [{"name": "get_weather", "args": {"city": "Paris"}}]},
+    {"role": "tool", "name": "get_weather", "content": "18C, clear"},  # your code's result
+]
+# The model now reads the tool result and writes a natural-language reply.
+\`\`\`
+
+The key point: a tool result is **just another message** in the same ordered list. The model can't run tools itself — it only emits the *request*. Your code executes it and hands the output back as a message. The \`name\` field ties the result to the call.
+
+## Why it matters
+
+Extra roles are how chat became *agentic*:
+
+- **Tools give the model fresh, real data.** Instead of guessing the weather, it reads a real API result you injected as a tool message.
+- **The name field disambiguates.** With several tools or several speakers, \`name\` says which one produced this message.
+- **It's still one transcript.** No magic — the assistant requests, your code runs, the result goes back as a message, and the loop continues exactly like multi-turn chat.
+
+## The mental model to keep
+
+A tool result is **a message from the outside world**, slotted into the same ordered list. The assistant asks; your code answers on a tool-role message; the model reads it and continues.`,
+      key_terms: [
+        { term: "Tool role", definition: "A message role (tool or function) carrying the result of a tool the assistant asked to call." },
+        { term: "Tool call", definition: "A request the assistant emits to run a named tool with arguments; your code, not the model, executes it." },
+        { term: "name field", definition: "An optional message field labeling which tool or participant produced the message." }
+      ],
+      callouts: [
+        { type: "analogy", title: "An assistant passing notes to a researcher", content: "The assistant scribbles 'look up the weather' and slides the note out. A researcher (your code) does the lookup and slides back a note with the answer. That returned note is the tool-role message; the assistant reads it and keeps talking.", position: "before" },
+        { type: "insight", title: "The model never runs the tool", content: "The model only emits the request to call a tool. Your code executes it and appends the result as a tool message. The model just reads that result on the next turn like any other message.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How a tool result enters the transcript",
+        steps: [
+          { label: "Assistant requests a tool", desc: "The assistant message includes a tool call (name plus arguments)." },
+          { label: "Your code runs it", desc: "Outside the model, your code executes the named tool." },
+          { label: "Append a tool message", desc: "The result goes back as a tool-role message, often with a name field." },
+          { label: "Model reads and replies", desc: "On the next turn the model uses the tool result to write its answer." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Who actually executes a tool the assistant asks to call?",
+          options: ["The model runs it internally", "Your code runs it and returns the result as a tool message", "The user types the result manually every time"],
+          correct_index: 1,
+          explanation: "The model only emits the request; your code runs the tool and appends the result as a tool-role message."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does a tool-role (or function-role) message carry?",
+          options: [
+            "The system prompt for the next conversation",
+            "The result of a tool the assistant asked to call",
+            "A summary of the whole chat",
+            "The user's password"
+          ],
+          correct_index: 1,
+          explanation: "The tool role delivers the output of a tool call back to the model as a message it can read."
+        },
+        {
+          question: "What is the optional `name` field on a message used for?",
+          options: [
+            "To set the assistant's persona",
+            "To label which tool or participant produced the message",
+            "To count tokens",
+            "To encrypt the content"
+          ],
+          correct_index: 1,
+          explanation: "The name field disambiguates messages when several tools or speakers are involved."
+        },
+        {
+          question: "How does a tool result fit into the conversation?",
+          options: [
+            "It replaces the system message",
+            "It is stored only on the server and never sent",
+            "It is just another message appended to the same ordered list",
+            "It is merged into the user's previous message"
+          ],
+          correct_index: 2,
+          explanation: "A tool result is appended as a normal message; the transcript stays one ordered list."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Roles beyond the basics check",
+          questions: [
+            { question: "The model executes tools itself, without any help from your code.", type: "true_false", correct_answer: "false", explanation: "The model only requests a tool call; your code runs it and returns the result." },
+            { question: "The result of a tool call is sent back to the model on a ______-role message.", type: "fill_in", correct_answer: "tool", explanation: "The tool (or function) role carries tool results back into the transcript." }
+          ]
+        }
+      ],
+      starter_code: `# Assemble a tool-augmented transcript and find the tool result.
+messages = [
+    {"role": "system", "content": "You can call tools."},
+    {"role": "user", "content": "Weather in Paris?"},
+    {"role": "assistant", "content": "", "tool_calls": ["get_weather"]},
+    {"role": "tool", "name": "get_weather", "content": "18C, clear"},
+]
+
+# TODO: print how many messages there are, then print the content of the
+# tool-role message (the result your code injected).
+print("messages:", len(messages))
+`,
+      solution_code: `messages = [
+    {"role": "system", "content": "You can call tools."},
+    {"role": "user", "content": "Weather in Paris?"},
+    {"role": "assistant", "content": "", "tool_calls": ["get_weather"]},
+    {"role": "tool", "name": "get_weather", "content": "18C, clear"},
+]
+
+print("messages:", len(messages))
+for m in messages:
+    if m["role"] == "tool":
+        print("tool result from", m["name"] + ":", m["content"])
+`,
+      expected_output: `messages: 4
+tool result from get_weather: 18C, clear`,
+      step_throughs: [
+        {
+          title: "one tool call, start to finish",
+          steps: [
+            { label: "User asks", detail: "The user asks something the model can't answer from memory, like live weather.", code: '{"role": "user", "content": "Weather in Paris?"}' },
+            { label: "Assistant requests a tool", detail: "Instead of guessing, the assistant emits a tool call naming the tool and its arguments.", code: '{"role": "assistant", "tool_calls": [{"name": "get_weather"}]}' },
+            { label: "Your code runs it", detail: "Outside the model, your code calls the real weather API and gets a result string.", code: 'result = get_weather("Paris")  # "18C, clear"' },
+            { label: "Append a tool message", detail: "You add a tool-role message carrying the result; the model reads it next turn.", code: '{"role": "tool", "name": "get_weather", "content": result}' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "The assistant emits a request to call get_time. The model finished its turn. Whose job is it to actually run get_time?",
+          steps: [
+            "The model can only emit the request; it cannot execute code or call APIs.",
+            "Your application code reads the tool call and runs the real get_time function.",
+            "You then append the result as a tool-role message for the model to read."
+          ],
+          output: "Your code runs get_time and returns the result as a tool message."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "An agent calls two tools in one turn: get_weather and get_news. Both results come back. Why does each tool message need a name field?",
+          steps: [
+            "Two tool results are now in the list, and they look structurally identical (role 'tool', some content).",
+            "Without a label, the model can't tell which result answers which call.",
+            "The name field tags one message 'get_weather' and the other 'get_news'.",
+            "Now the model can match each result to the call it made and reason correctly."
+          ],
+          output: "The name field labels each result so the model maps it to the correct tool call."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "the message roles, extended",
+          columns: ["Role", "Produced by", "Carries"],
+          rows: [
+            { cells: ["system", "App/developer", "Setup and rules"] },
+            { cells: ["user", "Human", "The request"] },
+            { cells: ["assistant", "Model", "Replies and tool-call requests"] },
+            { cells: ["tool", "Your code", "Results of tool calls the assistant requested"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which role produces this message?",
+          bins: [
+            { id: "assistant", label: "Assistant message" },
+            { id: "tool", label: "Tool message" }
+          ],
+          items: [
+            { id: "i1", text: 'A request to call get_weather(city="Paris")', bin: "assistant" },
+            { id: "i2", text: '"18C, clear" returned by your weather code', bin: "tool" },
+            { id: "i3", text: "The model's final natural-language answer", bin: "assistant" },
+            { id: "i4", text: "A JSON blob from a database query your code ran", bin: "tool" },
+            { id: "i5", text: "A request to run calculate(2 + 2)", bin: "assistant" },
+            { id: "i6", text: "The number 4 returned by your calculator function", bin: "tool" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is a tool result represented as just another message in the list rather than something special outside the conversation?",
+          sampleAnswer: "Because the model only ever sees the ordered message list, anything it needs to reason about has to live in that list. A tool result is data the model asked for, so the natural place for it is a message right after the tool call, tagged with the tool role and a name. Keeping it in the same list means the same predict-the-next-turn mechanism handles tools with no special machinery; the transcript just gains one more kind of speaker."
+        }
+      ],
+      hints: [
+        "Loop over messages and check m['role'] to find the tool message.",
+        "A tool message has a 'name' field naming the tool and a 'content' field with the result.",
+        "Concatenate with m['name'] + ': ' or use an f-string to print the source and result."
+      ],
+      challenge_title: "Tool-Call Matcher",
+      challenge_description: "Pair every tool result with the assistant request that triggered it, by name, the way an agent runtime reconciles a turn of parallel tool calls.",
+      challenge_story: "You're writing the reconciler inside an agent loop. In one turn the assistant can fire off several tool calls by name; your runtime executes them and appends a tool-role message for each, each tagged with the tool's name. Before sending the transcript back to the model, you must verify every call got exactly one matching result and flag any mismatch (a call with no result, or a stray result with no call). Build the matcher: given the names the assistant called and the names that came back as tool messages, report what matched and what didn't.",
+      challenge_statement: "You are given the list of tool **names the assistant called** in a turn, and the list of tool **names that came back** as tool-role messages. Matching is by name; treat both as multisets (a name can appear more than once, and each call consumes one matching result).\n\nReport, in this order, one per line:\n\n1. \`matched <m>\` — the number of calls that have a corresponding result (the size of the multiset intersection).\n2. \`unanswered <u>\` — calls with no matching result.\n3. \`orphan <o>\` — results with no matching call.\n\nA turn is balanced when both \`unanswered\` and \`orphan\` are 0.",
+      challenge_input_format: "The first line has two integers `c r`: the number of tool calls and the number of tool results.\n\nThe second line has `c` space-separated tool names that were called (empty line if `c` is 0).\n\nThe third line has `r` space-separated tool names that came back (empty line if `r` is 0).",
+      challenge_output_format: "Three lines: `matched <m>`, `unanswered <u>`, `orphan <o>`.",
+      challenge_constraints: [
+        "0 ≤ c ≤ 100000 and 0 ≤ r ≤ 100000",
+        "Tool names contain no spaces.",
+        "A name may repeat; treat the lists as multisets where each result answers at most one call.",
+      ],
+      challenge_examples: [
+        { input: "3 3\nget_weather get_news get_weather\nget_weather get_weather get_news", output: "matched 3\nunanswered 0\norphan 0", explanation: "Two get_weather calls match two get_weather results, and one get_news matches one get_news. Everything pairs up, so the turn is balanced." },
+        { input: "2 1\nget_time get_time\nget_time", output: "matched 1\nunanswered 1\norphan 0", explanation: "Two get_time calls but only one result: one call matches, the other is unanswered, and there are no orphan results." },
+      ],
+      challenge_notes: "Matching by multiset intersection mirrors how runtimes pair calls and results by tool name (real systems also use a unique call id, but the counting is the same). For each name, the matches equal min(calls, results); summing those gives the matched total, and the leftovers on each side are the unanswered and orphan counts.",
+      challenge_hints: [
+        "Count the calls per name and the results per name with two dictionaries (or collections.Counter).",
+        "For each name, matched += min(call_count, result_count); unanswered and orphan are the leftover on each side.",
+        "Handle c or r being 0 by reading an empty line as an empty list (line.split() on '' gives []).",
+      ],
+      challenge_starter_code: `import sys
+from collections import Counter
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    c, r = map(int, data[0].split())
+    # TODO: read the called names and returned names, count by name, and report
+    #       matched (intersection size), unanswered, and orphan counts.
+
+main()
+`,
+      challenge_solution_code: `import sys
+from collections import Counter
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    c, r = map(int, data[idx].split()); idx += 1
+    calls = Counter(data[idx].split()); idx += 1
+    results = Counter(data[idx].split()); idx += 1
+    matched = 0
+    for name, cnt in calls.items():
+        matched += min(cnt, results.get(name, 0))
+    total_calls = sum(calls.values())
+    total_results = sum(results.values())
+    unanswered = total_calls - matched
+    orphan = total_results - matched
+    print(f"matched {matched}")
+    print(f"unanswered {unanswered}")
+    print(f"orphan {orphan}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 3\nget_weather get_news get_weather\nget_weather get_weather get_news", expected_output: "matched 3\nunanswered 0\norphan 0", description: "Every call pairs with a result; balanced turn." },
+        { input: "2 1\nget_time get_time\nget_time", expected_output: "matched 1\nunanswered 1\norphan 0", description: "A duplicate call goes unanswered." },
+        { input: "1 2\nsearch\nsearch lookup", expected_output: "matched 1\nunanswered 0\norphan 1", description: "An extra result with no matching call is an orphan." },
+        { input: "0 1\n\nstray", expected_output: "matched 0\nunanswered 0\norphan 1", description: "Edge: no calls but a result arrives; pure orphan." }
+      ]
+    },
+    {
+      id: "ai-17-l7",
+      project_id: "ai-17",
+      order: 7,
+      title: "Injecting Context Into Messages",
+      concept: "Context",
+      xp_reward: 10,
+      explanation: `You build a support bot and bolt on a search index so it can quote your docs. The retrieval works perfectly — the right paragraph comes back every time — yet the bot still hallucinates. The bug isn't retrieval. It's **placement**: the retrieved text got buried somewhere the model under-weights. Where context lives in the message list quietly decides whether the model trusts it.
+
+## What it is
+
+**Injecting context** means inserting retrieved documents, database rows, or background facts into the message list so the model can use them. This is the heart of RAG (retrieval-augmented generation): you fetch relevant text, then *place* it into the messages before sending. The two common homes are the **system message** (stable, always-on context) and a **dedicated user block** right before the question (per-question, freshly retrieved context).
+
+## How it works
+
+You don't paste docs into the user's actual question. You give the context its own clearly delimited block, usually a user message placed just before the real question:
+
+\`\`\`python
+context = "DOC: Refunds are processed within 5 business days."
+question = "How long do refunds take?"
+
+messages = [
+    {"role": "system", "content": "Answer only from the provided context. If it's not there, say you don't know."},
+    {"role": "user", "content": f"Context:\\n{context}\\n\\nQuestion: {question}"},
+]
+\`\`\`
+
+Three placement choices matter:
+
+- **System vs user.** Stable instructions ("only use the context") go in the system message. The retrieved text itself usually goes in a user block, because it changes every question.
+- **Delimit it.** Wrap context in clear markers (\`Context:\` ... \`Question:\`) so the model can tell evidence from instruction.
+- **Order it.** Put the context *before* the question so the model reads the evidence, then the ask.
+
+## Why it matters
+
+Placement is the difference between a grounded answer and a confident hallucination:
+
+- **Buried context gets ignored.** Stuffed mid-paragraph or after the question, retrieved text is under-used. A clean, labeled block up front gets attended to.
+- **Mixing instruction and data invites injection.** If a retrieved doc says "ignore previous instructions," and you didn't delimit it, the model may obey it. Clear separation reduces that risk.
+- **System carries the rules, user carries the evidence.** This split keeps the "only answer from context" rule stable while the evidence rotates per query.
+
+## The mental model to keep
+
+Context is **evidence handed to a witness**: label it clearly, put it before the question, and keep the rules (system) separate from the exhibits (user). Where you place it decides whether the model reads it.`,
+      key_terms: [
+        { term: "Context injection", definition: "Inserting retrieved documents or facts into the message list so the model can use them to answer." },
+        { term: "RAG", definition: "Retrieval-augmented generation: fetch relevant text, place it into the messages, then generate an answer grounded in it." },
+        { term: "Context block", definition: "A clearly delimited section (often a user message) holding the retrieved evidence, separate from the question." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Evidence handed to a witness", content: "A lawyer doesn't bury an exhibit inside the question. They label it 'Exhibit A,' present it, then ask. Context works the same: label the retrieved text, place it before the question, and keep it separate from your instructions.", position: "before" },
+        { type: "warning", title: "Undelimited context is an injection risk", content: "If retrieved text and your instructions blur together, a malicious document saying 'ignore previous rules' can hijack the model. Wrap context in clear markers and keep rules in the system message to reduce prompt-injection risk.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Placing retrieved context correctly",
+        steps: [
+          { label: "Retrieve the docs", desc: "Search fetches the most relevant text for the question." },
+          { label: "Put rules in system", desc: "Stable instruction: answer only from the provided context." },
+          { label: "Add a context block", desc: "A labeled user block holds the retrieved text, before the question." },
+          { label: "Ask the question", desc: "The question follows the evidence so the model reads docs first, then the ask." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Where should retrieved documents usually go relative to the user's question?",
+          options: ["After the question, at the very end", "In a labeled block before the question", "Inside the system prompt as a permanent rule"],
+          correct_index: 1,
+          explanation: "Retrieved text changes per query, so it goes in a delimited block placed before the question, while stable rules stay in the system message."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "In a RAG setup, where do stable instructions like 'answer only from the context' belong?",
+          options: [
+            "In the retrieved document itself",
+            "In the system message",
+            "Appended after the model's reply",
+            "Nowhere; the model infers them"
+          ],
+          correct_index: 1,
+          explanation: "Stable, always-on rules live in the system message; the rotating retrieved text goes in a user block."
+        },
+        {
+          question: "Why does placement of retrieved context matter?",
+          options: [
+            "The API charges more for context at the top",
+            "Buried or mislabeled context is under-weighted and may be ignored",
+            "Placement changes the model's weights",
+            "Only the last message is ever read"
+          ],
+          correct_index: 1,
+          explanation: "Context stuffed mid-paragraph or after the question gets under-used; a clean, labeled block up front is attended to."
+        },
+        {
+          question: "Why is it risky to mix retrieved documents directly into your instructions without delimiters?",
+          options: [
+            "It uses fewer tokens",
+            "A malicious document could contain instructions the model then obeys (prompt injection)",
+            "The model will refuse to answer entirely",
+            "It speeds up the response too much"
+          ],
+          correct_index: 1,
+          explanation: "Undelimited context blurs data and instruction, so a doc saying 'ignore previous rules' can hijack the model."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Injecting context check",
+          questions: [
+            { question: "Retrieved documents should be pasted directly inside the user's question with no labels.", type: "true_false", correct_answer: "false", explanation: "Context should be in a clearly delimited block so the model separates evidence from the question." },
+            { question: "Stable rules go in the system message; the rotating retrieved text goes in a ______ block.", type: "fill_in", correct_answer: "user", explanation: "Per-query evidence is usually placed in a dedicated user message before the question." }
+          ]
+        }
+      ],
+      starter_code: `# Build a RAG-style message list: rules in system, evidence in a user block.
+context = "DOC: Refunds are processed within 5 business days."
+question = "How long do refunds take?"
+
+# TODO: build messages where the system message holds the rule and a single
+# user message holds the labeled context followed by the question.
+messages = []
+print("messages:", len(messages))
+`,
+      solution_code: `context = "DOC: Refunds are processed within 5 business days."
+question = "How long do refunds take?"
+
+messages = [
+    {"role": "system", "content": "Answer only from the provided context."},
+    {"role": "user", "content": f"Context:\\n{context}\\n\\nQuestion: {question}"},
+]
+
+print("messages:", len(messages))
+print("system:", messages[0]["content"])
+print("user starts with:", messages[1]["content"].split("\\n")[0])
+`,
+      expected_output: `messages: 2
+system: Answer only from the provided context.
+user starts with: Context:`,
+      step_throughs: [
+        {
+          title: "assembling a grounded request",
+          steps: [
+            { label: "Retrieve the evidence", detail: "Search returns the most relevant document text for the question.", code: 'context = retrieve("refund time")  # "DOC: Refunds in 5 days."' },
+            { label: "Set the grounding rule", detail: "The system message tells the model to answer only from the provided context.", code: '{"role": "system", "content": "Answer only from the context."}' },
+            { label: "Build a labeled context block", detail: "Wrap the retrieved text with a clear marker so it's distinct from the question.", code: 'block = f"Context:\\n{context}\\n\\nQuestion: {question}"' },
+            { label: "Place context before the ask", detail: "Put the evidence first inside the user message, then the question, so the model reads docs then ask.", code: '{"role": "user", "content": block}' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You retrieve a fresh document for every question the user asks. Should that document go in the system message or a user block?",
+          steps: [
+            "The system message is for stable, always-on instructions.",
+            "The retrieved document changes with every question, so it isn't stable.",
+            "Per-query evidence belongs in a labeled user block placed before the question."
+          ],
+          output: "Put the rotating retrieved document in a user block, not the system message."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A bot keeps inventing facts even though retrieval returns the right paragraph. The team pasted the doc at the very end, after the question, with no label. What two changes fix it?",
+          steps: [
+            "Context placed after the question is under-weighted; the model has already 'committed' to the ask.",
+            "Move the context block to before the question so the model reads evidence first.",
+            "Add a clear delimiter (Context: ... Question: ...) so the model treats it as evidence, not noise.",
+            "Optionally add a system rule: 'answer only from the provided context,' which grounds the model further."
+          ],
+          output: "Move the context before the question and label it clearly (plus a system grounding rule)."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "where to put each piece of a RAG request",
+          columns: ["Piece", "Best home", "Why"],
+          rows: [
+            { cells: ["\"Only use the context\" rule", "System message", "Stable across every query"] },
+            { cells: ["Freshly retrieved document", "Labeled user block, before the question", "Rotates per query; needs attention"], highlight: true },
+            { cells: ["The user's actual question", "End of the user block", "Asked after the evidence is presented"] },
+            { cells: ["Unlabeled doc in the question text", "Avoid", "Blurs data and instruction; injection risk"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "good vs poor context placement",
+          bins: [
+            { id: "good", label: "Good placement" },
+            { id: "poor", label: "Poor placement" }
+          ],
+          items: [
+            { id: "i1", text: "Grounding rule in the system message", bin: "good" },
+            { id: "i2", text: "Labeled context block before the question", bin: "good" },
+            { id: "i3", text: "Retrieved doc pasted after the question, no label", bin: "poor" },
+            { id: "i4", text: "Context wrapped in clear Context:/Question: markers", bin: "good" },
+            { id: "i5", text: "Doc mixed into the question with no delimiter", bin: "poor" },
+            { id: "i6", text: "Stuffing rotating docs into the system message every query", bin: "poor" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does separating the grounding rule (system) from the retrieved evidence (user block) make a RAG app more reliable and safer?",
+          sampleAnswer: "Keeping the rule in the system message means 'only answer from the context' stays constant no matter what document gets retrieved, so the model's behavior doesn't drift. Putting the evidence in a clearly labeled user block lets the model tell instructions from data, which both improves grounding (it knows what to cite) and reduces prompt injection, because a malicious line inside a document is framed as evidence to read rather than a command to obey."
+        }
+      ],
+      hints: [
+        "The system message holds the stable rule; the user message holds the labeled context plus the question.",
+        "Use an f-string with a delimiter like 'Context:' so the evidence is clearly separated from the question.",
+        "Escape the newline in the template as \\\\n so the printed block has 'Context:' on its own line."
+      ],
+      challenge_title: "RAG Prompt Builder",
+      challenge_description: "Assemble a grounded RAG request: a fixed system rule, the top retrieved snippets in a labeled context block, then the question, exactly the message list a retrieval pipeline ships to the model.",
+      challenge_story: "You're building the prompt assembler for a documentation Q and A bot. Your retriever returns scored snippets; your job is to take the **top k** by score, drop them into a clearly labeled context block, and pair it with a fixed system rule and the user's question. Placement is the product: rule in system, evidence before the question, everything delimited. Build the assembler that prints the exact two-message request.",
+      challenge_statement: "You are given a question and a set of retrieved snippets, each with an integer **score** and a text. Build the request:\n\n1. Select the **top k** snippets by score, highest first. Break ties by the snippet's **original input order** (earlier input wins).\n2. Emit a system line: \`SYSTEM: Answer only from the context below.\`\n3. Emit a user block. Print \`USER:\` on its own line, then \`Context:\`, then each selected snippet on its own line prefixed with \`- \` (in selected order: highest score first), then a blank line, then \`Question: <question>\`.\n\nPrint the request exactly as described.",
+      challenge_input_format: "The first line has two integers `n k`: the number of retrieved snippets and how many to keep.\n\nThe second line is the question text (may contain spaces).\n\nEach of the next `n` lines is a snippet: an integer score, a single space, then the snippet text (may contain spaces). Snippets are listed in retrieval order.",
+      challenge_output_format: "Print `SYSTEM: Answer only from the context below.`, then `USER:`, then `Context:`, then each selected snippet line as `- <text>` (highest score first, ties by input order), then a blank line, then `Question: <question>`.",
+      challenge_constraints: [
+        "1 ≤ k ≤ n ≤ 100000",
+        "Scores fit in a signed 32-bit integer; higher means more relevant.",
+        "Question and snippet text may contain spaces but no newline.",
+      ],
+      challenge_examples: [
+        { input: "3 2\nHow long do refunds take?\n5 Refunds take 5 business days.\n9 Refunds are issued to the original card.\n2 Shipping is free over 50 dollars.", output: "SYSTEM: Answer only from the context below.\nUSER:\nContext:\n- Refunds are issued to the original card.\n- Refunds take 5 business days.\n\nQuestion: How long do refunds take?", explanation: "Top 2 by score are the snippets scored 9 and 5, in that order; the score-2 shipping snippet is dropped. The context block lists them highest-first, then the question follows after a blank line." },
+        { input: "2 1\nWhat is the warranty?\n4 Warranty is one year.\n4 Warranty excludes water damage.", output: "SYSTEM: Answer only from the context below.\nUSER:\nContext:\n- Warranty is one year.\n\nQuestion: What is the warranty?", explanation: "Both snippets score 4; the tie is broken by input order, so the first one (one year) is kept." },
+      ],
+      challenge_notes: "Sorting by score descending with input order as the tiebreaker is exactly how retrievers present results. Pairing a fixed system grounding rule with a delimited, ordered context block is the canonical RAG prompt shape; the blank line before the question keeps evidence visually separate from the ask.",
+      challenge_hints: [
+        "Read snippets as (score, original_index, text); sort by (-score, original_index) to get highest-first with stable ties.",
+        "Take the first k after sorting; these are your context lines, each printed as '- ' + text.",
+        "Print SYSTEM, then USER, Context:, the snippet lines, an empty string (blank line), then 'Question: ' + question.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, k = map(int, data[0].split())
+    question = data[1]
+    # TODO: read n snippets (score + text), take the top k by score (ties by
+    #       input order), and print the SYSTEM line and USER context block.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, k = map(int, data[idx].split()); idx += 1
+    question = data[idx]; idx += 1
+    snippets = []
+    for i in range(n):
+        score_str, text = data[idx].split(" ", 1); idx += 1
+        snippets.append((int(score_str), i, text))
+    snippets.sort(key=lambda s: (-s[0], s[1]))
+    chosen = snippets[:k]
+    out = []
+    out.append("SYSTEM: Answer only from the context below.")
+    out.append("USER:")
+    out.append("Context:")
+    for score, _, text in chosen:
+        out.append(f"- {text}")
+    out.append("")
+    out.append(f"Question: {question}")
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 2\nHow long do refunds take?\n5 Refunds take 5 business days.\n9 Refunds are issued to the original card.\n2 Shipping is free over 50 dollars.", expected_output: "SYSTEM: Answer only from the context below.\nUSER:\nContext:\n- Refunds are issued to the original card.\n- Refunds take 5 business days.\n\nQuestion: How long do refunds take?", description: "Top 2 by score, highest first; lowest-scored snippet dropped." },
+        { input: "2 1\nWhat is the warranty?\n4 Warranty is one year.\n4 Warranty excludes water damage.", expected_output: "SYSTEM: Answer only from the context below.\nUSER:\nContext:\n- Warranty is one year.\n\nQuestion: What is the warranty?", description: "Tie on score broken by input order." },
+        { input: "1 1\nWho do I contact?\n7 Email support at help@example.com.", expected_output: "SYSTEM: Answer only from the context below.\nUSER:\nContext:\n- Email support at help@example.com.\n\nQuestion: Who do I contact?", description: "Edge: a single snippet kept as the only context line." }
+      ]
+    },
+    {
+      id: "ai-17-l8",
+      project_id: "ai-17",
+      order: 8,
+      title: "Common Message-List Bugs",
+      concept: "Debugging",
+      xp_reward: 10,
+      explanation: `Most "the model is dumb today" bug reports are not the model's fault — they're a malformed message list. A missing system message, two user turns in a row, a reply that never got appended. The model faithfully continues whatever transcript you hand it, so a broken list produces a broken conversation. This lesson is the field guide to the four bugs you'll actually hit.
+
+## What it is
+
+A **message-list bug** is a structural mistake in the array you send — not in the content of any one message, but in how they're ordered, labeled, or combined. The model can't warn you about most of these; it just produces confusing output. The four most common:
+
+- **Wrong order** — turns appended out of sequence, so the conversation reads scrambled.
+- **Missing system message** — no setup, so behavior is generic and drifts.
+- **Role violations** — duplicated or non-alternating roles (two user messages in a row, no assistant between).
+- **Content typos** — a misspelled role string (\`"assitant"\`) or wrong key (\`"text"\` instead of \`"content"\`), which many APIs reject outright.
+
+## How it works
+
+Most providers expect a tidy shape: an optional system message first, then user and assistant turns that **alternate**. A quick validator catches the common breaks:
+
+\`\`\`python
+def find_bugs(messages):
+    bugs = []
+    if not messages or messages[0]["role"] != "system":
+        bugs.append("missing or misplaced system message")
+    prev = None
+    for m in messages:
+        if m["role"] in ("user", "assistant"):
+            if m["role"] == prev:
+                bugs.append(f"two {m['role']} turns in a row")
+            prev = m["role"]
+    return bugs
+\`\`\`
+
+The two cheapest habits: always seed the system message, and after every model call append the assistant reply *before* reading the next user input — skipping that append is what creates two user turns in a row.
+
+## Why it matters
+
+These bugs are silent and expensive:
+
+- **Wrong order changes meaning.** The model reads top to bottom; a scrambled list is a scrambled conversation, and the reply reflects the mess.
+- **Missing system message means drift.** Without setup, tone and format wander, and you'll blame the model for being inconsistent.
+- **Role violations break or confuse the API.** Some providers reject non-alternating roles; others accept them but the model loses track of who said what.
+- **Typos hard-fail.** A misspelled role or key is the easiest bug to fix once you look — and the easiest to stare past.
+
+## The mental model to keep
+
+When output looks wrong, **inspect the list before blaming the model**. Check order, the system message, alternation, and spelling. The transcript is almost always the culprit.`,
+      key_terms: [
+        { term: "Role violation", definition: "A structural error where roles are duplicated or don't alternate, like two user messages in a row." },
+        { term: "Alternation", definition: "The expected pattern of user and assistant turns taking turns, one after the other." },
+        { term: "Malformed list", definition: "A message array with a structural mistake in order, roles, or fields rather than in any single message's content." }
+      ],
+      callouts: [
+        { type: "tip", title: "Inspect the list first", content: "When a chat misbehaves, print the message array before debugging anything else. Check four things: order, a leading system message, alternating roles, and spelling of roles and keys. The bug is usually right there.", position: "before" },
+        { type: "warning", title: "Two user turns in a row is a classic", content: "Forgetting to append the assistant reply leaves two user messages back to back. The model loses the thread, and strict providers reject the request. Always append the reply before reading the next input.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Diagnosing a broken message list",
+        steps: [
+          { label: "Print the array", desc: "Dump the messages with their roles in order before anything else." },
+          { label: "Check the system message", desc: "Confirm a system message leads the list and isn't missing." },
+          { label: "Check alternation", desc: "Look for duplicated roles or non-alternating user/assistant turns." },
+          { label: "Check spelling and keys", desc: "Verify role strings and the 'content' key are spelled correctly." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What usually causes two user messages to appear back-to-back in the list?",
+          options: ["The model deleted its own reply", "Forgetting to append the assistant reply before the next user turn", "The API merges messages automatically"],
+          correct_index: 1,
+          explanation: "If you don't append the assistant message after a model call, the next user message lands right after the previous one."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "A chat keeps producing generic, drifting answers with no consistent tone. Which bug is most likely?",
+          options: [
+            "A misspelled 'content' key",
+            "A missing system message",
+            "Too many tokens",
+            "The reply was prefilled"
+          ],
+          correct_index: 1,
+          explanation: "Without a system message there's no setup, so behavior is generic and drifts across turns."
+        },
+        {
+          question: "Which of these is a content typo bug (not an ordering bug)?",
+          options: [
+            "Two assistant messages in a row",
+            "The system message placed last",
+            "A role spelled \"assitant\" or a key \"text\" instead of \"content\"",
+            "User and assistant turns out of sequence"
+          ],
+          correct_index: 2,
+          explanation: "Misspelling the role string or using the wrong key is a content/field typo, which many APIs reject outright."
+        },
+        {
+          question: "Why should you inspect the message list before blaming the model for a bad reply?",
+          options: [
+            "The model never makes mistakes",
+            "The model faithfully continues whatever transcript you send, so a malformed list yields a malformed reply",
+            "Inspecting the list is required by the API",
+            "The list contains the model's weights"
+          ],
+          correct_index: 1,
+          explanation: "Because the model just continues the transcript, structural bugs in the list usually explain confusing output."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Message-list bugs check",
+          questions: [
+            { question: "Two user messages in a row with no assistant turn between them is a role/alternation violation.", type: "true_false", correct_answer: "true", explanation: "User and assistant turns are expected to alternate; back-to-back user turns break that pattern." },
+            { question: "Misspelling the role string 'assistant' or using the key 'text' instead of 'content' is a ______ bug.", type: "fill_in", correct_answer: "typo", explanation: "These are content/field typos, often rejected by the API outright." }
+          ]
+        }
+      ],
+      starter_code: `# Detect common message-list bugs: missing system, and back-to-back roles.
+messages = [
+    {"role": "user", "content": "Hi"},
+    {"role": "user", "content": "Are you there?"},
+]
+
+# TODO: report whether the first message is a system message, and whether any
+# two user/assistant turns repeat the same role back-to-back.
+print("first role:", messages[0]["role"])
+`,
+      solution_code: `messages = [
+    {"role": "user", "content": "Hi"},
+    {"role": "user", "content": "Are you there?"},
+]
+
+bugs = []
+if not messages or messages[0]["role"] != "system":
+    bugs.append("missing system message")
+prev = None
+for m in messages:
+    if m["role"] in ("user", "assistant"):
+        if m["role"] == prev:
+            bugs.append("two " + m["role"] + " turns in a row")
+        prev = m["role"]
+
+print("first role:", messages[0]["role"])
+for b in bugs:
+    print("bug:", b)
+`,
+      expected_output: `first role: user
+bug: missing system message
+bug: two user turns in a row`,
+      step_throughs: [
+        {
+          title: "tracing a back-to-back user bug",
+          steps: [
+            { label: "User turn appended", detail: "The user sends a message; your code appends it. So far so good.", code: 'messages.append({"role": "user", "content": "Hi"})' },
+            { label: "Model call made", detail: "You send the list and get an assistant reply back from the model.", code: 'reply = model(messages)' },
+            { label: "Reply NOT appended", detail: "The bug: your code reads the next user input without appending the reply.", code: '# forgot: messages.append(reply)' },
+            { label: "Second user turn lands", detail: "The new user message now sits right after the previous user message, a role violation.", code: 'messages.append({"role": "user", "content": "Are you there?"})' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'An API rejects your request with "invalid role: assitant". What is the bug and the fix?',
+          steps: [
+            'The role string "assitant" is misspelled; the valid role is "assistant".',
+            "This is a content/field typo, not an ordering problem.",
+            'Fix the spelling to "assistant" and the request validates.'
+          ],
+          output: 'A misspelled role; correct "assitant" to "assistant".'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Your bot answers each question as if it's the first, never building on prior turns, and a strict provider sometimes rejects the request. Inspecting the list shows: user, user, user. What's the root cause and the fix?",
+          steps: [
+            "Three user messages in a row means no assistant turns were ever appended.",
+            "The likely cause: the code calls the model but never appends the returned assistant reply to the list.",
+            "So each new user turn lands right after the last, creating non-alternating roles.",
+            "Fix: after every model call, append the assistant reply before reading the next user input, restoring user/assistant alternation."
+          ],
+          output: "Assistant replies were never appended; append each reply after the model call to restore alternation."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "common message-list bugs and their tells",
+          columns: ["Bug", "Symptom", "Fix"],
+          rows: [
+            { cells: ["Wrong order", "Conversation reads scrambled", "Append turns in the order they happened"] },
+            { cells: ["Missing system", "Generic, drifting tone", "Seed a system message first"] },
+            { cells: ["Role violation", "Back-to-back same role; API rejects", "Append the assistant reply each turn"], highlight: true },
+            { cells: ["Content typo", "API hard-fails on a bad role/key", "Fix the spelling of the role or 'content'"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "match the symptom to the bug type",
+          bins: [
+            { id: "structure", label: "Order/role bug" },
+            { id: "typo", label: "Typo/field bug" }
+          ],
+          items: [
+            { id: "i1", text: "Two assistant messages in a row", bin: "structure" },
+            { id: "i2", text: 'Role spelled "usr" instead of "user"', bin: "typo" },
+            { id: "i3", text: "System message placed last instead of first", bin: "structure" },
+            { id: "i4", text: 'Key "text" used instead of "content"', bin: "typo" },
+            { id: "i5", text: "Turns appended out of sequence", bin: "structure" },
+            { id: "i6", text: 'Role written as "Assistant" with a capital A when the API wants lowercase', bin: "typo" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is 'inspect the message list' the first debugging step when an AI chat behaves strangely, rather than tweaking the prompt wording?",
+          sampleAnswer: "Because the model just continues whatever transcript it receives, most strange behavior traces back to the structure of that transcript, not the model's intelligence. A missing system message, scrambled order, back-to-back roles, or a typo'd key will all produce confusing output that looks like a model failure. Printing the list and checking order, the system message, alternation, and spelling usually surfaces the real bug in seconds, before you waste time rewording a prompt that was never the problem."
+        }
+      ],
+      hints: [
+        "Check messages[0]['role'] to see if a system message leads the list.",
+        "Track a 'prev' role while looping; if the current user/assistant role equals prev, that's a back-to-back violation.",
+        "Collect bug strings in a list and print each one after the loop."
+      ],
+      challenge_title: "Message-List Linter",
+      challenge_description: "Build the linter that scans a message array for the classic structural bugs, missing system message, bad role spelling, and non-alternating turns, the pre-flight check that saves a doomed API call.",
+      challenge_story: "Before your app ever calls the model, you run a **linter** on the assembled message array to catch the bugs that produce garbage replies or hard API errors. Your linter reports three checks in order: is there a system message leading the list, is every role spelled validly, and do the user/assistant turns alternate (no two of the same in a row). Build it so a broken transcript is caught locally, in milliseconds, instead of after a slow, failed round trip.",
+      challenge_statement: "You are given a message list, each message a role and content. Run three checks and print one result line per check, in this exact order:\n\n1. \`system: OK\` if the **first** message's role is exactly \`system\`; otherwise \`system: MISSING\`.\n2. \`roles: OK\` if **every** message's role is one of \`system\`, \`user\`, \`assistant\` (exact lowercase); otherwise \`roles: BAD <count>\` where \`<count>\` is the number of messages with an invalid role.\n3. \`alternation: OK\` if, looking only at \`user\` and \`assistant\` messages in order, no two **adjacent** ones share the same role; otherwise \`alternation: BAD <count>\` where \`<count>\` is the number of adjacent same-role violations among user/assistant turns.",
+      challenge_input_format: "The first line is an integer `n`: the number of messages.\n\nEach of the next `n` lines is a message: a role token (no spaces), a single space, then the content (may contain spaces).",
+      challenge_output_format: "Exactly three lines: the system check, the roles check, and the alternation check, in that order, formatted as described.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "Role tokens contain no spaces; they may be misspelled or wrongly cased.",
+        "Content is non-empty and may contain spaces but no newline.",
+      ],
+      challenge_examples: [
+        { input: "4\nsystem Be brief.\nuser Hi\nuser Are you there?\nassistant Yes", output: "system: OK\nroles: OK\nalternation: BAD 1", explanation: "A system message leads the list and all roles are valid, but two user turns sit back-to-back, one adjacent same-role violation among the user/assistant turns." },
+        { input: "3\nuser Hi\nassitant Hello\nuser Bye", output: "system: MISSING\nroles: BAD 1\nalternation: OK", explanation: "No system message leads the list; one role ('assitant') is misspelled so roles is BAD 1; the valid user/assistant turns considered (only the two 'user' messages count among valid roles, but they are not adjacent because the invalid 'assitant' separates them) do not produce an adjacent same-role pair." },
+      ],
+      challenge_notes: "For the alternation check, consider only messages whose role is user or assistant and scan them in order, counting each adjacent pair that repeats a role. Invalid or system messages are ignored for alternation. Running all three checks before the API call turns a slow remote failure into an instant local one.",
+      challenge_hints: [
+        "Check the first message's role for 'system' to produce the first line.",
+        "Count messages whose role is not in the set {system, user, assistant}; that count drives the roles line.",
+        "For alternation, walk the messages keeping the previous user/assistant role; increment a counter when the current user/assistant role equals it.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: read n messages (role + content). Run three checks: leading system
+    #       message, all roles valid, and user/assistant alternation. Print one
+    #       result line per check in order.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    valid = {"system", "user", "assistant"}
+    roles = []
+    for _ in range(n):
+        role, _content = data[idx].split(" ", 1); idx += 1
+        roles.append(role)
+    # Check 1: leading system message
+    if roles and roles[0] == "system":
+        print("system: OK")
+    else:
+        print("system: MISSING")
+    # Check 2: all roles valid
+    bad_roles = sum(1 for r in roles if r not in valid)
+    if bad_roles == 0:
+        print("roles: OK")
+    else:
+        print(f"roles: BAD {bad_roles}")
+    # Check 3: alternation among user/assistant turns
+    prev = None
+    violations = 0
+    for r in roles:
+        if r in ("user", "assistant"):
+            if r == prev:
+                violations += 1
+            prev = r
+        else:
+            prev = None
+    if violations == 0:
+        print("alternation: OK")
+    else:
+        print(f"alternation: BAD {violations}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "4\nsystem Be brief.\nuser Hi\nuser Are you there?\nassistant Yes", expected_output: "system: OK\nroles: OK\nalternation: BAD 1", description: "Valid system and roles, but a back-to-back user violation." },
+        { input: "3\nuser Hi\nassitant Hello\nuser Bye", expected_output: "system: MISSING\nroles: BAD 1\nalternation: OK", description: "No leading system, one misspelled role, no adjacent same-role valid turns." },
+        { input: "4\nsystem Setup.\nuser A\nassistant B\nuser C", expected_output: "system: OK\nroles: OK\nalternation: OK", description: "A clean, well-formed transcript passes every check." },
+        { input: "3\nassistant One\nassistant Two\nassistant Three", expected_output: "system: MISSING\nroles: OK\nalternation: BAD 2", description: "No system message and three assistant turns give two adjacent violations." }
       ]
     }
   ]

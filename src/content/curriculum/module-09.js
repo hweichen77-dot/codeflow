@@ -6,7 +6,7 @@ export default {
     difficulty: "intermediate",
     category: "chatbots_agents",
     estimated_time: 55,
-    lessons_count: 5,
+    lessons_count: 8,
     tags: ["agents", "tool-use", "react", "planning", "guardrails"],
     order: 9,
     cover_image: ""
@@ -1617,6 +1617,914 @@ main()
         { input: "10 100\n3\nsearch 5\nread 5\ndone 0", expected_output: "FINISHED\nsteps 3\nspent 10", description: "The `done` action ends the loop successfully under both guards." },
         { input: "2 100\n4\ngo 1\ngo 1\ngo 1\ndone 0", expected_output: "STEP_LIMIT\nsteps 2\nspent 2", description: "The step cap stops the agent before it can finish." },
         { input: "10 8\n3\ngo 5\ngo 5\ndone 0", expected_output: "OVER_BUDGET\nsteps 1\nspent 5", description: "The budget guard blocks the second action before paying for it." }
+      ]
+    },
+    {
+      id: "ai-09-l6",
+      project_id: "ai-09",
+      order: 6,
+      title: "Designing Good Tool Schemas",
+      concept: "Schemas",
+      xp_reward: 10,
+      explanation: `Give a model a tool named \`process\` with the description "does stuff" and it will call it at the wrong moments, with the wrong arguments, or not at all. Rename it \`get_weather\`, describe it as "Return current weather for a given city," and the same model suddenly calls it perfectly. Nothing about the model changed. The **schema** did. A tool schema is the only thing the model sees about your tool, so it is the steering wheel for the whole agent.
+
+## What it is
+
+A **tool schema** is the written description you hand the model for each tool: its **name**, a **description** of what it does and when to use it, and a list of **parameters** with their types and which ones are required. The model never sees your function's code. It chooses tools and fills arguments using the schema and nothing else.
+
+That makes the schema a contract. A precise schema gets reliable calls. A vague one produces the classic agent failures: calling the wrong tool, hallucinating arguments, or skipping a tool it should have used.
+
+## How it works
+
+A good schema answers three questions clearly: what is this, when do I use it, and what must I pass. In code, a schema and the validation around it look like this:
+
+\`\`\`python
+tools = {
+    "get_weather": {"name": "get_weather", "description": "Return current weather for a city.", "required": ["city"]},
+}
+
+def validate_call(name, args):
+    if name not in tools:
+        return "no such tool: " + name
+    missing = [p for p in tools[name]["required"] if p not in args]
+    if missing:
+        return "missing args: " + ", ".join(missing)
+    return "OK: ready to run " + name
+
+print(validate_call("get_weather", {"city": "Tokyo"}))   # OK
+print(validate_call("get_weather", {}))                   # missing city
+\`\`\`
+
+Two rules do most of the work. First, **name and describe by intent**, not implementation: \`search_orders\` beats \`db_query_v2\`, because the model matches the user's goal to the description. Second, **mark required parameters and validate them** before running — the model can and will omit arguments, so your code is the backstop.
+
+## Why it matters
+
+Schema quality is the single biggest lever on agent reliability:
+
+- **Selection.** With clear, distinct descriptions, the model picks the right tool. Two tools with overlapping descriptions ("get info", "fetch data") make it guess.
+- **Arguments.** Naming a parameter \`city\` instead of \`q\`, and saying it is required, dramatically cuts missing or malformed arguments.
+- **Safety.** Validating against the schema lets you reject bad calls *before* execution, instead of crashing inside the tool.
+
+The cost is discipline: every tool needs documentation as careful as a public API. That work pays back every single call.
+
+## The mental model to keep
+
+The schema is the only window the model has into your tool. **Write it like API docs for a smart but literal new hire: clear name, exact purpose, named parameters, and which ones are mandatory.** Good schema, good calls.`,
+      key_terms: [
+        { term: "Tool schema", definition: "The model-facing description of a tool: its name, purpose, and parameters with types and requirements." },
+        { term: "Description", definition: "The plain-language statement of what a tool does and when to use it, which drives tool selection." },
+        { term: "Required parameter", definition: "An argument the tool must receive; your code validates its presence before running." },
+        { term: "Argument validation", definition: "Checking the model's supplied arguments against the schema before executing the tool." }
+      ],
+      callouts: [
+        { type: "tip", title: "Name by intent, not plumbing", content: "Call it search_orders, not db_query_v2. The model matches the user's goal to your description, so describe the goal the tool serves, not how it is built inside.", position: "before" },
+        { type: "warning", title: "The model will omit arguments", content: "Even with a perfect schema, a model sometimes leaves out a required field. Validate against the schema and reject the call before running, rather than letting the tool crash.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "What the model uses to call a tool",
+        steps: [
+          { label: "Read the name", desc: "An intent-revealing name like get_weather." },
+          { label: "Read the description", desc: "What it does and when to use it." },
+          { label: "Read the parameters", desc: "Names, types, and which are required." },
+          { label: "Emit a call", desc: "Choose the tool and fill the arguments from the schema." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What does the model actually use to decide which tool to call and how?",
+          options: ["The tool's source code", "The tool schema: its name, description, and parameters", "The user's previous chats"],
+          correct_index: 1,
+          explanation: "The model never sees the function body. It selects tools and fills arguments purely from the schema you wrote."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why is a tool's description so important?",
+          options: [
+            "It makes the API call faster",
+            "The model picks tools based on the description, so a vague one causes wrong or missed calls",
+            "It is shown to the end user as a label",
+            "Longer descriptions always use fewer tokens"
+          ],
+          correct_index: 1,
+          explanation: "The description is the model's only basis for selecting a tool, so clarity directly drives correct selection."
+        },
+        {
+          question: "What should your code do when the model omits a required argument?",
+          options: [
+            "Run the tool anyway and hope it works",
+            "Validate against the schema and reject the call before executing",
+            "Add the model's missing argument by guessing a default silently",
+            "Delete the tool from the schema"
+          ],
+          correct_index: 1,
+          explanation: "Validating required parameters before execution catches malformed calls safely instead of crashing inside the tool."
+        },
+        {
+          question: "Which pair of tool names is most likely to cause the model to pick the wrong one?",
+          options: [
+            "search_orders and refund_order",
+            "get_weather and send_email",
+            "get_info and fetch_data",
+            "create_user and delete_user"
+          ],
+          correct_index: 2,
+          explanation: "Vague, overlapping names and descriptions give the model nothing to distinguish them, so it guesses."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Schema design check",
+          questions: [
+            { question: "The model selects which tool to call based on the tool's schema, not its underlying code.", type: "true_false", correct_answer: "true", explanation: "The function body is invisible to the model; only the schema guides selection and arguments." },
+            { question: "An argument the tool must receive, which your code should check before running, is called a ______ parameter.", type: "fill_in", correct_answer: "required", explanation: "Marking parameters required and validating them is the backstop against omitted arguments." }
+          ]
+        }
+      ],
+      starter_code: `# A tool schema is all the model sees. Validate a call against it before running.
+tools = {
+    "get_weather": {"name": "get_weather", "description": "Return current weather for a city.", "required": ["city"]},
+}
+
+def validate_call(name, args):
+    # TODO: return "no such tool: NAME" if unknown,
+    #       "missing args: ..." if a required parameter is absent,
+    #       otherwise "OK: ready to run NAME".
+    return "?"
+
+print(validate_call("get_weather", {"city": "Tokyo"}))
+`,
+      solution_code: `tools = {
+    "get_weather": {"name": "get_weather", "description": "Return current weather for a city.", "required": ["city"]},
+}
+
+def validate_call(name, args):
+    if name not in tools:
+        return "no such tool: " + name
+    missing = [p for p in tools[name]["required"] if p not in args]
+    if missing:
+        return "missing args: " + ", ".join(missing)
+    return "OK: ready to run " + name
+
+print(validate_call("get_weather", {"city": "Tokyo"}))
+print(validate_call("get_weather", {}))
+print(validate_call("get_stock", {"ticker": "AAPL"}))
+`,
+      expected_output: `OK: ready to run get_weather
+missing args: city
+no such tool: get_stock`,
+      step_throughs: [
+        {
+          title: "turning a vague tool into a reliable one",
+          steps: [
+            { label: "Start with a bad schema", detail: "A name and description this vague give the model nothing to match a goal against, so it calls the tool randomly.", code: '{"name": "process", "description": "does stuff"}' },
+            { label: "Fix the name and description", detail: "Rename by intent and state exactly what it does. Now the model can match the user's goal to it.", code: '{"name": "get_weather", "description": "Return current weather for a city."}' },
+            { label: "Declare the parameters", detail: "List each parameter, its type, and whether it is required. The model fills arguments from this.", code: '"parameters": {"city": {"type": "string", "required": true}}' },
+            { label: "Validate before running", detail: "Your runtime checks the call against the schema and rejects it if a required argument is missing.", code: 'if "city" not in args: reject("missing city")' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'You have a tool described only as "data tool." The model keeps calling it at the wrong time. What is the cheapest fix?',
+          steps: [
+            "The model selects tools from descriptions, and this one says nothing about purpose or timing.",
+            "Rewrite the description to state exactly what it does and when to use it.",
+            'For example: "Look up a customer record by email. Use when the user asks about a specific customer."'
+          ],
+          output: "Rewrite the description to state the tool's exact purpose and when to use it."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'A booking tool has parameters date, guests, and an optional note. The model sometimes calls it with only date. How do you design the schema so this fails safely instead of booking with no guest count?',
+          steps: [
+            "Mark date and guests as required in the schema, and leave note optional.",
+            "Have the runtime validate the call against the required list before executing.",
+            "When guests is missing, reject the call and return an error the model can read, rather than running the booking.",
+            "The model then sees the error and can re-emit the call with the guest count filled in."
+          ],
+          output: "Mark date and guests required, validate before running, and reject the call when a required parameter is missing."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "weak schema vs strong schema",
+          columns: ["Aspect", "Weak schema", "Strong schema"],
+          rows: [
+            { cells: ["Tool name", "process / do_it", "get_weather / search_orders"] },
+            { cells: ["Description", "'does stuff with data'", "'Return current weather for a city'"] },
+            { cells: ["Parameters", "Unnamed or untyped", "Named, typed, marked required"] },
+            { cells: ["Result", "Wrong tool, bad arguments", "Right tool, valid arguments"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "good schema practice vs bad schema practice",
+          bins: [
+            { id: "good", label: "Good schema practice" },
+            { id: "bad", label: "Bad schema practice" }
+          ],
+          items: [
+            { id: "i1", text: "Name the tool by its intent, like refund_order", bin: "good" },
+            { id: "i2", text: 'Describe it as "does stuff"', bin: "bad" },
+            { id: "i3", text: "Mark which parameters are required", bin: "good" },
+            { id: "i4", text: "Give two tools the same vague description", bin: "bad" },
+            { id: "i5", text: "State exactly when to use the tool", bin: "good" },
+            { id: "i6", text: "Leave parameters untyped and unnamed", bin: "bad" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does improving a tool's name and description change how reliably the same model calls it?",
+          sampleAnswer: "The model never sees the tool's code; it only sees the schema. So the name and description are the entire basis for deciding whether this tool fits the user's goal and how to fill its arguments. A vague schema forces the model to guess, while a precise, intent-revealing one lets it match the goal to the tool and supply correct arguments, even though the model itself is unchanged."
+        }
+      ],
+      hints: [
+        "First check if name is a key in the tools dict; if not, return the 'no such tool' message.",
+        "Build a list of required parameters that are not present in args.",
+        "If that list is non-empty, join it into the 'missing args' message; otherwise return OK."
+      ],
+      challenge_title: "The Schema Validator",
+      challenge_description: "Validate a stream of model-emitted tool calls against their registered schemas, catching unknown tools and missing required arguments before anything runs.",
+      challenge_story: "You're hardening the runtime for a production agent. The model proposes tool calls, but it is not trustworthy: it sometimes invents a tool that was never registered, and it sometimes forgets a required argument. Before any tool executes, your **schema validator** must check each call against its registered schema. Each tool's schema lists exactly which parameters are **required**. A call is only allowed to run if the tool exists and every required parameter was supplied. When a required parameter is missing, you must report *which* ones, sorted, so the model can fix its call on the next turn.",
+      challenge_statement: "First read **N** tool schemas. Each schema is a tool `name`, an integer `r`, then `r` required parameter names.\n\nThen read **Q** tool calls. Each call is a tool `name` followed by zero or more parameter names that the call supplied.\n\nFor each call, in order:\n\n- If the tool name was never registered, print `NO_SUCH_TOOL`.\n- Otherwise compute the required parameters that were **not** supplied. If any are missing, print `MISSING ` followed by those parameter names sorted in ascending (lexicographic) order, space-separated.\n- If the tool exists and all required parameters were supplied, print `CALL ` followed by the tool name.",
+      challenge_input_format: "Line 1: integer `N`.\nNext `N` lines: `name r p1 p2 ... pr` (the tool name, the count of required params, then that many param names).\nNext line: integer `Q`.\nNext `Q` lines: `name a1 a2 ...` (the tool name, then zero or more supplied param names).",
+      challenge_output_format: "Exactly `Q` lines: `NO_SUCH_TOOL`, `MISSING <params...>` (sorted), or `CALL <name>`.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100",
+        "1 ≤ Q ≤ 1000",
+        "0 ≤ r ≤ 10",
+        "Parameter and tool names are lowercase tokens without spaces; tool names are unique",
+      ],
+      challenge_examples: [
+        { input: "3\nget_weather 2 city units\nsend_email 3 to subject body\nsearch 1 query\n4\nget_weather city units\nsend_email to body\nsearch query\ntranslate text", output: "CALL get_weather\nMISSING subject\nCALL search\nNO_SUCH_TOOL", explanation: "get_weather has both required args; send_email is missing subject; search is complete; translate was never registered." },
+        { input: "1\nbook 2 date guests\n2\nbook guests\nbook date guests party", output: "MISSING date\nCALL book", explanation: "The first book call lacks date; the second supplies both required params (an extra param is fine)." },
+      ],
+      challenge_notes: "This validator is the schema contract enforced at runtime: a tool runs only when it exists and every required argument is present. Reporting the missing parameters by name, sorted for a stable output, is what lets the model self-correct on its next turn instead of failing blindly.",
+      challenge_hints: [
+        "Store each schema as a set of required parameter names keyed by tool name.",
+        "For a call, build the set of supplied params and subtract it from the required set to find what's missing.",
+        "Sort the missing parameter names before printing so the output is deterministic.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    schemas = {}
+    # TODO: read n schemas into schemas[name] = set(required_params)
+
+    q = int(data[idx].strip()); idx += 1
+    out = []
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        supplied = set(parts[1:])
+        # TODO: NO_SUCH_TOOL / MISSING <sorted> / CALL <name>
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    schemas = {}
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        r = int(parts[1])
+        required = set(parts[2:2 + r])
+        schemas[name] = required
+    q = int(data[idx].strip()); idx += 1
+    out = []
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        supplied = set(parts[1:])
+        if name not in schemas:
+            out.append("NO_SUCH_TOOL")
+            continue
+        missing = sorted(schemas[name] - supplied)
+        if missing:
+            out.append("MISSING " + " ".join(missing))
+        else:
+            out.append("CALL " + name)
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\nget_weather 2 city units\nsend_email 3 to subject body\nsearch 1 query\n4\nget_weather city units\nsend_email to body\nsearch query\ntranslate text", expected_output: "CALL get_weather\nMISSING subject\nCALL search\nNO_SUCH_TOOL", description: "A complete call, a missing-argument call, another complete call, and an unregistered tool." },
+        { input: "1\nbook 2 date guests\n2\nbook guests\nbook date guests party", expected_output: "MISSING date\nCALL book", description: "Missing one required param, then a complete call with a harmless extra param." },
+        { input: "2\nping 0\nnotify 1 msg\n3\nping\nnotify\nnotify msg", expected_output: "CALL ping\nMISSING msg\nCALL notify", description: "A tool with no required params always passes; notify needs msg." },
+        { input: "1\nwipe 2 target confirm\n1\nwipe target", expected_output: "MISSING confirm", description: "A safety-critical confirm parameter is caught as missing before execution." }
+      ]
+    },
+    {
+      id: "ai-09-l7",
+      project_id: "ai-09",
+      order: 7,
+      title: "Planning vs Reacting",
+      concept: "Planning",
+      xp_reward: 10,
+      explanation: `Two agents get the same job: "research three competitors and write a summary." The first writes a full plan up front — list competitors, research each, then summarize — and marches through it. The second takes one step, looks at the result, decides the next step, and repeats. Both can work. They fail differently, cost differently, and shine on different tasks. This is the central design choice in agent building: **plan-then-execute** versus **reactive** looping.
+
+## What it is
+
+**Plan-then-execute** means the agent first turns the goal into a complete ordered plan, then carries it out step by step. The thinking happens up front, in one big burst.
+
+**Reacting** (the ReAct style from earlier) means the agent decides only the *next* step, executes it, observes the result, and decides again. The thinking is spread across the whole task, one step at a time.
+
+The difference is *when* the agent commits. A planner commits to the whole route before moving. A reactor commits to one move, sees what happens, then recommits.
+
+## How it works
+
+You can see the contrast in how each handles the same plan when a step fails:
+
+\`\`\`python
+plan = [("search", 1), ("reserve", 0), ("book", 1)]  # (step, succeeds?)
+
+# plan-then-execute: a rigid plan aborts at the first failure
+completed = 0
+for name, ok in plan:
+    if not ok:
+        break          # the committed plan can't adapt
+    completed += 1
+# -> aborted after 1 step
+
+# reactive: skip the failed step, observe, keep going
+done = 0
+for name, ok in plan:
+    if ok:
+        done += 1      # adapt around the failure
+# -> completes 2 of 3 steps
+\`\`\`
+
+The planner is efficient when the world is predictable: it thinks once and executes fast. The reactor is robust when the world surprises it: every step is a fresh decision informed by the latest observation, so it can route around failures the planner would choke on. Many strong agents blend the two — make a rough plan, but re-plan reactively whenever an observation breaks an assumption.
+
+## Why it matters
+
+Picking the wrong style is a common, expensive mistake:
+
+- **Plan-then-execute wins** on well-understood, multi-step tasks with stable inputs: generate a report, run a known pipeline. Fewer model calls, predictable order, easy to audit.
+- **Reacting wins** on open-ended, uncertain tasks: web research, debugging, anything where each result changes what to do next. It adapts but costs more calls and can wander.
+- **The failure modes differ.** A rigid plan breaks the moment reality diverges from it. A pure reactor can loop, drift, or lose the thread of the overall goal because it never committed to one.
+
+## The mental model to keep
+
+A planner is a chess player who calculates the whole line before touching a piece; a reactor is a boxer reading the opponent punch by punch. **Plan when the path is knowable; react when it is not — and the best agents do a bit of both.**`,
+      key_terms: [
+        { term: "Plan-then-execute", definition: "An agent strategy that builds a complete ordered plan first, then carries it out step by step." },
+        { term: "Reactive (ReAct) looping", definition: "An agent strategy that decides only the next step, observes the result, then decides again." },
+        { term: "Commitment point", definition: "When the agent locks in its choices: the whole route up front (planner) versus one move at a time (reactor)." },
+        { term: "Re-planning", definition: "Revising or rebuilding the plan mid-task when an observation breaks an assumption; a hybrid of the two styles." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Chess player vs boxer", content: "A planner calculates the whole line before touching a piece. A reactor reads the opponent punch by punch. Both win games, but on very different kinds of opponents.", position: "before" },
+        { type: "insight", title: "The best agents blend both", content: "Make a rough plan for direction, but stay ready to re-plan reactively the moment an observation breaks an assumption. Pure planning is brittle; pure reacting wanders.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Where each style commits",
+        steps: [
+          { label: "Plan: think once", desc: "Turn the goal into a full ordered plan up front." },
+          { label: "Plan: execute fast", desc: "March through the steps with few extra decisions." },
+          { label: "React: one step", desc: "Decide and run only the next action." },
+          { label: "React: observe, repeat", desc: "Read the result, then decide the next step again." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What is the core difference between plan-then-execute and reactive looping?",
+          options: ["Reactive agents cannot use tools", "When the agent commits: the whole route up front, or one step at a time", "Planners are always faster on every task"],
+          correct_index: 1,
+          explanation: "A planner commits to the full plan before acting; a reactor commits to one step, observes, then decides again."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "On which kind of task does plan-then-execute usually win?",
+          options: [
+            "Open-ended web research where each result changes the next step",
+            "A well-understood, multi-step task with stable inputs, like generating a known report",
+            "Tasks where the inputs are completely unknown",
+            "Tasks that require no steps at all"
+          ],
+          correct_index: 1,
+          explanation: "Up-front planning shines when the path is predictable: fewer model calls, a fixed order, and an auditable plan."
+        },
+        {
+          question: "Why is a reactive agent more robust when results are surprising?",
+          options: [
+            "It never makes mistakes",
+            "Each step is a fresh decision informed by the latest observation, so it can route around failures",
+            "It uses fewer model calls than a planner",
+            "It ignores observations entirely"
+          ],
+          correct_index: 1,
+          explanation: "Because it decides one step at a time after seeing each result, a reactor can adapt to outcomes a rigid plan never anticipated."
+        },
+        {
+          question: "What is the typical failure mode of a pure plan-then-execute agent?",
+          options: [
+            "It loops forever without committing",
+            "It breaks the moment reality diverges from the committed plan",
+            "It uses too few tokens to finish",
+            "It cannot produce a plan at all"
+          ],
+          correct_index: 1,
+          explanation: "A rigid plan assumes the world matches its expectations; when a step's reality differs, the plan has no way to adapt."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Planning vs reacting check",
+          questions: [
+            { question: "A reactive agent decides its entire sequence of steps before taking any action.", type: "true_false", correct_answer: "false", explanation: "A reactor decides only the next step, observes the result, then decides again. The planner is the one that commits up front." },
+            { question: "Revising the plan mid-task when an observation breaks an assumption is called ______-planning.", type: "fill_in", correct_answer: "re", explanation: "Re-planning blends the two styles: a plan for direction, with reactive revision when reality diverges." }
+          ]
+        }
+      ],
+      starter_code: `# Contrast the two styles: a planner commits a full plan; a reactor decides step by step.
+goal = "make tea"
+plan = ["boil water", "add tea bag", "pour water", "wait 3 min"]
+
+print("goal:", goal)
+print("plan made up front:")
+# TODO: print each step with its 1-based number, then "execute" the plan in order
+#       and report how many of the steps were completed.
+`,
+      solution_code: `goal = "make tea"
+plan = ["boil water", "add tea bag", "pour water", "wait 3 min"]
+
+print("goal:", goal)
+print("plan made up front:")
+for i, step in enumerate(plan, 1):
+    print(i, step)
+
+done = []
+for step in plan:
+    done.append(step)
+print("executed in order:", len(done), "of", len(plan))
+`,
+      expected_output: `goal: make tea
+plan made up front:
+1 boil water
+2 add tea bag
+3 pour water
+4 wait 3 min
+executed in order: 4 of 4`,
+      step_throughs: [
+        {
+          title: "the same failure, two strategies",
+          steps: [
+            { label: "Goal and a plan", detail: "The agent's job is to book a trip. A planner writes the whole ordered plan before acting.", code: 'plan = ["search", "reserve", "book"]' },
+            { label: "A step fails", detail: "The reserve step fails: the hotel is sold out. Reality just diverged from the plan.", code: 'reserve() -> "SOLD OUT"' },
+            { label: "Planner: abort", detail: "A rigid plan-then-execute agent committed to the route up front. The failed step breaks it and it stops.", code: "plan aborts at step 2 of 3" },
+            { label: "Reactor: adapt", detail: "A reactive agent observes the failure and decides a new next step instead of giving up, routing around the problem.", code: 'observe("SOLD OUT") -> search a different hotel' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'You need an agent to generate a monthly sales report from a fixed, well-known sequence of steps. Which style fits best and why?',
+          steps: [
+            "The steps are stable and known in advance, so the path is predictable.",
+            "Plan-then-execute thinks once and runs the steps in a fixed order.",
+            "That means fewer model calls, a predictable sequence, and an easy-to-audit plan."
+          ],
+          output: "Plan-then-execute, because the path is known and stable."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'An agent doing open-ended web research keeps following a plan it made at the start, even as searches return surprising results. It produces a confident but wrong summary. What went wrong, and how would a better design fix it?',
+          steps: [
+            "Open-ended research is uncertain: each result should change what to do next.",
+            "A pure plan-then-execute agent committed to its route up front and ignored the surprising observations.",
+            "A reactive (ReAct) style would decide one step at a time, reading each result before choosing the next move.",
+            "Best is a hybrid: keep a rough plan for direction but re-plan whenever an observation breaks an assumption.",
+            "That way the agent adapts to what it actually finds instead of forcing reality into a stale plan."
+          ],
+          output: "It used rigid up-front planning on an uncertain task; switch to reactive looping, or a plan-plus-re-plan hybrid, so it adapts to each result."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "plan-then-execute vs reactive",
+          columns: ["Aspect", "Plan-then-execute", "Reactive (ReAct)"],
+          rows: [
+            { cells: ["When it decides", "Whole plan up front", "One step at a time"] },
+            { cells: ["Model calls", "Fewer", "More (one per step)"] },
+            { cells: ["Handles surprises", "Brittle, may abort", "Adapts to each result"] },
+            { cells: ["Best for", "Known, stable tasks", "Open-ended, uncertain tasks"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which style fits the task?",
+          bins: [
+            { id: "plan", label: "Plan-then-execute" },
+            { id: "react", label: "Reactive looping" }
+          ],
+          items: [
+            { id: "i1", text: "Run a fixed monthly reporting pipeline", bin: "plan" },
+            { id: "i2", text: "Debug a failing test where each clue changes the next move", bin: "react" },
+            { id: "i3", text: "Generate a document from a known sequence of steps", bin: "plan" },
+            { id: "i4", text: "Open-ended research across the live web", bin: "react" },
+            { id: "i5", text: "A batch job with stable, predictable inputs", bin: "plan" },
+            { id: "i6", text: "Negotiate a multi-turn task where outcomes are uncertain", bin: "react" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why might a hybrid that plans first but re-plans reactively beat either pure strategy?",
+          sampleAnswer: "A pure plan is fast and orderly but brittle: it shatters the moment reality differs from what it assumed. A pure reactor adapts but can wander or loop because it never commits to an overall direction. A hybrid gets both strengths: the initial plan gives a clear direction and structure, while reactive re-planning lets the agent adjust whenever an observation breaks an assumption, so it stays on goal without being trapped by a stale plan."
+        }
+      ],
+      hints: [
+        "Use enumerate(plan, 1) to print each step with a 1-based number.",
+        "Append each step to a 'done' list as you execute the plan in order.",
+        "Report len(done) and len(plan) to show all steps completed."
+      ],
+      challenge_title: "Planner vs Reactor",
+      challenge_description: "Run the same ordered plan two ways: a rigid plan-then-execute pass that aborts at the first failure, and a reactive pass that skips failures and keeps going.",
+      challenge_story: "You're benchmarking two agent designs on the exact same task so you can pick the right one for production. The task is an ordered list of steps, and each step either **succeeds** or **fails** when attempted. The **plan-then-execute** agent commits to the whole plan up front: it runs steps in order and the instant one fails, the rigid plan aborts — it cannot adapt. The **reactive** agent decides step by step: when a step fails, it observes the failure, skips it, and presses on to the next step, attempting every step in the queue. Your job is to report how each design fares on the same plan so the team can see the trade-off in numbers.",
+      challenge_statement: "Read **N** steps. Each step is a `name` and an integer `ok` (`1` means the step succeeds when attempted, `0` means it fails).\n\nSimulate both agents over the steps in order:\n\n- **Plan-then-execute:** count the steps completed from the start until the first failure. If a step has `ok = 0`, the plan aborts immediately and does not complete that step or any after it. The result is `DONE <c>` if all `N` steps completed, otherwise `ABORTED <c>`, where `c` is the number completed.\n- **Reactive:** attempt every step in order. Completed steps are those with `ok = 1`; failures are skipped but still attempted. Report `<completed> <attempts>`, where `attempts` is always `N`.\n\nPrint two lines: `PLAN <DONE|ABORTED> <c>` then `REACT <completed> <attempts>`.",
+      challenge_input_format: "Line 1: integer `N`.\nNext `N` lines: `name ok` (ok is 0 or 1).",
+      challenge_output_format: "Line 1: `PLAN DONE <c>` or `PLAN ABORTED <c>`.\nLine 2: `REACT <completed> <attempts>`.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "ok is 0 or 1",
+        "Step names are tokens without spaces",
+      ],
+      challenge_examples: [
+        { input: "3\nsearch 1\nbook 1\nnotify 1", output: "PLAN DONE 3\nREACT 3 3", explanation: "Every step succeeds, so the rigid plan finishes all 3 and the reactor completes all 3 of 3 attempts." },
+        { input: "4\nsearch 1\nreserve 0\nbook 1\nnotify 1", output: "PLAN ABORTED 1\nREACT 3 4", explanation: "The plan aborts at the failed reserve after 1 completed step; the reactor skips reserve and completes the other 3 across 4 attempts." },
+      ],
+      challenge_notes: "This is the trade-off in numbers: the rigid plan is efficient but brittle (one failure ends it), while the reactor is robust but does more work (it attempts everything). Real agents often blend the two — plan for direction, react around failures.",
+      challenge_hints: [
+        "For the planner, loop the steps and break the moment you hit an ok of 0; count completions before the break.",
+        "For the reactor, attempts is always N; completed is just the count of steps with ok == 1.",
+        "PLAN is DONE only when the completed count equals N, otherwise ABORTED.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    plan = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        plan.append((parts[0], int(parts[1])))
+
+    # TODO: plan-then-execute completes until the first failure
+    # TODO: reactive attempts every step, completing the ok == 1 ones
+    print("PLAN ...")
+    print("REACT ...")
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    plan = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        plan.append((parts[0], int(parts[1])))
+
+    plan_completed = 0
+    for name, ok in plan:
+        if ok == 0:
+            break
+        plan_completed += 1
+    plan_result = "DONE" if plan_completed == n else "ABORTED"
+
+    react_completed = 0
+    react_attempts = 0
+    for name, ok in plan:
+        react_attempts += 1
+        if ok == 1:
+            react_completed += 1
+
+    print("PLAN " + plan_result + " " + str(plan_completed))
+    print("REACT " + str(react_completed) + " " + str(react_attempts))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\nsearch 1\nbook 1\nnotify 1", expected_output: "PLAN DONE 3\nREACT 3 3", description: "All steps succeed: both designs complete everything." },
+        { input: "4\nsearch 1\nreserve 0\nbook 1\nnotify 1", expected_output: "PLAN ABORTED 1\nREACT 3 4", description: "A mid-plan failure aborts the planner but the reactor routes around it." },
+        { input: "2\na 0\nb 1", expected_output: "PLAN ABORTED 0\nREACT 1 2", description: "An immediate failure means the planner completes nothing; the reactor still finishes the later step." }
+      ]
+    },
+    {
+      id: "ai-09-l8",
+      project_id: "ai-09",
+      order: 8,
+      title: "Human-in-the-Loop and Approvals",
+      concept: "Approvals",
+      xp_reward: 10,
+      explanation: `In 2024 an experimental coding agent, told to "clean up the project," confidently ran a command that wiped a developer's uncommitted work. The agent did exactly what it decided was right. The problem was that nobody stood between its decision and the irreversible action. The fix is not a smarter model — it is an **approval gate**: a checkpoint where a human says yes before the agent does anything it cannot take back.
+
+## What it is
+
+**Human-in-the-loop** (HITL) means inserting a person's approval into the agent's action loop for high-stakes steps. The agent does not execute a gated action directly. It **proposes** the action, the runtime **pauses**, a human **approves or rejects**, and only an approved action runs.
+
+The key idea is sorting actions by risk. Reading a file, searching the web, doing math — low stakes, run freely. Sending money, deleting data, emailing customers, deploying code — high stakes, gate them. You are drawing a line between actions that are *reversible and cheap* and actions that are *irreversible or expensive*.
+
+## How it works
+
+The runtime keeps a set of risky tools. Before executing any proposed action, it checks: is this tool risky, and if so, did a human approve it?
+
+\`\`\`python
+RISKY = {"delete_file", "send_payment"}
+
+def run_with_approval(tool, approved):
+    if tool in RISKY and not approved:
+        return "BLOCKED: " + tool + " needs approval"
+    return "RAN: " + tool
+
+print(run_with_approval("read_file", False))    # RAN: read_file
+print(run_with_approval("delete_file", False))  # BLOCKED
+print(run_with_approval("delete_file", True))   # RAN: delete_file
+\`\`\`
+
+A safe approval gate has three properties. It **defaults to blocking** — an unrecognized or unapproved risky action does not run. It **shows the human the exact action**, including arguments, so they approve what will really happen, not a vague summary. And it **logs the decision**, so there is a record of who approved what.
+
+## Why it matters
+
+Approvals are how you give an agent real power without handing it a loaded gun:
+
+- **They stop irreversible mistakes.** A wrong reversible action wastes a few cents; a wrong irreversible one deletes data or sends money. The gate is exactly where the cost of being wrong is highest.
+- **They keep accountability with a person.** When an agent proposes and a human disposes, there is always someone responsible for the consequential action.
+- **They are a dial, not a switch.** Gate too many actions and the agent is useless and annoying; gate too few and it is dangerous. Good design gates precisely the irreversible-or-expensive set and lets the rest run.
+
+The trade-off is friction and speed: every gate is a place the agent must stop and wait for a human. You spend that friction only where the downside justifies it.
+
+## The mental model to keep
+
+The agent proposes; the human disposes. **Let it run anything reversible on its own, but put a human's yes in front of every action it cannot take back.** Default to blocking, show the real action, and keep the log.`,
+      key_terms: [
+        { term: "Human-in-the-loop (HITL)", definition: "A design where a person approves an agent's high-stakes actions before they execute." },
+        { term: "Approval gate", definition: "A checkpoint in the agent loop that pauses a risky action until a human approves it." },
+        { term: "Risky / irreversible action", definition: "An action that is expensive or cannot be undone, like sending money or deleting data." },
+        { term: "Default-deny", definition: "Treating an unrecognized or unapproved risky action as blocked rather than allowed." }
+      ],
+      callouts: [
+        { type: "warning", title: "Irreversible is the line", content: "The actions that most need a gate are the ones you cannot take back: deleting data, sending money, emailing customers. A wrong reversible action is cheap; a wrong irreversible one is a disaster.", position: "before" },
+        { type: "tip", title: "Show the exact action", content: "Approve the real call, arguments and all, not a vague summary. 'Send email' is not enough; 'send email to all-customers@ saying X' is what the human must actually see and approve.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "An action passing through an approval gate",
+        steps: [
+          { label: "Agent proposes", desc: "The agent decides on an action and its arguments." },
+          { label: "Classify risk", desc: "Runtime checks if the tool is in the risky set." },
+          { label: "Pause for human", desc: "If risky, show the exact action and wait for a yes or no." },
+          { label: "Run or block", desc: "Execute only on approval; otherwise block and log it." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "In a human-in-the-loop design, what happens to a high-stakes action the agent wants to take?",
+          options: ["It runs immediately like any other action", "It is proposed and paused until a human approves it", "It is permanently forbidden"],
+          correct_index: 1,
+          explanation: "The agent proposes the risky action; the runtime pauses and a human approves or rejects before it runs."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Which kind of action most justifies a human approval gate?",
+          options: [
+            "Reading a file the agent already has access to",
+            "An irreversible or expensive action like sending money or deleting data",
+            "Doing arithmetic with a calculator tool",
+            "Searching the web for public information"
+          ],
+          correct_index: 1,
+          explanation: "Gates belong on actions that cannot be undone or that cost a lot, because that is where being wrong is most costly."
+        },
+        {
+          question: "Why should an approval gate 'default to blocking'?",
+          options: [
+            "To make the agent run faster",
+            "So an unrecognized or unapproved risky action does not run by accident",
+            "Because models cannot propose actions",
+            "To remove the need for a human entirely"
+          ],
+          correct_index: 1,
+          explanation: "Default-deny means the safe outcome (not running) happens unless a human explicitly approves the risky action."
+        },
+        {
+          question: "What is the main trade-off of adding approval gates?",
+          options: [
+            "The agent becomes less safe",
+            "Friction and speed: every gate is a place the agent must stop and wait for a human",
+            "The model loses access to all tools",
+            "Approved actions can no longer be logged"
+          ],
+          correct_index: 1,
+          explanation: "Each gate pauses the agent for a human, so gating too much makes it slow and annoying; you gate only where the downside justifies it."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Approvals check",
+          questions: [
+            { question: "A well-designed agent should require human approval before every single action, including reading a file.", type: "true_false", correct_answer: "false", explanation: "Only high-stakes, irreversible or expensive actions need a gate; low-stakes reversible actions can run freely." },
+            { question: "Treating an unapproved risky action as blocked rather than allowed is called default-______.", type: "fill_in", correct_answer: "deny", explanation: "Default-deny ensures the safe outcome happens unless a human explicitly approves." }
+          ]
+        }
+      ],
+      starter_code: `# Gate risky tools behind human approval; let safe tools run freely.
+RISKY = {"delete_file", "send_payment"}
+
+def run_with_approval(tool, approved):
+    # TODO: if the tool is risky and not approved, return "BLOCKED: <tool> needs approval".
+    #       Otherwise return "RAN: <tool>".
+    return "?"
+
+print(run_with_approval("read_file", False))
+`,
+      solution_code: `RISKY = {"delete_file", "send_payment"}
+
+def run_with_approval(tool, approved):
+    if tool in RISKY and not approved:
+        return "BLOCKED: " + tool + " needs approval"
+    return "RAN: " + tool
+
+print(run_with_approval("read_file", False))
+print(run_with_approval("delete_file", False))
+print(run_with_approval("delete_file", True))
+`,
+      expected_output: `RAN: read_file
+BLOCKED: delete_file needs approval
+RAN: delete_file`,
+      step_throughs: [
+        {
+          title: "a risky action passing through the gate",
+          steps: [
+            { label: "Agent proposes an action", detail: "The agent decides to delete a file as part of 'cleaning up'. It proposes the action with its arguments.", code: 'propose("delete_file", {"path": "src/"})' },
+            { label: "Runtime classifies the risk", detail: "The runtime checks its set of risky tools. delete_file is irreversible, so it is gated.", code: '"delete_file" in RISKY  # True' },
+            { label: "Pause and show the human", detail: "Instead of running, the runtime pauses and shows the exact action and arguments for a yes or no.", code: 'ask_human("delete src/ ? [y/N]")' },
+            { label: "Run only on approval", detail: "If the human approves, it runs; if not, it is blocked and logged. Default is to block.", code: 'approved -> run; else -> "BLOCKED"' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'An agent has tools search_web, read_file, and transfer_money. Which should sit behind a human approval gate?',
+          steps: [
+            "search_web and read_file are reversible and low-stakes, so they can run freely.",
+            "transfer_money is irreversible and expensive, so a wrong call is a disaster.",
+            "Gate transfer_money behind human approval; leave the other two ungated."
+          ],
+          output: "Gate transfer_money; let search_web and read_file run without approval."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'A team gates every action behind approval, including reads, to "be safe." Operators are now overwhelmed and start clicking approve on everything without reading. Why did the over-gating backfire, and what is the fix?',
+          steps: [
+            "Gating low-stakes reversible actions adds friction without reducing real risk.",
+            "Flooded with approval prompts, humans stop reading and rubber-stamp them all.",
+            "That rubber-stamping defeats the purpose: the truly dangerous actions now slip through unexamined too.",
+            "The fix is to gate only the irreversible-or-expensive set, so each approval prompt is rare and worth genuine attention.",
+            "Fewer, meaningful gates keep humans actually engaged where it matters."
+          ],
+          output: "Over-gating caused approval fatigue and rubber-stamping; gate only irreversible or expensive actions so each prompt gets real attention."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "ungated agent vs human-in-the-loop",
+          columns: ["Aspect", "No approval gate", "Human-in-the-loop"],
+          rows: [
+            { cells: ["Risky action", "Runs immediately", "Paused until a human approves"] },
+            { cells: ["Wrong irreversible action", "Happens silently", "Stopped at the gate"] },
+            { cells: ["Accountability", "Unclear", "A person approves each high-stakes step"] },
+            { cells: ["Blast radius of a mistake", "Full and irreversible", "Bounded to approved actions"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "gate it or let it run?",
+          bins: [
+            { id: "gate", label: "Needs human approval" },
+            { id: "free", label: "Can run freely" }
+          ],
+          items: [
+            { id: "i1", text: "Delete a production database table", bin: "gate" },
+            { id: "i2", text: "Read a public documentation page", bin: "free" },
+            { id: "i3", text: "Send a payment to a vendor", bin: "gate" },
+            { id: "i4", text: "Run a calculator on two numbers", bin: "free" },
+            { id: "i5", text: "Email every customer on the list", bin: "gate" },
+            { id: "i6", text: "Search the web for an article", bin: "free" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is gating only the irreversible actions better than gating every action an agent takes?",
+          sampleAnswer: "Gating every action floods the human with approval requests, most of them for harmless reversible steps. People stop reading and start rubber-stamping, so the dangerous actions slip through unexamined along with the safe ones. Gating only irreversible or expensive actions keeps the prompts rare and meaningful, so a human actually pays attention exactly where being wrong would be catastrophic, while the agent stays useful by running everything else on its own."
+        }
+      ],
+      hints: [
+        "Check membership with `tool in RISKY`.",
+        "Block only when the tool is risky AND not approved; otherwise it runs.",
+        "Build the return strings by concatenating the tool name into the message."
+      ],
+      challenge_title: "The Approval Gate",
+      challenge_description: "Run a queue of proposed agent actions through an approval gate, executing safe ones freely, gating risky ones on human approval, and tallying the outcome.",
+      challenge_story: "Your agent is getting access to real systems, so an approval gate now sits between its decisions and execution. You hold a list of **risky** tools — the irreversible or expensive ones. For every action the agent proposes, the gate decides: if the tool is not risky, it runs immediately; if it is risky, it runs only when a human **approve**s it, and is **BLOCKED** otherwise (default-deny). You must print what happens to each proposed action in order, then a final summary of how many ran and how many were blocked — the audit trail that proves nothing dangerous slipped through unapproved.",
+      challenge_statement: "First read **M** risky tool names, one per line. Then read **Q** proposed actions, each a tool `name` and a `decision` (`approve` or `deny`; safe tools may also carry `none`).\n\nFor each proposed action, in order:\n\n- If the tool is **not** in the risky set, print `EXECUTE <name>` (it runs regardless of the decision field).\n- If the tool **is** risky and the decision is `approve`, print `EXECUTE <name>`.\n- If the tool **is** risky and the decision is anything other than `approve`, print `BLOCKED <name>` (default-deny).\n\nAfter all actions, print `SUMMARY <e> executed <b> blocked`, where `e` and `b` count the EXECUTE and BLOCKED lines.",
+      challenge_input_format: "Line 1: integer `M`, the number of risky tools.\nNext `M` lines: one risky tool name each.\nNext line: integer `Q`.\nNext `Q` lines: `name decision`.",
+      challenge_output_format: "`Q` lines (`EXECUTE <name>` or `BLOCKED <name>`), then a final line `SUMMARY <e> executed <b> blocked`.",
+      challenge_constraints: [
+        "0 ≤ M ≤ 100",
+        "1 ≤ Q ≤ 1000",
+        "Tool names are lowercase tokens without spaces",
+        "decision is one of approve, deny, or none",
+      ],
+      challenge_examples: [
+        { input: "2\ndelete_file\nsend_payment\n4\nread_file none\ndelete_file approve\nsend_payment deny\ndelete_file none", output: "EXECUTE read_file\nEXECUTE delete_file\nBLOCKED send_payment\nBLOCKED delete_file\nSUMMARY 2 executed 2 blocked", explanation: "read_file is safe so it runs; delete_file with approve runs; send_payment denied and delete_file with no approval are blocked." },
+        { input: "1\ndrop_table\n2\nsearch none\ndrop_table deny", output: "EXECUTE search\nBLOCKED drop_table\nSUMMARY 1 executed 1 blocked", explanation: "search is not risky and runs; drop_table is risky and was not approved, so it is blocked." },
+      ],
+      challenge_notes: "This is the human-in-the-loop pattern as runtime code: safe actions flow through, risky ones need an explicit yes, and the default for a risky action is to block. The summary is the audit trail — proof that every executed risky action was approved.",
+      challenge_hints: [
+        "Store the risky tools in a set for O(1) membership checks.",
+        "An action runs if the tool is not risky, OR it is risky and the decision is exactly 'approve'.",
+        "Keep two counters and print the SUMMARY line after processing every action.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    m = int(data[idx].strip()); idx += 1
+    risky = set()
+    # TODO: read m risky tool names into the set
+
+    q = int(data[idx].strip()); idx += 1
+    executed = 0
+    blocked = 0
+    out = []
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        decision = parts[1] if len(parts) > 1 else ""
+        # TODO: EXECUTE safe tools and approved risky tools; BLOCKED otherwise
+    out.append("SUMMARY " + str(executed) + " executed " + str(blocked) + " blocked")
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    m = int(data[idx].strip()); idx += 1
+    risky = set()
+    for _ in range(m):
+        risky.add(data[idx].strip()); idx += 1
+    q = int(data[idx].strip()); idx += 1
+    executed = 0
+    blocked = 0
+    out = []
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        decision = parts[1] if len(parts) > 1 else ""
+        if name in risky and decision != "approve":
+            out.append("BLOCKED " + name)
+            blocked += 1
+        else:
+            out.append("EXECUTE " + name)
+            executed += 1
+    out.append("SUMMARY " + str(executed) + " executed " + str(blocked) + " blocked")
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "2\ndelete_file\nsend_payment\n4\nread_file none\ndelete_file approve\nsend_payment deny\ndelete_file none", expected_output: "EXECUTE read_file\nEXECUTE delete_file\nBLOCKED send_payment\nBLOCKED delete_file\nSUMMARY 2 executed 2 blocked", description: "A safe tool, an approved risky tool, and two unapproved risky tools." },
+        { input: "1\ndrop_table\n2\nsearch none\ndrop_table deny", expected_output: "EXECUTE search\nBLOCKED drop_table\nSUMMARY 1 executed 1 blocked", description: "Safe action runs; denied risky action is blocked." },
+        { input: "0\n3\na none\nb none\nc none", expected_output: "EXECUTE a\nEXECUTE b\nEXECUTE c\nSUMMARY 3 executed 0 blocked", description: "With no risky tools registered, every action runs freely." },
+        { input: "1\npay\n3\npay approve\npay approve\npay deny", expected_output: "EXECUTE pay\nEXECUTE pay\nBLOCKED pay\nSUMMARY 2 executed 1 blocked", description: "The same risky tool runs when approved and is blocked when denied." }
       ]
     }
   ]

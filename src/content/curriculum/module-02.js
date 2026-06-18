@@ -6,7 +6,7 @@ export default {
     difficulty: "beginner",
     category: "foundations",
     estimated_time: 60,
-    lessons_count: 4,
+    lessons_count: 8,
     tags: ["api", "json", "python", "claude", "requests"],
     order: 2,
     cover_image: ""
@@ -1160,6 +1160,1207 @@ print("valid" if valid else "invalid")
           input: "0",
           expected_output: "invalid",
           description: "Edge case: an empty messages list has nothing to send."
+        }
+      ]
+    },
+    {
+      id: "ai-02-l5",
+      project_id: "ai-02",
+      order: 5,
+      title: "Request Anatomy: Endpoint, Headers, Body",
+      concept: "Request",
+      xp_reward: 10,
+      explanation: `In lesson 4 the SDK built the request for you in one tidy \`messages.create\` call. Pop the hood and that call expands into three separate parts that every HTTP request on the internet shares: an **endpoint**, a set of **headers**, and a **body**. Knowing those three parts is the difference between "the SDK is magic" and "I know exactly what crossed the wire."
+
+## What it is
+
+An HTTP request is a structured envelope with three pieces:
+
+- **Endpoint** — the **URL** you send to, plus the HTTP method. For Claude it's a \`POST\` to \`https://api.anthropic.com/v1/messages\`. The method \`POST\` means "I'm sending data up"; the path \`/v1/messages\` names the exact thing you want.
+- **Headers** — labeled metadata *about* the request: who you are and what format you're speaking. The two that matter here are your auth header (the API key from lesson 3) and \`content-type: application/json\` (telling the server "my body is JSON").
+- **Body** — the actual payload: the JSON object (lesson 2) holding \`model\`, \`messages\`, and parameters like \`max_tokens\`.
+
+## How it works
+
+Picture mailing a package. The **endpoint** is the address on the box. The **headers** are the labels stuck on the outside — return address, "FRAGILE", "contents: documents". The **body** is what's actually inside. The post office routes by the address and labels without ever opening the box. Here is the same Claude call written as a raw request instead of through the SDK:
+
+\`\`\`python
+import os, requests
+
+resp = requests.post(
+    "https://api.anthropic.com/v1/messages",          # endpoint
+    headers={
+        "x-api-key": os.environ["ANTHROPIC_API_KEY"],  # auth
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",            # body format
+    },
+    json={                                             # body
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 200,
+        "messages": [{"role": "user", "content": "Hi"}],
+    },
+)
+\`\`\`
+
+Three parts, every time: where it goes, the labels on it, the cargo inside. The SDK simply fills these in for you.
+
+## Why it matters
+
+When a request fails, the error usually points at one of the three parts, and naming the part tells you where to look:
+
+- A \`401\` is almost always a **header** problem — a missing or wrong API key.
+- A \`404\` is an **endpoint** problem — a typo in the URL or path.
+- A \`400\` is usually a **body** problem — malformed JSON, a missing required field, or a value out of range.
+
+Mixing them up wastes hours. Separating endpoint, headers, and body in your head turns a vague "it broke" into a precise "the body is missing \`max_tokens\`."
+
+## The mental model to keep
+
+A request is a package: the **endpoint** is the address, the **headers** are the labels on the outside, and the **body** is the cargo inside.`,
+      key_terms: [
+        { term: "Endpoint", definition: "The URL plus HTTP method a request is sent to, e.g. POST to /v1/messages." },
+        { term: "Header", definition: "Labeled metadata about a request, such as the API key and the content-type." },
+        { term: "Body", definition: "The actual payload of the request — the JSON object with model, messages, and parameters." },
+        { term: "content-type", definition: "A header that tells the server what format the body is in, e.g. application/json." }
+      ],
+      callouts: [
+        {
+          type: "analogy",
+          title: "A request is a mailed package",
+          content: "The endpoint is the address on the box, the headers are the labels stuck on the outside, and the body is what's actually inside. The post office routes by the address and labels without opening the box.",
+          position: "before"
+        },
+        {
+          type: "tip",
+          title: "Match the error to the part",
+          content: "401 points at a header (bad key), 404 at the endpoint (wrong URL), 400 at the body (malformed JSON). Naming the part tells you exactly where to look.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "The three parts of a request",
+        steps: [
+          { label: "Endpoint", desc: "POST to https://api.anthropic.com/v1/messages — where it goes." },
+          { label: "Headers", desc: "Auth key + content-type: labels about the request." },
+          { label: "Body", desc: "JSON with model, messages, max_tokens — the cargo." },
+          { label: "Sent together", desc: "All three travel as one HTTP request to the server." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Which part of a request holds your API key?",
+          options: ["The endpoint", "The headers", "The body"],
+          correct_index: 1,
+          explanation: "The API key rides in a header (metadata about who's calling), not in the URL or the JSON body."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does the content-type: application/json header tell the server?",
+          options: ["The reply must be short", "The request body is formatted as JSON", "The user is authenticated", "The endpoint is correct"],
+          correct_index: 1,
+          explanation: "content-type announces the format of the body so the server knows how to parse it — here, JSON."
+        },
+        {
+          question: "Where do model, messages, and max_tokens live in the request?",
+          options: ["In the endpoint URL", "In the headers", "In the body", "In a separate file"],
+          correct_index: 2,
+          explanation: "Those are the actual payload, so they go in the JSON body — the cargo of the package."
+        },
+        {
+          question: "A request fails with a 404. Which part should you check first?",
+          options: ["The headers (your key)", "The body (your JSON)", "The endpoint (the URL/path)", "Your internet speed"],
+          correct_index: 2,
+          explanation: "404 Not Found means the address didn't resolve — a typo in the endpoint URL or path is the usual cause."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Sort the parts",
+          questions: [
+            {
+              question: "The API key is sent as part of the request body alongside the messages.",
+              type: "true_false",
+              correct_answer: "false",
+              explanation: "The key travels in a header, not the body. The body holds model, messages, and parameters."
+            },
+            {
+              question: "Fill in the blank: The URL and HTTP method together make up the _____ of a request.",
+              type: "fill_in",
+              correct_answer: "endpoint",
+              explanation: "Endpoint = where the request is sent (URL) and how (method, e.g. POST)."
+            }
+          ]
+        }
+      ],
+      starter_code: `# A request has three parts. Lay them out as plain Python so the shape is clear.
+endpoint = "https://api.anthropic.com/v1/messages"
+headers = {"x-api-key": "sk-ant-...", "content-type": "application/json"}
+body = {"model": "claude-sonnet-4-6", "max_tokens": 200,
+        "messages": [{"role": "user", "content": "Hi"}]}
+
+# TODO: print a one-line label for each of the three parts.
+`,
+      solution_code: `endpoint = "https://api.anthropic.com/v1/messages"
+headers = {"x-api-key": "sk-ant-...", "content-type": "application/json"}
+body = {"model": "claude-sonnet-4-6", "max_tokens": 200,
+        "messages": [{"role": "user", "content": "Hi"}]}
+
+print("endpoint:", endpoint)
+print("headers:", len(headers), "header(s)")
+print("body keys:", ", ".join(body.keys()))
+`,
+      expected_output: `endpoint: https://api.anthropic.com/v1/messages
+headers: 2 header(s)
+body keys: model, max_tokens, messages`,
+      step_throughs: [
+        {
+          title: "building one raw request, part by part",
+          steps: [
+            { label: "Name the endpoint", detail: "Choose the method and URL. POST means you're sending data up; the path names what you want.", code: 'method, url = "POST", "https://api.anthropic.com/v1/messages"' },
+            { label: "Attach the headers", detail: "Add metadata about the request: your API key for auth and content-type to declare the body format.", code: 'headers = {"x-api-key": KEY, "content-type": "application/json"}' },
+            { label: "Fill the body", detail: "Pack the JSON payload: which model, how long the reply can be, and the messages list from lesson 2.", code: 'body = {"model": "claude-sonnet-4-6", "max_tokens": 200, "messages": [...]}' },
+            { label: "Send all three together", detail: "The endpoint, headers, and body leave as one HTTP request. The SDK does exactly this under the hood.", code: "requests.post(url, headers=headers, json=body)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Which of these belongs in the headers, not the body: the model name, or the content-type?",
+          steps: [
+            "The body carries the actual payload — model, messages, parameters.",
+            "content-type is metadata describing the format of that payload.",
+            "Metadata about the request goes in the headers."
+          ],
+          output: "content-type belongs in the headers; model belongs in the body."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Your raw request returns 400 Bad Request even though your key works fine elsewhere.\nWhich part is the problem and how do you narrow it down?",
+          steps: [
+            "Your key works elsewhere, so the header auth is fine — rule out 401/headers.",
+            "400 means the server understood who you are but couldn't accept the payload.",
+            "That points at the body: malformed JSON, a missing required field, or a bad value.",
+            "Print the body before sending and check for required keys like model and max_tokens and valid JSON."
+          ],
+          output: "The body is malformed or missing a required field — inspect the JSON payload."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "the three parts of a request",
+          columns: ["Part", "What it is", "Example", "Typical error if wrong"],
+          rows: [
+            { cells: ["Endpoint", "URL + method", "POST /v1/messages", "404 Not Found"] },
+            { cells: ["Headers", "Metadata labels", "x-api-key, content-type", "401 Unauthorized"] },
+            { cells: ["Body", "The JSON payload", "model, messages, max_tokens", "400 Bad Request"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "endpoint, header, or body?",
+          bins: [
+            { id: "ep", label: "Endpoint" },
+            { id: "hd", label: "Header" },
+            { id: "bd", label: "Body" }
+          ],
+          items: [
+            { id: "i1", text: "https://api.anthropic.com/v1/messages", bin: "ep" },
+            { id: "i2", text: "x-api-key: sk-ant-...", bin: "hd" },
+            { id: "i3", text: '"model": "claude-sonnet-4-6"', bin: "bd" },
+            { id: "i4", text: "content-type: application/json", bin: "hd" },
+            { id: "i5", text: 'the messages list', bin: "bd" },
+            { id: "i6", text: "the POST method", bin: "ep" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "When the SDK's messages.create runs, which of the three request parts does each argument (api_key, model, messages) end up in?",
+          sampleAnswer: "The api_key you pass to the client becomes an authentication header. The model, messages, and max_tokens become the JSON body. The endpoint (POST /v1/messages) is fixed by the SDK, so you never type it. The SDK simply fills in the same three parts I'd build by hand with requests."
+        }
+      ],
+      hints: [
+        "Print the endpoint string directly.",
+        "len(headers) gives the number of header entries.",
+        'Use ", ".join(body.keys()) to list the body field names on one line.'
+      ],
+      challenge_title: "Request Linter",
+      challenge_description: "Validate the three parts of a raw request and report the first thing that's wrong, mimicking the error a server would return.",
+      challenge_story: "Before your gateway forwards a request to Anthropic, it runs a local linter so obvious mistakes never burn a round trip. The linter checks the three parts of every HTTP request in a fixed priority: first the **endpoint** (right method and path), then the **headers** (key present, JSON content-type), then the **body** (required fields present). Whichever part fails first determines the status code you'd get back. Build the linter.",
+      challenge_statement: "You are given a request described across three sections: a method and path, a list of headers, and a list of body fields that are present. Validate in this exact priority order and print the FIRST failing check (stop at the first failure):\n\n1. **Endpoint** — the method must be \`POST\` and the path must be \`/v1/messages\`. If not, output \`404\`.\n2. **Headers** — there must be a header named \`x-api-key\` AND a header named \`content-type\` whose value is exactly \`application/json\`. If either is missing, output \`401\`.\n3. **Body** — the body must contain both fields \`model\` and \`messages\`. If either is missing, output \`400\`.\n\nIf all checks pass, output \`200\`.",
+      challenge_input_format: "Line 1: the method and path separated by a space (e.g. \`POST /v1/messages\`).\nLine 2: integer \`h\`, the number of headers. Each of the next \`h\` lines is \`name value\` (name and value separated by a single space).\nThe next line: integer \`b\`, the number of body fields present. Each of the next \`b\` lines is one field name.",
+      challenge_output_format: "A single line: one status code — \`404\`, \`401\`, \`400\`, or \`200\`.",
+      challenge_constraints: [
+        "0 ≤ h ≤ 100",
+        "0 ≤ b ≤ 100",
+        "Header names and field names contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "POST /v1/messages\n2\nx-api-key sk-ant-xyz\ncontent-type application/json\n2\nmodel\nmessages", output: "200", explanation: "Endpoint, headers, and body all pass, so the request is well-formed." },
+        { input: "POST /v1/messages\n1\ncontent-type application/json\n2\nmodel\nmessages", output: "401", explanation: "Endpoint is fine but the x-api-key header is missing, so the header check fails with 401." },
+      ],
+      challenge_notes: "The priority order matters: a request with a wrong endpoint AND a missing key reports 404, because the endpoint is checked first. Store headers in a dict so you can check both the presence of x-api-key and the exact value of content-type. Body fields go in a set for quick membership tests.",
+      challenge_hints: [
+        "Parse line 1 with `method, path = lines[0].split()` and compare both to the expected values.",
+        "Build a dict of headers, then check `\"x-api-key\" in headers` and `headers.get(\"content-type\") == \"application/json\"`.",
+        "Put the body field names in a set and confirm both `\"model\"` and `\"messages\"` are present.",
+      ],
+      challenge_starter_code: `import sys
+
+lines = sys.stdin.read().split("\\n")
+idx = 0
+method, path = lines[idx].split()
+idx += 1
+# TODO: read headers and body fields, then validate endpoint -> headers -> body
+# and print the first failing status (404 / 401 / 400) or 200 if all pass.
+`,
+      challenge_solution_code: `import sys
+
+lines = sys.stdin.read().split("\\n")
+idx = 0
+method, path = lines[idx].split()
+idx += 1
+
+h = int(lines[idx]); idx += 1
+headers = {}
+for _ in range(h):
+    name, value = lines[idx].split(" ", 1)
+    headers[name] = value
+    idx += 1
+
+b = int(lines[idx]); idx += 1
+fields = set()
+for _ in range(b):
+    fields.add(lines[idx].strip())
+    idx += 1
+
+if method != "POST" or path != "/v1/messages":
+    print("404")
+elif "x-api-key" not in headers or headers.get("content-type") != "application/json":
+    print("401")
+elif "model" not in fields or "messages" not in fields:
+    print("400")
+else:
+    print("200")
+`,
+      challenge_test_cases: [
+        {
+          input: "POST /v1/messages\n2\nx-api-key sk-ant-xyz\ncontent-type application/json\n2\nmodel\nmessages",
+          expected_output: "200",
+          description: "All three parts valid."
+        },
+        {
+          input: "POST /v1/messages\n1\ncontent-type application/json\n2\nmodel\nmessages",
+          expected_output: "401",
+          description: "Missing x-api-key header."
+        },
+        {
+          input: "GET /v1/messages\n2\nx-api-key sk-ant-xyz\ncontent-type application/json\n2\nmodel\nmessages",
+          expected_output: "404",
+          description: "Wrong method is caught first, even though headers and body are fine."
+        },
+        {
+          input: "POST /v1/messages\n2\nx-api-key sk-ant-xyz\ncontent-type application/json\n1\nmodel",
+          expected_output: "400",
+          description: "Body is missing the required messages field."
+        }
+      ]
+    },
+    {
+      id: "ai-02-l6",
+      project_id: "ai-02",
+      order: 6,
+      title: "Reading the Full Response Object",
+      concept: "Response",
+      xp_reward: 10,
+      explanation: `In lesson 4 you grabbed one field — \`response.content[0].text\` — and printed it. That's the headline. But the response that comes back from Claude carries a whole receipt of useful information: an ID for support tickets, the exact model that answered, how many tokens you spent, and *why* the reply stopped. Read the whole object and you can debug, bill, and monitor a real app.
+
+## What it is
+
+A Claude **response** is a JSON object (lesson 2) with a handful of top-level fields. The ones you'll use constantly:
+
+- **id** — a unique identifier for this exact call, like \`msg_01ABC...\`. Quote it when reporting a problem to support.
+- **model** — the exact model that produced the reply. Useful when you asked for an alias and want to know what actually ran.
+- **role** — always \`assistant\` on a reply (Claude is the one speaking).
+- **content** — the list of blocks holding the answer. \`content[0].text\` is the text of a plain reply.
+- **usage** — a small object: \`input_tokens\` (what your prompt cost) and \`output_tokens\` (what the reply cost). This is your bill.
+- **stop_reason** — *why* generation ended: \`end_turn\` (Claude finished naturally), \`max_tokens\` (it hit your length cap and was cut off), and a few others.
+
+## How it works
+
+Reach into the object the same way you'd index a dict. Here's reading the full receipt:
+
+\`\`\`python
+response = client.messages.create(...)
+
+print(response.id)                     # msg_01ABC...
+print(response.model)                  # claude-sonnet-4-6
+print(response.content[0].text)        # the actual answer
+print(response.usage.input_tokens)     # e.g. 12
+print(response.usage.output_tokens)    # e.g. 45
+print(response.stop_reason)            # "end_turn" or "max_tokens"
+\`\`\`
+
+The most operationally important field is \`stop_reason\`. If it reads \`max_tokens\`, the reply was **truncated** — Claude wasn't done, it ran out of room. The fix is to raise \`max_tokens\` and call again.
+
+## Why it matters
+
+The headline text is only part of the value:
+
+- **usage** is how you compute cost (recall the per-token math from module 1) and watch for runaway prompts.
+- **stop_reason** is how you detect a cut-off answer *programmatically* instead of eyeballing it. A robust app checks \`if response.stop_reason == "max_tokens"\` and reacts.
+- **id** and **model** make support and monitoring possible — you can log them and trace any single call later.
+
+Ignoring these fields is how beginners ship apps that silently truncate long answers or quietly blow a token budget.
+
+## The mental model to keep
+
+The response is a receipt, not just an answer. The text is the product; **usage** is the price, **stop_reason** is whether the order was complete, and **id** is the receipt number.`,
+      key_terms: [
+        { term: "usage", definition: "A response object reporting input_tokens and output_tokens — the cost of the call." },
+        { term: "stop_reason", definition: "Why generation ended: end_turn (finished) or max_tokens (cut off at the length cap), among others." },
+        { term: "id", definition: "A unique identifier for one API call, useful for logging and support tickets." },
+        { term: "input_tokens / output_tokens", definition: "Tokens consumed by your prompt and by Claude's reply, respectively." }
+      ],
+      callouts: [
+        {
+          type: "analogy",
+          title: "The response is a receipt",
+          content: "The text is the product you bought. usage is the price, stop_reason tells you if the order was complete or cut short, and id is the receipt number you'd quote to support.",
+          position: "before"
+        },
+        {
+          type: "warning",
+          title: "max_tokens means cut off",
+          content: "If stop_reason is 'max_tokens', Claude was still talking and got truncated. Don't trust the answer as complete — raise max_tokens and call again.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "Fields in a Claude response",
+        steps: [
+          { label: "id + model", desc: "Which call this was and exactly which model answered." },
+          { label: "role + content", desc: "role is 'assistant'; content[0].text holds the answer." },
+          { label: "usage", desc: "input_tokens and output_tokens — the cost of the call." },
+          { label: "stop_reason", desc: "Why it stopped: end_turn (done) or max_tokens (cut off)." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Which response field tells you whether the reply was cut off?",
+          options: ["id", "usage", "stop_reason"],
+          correct_index: 2,
+          explanation: "stop_reason == 'max_tokens' means the reply hit the length cap and was truncated."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does response.usage contain?",
+          options: ["The model's confidence score", "input_tokens and output_tokens for the call", "The user's account balance", "The full text of the reply"],
+          correct_index: 1,
+          explanation: "usage reports how many tokens the prompt and the reply consumed — that's what you're billed on."
+        },
+        {
+          question: "stop_reason comes back as 'end_turn'. What does that mean?",
+          options: ["The reply was cut off at max_tokens", "Claude finished its answer naturally", "Your key expired mid-call", "The request was rejected"],
+          correct_index: 1,
+          explanation: "end_turn means Claude reached a natural stopping point and the answer is complete."
+        },
+        {
+          question: "On a reply, what is the value of the role field?",
+          options: ["user", "system", "assistant", "model"],
+          correct_index: 2,
+          explanation: "Claude is the one speaking in a reply, so the role is 'assistant'."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Read the receipt",
+          questions: [
+            {
+              question: "If stop_reason is 'max_tokens', the reply is guaranteed to be a complete answer.",
+              type: "true_false",
+              correct_answer: "false",
+              explanation: "max_tokens means it was truncated — Claude hit the length cap before finishing."
+            },
+            {
+              question: "Fill in the blank: response.usage.output_tokens tells you how many tokens Claude's _____ consumed.",
+              type: "fill_in",
+              correct_answer: "reply",
+              explanation: "output_tokens counts the tokens in the reply; input_tokens counts the prompt."
+            }
+          ]
+        }
+      ],
+      starter_code: `# A simulated response object as a dict. Read its fields the way you would in real code.
+response = {
+    "id": "msg_01ABC",
+    "model": "claude-sonnet-4-6",
+    "role": "assistant",
+    "content": [{"type": "text", "text": "Hello there."}],
+    "usage": {"input_tokens": 12, "output_tokens": 4},
+    "stop_reason": "end_turn",
+}
+
+# TODO: print the answer text, the total tokens used, and the stop_reason.
+`,
+      solution_code: `response = {
+    "id": "msg_01ABC",
+    "model": "claude-sonnet-4-6",
+    "role": "assistant",
+    "content": [{"type": "text", "text": "Hello there."}],
+    "usage": {"input_tokens": 12, "output_tokens": 4},
+    "stop_reason": "end_turn",
+}
+
+text = response["content"][0]["text"]
+total = response["usage"]["input_tokens"] + response["usage"]["output_tokens"]
+print("answer:", text)
+print("total tokens:", total)
+print("stop_reason:", response["stop_reason"])
+`,
+      expected_output: `answer: Hello there.
+total tokens: 16
+stop_reason: end_turn`,
+      step_throughs: [
+        {
+          title: "unpacking a response, field by field",
+          steps: [
+            { label: "Pull the headline text", detail: "content is a list of blocks; the first block's text is the answer you usually print.", code: 'answer = response["content"][0]["text"]' },
+            { label: "Check why it stopped", detail: "stop_reason tells you whether the answer is complete. Branch on it to detect truncation.", code: 'if response["stop_reason"] == "max_tokens": ...' },
+            { label: "Read the cost", detail: "usage holds input_tokens and output_tokens. Add them (or price them separately) to know the bill.", code: 'cost_tokens = usage["input_tokens"] + usage["output_tokens"]' },
+            { label: "Log the metadata", detail: "Record id and model so any single call can be traced later in support or monitoring.", code: 'log(response["id"], response["model"])' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A response shows usage of input_tokens=20 and output_tokens=30. How many tokens did the whole call use?",
+          steps: [
+            "Total tokens for a call is just the prompt plus the reply.",
+            "Add input_tokens and output_tokens: 20 + 30.",
+            "That sum is what you'd plug into the per-token cost math."
+          ],
+          output: "50 tokens total."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Your app asks for a long summary, but users complain the summary ends abruptly.\nWhich response field confirms the cause, and how do you fix it in code?",
+          steps: [
+            "An abruptly-ending reply is a classic truncation symptom.",
+            "Check response.stop_reason — if it's 'max_tokens', the reply was cut off at the cap.",
+            "Fix it by raising max_tokens so the reply has room to finish.",
+            "Make it robust: if stop_reason == 'max_tokens', log it or retry with a higher cap automatically."
+          ],
+          output: "stop_reason == 'max_tokens' confirms truncation; raise max_tokens (and check the field in code)."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "what each response field is for",
+          columns: ["Field", "What it holds", "When you use it"],
+          rows: [
+            { cells: ["content[0].text", "The answer text", "Almost always — it's the reply"] },
+            { cells: ["usage", "input + output tokens", "Billing and budget monitoring"] },
+            { cells: ["stop_reason", "Why generation ended", "Detecting truncated replies"], highlight: true },
+            { cells: ["id / model", "Call ID + model used", "Logging, support, tracing"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which field answers the question?",
+          bins: [
+            { id: "cost", label: "Tells you the cost" },
+            { id: "complete", label: "Tells you if it finished" }
+          ],
+          items: [
+            { id: "i1", text: "usage.input_tokens", bin: "cost" },
+            { id: "i2", text: "stop_reason == 'end_turn'", bin: "complete" },
+            { id: "i3", text: "usage.output_tokens", bin: "cost" },
+            { id: "i4", text: "stop_reason == 'max_tokens'", bin: "complete" },
+            { id: "i5", text: "input_tokens + output_tokens", bin: "cost" },
+            { id: "i6", text: "whether the reply was truncated", bin: "complete" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Why is it risky to read only content[0].text and ignore stop_reason in a real app?",
+          sampleAnswer: "If I only read the text, I have no way to know whether Claude actually finished. When stop_reason is 'max_tokens' the reply was cut off mid-thought, but the text still looks like a normal answer. A user could act on an incomplete summary or a half-finished code block. Checking stop_reason lets the app detect truncation and retry with a higher max_tokens instead of silently shipping a broken answer."
+        }
+      ],
+      hints: [
+        'The text lives at response["content"][0]["text"].',
+        'Add response["usage"]["input_tokens"] and response["usage"]["output_tokens"] for the total.',
+        'Print response["stop_reason"] directly.'
+      ],
+      challenge_title: "Response Inspector",
+      challenge_description: "Parse a batch of JSON responses and report total tokens spent plus how many replies were truncated.",
+      challenge_story: "Your dashboard ingests every response your app receives from Claude and turns it into two numbers ops cares about: the **total tokens** burned across all calls (the bill) and how many replies came back **truncated** because they hit the token cap. Each response arrives as a JSON object with a \`usage\` block and a \`stop_reason\`. Parse the batch and produce the summary.",
+      challenge_statement: "You are given \`n\` responses, one JSON object per line. Each object has a \`usage\` field with integer \`input_tokens\` and \`output_tokens\`, and a string \`stop_reason\`.\n\nCompute two things:\n\n- \`total_tokens\` — the sum of \`input_tokens + output_tokens\` across all \`n\` responses.\n- \`truncated\` — how many responses have \`stop_reason\` exactly equal to \`\"max_tokens\"\`.\n\nPrint \`total <total_tokens>\` on the first line and \`truncated <truncated>\` on the second.",
+      challenge_input_format: "Line 1: integer \`n\`. Each of the next \`n\` lines is one JSON object with keys \`usage\` (an object with \`input_tokens\` and \`output_tokens\`) and \`stop_reason\` (a string).",
+      challenge_output_format: "Two lines:\n- \`total T\` where \`T\` is the summed input+output tokens.\n- \`truncated C\` where \`C\` is the count of responses with stop_reason \"max_tokens\".",
+      challenge_constraints: [
+        "0 ≤ n ≤ 10000",
+        "0 ≤ input_tokens, output_tokens ≤ 1000000",
+        "stop_reason is a non-empty string.",
+      ],
+      challenge_examples: [
+        { input: "2\n{\"usage\": {\"input_tokens\": 10, \"output_tokens\": 5}, \"stop_reason\": \"end_turn\"}\n{\"usage\": {\"input_tokens\": 20, \"output_tokens\": 40}, \"stop_reason\": \"max_tokens\"}", output: "total 75\ntruncated 1", explanation: "Tokens: (10+5) + (20+40) = 75. One response stopped on max_tokens." },
+        { input: "1\n{\"usage\": {\"input_tokens\": 3, \"output_tokens\": 3}, \"stop_reason\": \"end_turn\"}", output: "total 6\ntruncated 0", explanation: "6 tokens total, nothing truncated." },
+      ],
+      challenge_notes: "Parse each line with \`json.loads\`. Reach into the nested usage object with \`obj[\"usage\"][\"input_tokens\"]\`. Only an exact match on \`\"max_tokens\"\` counts as truncated — \`\"end_turn\"\` and other reasons do not. With \`n = 0\` the answer is \`total 0\` and \`truncated 0\`.",
+      challenge_hints: [
+        "Read `n`, then loop the next `n` lines, calling `json.loads` on each.",
+        "Add `obj[\"usage\"][\"input_tokens\"] + obj[\"usage\"][\"output_tokens\"]` to a running total.",
+        "Increment a truncated counter only when `obj[\"stop_reason\"] == \"max_tokens\"`.",
+      ],
+      challenge_starter_code: `import sys, json
+
+lines = sys.stdin.read().split("\\n")
+n = int(lines[0])
+# TODO: parse each of the next n JSON responses, sum input+output tokens,
+# count stop_reason == "max_tokens", then print "total T" and "truncated C".
+`,
+      challenge_solution_code: `import sys, json
+
+lines = sys.stdin.read().split("\\n")
+n = int(lines[0])
+
+total = 0
+truncated = 0
+for i in range(1, n + 1):
+    obj = json.loads(lines[i])
+    usage = obj["usage"]
+    total += usage["input_tokens"] + usage["output_tokens"]
+    if obj["stop_reason"] == "max_tokens":
+        truncated += 1
+
+print(f"total {total}")
+print(f"truncated {truncated}")
+`,
+      challenge_test_cases: [
+        {
+          input: "2\n{\"usage\": {\"input_tokens\": 10, \"output_tokens\": 5}, \"stop_reason\": \"end_turn\"}\n{\"usage\": {\"input_tokens\": 20, \"output_tokens\": 40}, \"stop_reason\": \"max_tokens\"}",
+          expected_output: "total 75\ntruncated 1",
+          description: "Sums nested usage and counts one truncated reply."
+        },
+        {
+          input: "1\n{\"usage\": {\"input_tokens\": 3, \"output_tokens\": 3}, \"stop_reason\": \"end_turn\"}",
+          expected_output: "total 6\ntruncated 0",
+          description: "Single completed response, nothing truncated."
+        },
+        {
+          input: "0",
+          expected_output: "total 0\ntruncated 0",
+          description: "Edge case: no responses to inspect."
+        }
+      ]
+    },
+    {
+      id: "ai-02-l7",
+      project_id: "ai-02",
+      order: 7,
+      title: "Errors, Timeouts, and Retries",
+      concept: "Errors",
+      xp_reward: 10,
+      explanation: `Your first ten lines of code assumed every call succeeds. Real networks don't. Servers hiccup, keys expire, you send too fast, a request hangs forever. The difference between a toy script and a reliable app is what happens when the call *fails*. The good news: failures come in a small number of named buckets, and each bucket has a standard response.
+
+## What it is
+
+When a request fails, the API returns an **HTTP status code** — a three-digit number that classifies what went wrong. You met a few in lesson 3; here is the working set:
+
+- **200** — success. Your answer is in the response.
+- **400** — Bad Request. *Your* fault: malformed JSON, a missing field, a bad parameter. Retrying won't help; fix the request.
+- **401** — Unauthorized. Your API key is missing or wrong. Retrying won't help; fix the key.
+- **429** — Too Many Requests. You hit the rate limit. Retrying *after a wait* is exactly right.
+- **500 / 503** — the server had a problem or is overloaded. Not your fault; retrying after a wait usually works.
+
+A separate failure is a **timeout**: the request takes too long and your client gives up waiting. No status code at all — the answer simply never arrived.
+
+## How it works
+
+The crucial split: **which errors are worth retrying?** A \`400\` or \`401\` is deterministic — the same request will fail the same way forever, so retrying just wastes calls. A \`429\`, \`500\`, \`503\`, or timeout is **transient** — the same request may well succeed a moment later.
+
+For transient errors, the standard tool is **exponential backoff**: wait a little, retry; if it fails again, wait twice as long; repeat up to a cap.
+
+\`\`\`python
+import time
+
+def call_with_retry(send, max_retries=5):
+    delay = 1
+    for attempt in range(max_retries):
+        status = send()                 # returns an HTTP status code
+        if status == 200:
+            return "ok"
+        if status in (400, 401):
+            return "fatal"              # never retry these
+        time.sleep(delay)               # 429/500/503: wait, then retry
+        delay *= 2                      # 1s, 2s, 4s, 8s, ...
+    return "gave up"
+\`\`\`
+
+Doubling the wait keeps you from hammering a struggling server, and the retry cap stops an infinite loop when something is truly broken.
+
+## Why it matters
+
+Retry logic is where reliability lives. Retry a \`401\` and you waste a thousand doomed calls; *don't* retry a \`429\` and a brief traffic spike crashes your whole job. Production SDKs (including Anthropic's) build sensible backoff in for you, but you must still decide what to do on a fatal error: surface it to the user, log it, fall back. **The status code is the instruction — read it before reacting.**
+
+## The mental model to keep
+
+Failures are a triage desk. **400/401 are your bug** (fix it, never retry). **429/500/503/timeout are a hiccup** (wait, then retry with exponential backoff). Read the code, then react.`,
+      key_terms: [
+        { term: "HTTP status code", definition: "A three-digit number classifying a response: 200 success, 4xx client error, 5xx server error." },
+        { term: "Timeout", definition: "When a request takes too long and the client stops waiting; no status code is returned." },
+        { term: "Exponential backoff", definition: "Retrying after waits that double each time (1s, 2s, 4s...) up to a cap." },
+        { term: "Transient vs fatal", definition: "Transient errors (429/500/503/timeout) may succeed on retry; fatal ones (400/401) will not." }
+      ],
+      callouts: [
+        {
+          type: "analogy",
+          title: "A busy phone line vs a wrong number",
+          content: "429/500 is a busy signal — redial in a bit and you'll get through. 401 is dialing the wrong number — redialing the same wrong number a hundred times never connects. Fix the number first.",
+          position: "before"
+        },
+        {
+          type: "warning",
+          title: "Never retry a 400 or 401",
+          content: "These are deterministic — the same request fails identically every time. Retrying burns calls and money without ever succeeding. Fix the request or the key instead.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "What to do with a status code",
+        steps: [
+          { label: "200 success", desc: "Read the response and move on." },
+          { label: "400 / 401", desc: "Your bug. Fix the request or key. Do not retry." },
+          { label: "429 / 500 / 503", desc: "Transient. Wait, then retry with backoff." },
+          { label: "Timeout", desc: "No answer arrived. Treat like transient: retry after a wait." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Which of these errors is worth retrying after a short wait?",
+          options: ["401 Unauthorized", "429 Too Many Requests", "400 Bad Request"],
+          correct_index: 1,
+          explanation: "429 is transient — a brief wait then a retry usually succeeds. 400 and 401 are your bug and will fail identically on retry."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why is retrying a 401 error pointless?",
+          options: ["401s are random and rarely repeat", "The key is wrong, so every identical retry fails the same way", "The server bans you after one 401", "401 means the answer is already cached"],
+          correct_index: 1,
+          explanation: "401 is deterministic: a bad key fails identically every time. Fix the key instead of retrying."
+        },
+        {
+          question: "What does exponential backoff mean?",
+          options: ["Retry instantly as fast as possible", "Wait a fixed 10 seconds between every retry", "Double the wait time after each failed retry", "Give up after the first failure"],
+          correct_index: 2,
+          explanation: "Each retry waits twice as long as the last (1s, 2s, 4s...), easing pressure on a struggling server."
+        },
+        {
+          question: "A request never returns and your client eventually stops waiting. What is this?",
+          options: ["A 400 error", "A timeout", "A 200 success", "A rate limit"],
+          correct_index: 1,
+          explanation: "A timeout is when the response takes too long and the client gives up; no status code comes back."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Retry or not?",
+          questions: [
+            {
+              question: "A 500 Internal Server Error is usually worth retrying after a short wait.",
+              type: "true_false",
+              correct_answer: "true",
+              explanation: "500 is a server-side hiccup and often transient — backoff and retry frequently succeeds."
+            },
+            {
+              question: "Fill in the blank: Retrying with waits that double each time (1s, 2s, 4s) is called exponential _____.",
+              type: "fill_in",
+              correct_answer: "backoff",
+              explanation: "Exponential backoff doubles the delay between retries to ease load on the server."
+            }
+          ]
+        }
+      ],
+      starter_code: `# Classify a status code: should you retry it, fix it, or are you done?
+def decide(status):
+    # TODO: return "ok" for 200, "fatal" for 400/401, "retry" for 429/500/503
+    pass
+
+for code in [200, 401, 429, 500, 400]:
+    print(code, "->", decide(code))
+`,
+      solution_code: `def decide(status):
+    if status == 200:
+        return "ok"
+    if status in (400, 401):
+        return "fatal"
+    if status in (429, 500, 503):
+        return "retry"
+    return "unknown"
+
+for code in [200, 401, 429, 500, 400]:
+    print(code, "->", decide(code))
+`,
+      expected_output: `200 -> ok
+401 -> fatal
+429 -> retry
+500 -> retry
+400 -> fatal`,
+      step_throughs: [
+        {
+          title: "handling one failed call",
+          steps: [
+            { label: "Read the status code", detail: "Every response carries a code. Read it before doing anything else — it's the instruction.", code: "status = response.status_code  # e.g. 429" },
+            { label: "Is it fatal?", detail: "400 and 401 are your bug. Stop, surface the error, and fix the request or key. Never retry.", code: "if status in (400, 401): raise FatalError" },
+            { label: "Is it transient?", detail: "429, 500, 503, and timeouts may succeed later. Wait before trying again.", code: "if status in (429, 500, 503): time.sleep(delay)" },
+            { label: "Back off and retry", detail: "Retry the same request, but double the wait each attempt, up to a retry cap.", code: "delay *= 2  # 1s -> 2s -> 4s, stop after max_retries" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Your script gets a 400 Bad Request. Should you wrap it in a retry loop?",
+          steps: [
+            "400 means the request itself is malformed — your bug.",
+            "The same request will fail identically no matter how many times you send it.",
+            "Retrying only wastes calls; fix the request body instead."
+          ],
+          output: "No — fix the request. 400 is deterministic and never succeeds on retry."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You process 10,000 items in a loop and occasionally hit a 429 or a timeout.\nDesign retry behavior that stays reliable without hammering the API.",
+          steps: [
+            "Classify the failure: 429 and timeout are transient, so retry; a 400/401 would be fatal, so don't.",
+            "On a transient failure, wait, then retry the same item.",
+            "Use exponential backoff: 1s, then 2s, then 4s, so repeated failures ease off the server.",
+            "Cap retries (say 5) so a permanently failing item eventually gives up and gets logged instead of looping forever."
+          ],
+          output: "Retry transient errors with exponential backoff (1s, 2s, 4s...) and a max retry cap; never retry fatal ones."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "status codes and the right reaction",
+          columns: ["Code", "Meaning", "Whose fault", "Reaction"],
+          rows: [
+            { cells: ["200", "Success", "—", "Read the response"] },
+            { cells: ["400", "Bad Request", "You", "Fix the body, do not retry"] },
+            { cells: ["401", "Unauthorized", "You", "Fix the key, do not retry"] },
+            { cells: ["429", "Too Many Requests", "Load", "Wait, then retry (backoff)"], highlight: true },
+            { cells: ["500/503", "Server error", "Server", "Wait, then retry (backoff)"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "retry it or don't?",
+          bins: [
+            { id: "retry", label: "Retry (transient)" },
+            { id: "fix", label: "Don't retry (fatal)" }
+          ],
+          items: [
+            { id: "i1", text: "429 Too Many Requests", bin: "retry" },
+            { id: "i2", text: "401 Unauthorized", bin: "fix" },
+            { id: "i3", text: "500 Internal Server Error", bin: "retry" },
+            { id: "i4", text: "400 Bad Request", bin: "fix" },
+            { id: "i5", text: "503 Service Unavailable", bin: "retry" },
+            { id: "i6", text: "A request timeout", bin: "retry" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Why does retrying with exponential backoff handle a 429 better than retrying instantly in a tight loop?",
+          sampleAnswer: "Retrying instantly hammers an already-overloaded endpoint, so you keep getting 429s and may make the congestion worse. Exponential backoff waits longer after each failure (1s, 2s, 4s), which gives the rate-limit window time to clear and the server time to recover. By the time you retry, a slot has usually opened, so the call succeeds without you flooding the API."
+        }
+      ],
+      hints: [
+        "Handle 200 first, then the fatal pair (400, 401), then the retry set (429, 500, 503).",
+        "Use `status in (400, 401)` to test membership in a group of codes.",
+        "Return a clear string label so the loop's output reads cleanly."
+      ],
+      challenge_title: "Backoff Scheduler",
+      challenge_description: "Replay a sequence of call outcomes through retry logic and report whether each call ultimately succeeds and the total wait incurred.",
+      challenge_story: "You're building the retry layer for your API client. Each outbound call returns a status code; your layer must decide whether to retry, how long to wait, and when to give up. The agreed policy: \`200\` succeeds immediately. \`400\` and \`401\` are fatal — fail at once, no waiting. \`429\`, \`500\`, and \`503\` are transient — wait and retry with exponential backoff (1s, then 2s, then 4s, ...) up to a retry cap. You're given the exact outcome each attempt would produce, so you can simulate the policy deterministically and report the result.",
+      challenge_statement: "You simulate one logical API call. You are given a retry cap \`max_retries\` and the ordered list of status codes that successive attempts return.\n\nApply this policy, attempt by attempt:\n\n1. The first attempt is free (no wait). If it returns \`200\`, the call SUCCEEDS.\n2. If an attempt returns \`400\` or \`401\`, the call FAILS immediately (fatal, no further attempts, no added wait).\n3. If an attempt returns \`429\`, \`500\`, or \`503\`, it is transient: wait, then make another attempt. The wait before retry number \`k\` (1-indexed) is \`2^(k-1)\` seconds, i.e. 1, 2, 4, 8, ... You may perform at most \`max_retries\` retries (so up to \`max_retries + 1\` total attempts).\n4. If you exhaust all retries without a \`200\`, the call FAILS.\n\nPrint \`SUCCESS\` or \`FAIL\` on the first line, and \`waited W\` on the second, where \`W\` is the total seconds spent waiting.",
+      challenge_input_format: "Line 1: integer \`max_retries\`.\nLine 2: integer \`m\`, the number of attempt outcomes provided.\nLine 3: \`m\` space-separated status codes, the result each attempt would return in order.",
+      challenge_output_format: "Two lines:\n- \`SUCCESS\` or \`FAIL\`.\n- \`waited W\` where \`W\` is the total seconds waited (an integer).",
+      challenge_constraints: [
+        "0 ≤ max_retries ≤ 30",
+        "1 ≤ m ≤ 40",
+        "Each status code is one of 200, 400, 401, 429, 500, 503.",
+        "There are always at least max_retries + 1 outcomes provided.",
+      ],
+      challenge_examples: [
+        { input: "5\n3\n429 429 200", output: "SUCCESS\nwaited 3", explanation: "Attempt 1: 429 (transient), wait 1s, retry. Attempt 2: 429, wait 2s, retry. Attempt 3: 200 success. Total wait 1 + 2 = 3s." },
+        { input: "5\n2\n500 401", output: "FAIL\nwaited 1", explanation: "Attempt 1: 500 (transient), wait 1s, retry. Attempt 2: 401 is fatal, fail immediately. Total wait 1s." },
+      ],
+      challenge_notes: "The wait happens BEFORE each retry, not after the final failed attempt. So a fatal code costs no extra wait, and exhausting retries adds the waits taken before each retry that was actually attempted. Process the outcome list in order, summing \`2^(k-1)\` for the k-th retry, and stop the moment you hit 200, a fatal code, or the retry cap.",
+      challenge_hints: [
+        "Track `attempts_used`; the first attempt is free, and you may retry at most `max_retries` more times.",
+        "Before each retry (the k-th, 1-indexed), add `2 ** (k - 1)` to the total wait.",
+        "Stop immediately on 200 (SUCCESS), on 400/401 (FAIL, no extra wait), or when retries run out (FAIL).",
+      ],
+      challenge_starter_code: `import sys
+
+lines = sys.stdin.read().split("\\n")
+max_retries = int(lines[0])
+m = int(lines[1])
+outcomes = list(map(int, lines[2].split()))
+# TODO: simulate the backoff policy. 200 -> SUCCESS, 400/401 -> fatal FAIL,
+# 429/500/503 -> wait 2^(k-1)s then retry up to max_retries. Print result + total wait.
+`,
+      challenge_solution_code: `import sys
+
+lines = sys.stdin.read().split("\\n")
+max_retries = int(lines[0])
+m = int(lines[1])
+outcomes = list(map(int, lines[2].split()))
+
+transient = {429, 500, 503}
+fatal = {400, 401}
+
+total_wait = 0
+result = "FAIL"
+retries_done = 0
+attempt = 0
+while attempt < len(outcomes):
+    code = outcomes[attempt]
+    if code == 200:
+        result = "SUCCESS"
+        break
+    if code in fatal:
+        result = "FAIL"
+        break
+    # transient: retry if we still can
+    if retries_done < max_retries:
+        retries_done += 1
+        total_wait += 2 ** (retries_done - 1)
+        attempt += 1
+    else:
+        result = "FAIL"
+        break
+
+print(result)
+print(f"waited {total_wait}")
+`,
+      challenge_test_cases: [
+        {
+          input: "5\n3\n429 429 200",
+          expected_output: "SUCCESS\nwaited 3",
+          description: "Two transient retries (wait 1 + 2) then success."
+        },
+        {
+          input: "5\n2\n500 401",
+          expected_output: "FAIL\nwaited 1",
+          description: "One transient wait, then a fatal 401 stops everything."
+        },
+        {
+          input: "0\n1\n429",
+          expected_output: "FAIL\nwaited 0",
+          description: "Edge case: no retries allowed, so a transient error fails with zero wait."
+        },
+        {
+          input: "2\n3\n500 503 500",
+          expected_output: "FAIL\nwaited 3",
+          description: "Retries exhausted after waits of 1 and 2; the call never succeeds."
+        }
+      ]
+    },
+    {
+      id: "ai-02-l8",
+      project_id: "ai-02",
+      order: 8,
+      title: "Keeping API Keys Safe",
+      concept: "Secrets",
+      xp_reward: 10,
+      explanation: `Lesson 3 told you the one rule: never paste your key into your code. This lesson is the full discipline behind that rule — where secrets actually live, how to stop them ever reaching GitHub, and what to do the moment one leaks. Companies have lost serious money to a single committed key. The habits here are cheap insurance.
+
+## What it is
+
+A **secret** is any value that grants access and must never be public: API keys, database passwords, tokens. The professional way to handle one is an **environment variable** — a name-value pair stored in your operating system's environment, *outside* your source files. Your code reads the value at runtime by name; the value itself never appears in the code.
+
+For convenience during development, secrets often live in a **\`.env\` file** — a tiny text file of \`NAME=value\` lines that a loader reads into environment variables when your program starts.
+
+\`\`\`text
+# .env  (this file must NEVER be committed)
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+\`\`\`
+
+## How it works
+
+The whole pattern is three moves. First, put the secret in a \`.env\` file. Second — the move everyone forgets — add \`.env\` to \`.gitignore\` so Git refuses to track it:
+
+\`\`\`text
+# .gitignore
+.env
+\`\`\`
+
+Third, read it in code by name, never by value:
+
+\`\`\`python
+import os
+
+api_key = os.environ.get("ANTHROPIC_API_KEY")
+if not api_key:
+    raise SystemExit("Set ANTHROPIC_API_KEY in your environment.")
+\`\`\`
+
+Notice what's shareable: the code (safe, just reads a name), a committed \`.env.example\` listing the *names* with blank values (safe, documents what's needed), and never the real \`.env\` (secret). A teammate copies \`.env.example\` to \`.env\` and fills in their own key.
+
+## Why it matters
+
+Three more practices separate hobby code from production:
+
+- **Rotation.** Keys should be rotated — replaced with fresh ones — periodically, and *immediately* if you suspect a leak. A leaked key you've already rotated is worthless to an attacker. Treat any key that ever touched a commit as compromised, even after you delete it: Git history remembers.
+- **Scoping (least privilege).** Give a key only the access it needs. A read-only key, or one capped to a small spending limit, limits the blast radius if it leaks. Never hand a production-grade key to a throwaway script.
+- **Never log it.** Printing a key to logs or error traces leaks it just as surely as committing it. Log \`key is set: True\`, never the key itself.
+
+## The mental model to keep
+
+A secret is a house key. You don't tape it to the front door (hardcode it), you don't mail a photo of it to everyone (commit/log it), and if you lose it you change the lock immediately (rotate). Keep it off the code, off GitHub, and out of logs.`,
+      key_terms: [
+        { term: "Secret", definition: "Any access-granting value that must stay private: API keys, passwords, tokens." },
+        { term: ".env file", definition: "A local text file of NAME=value lines holding secrets, loaded into environment variables at startup and never committed." },
+        { term: "Rotation", definition: "Replacing a key with a fresh one periodically, or immediately after a suspected leak." },
+        { term: "Scoping", definition: "Granting a key only the minimum access it needs (least privilege) to limit damage if it leaks." }
+      ],
+      callouts: [
+        {
+          type: "analogy",
+          title: "A secret is a house key",
+          content: "Don't tape it to the front door (hardcode it), don't mail a photo to everyone (commit or log it), and if you lose it, change the lock immediately (rotate it).",
+          position: "before"
+        },
+        {
+          type: "warning",
+          title: "Git history never forgets",
+          content: "Deleting a committed key in a later commit does NOT remove it — it lives in history forever. Any key that ever touched a commit must be treated as compromised and rotated.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "The lifecycle of a safe secret",
+        steps: [
+          { label: "Store in .env", desc: "Put the key in a local .env file, never in source code." },
+          { label: "Gitignore it", desc: "Add .env to .gitignore so it can never be committed." },
+          { label: "Read by name", desc: "Code reads os.environ.get('NAME') at runtime, never the literal value." },
+          { label: "Rotate on leak", desc: "If a key is exposed, generate a new one and revoke the old immediately." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What single line stops a .env file from ever being committed to Git?",
+          options: ["Adding .env to .gitignore", "Renaming it to secret.env", "Printing it at startup"],
+          correct_index: 0,
+          explanation: "Listing .env in .gitignore tells Git to ignore it, so it never gets tracked or pushed."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "You accidentally committed your API key and then deleted it in the next commit. Is the key safe?",
+          options: ["Yes, the delete removed it", "No, it remains in Git history and must be rotated", "Yes, as long as the repo is private", "Only if you also restart your computer"],
+          correct_index: 1,
+          explanation: "Git keeps every past commit. The key lives in history forever, so it must be treated as leaked and rotated immediately."
+        },
+        {
+          question: "What is the point of scoping a key to least privilege?",
+          options: ["It makes the key longer", "It limits the damage if the key leaks", "It speeds up requests", "It avoids rate limits"],
+          correct_index: 1,
+          explanation: "A narrowly-scoped or spend-capped key can do far less harm if it's stolen — the blast radius is smaller."
+        },
+        {
+          question: "Which file is SAFE to commit to a public repo?",
+          options: [".env with the real key", ".env.example listing key names with blank values", "A log file containing the key", "A backup copy of .env"],
+          correct_index: 1,
+          explanation: ".env.example documents which variables are needed without containing any real secret values."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Secret hygiene check",
+          questions: [
+            {
+              question: "Printing your API key to a log file is a safe way to confirm it loaded correctly.",
+              type: "true_false",
+              correct_answer: "false",
+              explanation: "Logging a key leaks it. Log a boolean like 'key is set: True' instead of the value."
+            },
+            {
+              question: "Fill in the blank: Replacing a key with a fresh one, especially after a suspected leak, is called _____.",
+              type: "fill_in",
+              correct_answer: "rotation",
+              explanation: "Rotation makes a leaked key worthless by revoking it and issuing a new one."
+            }
+          ]
+        }
+      ],
+      starter_code: `import os
+
+# Confirm a secret is loaded WITHOUT ever printing its value.
+api_key = os.environ.get("ANTHROPIC_API_KEY")
+
+# TODO: print "key is set: True" or "key is set: False" — never the key itself.
+`,
+      solution_code: `import os
+
+api_key = os.environ.get("ANTHROPIC_API_KEY")
+
+# Report presence only, never the value.
+print("key is set:", api_key is not None)
+`,
+      expected_output: `key is set: False`,
+      step_throughs: [
+        {
+          title: "wiring up a secret the safe way",
+          steps: [
+            { label: "Write the .env file", detail: "Put the key in a local .env as NAME=value. This file stays on your machine only.", code: "ANTHROPIC_API_KEY=sk-ant-your-key-here" },
+            { label: "Ignore it in Git", detail: "Add .env to .gitignore so it can never be staged, committed, or pushed.", code: "# .gitignore\n.env" },
+            { label: "Read it by name", detail: "Code looks up the variable by name at runtime. The literal key never appears in source.", code: 'api_key = os.environ.get("ANTHROPIC_API_KEY")' },
+            { label: "Fail loudly if missing", detail: "If the variable isn't set, stop with a clear message instead of sending a broken request.", code: 'if not api_key: raise SystemExit("Set ANTHROPIC_API_KEY")' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A teammate clones your repo and asks which environment variables they need to set. What file tells them, without leaking your key?",
+          steps: [
+            "The real .env is gitignored, so they never receive your actual key.",
+            "A committed .env.example lists the variable names with blank or placeholder values.",
+            "They copy .env.example to .env and fill in their own key."
+          ],
+          output: "A committed .env.example documents the needed variable names safely."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You realize a key was pushed to a public repo two weeks ago, even though you deleted it the next day.\nWhat must you do, and why isn't the delete enough?",
+          steps: [
+            "Git history retains every past commit, so the key is still recoverable from the old commit.",
+            "Assume it has already been scraped by automated scanners — public keys are found within minutes.",
+            "Rotate immediately: generate a new key and revoke the leaked one in the console.",
+            "Optionally scope the new key tighter and add alerts, so a future leak does less damage."
+          ],
+          output: "Rotate the key now — the delete doesn't help because the key still lives in Git history and was likely already scraped."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "safe storage vs leaky storage",
+          columns: ["Approach", "Where the key lives", "Risk"],
+          rows: [
+            { cells: ["Hardcoded in .py", "In your source code", "Leaks the instant code is shared or pushed"] },
+            { cells: ["Printed to logs", "In log files", "Leaks to anyone who can read logs"] },
+            { cells: [".env + .gitignore", "Local file, never committed", "Stays on your machine; code reads by name"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "safe habit or leak risk?",
+          bins: [
+            { id: "safe", label: "Safe habit" },
+            { id: "leak", label: "Leak risk" }
+          ],
+          items: [
+            { id: "i1", text: "Store the key in a gitignored .env file", bin: "safe" },
+            { id: "i2", text: "Print the full key to confirm it loaded", bin: "leak" },
+            { id: "i3", text: "Rotate a key the moment you suspect a leak", bin: "safe" },
+            { id: "i4", text: "Commit .env to a public repo", bin: "leak" },
+            { id: "i5", text: "Scope a throwaway script's key to least privilege", bin: "safe" },
+            { id: "i6", text: "Paste the key into a code comment", bin: "leak" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Explain why a committed-then-deleted key still needs to be rotated, drawing on what you know about how Git stores history.",
+          sampleAnswer: "Git records every commit as a permanent snapshot, so deleting the key in a new commit only removes it from the latest version — the old commit that contained it is still in the repository's history and can be checked out by anyone. Public-repo scanners typically find leaked keys within minutes, so by the time I delete it, it's likely already been copied. The only real fix is rotation: revoke the exposed key and issue a new one, which makes the leaked value useless."
+        }
+      ],
+      hints: [
+        'Use os.environ.get(\"ANTHROPIC_API_KEY\") so a missing variable returns None instead of crashing.',
+        "Compare to None (api_key is not None) to get a boolean.",
+        "Print the boolean, never the key value itself."
+      ],
+      challenge_title: "Secret Leak Scanner",
+      challenge_description: "Scan lines of code and config for leaked secrets, mimicking the automated scanners that find keys within minutes of a push.",
+      challenge_story: "Before any commit reaches your public repo, a pre-commit scanner sweeps the staged lines looking for secrets that should never be there. The rule your team uses: a line **leaks** a secret if it contains the token prefix \`sk-ant-\` AND the line is NOT a safe reference. A safe reference is a line that only names the variable rather than embedding its value — specifically, lines that read the key by name (containing \`os.environ\`) or document it as a placeholder (containing \`.env.example\`) are allowed even if they mention the prefix in a comment. Build the scanner that flags the leaking lines and blocks the commit if any are found.",
+      challenge_statement: "You are given \`n\` lines of staged content. A line is a LEAK if BOTH of these are true:\n\n1. It contains the substring \`sk-ant-\` (a real key value).\n2. It does NOT contain \`os.environ\` AND does NOT contain \`.env.example\` (i.e. it is not a safe by-name reference or placeholder).\n\nFor each line, in order, print its 1-based line number and \`LEAK\` or \`OK\`. After all lines, print \`BLOCKED\` if at least one leak was found, otherwise \`CLEAN\`.",
+      challenge_input_format: "Line 1: integer \`n\`. Each of the next \`n\` lines is one line of staged content (may contain spaces; treat the whole line as-is).",
+      challenge_output_format: "For each line, in order: \`<line_number> LEAK\` or \`<line_number> OK\`. Then a final line: \`BLOCKED\` or \`CLEAN\`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 10000",
+        "Each line has length 0 to 500 characters.",
+        "The secret prefix to detect is exactly `sk-ant-`.",
+      ],
+      challenge_examples: [
+        { input: "3\napi_key = \"sk-ant-abc123\"\napi_key = os.environ.get(\"ANTHROPIC_API_KEY\")\nplain config line", output: "1 LEAK\n2 OK\n3 OK\nBLOCKED", explanation: "Line 1 embeds a real sk-ant- value with no safe reference -> LEAK. Line 2 contains sk-ant- nowhere and uses os.environ -> OK. Line 3 has no secret -> OK. A leak was found, so BLOCKED." },
+        { input: "2\n# ANTHROPIC_API_KEY=sk-ant-... see .env.example\nname = \"alice\"", output: "1 OK\n2 OK\nCLEAN", explanation: "Line 1 mentions sk-ant- but also contains .env.example, marking it a safe placeholder reference -> OK. Line 2 has no secret. No leaks -> CLEAN." },
+      ],
+      challenge_notes: "This mirrors real secret scanners: they flag embedded key values but whitelist by-name references and example files. The check is purely substring-based here. Read exactly \`n\` lines after the count so a trailing newline doesn't add a phantom blank line. A line can contain \`sk-ant-\` and still be OK if it also references the environment or the example file.",
+      challenge_hints: [
+        "Read `n`, then take the next `n` lines exactly (don't strip internal content you need to scan).",
+        "A line leaks when `\"sk-ant-\" in line` AND `\"os.environ\" not in line` AND `\".env.example\" not in line`.",
+        "Track a boolean for whether any leak was seen; print BLOCKED if it's true, else CLEAN.",
+      ],
+      challenge_starter_code: `import sys
+
+lines = sys.stdin.read().split("\\n")
+n = int(lines[0])
+content = lines[1:1 + n]
+# TODO: for each line print "<num> LEAK" or "<num> OK"; a leak is a line with
+# "sk-ant-" that is not a safe reference (os.environ / .env.example).
+# Finally print "BLOCKED" if any leak, else "CLEAN".
+`,
+      challenge_solution_code: `import sys
+
+lines = sys.stdin.read().split("\\n")
+n = int(lines[0])
+content = lines[1:1 + n]
+
+any_leak = False
+for i, line in enumerate(content, start=1):
+    is_leak = ("sk-ant-" in line) and ("os.environ" not in line) and (".env.example" not in line)
+    if is_leak:
+        any_leak = True
+        print(f"{i} LEAK")
+    else:
+        print(f"{i} OK")
+
+print("BLOCKED" if any_leak else "CLEAN")
+`,
+      challenge_test_cases: [
+        {
+          input: "3\napi_key = \"sk-ant-abc123\"\napi_key = os.environ.get(\"ANTHROPIC_API_KEY\")\nplain config line",
+          expected_output: "1 LEAK\n2 OK\n3 OK\nBLOCKED",
+          description: "An embedded key is flagged; an os.environ reference and a plain line are safe."
+        },
+        {
+          input: "2\n# ANTHROPIC_API_KEY=sk-ant-... see .env.example\nname = \"alice\"",
+          expected_output: "1 OK\n2 OK\nCLEAN",
+          description: "A .env.example placeholder line is whitelisted even though it mentions the prefix."
+        },
+        {
+          input: "1\nDB_PASSWORD=hunter2",
+          expected_output: "1 OK\nCLEAN",
+          description: "Edge case: no sk-ant- prefix means no Claude-key leak detected."
+        },
+        {
+          input: "2\nKEY = 'sk-ant-live-9999'\nOTHER = 'sk-ant-test-1'",
+          expected_output: "1 LEAK\n2 LEAK\nBLOCKED",
+          description: "Multiple embedded keys all flagged; commit blocked."
         }
       ]
     }

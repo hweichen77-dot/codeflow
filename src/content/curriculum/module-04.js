@@ -6,7 +6,7 @@ export default {
     difficulty: "intermediate",
     category: "chatbots_agents",
     estimated_time: 120,
-    lessons_count: 4,
+    lessons_count: 8,
     tags: ["chatbot", "message-history", "context-window", "streaming", "persona", "anthropic"],
     order: 4,
     cover_image: ""
@@ -1261,6 +1261,1244 @@ main()
         { input: "3 50\n20 Hello \n30 there \n10 matey", expected_output: "70 110\nHello there matey", description: "Three chunks: TTFT 70, total 110, reply assembled in order." },
         { input: "1 100\n5 Hi", expected_output: "105 105\nHi", description: "Single chunk makes TTFT equal total." },
         { input: "0 40\n", expected_output: "40 40\n", description: "Edge: no chunks; TTFT and total are just the warmup and the reply is empty." }
+      ]
+    },
+
+    {
+      id: "ai-04-l5",
+      project_id: "ai-04",
+      order: 5,
+      title: "Storing Conversation State",
+      concept: "State",
+      xp_reward: 10,
+      explanation: `Your chatbot script works beautifully — until you close the terminal. Reopen it, say "hi" again, and the bot has forgotten your name, your persona, everything. The Python list that held the history lived in memory, and memory died with the process. The model never had the memory; your *program* did, and you just let it evaporate.
+
+## What conversation state is
+
+From lesson 1 you know the model is **stateless** — it keeps nothing between calls. That means the conversation history has to live somewhere *outside* the model, and the obvious place (a list in a running script) is the most fragile one. **Conversation state** is the durable copy of that history: where you persist the messages so you can rebuild the exact same list on the next call, even after a restart, a crash, or a switch to a different server.
+
+The rule never changes: **the app holds the history, not the model.** What changes as your chatbot grows up is *how durably* the app holds it — from a list, to a per-user session store, to a real database.
+
+## How it works
+
+Statelessness has a brutal consequence: there is no "continue where we left off" button. Every call, you resend the full message list, so every call you must first **load** that list from wherever you stored it. The loop becomes: load state, append the new turn, call the model, append the reply, **save state**.
+
+\`\`\`python
+sessions = {}  # session_id -> list of messages (a tiny store)
+
+def get_history(session_id):
+    return sessions.setdefault(session_id, [])
+
+def handle(session_id, user_text):
+    history = get_history(session_id)            # LOAD
+    history.append({"role": "user", "content": user_text})
+    reply = call_model(history)                  # model stays stateless
+    history.append({"role": "assistant", "content": reply})
+    sessions[session_id] = history               # SAVE
+    return reply
+\`\`\`
+
+A \`session_id\` keys each user's history so two people chatting at once never see each other's turns. Swap that \`sessions\` dict for Redis or a database row and nothing else changes — the *shape* is identical, only the durability improves.
+
+## Why it matters
+
+- **Restarts stop wiping memory.** Persist to disk or a DB and the same conversation survives a crash or a deploy.
+- **Many users, one server.** Without a per-session key, everyone shares one history and the bot leaks one person's chat into another's.
+- **Statelessness is a feature.** Because the server holds no per-request memory, you can run ten identical servers behind a load balancer; each rebuilds the list from the store. That horizontal scaling is impossible if "memory" lives in one process.
+
+The cost is discipline: forget to save after a turn and that turn vanishes; forget to load and you start from scratch.
+
+## The mental model to keep
+
+The model is a stateless function; **your store is the memory.** Each turn you fetch the history out of the store, run the function, and put the updated history back. Lose the store, lose the conversation.`,
+      key_terms: [
+        { term: "Conversation state", definition: "The durable, app-held copy of the message history that is loaded and saved around each model call." },
+        { term: "Session store", definition: "A place (in-memory dict, Redis, or database) that maps a session id to that conversation's message list." },
+        { term: "Session id", definition: "A key that separates one user's history from another's so concurrent chats never mix." }
+      ],
+      callouts: [
+        { type: "analogy", title: "The model is a calculator, the store is your notebook", content: "A calculator forgets the moment you press equals — it holds no running tally. You keep the tally in a notebook, read it in, punch the keys, and write the new total back. The store is that notebook; the model is the calculator.", position: "before" },
+        { type: "warning", title: "Forget to save and the turn vanishes", content: "Statelessness cuts both ways: nothing is remembered automatically, so a missing save after a turn silently drops it. Load before the call, save after the reply, every single time.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Load, run, save around a stateless model",
+        steps: [
+          { label: "Load history", desc: "Fetch the message list for this session id from the store." },
+          { label: "Append + call", desc: "Add the user turn, send the whole list to the stateless model." },
+          { label: "Append reply", desc: "Add the assistant turn returned by the model." },
+          { label: "Save history", desc: "Write the updated list back so the next call can rebuild it." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "If the model is stateless, where must the conversation history actually live?",
+          options: [
+            "In the app's store, loaded and saved around each call",
+            "Inside the model's weights after each reply",
+            "In the network connection between calls"
+          ],
+          correct_index: 0,
+          explanation: "The app holds the history. The model keeps nothing; you load it, send it, and save it yourself."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why does a chatbot's history vanish when you restart a simple script?",
+          options: [
+            "The history lived only in an in-memory list that died with the process",
+            "The model deletes its memory on shutdown",
+            "The API expires old conversations after a restart",
+            "Tokens are refunded when the program closes"
+          ],
+          correct_index: 0,
+          explanation: "An in-memory Python list is not durable. Persist state to disk or a database to survive restarts."
+        },
+        {
+          question: "What is the role of a session id in conversation state?",
+          options: [
+            "It keys each user's history so concurrent chats stay separate",
+            "It tells the model which persona to use",
+            "It counts how many tokens were billed",
+            "It encrypts the message content"
+          ],
+          correct_index: 0,
+          explanation: "Each session id maps to one conversation's message list, keeping users' histories from mixing."
+        },
+        {
+          question: "Why does keeping memory in a store (not the process) help you scale to many servers?",
+          options: [
+            "Any server can rebuild the history from the shared store, so requests aren't tied to one process",
+            "Stores make the model itself remember across calls",
+            "It removes the need to resend history",
+            "It makes the context window larger"
+          ],
+          correct_index: 0,
+          explanation: "Because no per-request memory lives in one process, identical servers can each load state and serve any request."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "State storage check",
+          questions: [
+            { question: "An in-memory Python list is a durable way to store conversation state across restarts.", type: "true_false", correct_answer: "false", explanation: "It dies with the process. Use a file, database, or session store for durability." },
+            { question: "The key that maps one user's conversation to its own message list is the ____ id.", type: "fill_in", correct_answer: "session", explanation: "A session id separates each user's history in the store." }
+          ]
+        }
+      ],
+      starter_code: `# A tiny session store: each session id maps to its own message list.
+
+sessions = {}
+
+def get_history(session_id):
+    # TODO: return the list for this session, creating an empty one if missing.
+    pass
+
+def handle(session_id, user_text, reply):
+    # TODO: load history, append the user turn, append the reply, save it back.
+    pass
+
+handle("s1", "My name is Sam.", "Nice to meet you, Sam.")
+handle("s2", "Hello!", "Hi there!")
+handle("s1", "What's my name?", "Your name is Sam.")
+print("s1 turns:", len(sessions.get("s1", [])))
+`,
+      solution_code: `# A tiny session store: each session id maps to its own message list.
+
+sessions = {}
+
+def get_history(session_id):
+    return sessions.setdefault(session_id, [])
+
+def handle(session_id, user_text, reply):
+    history = get_history(session_id)            # LOAD
+    history.append({"role": "user", "content": user_text})
+    history.append({"role": "assistant", "content": reply})
+    sessions[session_id] = history               # SAVE
+    return history
+
+handle("s1", "My name is Sam.", "Nice to meet you, Sam.")
+handle("s2", "Hello!", "Hi there!")
+handle("s1", "What's my name?", "Your name is Sam.")
+
+print("s1 turns:", len(sessions["s1"]))
+print("s2 turns:", len(sessions["s2"]))
+print("s1 last:", sessions["s1"][-1]["content"])
+`,
+      expected_output: `s1 turns: 4
+s2 turns: 2
+s1 last: Your name is Sam.`,
+      step_throughs: [
+        {
+          title: "One turn flows through the store",
+          steps: [
+            { label: "Load the session's history", detail: "Look up this session id in the store. If it's new, start an empty list. The model is never asked to remember.", code: 'history = sessions.setdefault("s1", [])' },
+            { label: "Append the user turn", detail: "Add what the human just said to the loaded list, in memory for now.", code: 'history.append({"role": "user", "content": "What\'s my name?"})' },
+            { label: "Call the stateless model", detail: "Send the whole list. The model reads it, replies, and forgets it again the instant it finishes.", code: "reply = call_model(history)  # model keeps nothing" },
+            { label: "Append reply and save", detail: "Add the assistant turn, then write the list back to the store so the next call can rebuild it.", code: 'history.append({"role": "assistant", "content": reply}); sessions["s1"] = history' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Two users, s1 and s2, each send one user message and get one reply through the same store.\nHow many turns are in s1's history, and does s2's message appear in it?",
+          steps: [
+            "Each session id maps to its own list in the store.",
+            "s1 gets one user turn and one assistant turn appended → 2 turns.",
+            "s2's turns go under the key 's2', never under 's1'.",
+            "So s1's history has 2 turns and contains none of s2's messages."
+          ],
+          output: "s1 has 2 turns; s2's message does not appear in s1's history."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A developer keeps history in a module-level list (no session id) and deploys the bot to two servers behind a load balancer.\nUser A's first message hits server 1; the follow-up hits server 2. What breaks, and what fixes it?",
+          steps: [
+            "Server 2's in-memory list never saw user A's first turn — it lived only in server 1's process.",
+            "Worse, with no session id, every user on a server shares one list, leaking chats together.",
+            "Fix part 1: key history by session id so users stay separate.",
+            "Fix part 2: store that state in a shared place (DB or Redis) so either server can load it."
+          ],
+          output: "Move state to a shared, session-keyed store so any server can rebuild the right history."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "where conversation state can live",
+          columns: ["Store", "Survives restart?", "Works across servers?", "Best for"],
+          rows: [
+            { cells: ["In-memory list", "No", "No", "Quick scripts and demos"] },
+            { cells: ["Local file (JSON)", "Yes", "No (one machine)", "Single-machine apps"] },
+            { cells: ["Database / Redis (by session id)", "Yes", "Yes", "Real multi-user products"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "the model's job vs the app's job",
+          bins: [
+            { id: "model", label: "The model does this" },
+            { id: "app", label: "The app must do this" }
+          ],
+          items: [
+            { id: "i1", text: "Predict the next reply from the messages it's given", bin: "model" },
+            { id: "i2", text: "Load the history for this session before the call", bin: "app" },
+            { id: "i3", text: "Save the updated history after the reply", bin: "app" },
+            { id: "i4", text: "Keep one user's chat separate from another's", bin: "app" },
+            { id: "i5", text: "Forget everything the instant the call ends", bin: "model" },
+            { id: "i6", text: "Rebuild the exact message list after a restart", bin: "app" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: the model is stateless, so what does your app have to do on every single turn to keep a conversation going?",
+          sampleAnswer: "Because the model remembers nothing between calls, my app has to load this session's message history from a store, append the new user turn, send the whole list, then append the model's reply and save the updated history back. The store is the real memory; the model just reads whatever list I hand it and forgets it immediately afterward."
+        }
+      ],
+      hints: [
+        "sessions.setdefault(session_id, []) returns the existing list or creates an empty one.",
+        "In handle(), append the user turn and the reply to the same loaded list.",
+        "Re-assign sessions[session_id] = history to 'save' it back to the store."
+      ],
+      challenge_title: "Session Store Rebuilder",
+      challenge_description: "Run a multi-user session store: route each turn to the right session id, cap each history at a recent-turn limit, and report total rebuild cost.",
+      challenge_story: "Your chatbot graduated from a single script to a real service with many users at once. Because the model is **stateless**, every incoming turn must **load** that user's history, append the new message, and **save** it back — and on each call the whole stored list is resent to the model, so you pay to rebuild it every time. To keep cost bounded, each session keeps only its most recent `cap` messages. Build the store that processes a stream of incoming turns, keeps each session correctly separated, enforces the cap, and totals how many messages were resent across all rebuilds.",
+      challenge_statement: "You are given a per-session message `cap` and `n` incoming events in order. Each event is a `session_id` and a message.\n\nProcess events in order. For each event:\n\n1. Append the message to that session's stored history (create the history on first sight of the id).\n2. If the history now exceeds `cap` messages, drop the **oldest** ones until exactly `cap` remain.\n3. The model is then called with the whole stored list, so add the **current stored length** of that session to a running rebuild total.\n\nAfter all events, print the rebuild total. Then, for each session in the order its id was **first seen**, print its id and final stored length, space-separated.",
+      challenge_input_format: "The first line has two integers `cap n`. Each of the next `n` lines is a `session_id`, a single space, then the message text (which may contain spaces).",
+      challenge_output_format: "The first line is the total rebuild cost (sum of stored lengths after each event). Then one line per session, in first-seen order, formatted `session_id length`.",
+      challenge_constraints: [
+        "1 ≤ cap ≤ 100000",
+        "1 ≤ n ≤ 100000",
+        "session_id contains no spaces; the message is non-empty.",
+      ],
+      challenge_examples: [
+        { input: "3 6\ns1 hello\ns1 how are you\ns2 hi\ns1 what is python\ns1 explain loops\ns2 bye", output: "12\ns1 3\ns2 2", explanation: "After each s1/s2 event the stored lengths are 1,2,1,3,3,2 (s1 hits the cap of 3 and drops its oldest on the 5th event). Sum = 12. Final: s1 keeps 3, s2 keeps 2; s1 was seen first." },
+        { input: "5 1\nx only one message", output: "1\nx 1", explanation: "One session, one message: stored length 1, rebuild total 1." },
+      ],
+      challenge_notes: "Use a dict mapping session id to a list, plus a separate list recording first-seen id order. Splitting each line with `split(' ', 1)` keeps multi-word messages intact. The cap is why production bots stay affordable: each rebuild is bounded no matter how long the chat runs.",
+      challenge_hints: [
+        "Keep `sessions = {}` for histories and an `order = []` list you append to only when an id is new.",
+        "After appending, if `len(history) > cap`, slice or pop from the front until exactly `cap` remain.",
+        "Add the current stored length to the rebuild total on every event, then print sessions in first-seen order.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    cap, n = map(int, data[0].split())
+    # TODO: process n events; route each to its session, enforce the cap,
+    #       and total the stored length after each event (the rebuild cost).
+    # TODO: print the total, then each session id + final length in first-seen order.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    cap, n = map(int, data[0].split())
+    idx = 1
+    sessions = {}
+    order = []
+    rebuilds = 0
+    for _ in range(n):
+        sid, msg = data[idx].split(" ", 1)
+        idx += 1
+        if sid not in sessions:
+            sessions[sid] = []
+            order.append(sid)
+        sessions[sid].append(msg)
+        if len(sessions[sid]) > cap:
+            sessions[sid] = sessions[sid][-cap:]
+        rebuilds += len(sessions[sid])
+    print(rebuilds)
+    for sid in order:
+        print(f"{sid} {len(sessions[sid])}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 6\ns1 hello\ns1 how are you\ns2 hi\ns1 what is python\ns1 explain loops\ns2 bye", expected_output: "12\ns1 3\ns2 2", description: "Two sessions; s1 hits the cap and drops its oldest message." },
+        { input: "5 1\nx only one message", expected_output: "1\nx 1", description: "Single session and single message." },
+        { input: "2 3\na one\na two\na three", expected_output: "5\na 2", description: "Cap of 2: stored lengths are 1, 2, 2; the oldest is dropped on the third event." },
+        { input: "1 2\nb first message\nb second message", expected_output: "2\nb 1", description: "Edge: cap of 1 keeps only the newest message each turn." }
+      ]
+    },
+
+    {
+      id: "ai-04-l6",
+      project_id: "ai-04",
+      order: 6,
+      title: "Summarizing Old Turns",
+      concept: "Memory",
+      xp_reward: 10,
+      explanation: `A sliding window has a cruel flaw: it forgets the *beginning*. The user told your bot their name in turn 2, but by turn 60 that turn slid off the edge and the bot is back to "what should I call you?" Trimming keeps recent context sharp and throws away everything else. There's a smarter trade: keep the *gist* of the old turns without keeping all their tokens.
+
+## What rolling-summary memory is
+
+**Rolling-summary memory** compresses old turns into a short paragraph and keeps that paragraph in place of the raw messages. Instead of dropping the first 50 turns entirely, you ask the model to summarize them — "User is Sam, a beginner learning Python; prefers short answers; building a chatbot" — and prepend that one block. The recent turns stay verbatim; the ancient ones live on as a compact recap.
+
+You end up with two memory layers: a **summary** of the distant past and a **window** of the recent present. The bot remembers Sam's name from turn 2 *and* the exact wording of turn 59.
+
+## How it works
+
+When the history crosses a length threshold, split it: everything except the last \`keep\` turns is "old," the rest is "recent." Summarize the old block, then rebuild the history as \`[summary] + recent\`.
+
+\`\`\`python
+def compress(history, keep, summarize):
+    if len(history) <= keep:
+        return history                 # nothing old enough to compress
+    old = history[:-keep]              # the distant turns
+    recent = history[-keep:]           # the verbatim recent window
+    summary = summarize(old)           # one extra model call
+    summary_turn = {"role": "user",
+                    "content": "Summary so far: " + summary}
+    return [summary_turn] + recent
+\`\`\`
+
+The summary usually rides as a leading \`user\` (or system) note so the model treats it as established context. Crucially, summarizing costs **one extra API call**, so you don't do it every turn — you do it occasionally, when history grows past your threshold.
+
+## Why it matters
+
+- **Continuity over a long chat.** Facts from hour one survive into hour three because they're folded into the summary instead of being dropped.
+- **Bounded tokens.** A 200-token summary replaces thousands of tokens of old turns, so each call stays cheap even as the conversation runs for hundreds of turns.
+- **A real trade-off.** Summaries lose detail — exact quotes, precise numbers, the literal wording. The win is the *gist* at a fraction of the cost; the loss is fidelity. Choose it when long-run continuity matters more than verbatim recall.
+
+Compared to a plain sliding window, summarization costs more work (an extra call) but remembers far more of the conversation's substance.
+
+## The mental model to keep
+
+A sliding window has a short memory; rolling-summary memory has a **diary**. Old pages get condensed into a one-paragraph recap, the latest pages stay word-for-word, and you carry both forward — the gist of everything plus the detail of what just happened.`,
+      key_terms: [
+        { term: "Rolling-summary memory", definition: "A strategy that compresses old turns into a short summary and keeps it alongside a window of recent verbatim turns." },
+        { term: "Summary turn", definition: "A single message (often a leading user or system note) holding the condensed recap of dropped older turns." },
+        { term: "Compression threshold", definition: "The history length at which you trigger a summarization pass instead of summarizing every turn." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Meeting minutes, not a transcript", content: "A full transcript records every word but is huge. Meeting minutes capture the decisions and key facts in a paragraph. Rolling-summary memory keeps minutes of the old turns and the full transcript only for the recent ones.", position: "before" },
+        { type: "insight", title: "Summarizing costs a call", content: "Compressing old turns means an extra model call, so you trigger it occasionally at a length threshold, not on every turn. The summary's tokens are tiny; the summarizing call is the real cost.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Compressing old turns into a summary",
+        steps: [
+          { label: "History grows past threshold", desc: "The conversation is long enough to compress." },
+          { label: "Split old vs recent", desc: "All but the last few turns are 'old'; the rest stay verbatim." },
+          { label: "Summarize the old block", desc: "One model call condenses old turns into a short recap." },
+          { label: "Rebuild: summary + recent", desc: "Prepend the summary, keep the recent window, send that." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What does rolling-summary memory keep that a plain sliding window throws away?",
+          options: [
+            "The gist of the old turns, folded into a short summary",
+            "The exact wording of every old turn",
+            "The system prompt only"
+          ],
+          correct_index: 0,
+          explanation: "Summarization preserves the substance of old turns as a compact recap instead of dropping them entirely."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "How does rolling-summary memory differ from a plain sliding window?",
+          options: [
+            "It condenses old turns into a summary instead of discarding them outright",
+            "It keeps every turn forever with no trimming",
+            "It deletes the system prompt to save space",
+            "It sends only the newest message each call"
+          ],
+          correct_index: 0,
+          explanation: "A sliding window drops old turns; summarization compresses them so their substance survives."
+        },
+        {
+          question: "Why don't you summarize on every single turn?",
+          options: [
+            "Each summarization is an extra API call, so you trigger it occasionally at a threshold",
+            "Summaries corrupt the recent turns",
+            "The API forbids more than one summary per chat",
+            "Summarizing makes the reply slower to stream"
+          ],
+          correct_index: 0,
+          explanation: "Summarization costs an extra call, so it runs only when history grows past a length threshold."
+        },
+        {
+          question: "What is the main downside of replacing old turns with a summary?",
+          options: [
+            "You lose exact detail and wording, keeping only the gist",
+            "The bot can no longer stream replies",
+            "The system prompt stops working",
+            "The model becomes stateful"
+          ],
+          correct_index: 0,
+          explanation: "Summaries trade fidelity for compactness: the substance survives, but precise quotes and numbers may not."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Summary memory check",
+          questions: [
+            { question: "Rolling-summary memory keeps a window of recent turns verbatim alongside a summary of the old ones.", type: "true_false", correct_answer: "true", explanation: "Yes — two layers: a compact summary of the past plus exact recent turns." },
+            { question: "Replacing many old turns with one short recap is called ____ them.", type: "fill_in", correct_answer: "summarizing", explanation: "Summarizing old turns compresses their tokens while keeping the gist." }
+          ]
+        }
+      ],
+      starter_code: `# Compress old turns into a summary, keep the recent window verbatim.
+
+def fake_summarize(old_turns):
+    # Stand-in for a model call that returns a short recap.
+    return "earlier the user shared their name and goal"
+
+def compress(history, keep):
+    # TODO: if history has <= keep turns, return it unchanged.
+    # TODO: otherwise split off the old turns, summarize them,
+    #       and return [summary_turn] + the last 'keep' turns.
+    pass
+
+history = [
+    {"role": "user", "content": "My name is Sam."},
+    {"role": "assistant", "content": "Hi Sam!"},
+    {"role": "user", "content": "Teach me loops."},
+    {"role": "assistant", "content": "Sure, a loop repeats code."},
+    {"role": "user", "content": "What's my name again?"},
+]
+print("Before:", len(history))
+`,
+      solution_code: `# Compress old turns into a summary, keep the recent window verbatim.
+
+def fake_summarize(old_turns):
+    # Stand-in for a model call that returns a short recap.
+    return "earlier the user shared their name and goal"
+
+def compress(history, keep):
+    if len(history) <= keep:
+        return history
+    old = history[:-keep]
+    recent = history[-keep:]
+    summary = fake_summarize(old)
+    summary_turn = {"role": "user", "content": "Summary so far: " + summary}
+    return [summary_turn] + recent
+
+history = [
+    {"role": "user", "content": "My name is Sam."},
+    {"role": "assistant", "content": "Hi Sam!"},
+    {"role": "user", "content": "Teach me loops."},
+    {"role": "assistant", "content": "Sure, a loop repeats code."},
+    {"role": "user", "content": "What's my name again?"},
+]
+
+print("Before:", len(history))
+compressed = compress(history, keep=2)
+print("After:", len(compressed))
+print("First turn:", compressed[0]["content"])
+print("Last turn:", compressed[-1]["content"])
+`,
+      expected_output: `Before: 5
+After: 3
+First turn: Summary so far: earlier the user shared their name and goal
+Last turn: What's my name again?`,
+      step_throughs: [
+        {
+          title: "From a long history to summary + recent",
+          steps: [
+            { label: "Check the threshold", detail: "If the history is short enough, do nothing. Compression only happens once it grows past your keep count.", code: "if len(history) <= keep: return history" },
+            { label: "Split old from recent", detail: "Everything except the last 'keep' turns is old; the tail stays verbatim as the recent window.", code: "old = history[:-keep]; recent = history[-keep:]" },
+            { label: "Summarize the old block", detail: "One model call condenses the old turns into a short recap of names, goals, and decisions.", code: 'summary = summarize(old)  # "user is Sam, learning loops"' },
+            { label: "Rebuild the history", detail: "Prepend the summary as a single turn and keep the recent window. The list is now short but still remembers the past.", code: "return [summary_turn] + recent" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A history has 5 turns and you compress with keep=2.\nHow many turns are in the result, and what is the first one?",
+          steps: [
+            "The last 2 turns stay verbatim as the recent window.",
+            "The other 3 old turns are summarized into a single summary turn.",
+            "Result = 1 summary turn + 2 recent turns = 3 turns.",
+            "The first turn is the summary recap of the old block."
+          ],
+          output: "3 turns; the first is the summary of the old turns."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A bot summarizes old turns into a 200-token recap. A 60-turn chat averages 80 tokens per turn.\nRoughly how many history tokens does the bot send if it keeps the last 10 turns plus the summary, versus sending all 60?",
+          steps: [
+            "All 60 turns: 60 × 80 = 4,800 tokens of history.",
+            "With summarization: keep 10 recent turns = 10 × 80 = 800 tokens.",
+            "Add the 200-token summary that stands in for the other 50 turns.",
+            "Total = 800 + 200 = 1,000 tokens — versus 4,800 unsummarized."
+          ],
+          output: "About 1,000 tokens instead of 4,800 — a large saving with the gist preserved."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "sliding window vs rolling summary",
+          columns: ["Aspect", "Sliding window", "Rolling summary"],
+          rows: [
+            { cells: ["Old turns", "Dropped entirely", "Condensed into a recap"] },
+            { cells: ["Extra cost", "None", "One summarizing call"] },
+            { cells: ["Remembers turn 2 at turn 60?", "No", "Yes, via the summary"] },
+            { cells: ["Best when", "Recent context is enough", "Long-run continuity matters"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "what survives compression vs what is lost",
+          bins: [
+            { id: "kept", label: "Survives in the summary" },
+            { id: "lost", label: "Lost when summarized" }
+          ],
+          items: [
+            { id: "i1", text: "The user's name mentioned 50 turns ago", bin: "kept" },
+            { id: "i2", text: "The exact wording of an old message", bin: "lost" },
+            { id: "i3", text: "The user's overall goal for the chat", bin: "kept" },
+            { id: "i4", text: "A precise number quoted in an old turn", bin: "lost" },
+            { id: "i5", text: "The general topic discussed earlier", bin: "kept" },
+            { id: "i6", text: "The literal punctuation of an old reply", bin: "lost" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is rolling-summary memory worth an extra API call compared to just sliding-window trimming?",
+          sampleAnswer: "A sliding window keeps recent turns but permanently forgets the start of the conversation, so facts like a name or goal vanish over a long chat. Rolling-summary memory spends one extra call to compress those old turns into a short recap, so the bot keeps the gist of everything while staying cheap. I pay a little more work to preserve long-run continuity that plain trimming would throw away."
+        }
+      ],
+      hints: [
+        "If len(history) <= keep, there's nothing old to compress — return it as-is.",
+        "old = history[:-keep] and recent = history[-keep:] split the list cleanly.",
+        "Return [summary_turn] + recent, where summary_turn wraps the summarize() output."
+      ],
+      challenge_title: "Rolling Summary Budget",
+      challenge_description: "Compress old turns into a fixed-size summary, keep a recent window verbatim, and report the token savings versus resending the raw history.",
+      challenge_story: "Your tutoring bot holds hour-long sessions, and a plain sliding window keeps forgetting the student's name from the opening minutes. You switch to **rolling-summary memory**: keep the last `keep` turns word-for-word, and replace all older turns with one fixed-cost **summary**. Finance wants the numbers — given a conversation's per-turn token costs, report what the summarized history now costs to send and how many tokens that saves over resending every raw turn.",
+      challenge_statement: "You are given two integers `keep` and `summary_cost`, then `n` turns with their token costs in order (oldest first).\n\nIf `n <= keep`, there is nothing old enough to compress: print `NOSUMMARY` on the first line and the raw total token cost (the sum of all turn costs) on the second line.\n\nOtherwise, the oldest `n - keep` turns are replaced by a single summary that costs exactly `summary_cost` tokens, and the last `keep` turns stay verbatim. The **summarized history cost** is `summary_cost + (sum of the last keep turns' costs)`. The **tokens saved** is the raw total minus the summarized history cost. Print the summarized history cost on the first line and the tokens saved on the second line.",
+      challenge_input_format: "The first line has two integers `keep summary_cost`. The second line has an integer `n`. The third line has `n` space-separated integers, the token cost of each turn from oldest to newest (this line is empty when `n` is 0).",
+      challenge_output_format: "If `n <= keep`: a line `NOSUMMARY`, then the raw total. Otherwise: the summarized history cost, then the tokens saved.",
+      challenge_constraints: [
+        "1 ≤ keep ≤ 100000",
+        "0 ≤ summary_cost ≤ 100000",
+        "0 ≤ n ≤ 100000",
+        "1 ≤ each turn cost ≤ 100000",
+      ],
+      challenge_examples: [
+        { input: "2 5\n5\n10 10 10 10 10", output: "25\n25", explanation: "n=5 > keep=2. The oldest 3 turns (30 tokens) become a 5-token summary; the last 2 turns cost 20. Summarized = 5+20 = 25. Raw = 50, so saved = 50-25 = 25." },
+        { input: "3 4\n3\n7 8 9", output: "NOSUMMARY\n24", explanation: "n=3 is not greater than keep=3, so nothing is compressed; the raw total is 7+8+9 = 24." },
+      ],
+      challenge_notes: "When `n <= keep` you never make the extra summarizing call — there's nothing old enough to be worth it. The saving comes from one small fixed `summary_cost` standing in for potentially thousands of tokens of old turns.",
+      challenge_hints: [
+        "Compute the raw total first; you'll need it in both branches.",
+        "If `n <= keep`, print NOSUMMARY and the raw total and stop.",
+        "Otherwise the kept cost is the sum of the last `keep` values; summarized = summary_cost + that, saved = raw - summarized.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    keep, summary_cost = map(int, data[0].split())
+    n = int(data[1].strip())
+    costs = list(map(int, data[2].split())) if n > 0 else []
+
+    # TODO: if n <= keep, print NOSUMMARY and the raw total.
+    # TODO: otherwise compute summarized = summary_cost + sum(last keep),
+    #       and saved = raw_total - summarized; print both.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    keep, summary_cost = map(int, data[0].split())
+    n = int(data[1].strip())
+    costs = list(map(int, data[2].split())) if n > 0 else []
+
+    raw_total = sum(costs)
+    if n <= keep:
+        print("NOSUMMARY")
+        print(raw_total)
+        return
+
+    recent_cost = sum(costs[n - keep:])
+    summarized = summary_cost + recent_cost
+    saved = raw_total - summarized
+    print(summarized)
+    print(saved)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "2 5\n5\n10 10 10 10 10", expected_output: "25\n25", description: "Three old turns compressed into a 5-token summary; saves 25 tokens." },
+        { input: "3 4\n3\n7 8 9", expected_output: "NOSUMMARY\n24", description: "n equals keep, so nothing is summarized." },
+        { input: "1 2\n4\n10 20 30 40", expected_output: "42\n58", description: "Keep the last turn (40) plus a 2-token summary; saves 58." },
+        { input: "5 10\n2\n3 4", expected_output: "NOSUMMARY\n7", description: "Edge: fewer turns than keep, raw total reported." }
+      ]
+    },
+
+    {
+      id: "ai-04-l7",
+      project_id: "ai-04",
+      order: 7,
+      title: "Commands and Resets",
+      concept: "Control",
+      xp_reward: 10,
+      explanation: `Your user types \`/clear\`. What should happen? If you just append it as a normal user turn, the model will earnestly try to *respond* to the literal text "/clear" in character — your pirate will say "Arr, clear what, matey?" Commands aren't conversation. They're instructions to *your* app about the conversation, and you have to handle them before the model ever sees them.
+
+## What chat commands are
+
+A **command** is a special user input — usually starting with \`/\` — that your code intercepts to control the session instead of sending to the model. \`/clear\` wipes the history. \`/persona wizard\` swaps the character. \`/help\` lists commands. The pattern is the same: **check for a command first; only if it isn't one do you treat the input as a normal message** and call the model.
+
+This is where owning the message list (lesson 1) pays off. Because the history is just your Python list and the persona is just your \`system\` string, resetting or re-skinning a chat is a few lines of your code — the model never objects, because the model never sees the command.
+
+## How it works
+
+Route the input before the model:
+
+\`\`\`python
+def handle(user_text, state):
+    if user_text == "/clear":
+        state["history"] = []                 # wipe the conversation
+        state["system"] = state["default_system"]   # restore base persona
+        return "Conversation cleared."
+    if user_text.startswith("/persona "):
+        state["system"] = user_text[len("/persona "):]  # switch mid-chat
+        return "Persona switched."
+    # not a command -> normal turn
+    state["history"].append({"role": "user", "content": user_text})
+    reply = call_model(state["system"], state["history"])
+    state["history"].append({"role": "assistant", "content": reply})
+    return reply
+\`\`\`
+
+Two subtleties matter. On \`/clear\`, don't just empty the history — **re-inject the system prompt** (here, reset it to the default) so the very next turn still has its persona; the system string is separate from history, so clearing the list alone would leave a stale or wrong persona. And on a persona switch, you change only the \`system\` string: the history can stay, and the same stateless call now runs under a new character.
+
+## Why it matters
+
+- **Commands never reach the model.** Intercepting \`/clear\` first means the model never tries to "answer" it. Forget the early return and your bot replies to its own command in character.
+- **A clean reset restores persona.** Wiping history without re-setting the system prompt is the classic reset bug: the chat is empty but the persona is gone or stale.
+- **Mid-chat persona swaps are one string.** Because \`system\` and \`history\` are separate channels, switching from pirate to wizard is a single assignment — no rebuild of the conversation needed.
+
+## The mental model to keep
+
+Treat \`/\`-commands like keyboard shortcuts, not dialogue. Your app catches them and *acts* — clear the list, re-inject the persona, switch the character — before a single token reaches the model. Conversation goes to the model; control stays with you.`,
+      key_terms: [
+        { term: "Command", definition: "A special user input (often starting with /) your app intercepts to control the session instead of sending it to the model." },
+        { term: "Reset", definition: "Clearing the message history and re-injecting the system prompt so the next turn starts fresh but still has its persona." },
+        { term: "Persona switch", definition: "Changing only the system string mid-chat to give the bot a new character without rebuilding the history." }
+      ],
+      callouts: [
+        { type: "tip", title: "Intercept before you call", content: "Check for a command and return early before ever calling the model. If /clear reaches the model as a normal turn, the bot will try to answer it in character instead of resetting.", position: "before" },
+        { type: "warning", title: "Clearing history isn't a full reset", content: "The persona lives in the separate system string, not the history. On /clear you must re-inject the system prompt too, or the chat is empty but the character is stale or gone.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Routing input: command or message?",
+        steps: [
+          { label: "Read user input", desc: "Capture whatever the user typed this turn." },
+          { label: "Is it a command?", desc: "Check for a / prefix like /clear or /persona." },
+          { label: "Command -> act", desc: "Wipe history, re-inject system, or switch persona; return early." },
+          { label: "Message -> call model", desc: "Otherwise append the turn and call the model normally." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Why must you intercept a command like /clear before calling the model?",
+          options: [
+            "Otherwise the model treats it as a normal message and tries to answer it",
+            "The model deletes the history automatically on /clear",
+            "Commands cost more tokens than messages"
+          ],
+          correct_index: 0,
+          explanation: "Commands control your app, not the conversation. Handle them and return early so the model never sees them."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "On a /clear command, why isn't emptying the history list enough?",
+          options: [
+            "You must also re-inject the system prompt, since the persona lives there, not in the history",
+            "Clearing the list deletes the model's weights",
+            "The API requires at least one turn to remain",
+            "The persona is stored inside the last assistant turn"
+          ],
+          correct_index: 0,
+          explanation: "Persona is in the separate system string. Reset it on /clear or the next turn loses its character."
+        },
+        {
+          question: "What is the minimal change to switch a bot's persona mid-conversation?",
+          options: [
+            "Replace the system string; the history can stay as-is",
+            "Delete the whole history and start over",
+            "Append the new persona as a user turn",
+            "Restart the process to reload the model"
+          ],
+          correct_index: 0,
+          explanation: "system and history are separate channels, so a persona swap is a single assignment to the system string."
+        },
+        {
+          question: "Where should command handling sit relative to the model call?",
+          options: [
+            "Before the call, with an early return when a command matches",
+            "After the model replies, as a post-processing step",
+            "Inside the system prompt as an instruction",
+            "It doesn't matter where it goes"
+          ],
+          correct_index: 0,
+          explanation: "Check for commands first and return early; only non-commands fall through to the model call."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Command routing check",
+          questions: [
+            { question: "A /clear command should be sent to the model as a normal user turn.", type: "true_false", correct_answer: "false", explanation: "It should be intercepted by your app and never reach the model." },
+            { question: "Switching the bot's character mid-chat means changing only the ____ string.", type: "fill_in", correct_answer: "system", explanation: "The persona lives in the system parameter, separate from the history." }
+          ]
+        }
+      ],
+      starter_code: `# Route input: handle /clear and /persona before falling through to the model.
+
+state = {
+    "default_system": "You are a helpful assistant.",
+    "system": "You are a helpful assistant.",
+    "history": [],
+}
+
+def handle(user_text):
+    # TODO: if "/clear", wipe history, restore default_system, return a notice.
+    # TODO: if it starts with "/persona ", set system to the rest, return a notice.
+    # TODO: otherwise append the user turn (a real bot would call the model here).
+    pass
+
+print(handle("Hello!"))
+print("history:", len(state["history"]))
+`,
+      solution_code: `# Route input: handle /clear and /persona before falling through to the model.
+
+state = {
+    "default_system": "You are a helpful assistant.",
+    "system": "You are a helpful assistant.",
+    "history": [],
+}
+
+def handle(user_text):
+    if user_text == "/clear":
+        state["history"] = []
+        state["system"] = state["default_system"]   # re-inject persona
+        return "Conversation cleared."
+    if user_text.startswith("/persona "):
+        state["system"] = user_text[len("/persona "):]
+        return "Persona switched."
+    state["history"].append({"role": "user", "content": user_text})
+    return "(model would reply here)"
+
+print(handle("Hello!"))
+print(handle("/persona You are a wizard."))
+print("system:", state["system"])
+print(handle("Cast a spell!"))
+print("history before clear:", len(state["history"]))
+print(handle("/clear"))
+print("history after clear:", len(state["history"]))
+print("system after clear:", state["system"])
+`,
+      expected_output: `(model would reply here)
+Persona switched.
+system: You are a wizard.
+(model would reply here)
+history before clear: 2
+Conversation cleared.
+history after clear: 0
+system after clear: You are a helpful assistant.`,
+      step_throughs: [
+        {
+          title: "How /clear and /persona route around the model",
+          steps: [
+            { label: "Read the input", detail: "Capture the raw text the user typed this turn, before deciding anything.", code: 'user_text = "/clear"' },
+            { label: "Match a command first", detail: "Check command patterns before the model call. /clear and /persona are handled by your app, not sent anywhere.", code: 'if user_text == "/clear": ...' },
+            { label: "Act and re-inject persona", detail: "Wipe the history list AND reset the system string so the next turn still has its character. Return early.", code: 'state["history"] = []; state["system"] = default_system; return' },
+            { label: "Non-command falls through", detail: "Anything that isn't a command is a real message: append it and call the model as usual.", code: 'state["history"].append({"role": "user", "content": user_text})' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'A user types "/clear" but the code appends it as a normal user turn and calls the model.\nWhat does the in-character pirate bot do?',
+          steps: [
+            "The command was never intercepted, so it reaches the model as plain text.",
+            "The model sees '/clear' as something to respond to, in persona.",
+            "It replies in character, e.g. 'Arr, clear what, matey?', instead of resetting.",
+            "Fix: check for /clear first and return early before any model call."
+          ],
+          output: "The bot answers '/clear' in character instead of resetting the conversation."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'A bot handles /clear by setting history = [] but never touches the system string.\nThe persona was switched to "wizard" earlier in the session. After /clear, what persona is active, and is that correct?',
+          steps: [
+            "Clearing only the history empties the conversation list.",
+            "The system string still holds the 'wizard' persona from the earlier switch.",
+            "A user expecting /clear to fully reset gets an empty chat but a leftover wizard persona.",
+            "Correct behavior: on /clear, also reset system to the default so the persona resets too."
+          ],
+          output: "The wizard persona stays active — a reset bug; /clear should also re-inject the default system prompt."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "treating /clear as a message vs as a command",
+          columns: ["Handling", "Reaches the model?", "Result", "Correct?"],
+          rows: [
+            { cells: ["Appended as a user turn", "Yes", "Bot answers '/clear' in character", "No"] },
+            { cells: ["Intercepted, return early", "No", "History wiped, persona re-injected", "Yes"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "handled by your app vs sent to the model",
+          bins: [
+            { id: "app", label: "Your app handles it" },
+            { id: "model", label: "Sent to the model" }
+          ],
+          items: [
+            { id: "i1", text: '"/clear" to reset the chat', bin: "app" },
+            { id: "i2", text: '"What is recursion?"', bin: "model" },
+            { id: "i3", text: '"/persona wizard" to switch character', bin: "app" },
+            { id: "i4", text: '"Tell me a sea story."', bin: "model" },
+            { id: "i5", text: '"/help" to list commands', bin: "app" },
+            { id: "i6", text: '"Explain that again, simpler."', bin: "model" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does a proper /clear reset have to touch the system prompt and not just the history list?",
+          sampleAnswer: "The conversation history and the persona live in two separate channels: the history is the message list, but the persona is the system string. Emptying the history clears the dialogue yet leaves whatever persona was last set, so a chat switched to 'wizard' would stay a wizard after /clear. A real reset wipes the history and re-injects the default system prompt so both the conversation and the character start fresh."
+        }
+      ],
+      hints: [
+        "Check user_text == '/clear' and user_text.startswith('/persona ') before any model call.",
+        "On /clear, set history to [] AND reset system to the stored default_system.",
+        "On /persona, slice off the prefix to get the new system string; return early in both cases."
+      ],
+      challenge_title: "Command Router",
+      challenge_description: "Process a session's input stream: intercept /clear and /persona commands, count real messages, and report the final persona and tallies.",
+      challenge_story: "Your chatbot now supports slash-commands, and QA wants a deterministic simulator to prove the routing is correct before launch. The rule is strict: `/clear` resets the conversation **and** re-injects the default persona; `/persona X` switches the character mid-chat to `X`; anything else is a real user message that would go to the model. You're building the router that replays a session's inputs and reports the ending persona plus how many messages, clears, and switches occurred.",
+      challenge_statement: "You are given a `default_persona` string and `n` input lines in order. Start with the current persona equal to the default and an empty conversation (history length 0). For each input line:\n\n- If it is exactly `/clear`: reset the history length to 0 and set the persona back to `default_persona`. Count it as a clear.\n- Else if it starts with `/persona ` (note the trailing space): set the persona to the text after that prefix. Count it as a switch.\n- Otherwise: it is a real message; increase the history length by 1. Count it as a message.\n\nAfter processing all lines, print the final persona on the first line, then `messages clears switches` (space-separated) on the second line.",
+      challenge_input_format: "The first line is the `default_persona` (may contain spaces). The second line is an integer `n`. Each of the next `n` lines is one input (a command or a message; may contain spaces).",
+      challenge_output_format: "Two lines: the final persona, then the three counts `messages clears switches` separated by single spaces.",
+      challenge_constraints: [
+        "0 ≤ n ≤ 100000",
+        "Inputs and the default persona are non-empty after the prefix; lines may contain spaces.",
+        "A /persona command always has non-empty text after the prefix.",
+      ],
+      challenge_examples: [
+        { input: "neutral assistant\n5\nhello\n/persona pirate\nahoy\n/clear\nnew question", output: "neutral assistant\n3 1 1", explanation: "Events: 'hello' (message), '/persona pirate' (switch), 'ahoy' (message), '/clear' (clear, which restores the default persona), 'new question' (message). That is 3 messages, 1 clear, 1 switch, and the final persona is the default because the clear came after the switch." },
+        { input: "base\n4\n/persona robot\nhi\n/persona wizard\nspell", output: "wizard\n2 0 2", explanation: "Two switches (robot then wizard, wizard wins), two real messages ('hi', 'spell'), no clears. Final persona is wizard." },
+      ],
+      challenge_notes: "Counting messages tallies every real-message event even though /clear resets the running history length — the counters track the whole session, while the history length tracks only the current conversation. Match /clear exactly, but use startswith('/persona ') for the switch so the new persona text is the remainder of the line.",
+      challenge_hints: [
+        "Track persona, plus three counters: messages, clears, switches.",
+        "Check the exact '/clear' string first, then startswith('/persona ') with the trailing space.",
+        "On /clear reset persona to default_persona; on /persona slice off the 9-character prefix for the new value.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    default_persona = data[0]
+    n = int(data[1].strip())
+    # TODO: process the next n lines, routing /clear and /persona,
+    #       counting messages, clears, and switches, tracking the persona.
+    # TODO: print the final persona, then "messages clears switches".
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    default_persona = data[0]
+    n = int(data[1].strip())
+    persona = default_persona
+    history = 0
+    messages = 0
+    clears = 0
+    switches = 0
+    for i in range(2, 2 + n):
+        line = data[i]
+        if line == "/clear":
+            history = 0
+            persona = default_persona
+            clears += 1
+        elif line.startswith("/persona "):
+            persona = line[len("/persona "):]
+            switches += 1
+        else:
+            history += 1
+            messages += 1
+    print(persona)
+    print(f"{messages} {clears} {switches}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "neutral assistant\n5\nhello\n/persona pirate\nahoy\n/clear\nnew question", expected_output: "neutral assistant\n3 1 1", description: "Three messages, one switch, one clear; the clear restores the default persona." },
+        { input: "base\n4\n/persona robot\nhi\n/persona wizard\nspell", expected_output: "wizard\n2 0 2", description: "Two switches and two messages; final persona is wizard." },
+        { input: "helper\n3\na\nb\nc", expected_output: "helper\n3 0 0", description: "Three plain messages, no commands; persona unchanged." },
+        { input: "base\n2\n/clear\n/clear", expected_output: "base\n0 2 0", description: "Edge: only clears; no messages and persona stays default." }
+      ]
+    },
+
+    {
+      id: "ai-04-l8",
+      project_id: "ai-04",
+      order: 8,
+      title: "Deploying the Chatbot",
+      concept: "Deploy",
+      xp_reward: 10,
+      explanation: `Your chatbot runs as a \`while True\` loop in a terminal — and exactly one person on earth can use it: you, on your machine. To put it on the web, you don't rewrite the bot. You wrap the *same* load-append-call-save logic in a request handler, and let the statelessness you've been fighting become the thing that makes deployment easy.
+
+## What deploying a chatbot means
+
+**Deploying** turns your local loop into a service many users hit over HTTP. The terminal loop and a web endpoint do the *same* four steps — load history, append the user turn, call the model, append and save the reply — but the loop runs them in one long-lived process, while the endpoint runs them once **per request** and then exits.
+
+That's the key shift: a web request is short-lived and isolated. The handler can't rely on a Python variable surviving between requests, because the next request might land on a different server entirely. So each request must **rebuild the message list from stored history** — exactly the session-store discipline from lesson 5, now mandatory rather than optional.
+
+## How it works
+
+A minimal endpoint is the loop body, unrolled into one function:
+
+\`\`\`python
+def chat_endpoint(request):
+    session_id = request["session_id"]
+    user_text = request["message"]
+
+    history = load_history(session_id)      # rebuild from the store
+    history.append({"role": "user", "content": user_text})
+    reply = call_model(SYSTEM_PROMPT, history)
+    history.append({"role": "assistant", "content": reply})
+    save_history(session_id, history)       # persist for next request
+
+    return {"reply": reply}
+\`\`\`
+
+Notice what's gone: there is no \`while\` loop and no in-memory \`messages\` variable that persists. The \`session_id\` arrives with each request, the history is loaded fresh, and it's saved before the response returns. The model is stateless; now the *server* is stateless too — and that's a feature.
+
+## Why it matters
+
+- **Statelessness scales.** Because each request rebuilds everything from the store, you can run many identical server copies behind a load balancer. Any one can handle any request. Hold memory in a process variable and that breaks the moment a follow-up lands on another server.
+- **The session id is the thread.** Without it, the endpoint can't tell whose conversation to load, and every user collides into one history.
+- **Persist before you respond.** If you return the reply but forget to save, the user's *next* request rebuilds a history missing this turn — the bot forgets what it just said.
+
+## The mental model to keep
+
+A deployed chatbot is your terminal loop turned inside out: instead of one process looping forever holding the list, **every request rebuilds the list from storage, runs one turn, and saves**. The model forgets between calls, the server forgets between requests, and the store remembers for both. That's the whole architecture.`,
+      key_terms: [
+        { term: "Endpoint", definition: "A web request handler that runs one chat turn per HTTP request instead of a long-lived terminal loop." },
+        { term: "Stateless server", definition: "A server that holds no per-conversation memory between requests, rebuilding history from the store each time so any copy can serve any request." },
+        { term: "Rebuild from history", definition: "Reconstructing the full message list from the stored conversation on every request, since no in-memory list survives between them." }
+      ],
+      callouts: [
+        { type: "analogy", title: "From a private workshop to a drive-through", content: "The terminal loop is a workshop where you keep all your tools out on the bench between jobs. A web endpoint is a drive-through window: each car is served and leaves, and you fetch the order details fresh from the ticket every time. The store is the ticket.", position: "before" },
+        { type: "warning", title: "Persist before you respond", content: "Save the updated history before returning the reply. If you respond but skip the save, the user's next request rebuilds a history missing this turn and the bot forgets what it just said.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "One HTTP request, one chat turn",
+        steps: [
+          { label: "Request arrives", desc: "It carries a session id and the user's message." },
+          { label: "Rebuild history", desc: "Load the full message list for that session from the store." },
+          { label: "Run one turn", desc: "Append the user turn, call the model, append the reply." },
+          { label: "Save + respond", desc: "Persist the updated history, then return the reply." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Why must a web chat endpoint rebuild the message list from storage on every request?",
+          options: [
+            "No in-memory list survives between requests, which may hit different servers",
+            "The model requires a fresh list each call for accuracy",
+            "Rebuilding makes the reply stream faster"
+          ],
+          correct_index: 0,
+          explanation: "Requests are short-lived and may land on any server, so each one must load history from the shared store."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What is the core difference between the terminal loop and a deployed endpoint?",
+          options: [
+            "The endpoint runs the same load-call-save steps once per request, not in a persistent loop",
+            "The endpoint no longer needs the message history",
+            "The endpoint makes the model stateful",
+            "The endpoint skips the system prompt"
+          ],
+          correct_index: 0,
+          explanation: "Both do the same per-turn steps; the endpoint just runs them once per HTTP request instead of forever in a loop."
+        },
+        {
+          question: "Why does a stateless server let a chatbot scale to many machines?",
+          options: [
+            "Each request rebuilds history from the shared store, so any server copy can handle any request",
+            "Stateless servers make the model remember across calls",
+            "It removes the need for a session id",
+            "It eliminates the cost of resending history"
+          ],
+          correct_index: 0,
+          explanation: "With no per-conversation memory in the process, requests aren't tied to one machine; the store holds the memory."
+        },
+        {
+          question: "What goes wrong if the endpoint returns the reply but forgets to save the history?",
+          options: [
+            "The next request rebuilds a history missing this turn, so the bot forgets what it just said",
+            "The model's weights get corrupted",
+            "The user's session id changes",
+            "The reply streams twice"
+          ],
+          correct_index: 0,
+          explanation: "Without saving, the stored history is stale, and the next request loads a conversation with a gap."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Deploy check",
+          questions: [
+            { question: "A deployed chat endpoint can rely on a Python variable persisting between two separate requests.", type: "true_false", correct_answer: "false", explanation: "Requests are isolated and may hit different servers; rebuild history from the store each time." },
+            { question: "The value sent with each request that tells the endpoint whose history to load is the ____ id.", type: "fill_in", correct_answer: "session", explanation: "The session id identifies which conversation to rebuild from storage." }
+          ]
+        }
+      ],
+      starter_code: `# Turn the terminal loop into a per-request endpoint.
+# Each request rebuilds history from the store, runs one turn, and saves.
+
+store = {}  # session_id -> message list
+SYSTEM_PROMPT = "You are a helpful assistant."
+
+def load_history(session_id):
+    return list(store.get(session_id, []))
+
+def fake_model(history):
+    return "Echo: " + history[-1]["content"]
+
+def chat_endpoint(request):
+    # TODO: read session_id and message, rebuild history, append the user turn,
+    #       call fake_model, append the reply, SAVE history, return {"reply": reply}.
+    pass
+
+print(chat_endpoint({"session_id": "u1", "message": "Hello"})["reply"])
+`,
+      solution_code: `# Turn the terminal loop into a per-request endpoint.
+# Each request rebuilds history from the store, runs one turn, and saves.
+
+store = {}  # session_id -> message list
+SYSTEM_PROMPT = "You are a helpful assistant."
+
+def load_history(session_id):
+    return list(store.get(session_id, []))
+
+def save_history(session_id, history):
+    store[session_id] = history
+
+def fake_model(history):
+    return "Echo: " + history[-1]["content"]
+
+def chat_endpoint(request):
+    session_id = request["session_id"]
+    user_text = request["message"]
+
+    history = load_history(session_id)              # rebuild from the store
+    history.append({"role": "user", "content": user_text})
+    reply = fake_model(history)
+    history.append({"role": "assistant", "content": reply})
+    save_history(session_id, history)               # persist for next request
+    return {"reply": reply}
+
+print(chat_endpoint({"session_id": "u1", "message": "Hello"})["reply"])
+print(chat_endpoint({"session_id": "u1", "message": "Again"})["reply"])
+print("u1 stored turns:", len(store["u1"]))
+`,
+      expected_output: `Echo: Hello
+Echo: Again
+u1 stored turns: 4`,
+      step_throughs: [
+        {
+          title: "A terminal loop turned into one request handler",
+          steps: [
+            { label: "Request arrives with a session id", detail: "There's no loop and no persistent list. The request carries the session id and the message.", code: 'request = {"session_id": "u1", "message": "Hello"}' },
+            { label: "Rebuild the history from the store", detail: "Load the full message list for this session. On the first request it's empty; later it's the saved conversation.", code: 'history = load_history("u1")' },
+            { label: "Run exactly one turn", detail: "Append the user turn, call the model with system + history, append the reply. The same four steps as the loop, done once.", code: 'history.append(user); reply = call_model(SYSTEM, history); history.append(assistant)' },
+            { label: "Save, then respond", detail: "Persist the updated history to the store before returning, so the next request rebuilds it correctly.", code: 'save_history("u1", history); return {"reply": reply}' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A user sends two messages to a deployed endpoint, each rebuilding history from the store.\nAfter both requests, how many turns are stored for that session?",
+          steps: [
+            "Request 1: history loads empty, adds a user turn and an assistant turn → 2 turns saved.",
+            "Request 2: history loads those 2 turns, adds another user + assistant → 4 turns.",
+            "Each request appends exactly two turns and saves.",
+            "So after two requests the store holds 4 turns."
+          ],
+          output: "4 turns are stored for the session."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "An endpoint keeps history in a module-level dict that lives only in one process, and the bot is deployed to two servers behind a load balancer.\nA user's second request lands on the other server. What happens, and what's the fix?",
+          steps: [
+            "Server B's in-process dict never saw the first request, which hit server A.",
+            "Loading history on server B returns nothing, so the bot has forgotten the prior turn.",
+            "The endpoint must be truly stateless: load from a shared store both servers can read.",
+            "Fix: persist history in a shared database or cache keyed by session id, not a per-process variable."
+          ],
+          output: "The bot forgets the first turn; fix it by storing history in a shared store both servers read."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "terminal loop vs deployed endpoint",
+          columns: ["Aspect", "Terminal loop", "Web endpoint"],
+          rows: [
+            { cells: ["Runs as", "One long-lived process", "One handler per request"] },
+            { cells: ["Holds history in", "An in-memory list", "A loaded-then-saved store"] },
+            { cells: ["Users served", "Just you", "Many, concurrently"] },
+            { cells: ["Scales to many servers?", "No", "Yes, because it's stateless"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "stays in the request vs lives in the store",
+          bins: [
+            { id: "request", label: "Per-request (rebuilt each time)" },
+            { id: "store", label: "Persisted in the store" }
+          ],
+          items: [
+            { id: "i1", text: "The freshly loaded message list for this turn", bin: "request" },
+            { id: "i2", text: "The full conversation history across requests", bin: "store" },
+            { id: "i3", text: "The user's current message", bin: "request" },
+            { id: "i4", text: "The saved turns for session u1", bin: "store" },
+            { id: "i5", text: "The reply being returned right now", bin: "request" },
+            { id: "i6", text: "What the bot must remember next time", bin: "store" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: how is a deployed chat endpoint just your terminal loop 'turned inside out', and why does that make it scale?",
+          sampleAnswer: "The terminal loop runs forever in one process, holding the message list in memory and looping load-append-call-save. A deployed endpoint runs those same four steps once per request, with no persistent variable: it rebuilds the history from a shared store, runs one turn, and saves before responding. Because nothing lives in the process between requests, any identical server can handle any request by loading from the store, so the bot scales horizontally behind a load balancer."
+        }
+      ],
+      hints: [
+        "Read session_id and message from the request dict.",
+        "Load history from the store, append the user turn, call the model, append the reply.",
+        "Save the updated history back to the store before returning {'reply': reply}."
+      ],
+      challenge_title: "Stateless Request Replay",
+      challenge_description: "Simulate a deployed endpoint serving interleaved requests from many users: rebuild each session's history, run one turn, persist, and bill per request.",
+      challenge_story: "Launch day: your chatbot is live behind a load balancer, and requests from different users arrive interleaved. Each request is **stateless** — the handler rebuilds that session's history from the store, appends the new turn, calls the model with the whole list, appends the reply, and saves. Finance bills per token *rebuilt and resent* on each request. Build the simulator that replays a stream of incoming requests, keeps every session's history correct and separate, and reports the total billed across all requests plus the largest single request.",
+      challenge_statement: "There is a fixed `system_cost` (tokens for the system prompt, sent on every request). Then `n` requests arrive in order, each for a `session_id` carrying a user message of a given token `cost`.\n\nProcess requests in order. For each request:\n\n1. Load that session's stored history (empty if the session is new).\n2. Append this request's message cost to the session's history.\n3. The model is called with the system prompt plus the whole history, so this request bills `system_cost + (sum of that session's stored message costs so far)`. Add that to a running total, and track the maximum single-request bill.\n4. Save the updated history (the append in step 2 persists it).\n\nPrint the total tokens billed across all requests on the first line, and the largest single request's bill on the second line.",
+      challenge_input_format: "The first line has two integers `system_cost n`. Each of the next `n` lines has a `session_id` and an integer message cost, separated by a single space.",
+      challenge_output_format: "Two lines: the total tokens billed across all `n` requests, then the maximum single-request bill.",
+      challenge_constraints: [
+        "0 ≤ system_cost ≤ 100000",
+        "1 ≤ n ≤ 100000",
+        "1 ≤ message cost ≤ 100000",
+        "session_id contains no spaces.",
+      ],
+      challenge_examples: [
+        { input: "10 3\ns1 5\ns1 8\ns1 3", output: "64\n26", explanation: "s1's stored costs grow 5, then 5+8=13, then 5+8+3=16. With system 10 each request bills 15, 23, 26 → total 64, max 26." },
+        { input: "0 1\nu1 7", output: "7\n7", explanation: "One request: history becomes [7], bill is 0+7 = 7, which is also the max." },
+      ],
+      challenge_notes: "Each session's history accumulates independently, so interleaved requests from different users never mix. The per-request bill always includes the constant system_cost plus that one session's running history sum — exactly the cost of rebuilding and resending the whole list each stateless request.",
+      challenge_hints: [
+        "Keep a dict mapping session id to its running history token sum.",
+        "On each request add the message cost to that session's sum, then bill system_cost + that sum.",
+        "Track both a running total and a max as you go; print them at the end.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    system_cost, n = map(int, data[0].split())
+    # TODO: for each of n requests, load the session's running history sum,
+    #       add the message cost, bill system_cost + that sum, track total and max.
+    # TODO: print the total billed, then the max single-request bill.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    system_cost, n = map(int, data[0].split())
+    idx = 1
+    histories = {}
+    total = 0
+    max_req = 0
+    for _ in range(n):
+        sid, cost = data[idx].split(" ", 1)
+        idx += 1
+        histories[sid] = histories.get(sid, 0) + int(cost)
+        bill = system_cost + histories[sid]
+        total += bill
+        if bill > max_req:
+            max_req = bill
+    print(total)
+    print(max_req)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "10 3\ns1 5\ns1 8\ns1 3", expected_output: "64\n26", description: "One growing session; per-request bills 15, 23, 26 sum to 64." },
+        { input: "0 1\nu1 7", expected_output: "7\n7", description: "Single request with no system cost." },
+        { input: "100 2\na 50\nb 50", expected_output: "300\n150", description: "Two separate sessions each bill 100+50 = 150; total 300, max 150." },
+        { input: "5 4\nx 10\ny 10\nx 10\ny 10", expected_output: "80\n25", description: "Interleaved sessions stay separate; bills are 15, 15, 25, 25 for total 80, max 25." }
       ]
     }
   ]

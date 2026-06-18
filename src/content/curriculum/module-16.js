@@ -6,7 +6,7 @@ export default {
     difficulty: "advanced",
     category: "production_ops",
     estimated_time: 55,
-    lessons_count: 5,
+    lessons_count: 8,
     tags: ["deployment", "observability", "evals", "cost", "reliability", "production"],
     order: 16,
     cover_image: ""
@@ -1541,6 +1541,907 @@ main()
         { input: "3 3\n2\n0\n1", expected_output: "succeeded 2\nfell_back 1\ntotal_attempts 6", description: "A success on attempt 2, a never-succeed fallback (3 attempts), and a first-try success." },
         { input: "1 2\n5", expected_output: "succeeded 0\nfell_back 1\ntotal_attempts 2", description: "Edge case: succeed_on beyond max_attempts exhausts retries and falls back." },
         { input: "4 2\n1\n2\n3\n0", expected_output: "succeeded 2\nfell_back 2\ntotal_attempts 7", description: "Edge case: succeed_on of 3 and 0 both exceed the 2-attempt budget and fall back (1+2+2+2 = 7 attempts)." }
+      ]
+    },
+    {
+      id: "ai-16-l6",
+      project_id: "ai-16",
+      order: 6,
+      title: "Versioning Prompts and Models",
+      concept: "Versioning",
+      xp_reward: 10,
+      explanation: `Quality dropped 8 percent overnight and nobody touched the code. A teammate had edited the system prompt directly in the dashboard, and the provider had silently rolled \`gpt-4o\` from one snapshot to a newer one. Two invisible changes, zero record of either. You cannot fix what you cannot pin down, and you had pinned down nothing. The missing discipline is **versioning**.
+
+## What it is
+
+**Versioning** means recording exactly which prompt and which model produced every response, so any behavior is reproducible. A prompt is not a loose string you tweak in a text box; it is an artifact with a **version** — a hash or a tag — that you can name, diff, and roll back to. The model is the same: \`gpt-4o\` is a moving target, but \`gpt-4o-2024-08-06\` is a frozen one. Pin both, log both, and "why did the answer change?" becomes answerable.
+
+The rule is blunt: if you cannot say which prompt version and which model version generated a given output, you are running an experiment you cannot repeat.
+
+## How it works
+
+You give each prompt a stable version derived from its content, then stamp every traced call with that version plus the pinned model id:
+
+\`\`\`python
+import hashlib
+
+def prompt_version(template):
+    # content hash: same text -> same version, any edit -> new version
+    return hashlib.sha256(template.encode()).hexdigest()[:8]
+
+PROMPT = "You are a support agent. Answer in one sentence."
+MODEL = "gpt-4o-2024-08-06"   # pinned snapshot, not the floating alias
+
+record = {
+    "prompt_version": prompt_version(PROMPT),
+    "model": MODEL,
+    "output": call_model(PROMPT, MODEL),
+}
+\`\`\`
+
+Two ideas carry the weight. A **content hash** means the version changes the instant the prompt text changes, so an untracked edit is impossible to hide. A **pinned model snapshot** means the provider cannot swap the model out from under you without you choosing to bump the id. Stored together in the trace from lesson 2, they let you replay any past request against the exact prompt and model that produced it.
+
+## Why it matters
+
+Versioning is what makes every other practice trustworthy:
+
+- **Reproducibility.** A bug report names a \`prompt_version\` and \`model\`; you reproduce the output exactly instead of guessing.
+- **Clean rollback.** When v7 of a prompt regresses, you redeploy v6 by id in seconds, not by trying to remember what it said.
+- **Honest evals.** An eval score is meaningless unless you know which prompt and model earned it. Versions tie the score to the artifact.
+- **Attribution of change.** When quality shifts, the first question is "what version changed?" Without versions there is no answer, only blame.
+
+One caution: a floating alias like \`gpt-4o\` is a convenience that quietly breaks reproducibility, because the provider repoints it over time. Pin the dated snapshot in production and bump it deliberately.
+
+## The mental model to keep
+
+Treat a prompt like a commit, not a sticky note. **If it shipped, it has a version** — and so does the model — because the only behavior you can fix is the behavior you can name and reproduce.`,
+      key_terms: [
+        { term: "Prompt version", definition: "A stable identifier (often a content hash or tag) for an exact prompt, so changes are tracked and reproducible." },
+        { term: "Model pinning", definition: "Using a fixed dated snapshot (gpt-4o-2024-08-06) instead of a floating alias (gpt-4o) so the model cannot change underneath you." },
+        { term: "Content hash", definition: "A hash of the prompt text; identical text yields the same version, any edit yields a new one." },
+        { term: "Reproducibility", definition: "The ability to regenerate a past output by replaying the exact prompt version and model that produced it." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A git commit, not a sticky note", content: "Source code is versioned so you can diff, blame, and revert any line. A prompt deserves the same: a versioned artifact you can name and roll back to, not a sticky note someone quietly rewrites in a dashboard.", position: "before" },
+        { type: "warning", title: "Floating aliases break reproducibility", content: "An alias like gpt-4o silently repoints to newer snapshots over time. Pin the dated id (gpt-4o-2024-08-06) in production so behavior only changes when you decide it does.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Pinning a response to its exact inputs",
+        steps: [
+          { label: "Hash the prompt", desc: "Derive a stable version from the prompt's exact text." },
+          { label: "Pin the model", desc: "Choose a dated snapshot, not a floating alias." },
+          { label: "Stamp the trace", desc: "Record prompt_version and model on every call." },
+          { label: "Replay on demand", desc: "Reproduce or roll back any output by its versions." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Why pin a dated model snapshot like gpt-4o-2024-08-06 instead of the alias gpt-4o?",
+          options: ["The snapshot is cheaper", "The alias can silently change behavior when the provider repoints it", "The alias is slower"],
+          correct_index: 1,
+          explanation: "A floating alias is repointed to newer snapshots over time, so pinning the dated id keeps behavior reproducible."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What is the main benefit of deriving a prompt version from a content hash?",
+          options: [
+            "It makes the prompt shorter",
+            "Any edit to the prompt text produces a new version, so untracked changes are impossible to hide",
+            "It encrypts the prompt",
+            "It speeds up the model call"
+          ],
+          correct_index: 1,
+          explanation: "A content hash changes the instant the text changes, so every edit is recorded as a distinct, reproducible version."
+        },
+        {
+          question: "A bug report says an answer was wrong yesterday. How does versioning help you fix it?",
+          options: [
+            "It deletes the bad answer",
+            "It lets you reproduce the exact output by replaying the recorded prompt_version and model",
+            "It retrains the model",
+            "It hides the error from users"
+          ],
+          correct_index: 1,
+          explanation: "With the prompt version and pinned model recorded in the trace, you can replay the exact request that produced the bad output."
+        },
+        {
+          question: "Why is an eval score untrustworthy without versioning?",
+          options: [
+            "Scores are always wrong",
+            "You cannot tie the score to a specific prompt and model, so you do not know what earned it",
+            "Evals require a database",
+            "Versioning makes evals run faster"
+          ],
+          correct_index: 1,
+          explanation: "A score only means something when bound to the exact prompt version and model that produced it; otherwise it cannot be reproduced or compared."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Versioning check",
+          questions: [
+            { question: "Using the floating alias gpt-4o in production guarantees the model never changes behavior.", type: "true_false", correct_answer: "false", explanation: "Aliases are repointed to newer snapshots over time; only a pinned dated id keeps behavior fixed." },
+            { question: "Recording exactly which prompt and model produced each output so it can be reproduced is called ______.", type: "fill_in", correct_answer: "versioning", explanation: "Versioning ties every response to a reproducible prompt version and pinned model." }
+          ]
+        }
+      ],
+      starter_code: `# Stamp each call with a stable prompt version (content hash) and pinned model.
+import hashlib
+
+def prompt_version(template):
+    # TODO: return the first 8 hex chars of the sha256 of the template text.
+    pass
+
+PROMPT = "You are a support agent. Answer in one sentence."
+MODEL = "gpt-4o-2024-08-06"
+print(prompt_version(PROMPT) == prompt_version(PROMPT))
+`,
+      solution_code: `import hashlib
+
+def prompt_version(template):
+    return hashlib.sha256(template.encode()).hexdigest()[:8]
+
+PROMPT = "You are a support agent. Answer in one sentence."
+MODEL = "gpt-4o-2024-08-06"
+
+v1 = prompt_version(PROMPT)
+v2 = prompt_version(PROMPT)
+v3 = prompt_version(PROMPT + " Be polite.")
+print(v1 == v2)   # same text -> same version
+print(v1 == v3)   # edited text -> different version
+`,
+      expected_output: `True
+False`,
+      step_throughs: [
+        {
+          title: "binding one response to its exact inputs",
+          steps: [
+            { label: "Hash the prompt text", detail: "Run the exact prompt template through a content hash. Identical text always yields the same short version string.", code: 'pv = hashlib.sha256(PROMPT.encode()).hexdigest()[:8]' },
+            { label: "Pin the model snapshot", detail: "Pick a dated model id rather than a floating alias, so the provider cannot swap the model without you bumping the id.", code: 'MODEL = "gpt-4o-2024-08-06"' },
+            { label: "Stamp the traced call", detail: "Attach prompt_version and model to the same trace record from lesson 2, alongside the output and token counts.", code: 'record = {"prompt_version": pv, "model": MODEL, "output": out}' },
+            { label: "Reproduce or roll back", detail: "Given a past record, look up the prompt by its version and replay against the pinned model to get the exact behavior again.", code: "old = lookup(record[\"prompt_version\"]); call_model(old, record[\"model\"])" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Quality dropped overnight with no code change. The trace shows yesterday's calls used model 'gpt-4o-2024-05-13' and today's used 'gpt-4o-2024-08-06'. What happened, and how does versioning explain it?",
+          steps: [
+            "The team used the floating alias, so the provider repointed it to a newer snapshot between the two days.",
+            "Because the trace records the resolved dated snapshot, you can see the model id actually changed.",
+            "That pins the regression to a model change, not a prompt edit, so you pin the old snapshot to confirm and decide whether to roll forward."
+          ],
+          output: "The model snapshot changed under a floating alias; the versioned trace makes the swap visible and diagnosable."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You want to A/B two prompt variants but your traces only store the raw prompt text, which sometimes includes a user's name interpolated in. Why is raw text a poor version key, and what is the fix?",
+          steps: [
+            "Interpolated values make every call's text slightly different, so the same template hashes to thousands of distinct 'versions'.",
+            "You can no longer group calls by the template that produced them, which breaks both A/B grouping and rollback.",
+            "Fix: version the template (with placeholders) separately from the filled-in values, and hash only the template.",
+            "Now all calls from the same template share one prompt_version, and the user data lives in separate fields you can redact."
+          ],
+          output: "Hash the template (with placeholders), not the fully interpolated string, so one template maps to one stable version."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "unversioned vs versioned prompts and models",
+          columns: ["Question", "Unversioned", "Versioned"],
+          rows: [
+            { cells: ["Which prompt shipped?", "Whatever was in the box", "A named version you can diff"] },
+            { cells: ["Did the model change?", "Invisible under an alias", "Pinned snapshot id in the trace"] },
+            { cells: ["Roll back a regression", "Rewrite from memory", "Redeploy the old version by id"] },
+            { cells: ["Reproduce a bad output", "Guesswork", "Replay the exact version and model"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "reproducible vs unreproducible practice",
+          bins: [
+            { id: "repro", label: "Keeps behavior reproducible" },
+            { id: "norepro", label: "Breaks reproducibility" }
+          ],
+          items: [
+            { id: "i1", text: "Pinning gpt-4o-2024-08-06", bin: "repro" },
+            { id: "i2", text: "Hashing the prompt template for a version", bin: "repro" },
+            { id: "i3", text: "Editing the system prompt live in a dashboard", bin: "norepro" },
+            { id: "i4", text: "Storing prompt_version and model in the trace", bin: "repro" },
+            { id: "i5", text: "Using the floating gpt-4o alias in production", bin: "norepro" },
+            { id: "i6", text: "Keeping no record of which prompt produced an output", bin: "norepro" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does versioning have to come before you can trust an eval score or perform a clean rollback?",
+          sampleAnswer: "An eval score and a rollback both refer to a specific artifact: the score was earned by some exact prompt and model, and a rollback means returning to some exact previous prompt and model. Without versioning there is no stable name for that artifact, so the score floats free of what produced it and a rollback becomes a guess about what the prompt used to say. Versioning binds every output to a reproducible prompt version and pinned model, which is what gives the score meaning and makes the rollback exact."
+        }
+      ],
+      hints: [
+        "hashlib.sha256 needs bytes, so call template.encode() before hashing.",
+        "Use .hexdigest() to get a hex string, then slice [:8] for a short, stable version.",
+        "The same input text always produces the same hash, so two calls with identical text compare equal."
+      ],
+      challenge_title: "The Release Ledger",
+      challenge_description: "Answer 'what shipped at time T' from a deploy history: index every prompt-and-model release by timestamp and resolve which version was live at each query time.",
+      challenge_story: "Quality dropped overnight and nobody admits to a change, because the prompt was edited live and the model alias silently repointed. You fix the blindness with a **release ledger**: every deploy records its timestamp, the prompt version that shipped, and the pinned model snapshot. Now support can ask 'which prompt and model were live when this bad answer was generated?' and get an exact answer. Build the resolver that turns a deploy history plus a list of incident timestamps into the version that was live at each moment.",
+      challenge_statement: "You are given \`N\` deploys and \`Q\` queries. Each deploy has an integer \`timestamp\`, a \`prompt_version\` token, and a \`model\` token; a deploy becomes live at its timestamp and stays live until the next deploy.\n\nFor each query timestamp \`t\`, report the deploy that was **live at or before** \`t\` (the latest deploy whose timestamp is \`<= t\`). If no deploy had happened yet at time \`t\`, output \`none\`.\n\nDeploys may be given in any order and all timestamps are distinct.",
+      challenge_input_format: "The first line contains two space-separated integers: `N Q`.\nEach of the next `N` lines describes one deploy: `timestamp prompt_version model` (space-separated; tokens contain no spaces).\nEach of the next `Q` lines contains one integer query timestamp `t`.",
+      challenge_output_format: "Q lines. For each query, output `prompt_version model` of the live deploy, or `none` if no deploy was live yet.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "1 ≤ Q ≤ 100000",
+        "0 ≤ timestamp, t ≤ 1000000000",
+        "All deploy timestamps are distinct.",
+        "A deploy is live at or before t means the latest deploy with timestamp ≤ t."
+      ],
+      challenge_examples: [
+        { input: "3 4\n100 p1 m1\n200 p2 m1\n350 p2 m2\n150\n250\n400\n50", output: "p1 m1\np2 m1\np2 m2\nnone", explanation: "At t=150 the latest deploy at or before is the 100 one (p1 m1). At t=250 it is the 200 deploy (p2 m1). At t=400 it is the 350 deploy (p2 m2). At t=50 nothing had deployed yet, so 'none'." },
+        { input: "2 3\n500 v3 gpt-4o-2024-08-06\n300 v2 gpt-4o-2024-05-13\n300\n499\n600", output: "v2 gpt-4o-2024-05-13\nv2 gpt-4o-2024-05-13\nv3 gpt-4o-2024-08-06", explanation: "Deploys given out of order are sorted by timestamp. At t=300 and t=499 the 300 deploy is live; at t=600 the 500 deploy (the newer pinned model) is live." }
+      ],
+      challenge_notes: "Sorting the deploys once by timestamp lets you binary-search each query in log time, which matters at 100000 deploys and queries. The 'live at or before t' rule mirrors how a real release ledger works: a version stays in effect until the next deploy supersedes it.",
+      challenge_hints: [
+        "Read all N deploys into a list of (timestamp, prompt_version, model) and sort it by timestamp.",
+        "Build a separate sorted list of just the timestamps and use bisect_right(t) - 1 to find the live deploy index.",
+        "If the index is -1, no deploy was live yet, so print 'none'."
+      ],
+      challenge_starter_code: `import sys
+import bisect
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, q = map(int, data[idx].split()); idx += 1
+    deploys = []
+    for _ in range(n):
+        ts, pv, model = data[idx].split(); idx += 1
+        deploys.append((int(ts), pv, model))
+    # TODO: sort deploys by timestamp, then for each query find the live deploy.
+    for _ in range(q):
+        t = int(data[idx].strip()); idx += 1
+        pass
+
+main()
+`,
+      challenge_solution_code: `import sys
+import bisect
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, q = map(int, data[idx].split()); idx += 1
+    deploys = []
+    for _ in range(n):
+        ts, pv, model = data[idx].split(); idx += 1
+        deploys.append((int(ts), pv, model))
+    deploys.sort(key=lambda d: d[0])
+    times = [d[0] for d in deploys]
+
+    out = []
+    for _ in range(q):
+        t = int(data[idx].strip()); idx += 1
+        pos = bisect.bisect_right(times, t) - 1
+        if pos < 0:
+            out.append("none")
+        else:
+            _, pv, model = deploys[pos]
+            out.append(f"{pv} {model}")
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 4\n100 p1 m1\n200 p2 m1\n350 p2 m2\n150\n250\n400\n50", expected_output: "p1 m1\np2 m1\np2 m2\nnone", description: "Resolves the live version at four times, including before any deploy." },
+        { input: "2 3\n500 v3 gpt-4o-2024-08-06\n300 v2 gpt-4o-2024-05-13\n300\n499\n600", expected_output: "v2 gpt-4o-2024-05-13\nv2 gpt-4o-2024-05-13\nv3 gpt-4o-2024-08-06", description: "Out-of-order deploys are sorted; exact-timestamp query resolves to that deploy." },
+        { input: "1 2\n10 onlyprompt onlymodel\n5\n10", expected_output: "none\nonlyprompt onlymodel", description: "Edge case: before the single deploy is 'none'; exactly at its timestamp is live." }
+      ]
+    },
+    {
+      id: "ai-16-l7",
+      project_id: "ai-16",
+      order: 7,
+      title: "A/B Testing LLM Changes",
+      concept: "ABTest",
+      xp_reward: 10,
+      explanation: `A team was certain their new prompt was better. The eval suite agreed, the demo looked sharper, everyone shipped it to 100 percent of traffic. A week later the thumbs-up rate had quietly fallen and support tickets ticked up. Offline scores said one thing; real users said another. The fix is not a better opinion — it is an **A/B test** that lets live traffic decide.
+
+## What it is
+
+An **A/B test** splits live traffic between two versions — a **control** (A, the current prompt or model) and a **variant** (B, the proposed change) — and compares them on a real metric. Instead of arguing about which is better, you measure: send half the users to A, half to B, and watch a number that matters, like the rate of helpful answers, successful task completions, or thumbs-up.
+
+The key word is **live**. An eval (lesson 3) measures quality on a frozen set of cases; an A/B test measures it on the messy distribution of real requests, including the ones you never thought to put in your eval. The two are complementary: evals gate the merge, A/B tests gate the rollout.
+
+## How it works
+
+You assign each request deterministically to a bucket, run the matching version, and tally outcomes per bucket:
+
+\`\`\`python
+import hashlib
+
+def bucket(user_id, split=0.5):
+    h = int(hashlib.sha256(user_id.encode()).hexdigest(), 16)
+    return "B" if (h % 100) / 100 < split else "A"   # stable per user
+
+results = {"A": [0, 0], "B": [0, 0]}   # [successes, total]
+
+def record(user_id, success):
+    b = bucket(user_id)
+    results[b][1] += 1            # total
+    results[b][0] += int(success) # successes
+\`\`\`
+
+Two details make this trustworthy. The bucket is **deterministic per user** (hash the user id), so the same person always sees the same version and the experience is consistent. And you compare **rates**, not raw counts, because the two buckets rarely get identical traffic. The winner is the version whose success rate is meaningfully higher once each side has enough samples.
+
+## Why it matters
+
+A/B testing is how a change earns 100 percent of traffic instead of assuming it:
+
+- **Offline and online disagree.** A prompt can lift your eval score and still annoy real users, because your cases never covered their requests. Only live traffic reveals that.
+- **Avoid betting the whole product.** Rolling a risky change to 5 percent first caps the blast radius; if B is worse, you saw it on a sliver of users, not everyone.
+- **Sample size guards against noise.** A 70 percent vs 60 percent gap on ten requests each is noise; on ten thousand it is signal. Decide only when each arm has enough data and the gap clears a margin.
+- **One metric, agreed up front.** Pick the success metric before you look, or you will rationalize whichever result you wanted.
+
+A caution: do not peek and stop the instant B looks good. Early data is noisy, and stopping at the first favorable wobble manufactures false winners. Fix the sample size and margin in advance.
+
+## The mental model to keep
+
+Opinions and offline scores propose; **live traffic decides.** An A/B test is the controlled experiment that turns "I think B is better" into "B wins by this much, on this metric, with this much data."`,
+      key_terms: [
+        { term: "A/B test", definition: "Splitting live traffic between a control (A) and a variant (B) to compare them on a real metric." },
+        { term: "Control vs variant", definition: "A is the current version; B is the proposed change being tested against it." },
+        { term: "Deterministic bucketing", definition: "Assigning each user to A or B by hashing their id, so they always see the same version." },
+        { term: "Sample size", definition: "How many observations each arm has; too few makes any difference statistical noise rather than signal." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A taste test, not a chef's opinion", content: "A chef can swear the new recipe is better, but a blind taste test with real diners settles it. An A/B test is that taste test: real users, a measured outcome, no chef's pride on the scale.", position: "before" },
+        { type: "warning", title: "Do not peek and stop early", content: "Early data is noisy. Stopping the moment B looks good manufactures false winners. Fix the sample size and the margin before you start, then decide.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How an A/B test decides a winner",
+        steps: [
+          { label: "Split traffic", desc: "Deterministically bucket each user into A or B." },
+          { label: "Run the matching version", desc: "Serve control to A, variant to B." },
+          { label: "Tally the metric", desc: "Count successes and totals per bucket." },
+          { label: "Decide on rates", desc: "Pick the winner once samples and margin suffice." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Why bucket each user deterministically by hashing their id?",
+          options: ["It is faster than random", "So the same user always sees the same version, keeping their experience consistent", "It uses less memory"],
+          correct_index: 1,
+          explanation: "Deterministic bucketing means a given user is always in the same arm, avoiding a flickering experience and clean per-user attribution."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "How does an A/B test differ from an offline eval?",
+          options: [
+            "It is the same thing with a different name",
+            "An eval scores a frozen case set; an A/B test measures the metric on live, real traffic",
+            "An A/B test does not need a metric",
+            "Evals run on users and A/B tests run offline"
+          ],
+          correct_index: 1,
+          explanation: "Evals gate the merge using fixed cases; A/B tests gate the rollout using the real distribution of live requests."
+        },
+        {
+          question: "Why compare success rates instead of raw success counts between A and B?",
+          options: [
+            "Counts are harder to compute",
+            "The two buckets rarely get identical traffic volume, so rates make them comparable",
+            "Rates are required by the API",
+            "Counts cannot be logged"
+          ],
+          correct_index: 1,
+          explanation: "Because traffic splits are never perfectly equal, rates normalize for volume so the comparison is fair."
+        },
+        {
+          question: "What is the danger of declaring B the winner after only a handful of requests each?",
+          options: [
+            "Nothing, faster decisions are always better",
+            "Small samples are noisy, so an early gap can be random and produce a false winner",
+            "The model forgets the test",
+            "It costs extra tokens"
+          ],
+          correct_index: 1,
+          explanation: "With too few samples a difference is statistical noise; you need enough data and a clear margin before deciding."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "A/B testing check",
+          questions: [
+            { question: "A change that improves your offline eval score is guaranteed to improve real user outcomes.", type: "true_false", correct_answer: "false", explanation: "Offline and online can disagree; only live traffic reveals whether the change actually helps users." },
+            { question: "The current, unchanged version that the new variant is tested against is called the ______.", type: "fill_in", correct_answer: "control", explanation: "A is the control; B is the variant being tested against it." }
+          ]
+        }
+      ],
+      starter_code: `# Tally A/B outcomes and compute each variant's success rate.
+results = {"A": [0, 0], "B": [0, 0]}  # [successes, total]
+
+events = [("A", 1), ("A", 0), ("B", 1), ("B", 1), ("A", 1)]
+
+def tally(events):
+    # TODO: for each (variant, success), add to that variant's totals and successes.
+    pass
+
+tally(events)
+for v in ("A", "B"):
+    s, t = results[v]
+    rate = (s / t * 100) if t else 0.0
+    print(v, f"{rate:.1f}")
+`,
+      solution_code: `results = {"A": [0, 0], "B": [0, 0]}  # [successes, total]
+
+events = [("A", 1), ("A", 0), ("B", 1), ("B", 1), ("A", 1)]
+
+def tally(events):
+    for variant, success in events:
+        results[variant][1] += 1
+        results[variant][0] += success
+
+tally(events)
+for v in ("A", "B"):
+    s, t = results[v]
+    rate = (s / t * 100) if t else 0.0
+    print(v, f"{rate:.1f}")
+`,
+      expected_output: `A 66.7
+B 100.0`,
+      step_throughs: [
+        {
+          title: "running one request through an A/B test",
+          steps: [
+            { label: "Bucket the user", detail: "Hash the user id to a stable bucket so the same person always lands in the same arm, A or B, for the whole experiment.", code: 'b = "B" if (hash(user) % 100) / 100 < 0.5 else "A"' },
+            { label: "Serve the matching version", detail: "Bucket A runs the control prompt or model; bucket B runs the proposed variant. Everything else about the request is identical.", code: "out = call_model(prompt_for[b], model_for[b])" },
+            { label: "Record the outcome", detail: "Log a success metric for this request under its bucket: a thumbs-up, a completed task, a passing grader, whatever you agreed to measure.", code: "results[b][1] += 1; results[b][0] += int(success)" },
+            { label: "Compare rates", detail: "Once each arm has enough samples, compute success rates and pick the winner only if the gap clears your margin.", code: "rate_A = sA / tA; rate_B = sB / tB" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Arm A had 80 successes out of 100; arm B had 90 successes out of 100. Which has the higher success rate, and by how much?",
+          steps: [
+            "Rate A = 80 / 100 = 80.0%.",
+            "Rate B = 90 / 100 = 90.0%.",
+            "B is higher by 10 percentage points, and both arms have a healthy 100 samples."
+          ],
+          output: "B at 90.0% beats A at 80.0% by 10 points."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Arm A: 6 of 8 succeed (75%). Arm B: 5 of 6 succeed (83%). B looks better. Should you ship B to everyone? Explain.",
+          steps: [
+            "The raw rates favor B (83% vs 75%), but each arm has only a handful of observations.",
+            "With 8 and 6 samples, flipping one or two outcomes would reverse the result, so the gap is well within noise.",
+            "Declaring a winner now would be peeking at noisy early data and risks a false positive.",
+            "Keep the test running until each arm has enough samples and the gap clears a pre-set margin before deciding."
+          ],
+          output: "No: the samples are far too small, so the 8-point gap is noise; keep collecting data before deciding."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "ship on opinion vs decide with an A/B test",
+          columns: ["Question", "Ship on opinion", "A/B test"],
+          rows: [
+            { cells: ["Who decides", "Loudest voice in the room", "Live traffic on a metric"] },
+            { cells: ["Blast radius of a bad change", "All users at once", "A small bucket first"] },
+            { cells: ["Offline vs online gap", "Invisible until complaints", "Measured directly on users"] },
+            { cells: ["Result", "A guess that feels right", "A number with a margin"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "strengthens an A/B test vs undermines it",
+          bins: [
+            { id: "good", label: "Strengthens the test" },
+            { id: "bad", label: "Undermines the test" }
+          ],
+          items: [
+            { id: "i1", text: "Deterministic per-user bucketing", bin: "good" },
+            { id: "i2", text: "Agreeing on the success metric up front", bin: "good" },
+            { id: "i3", text: "Comparing success rates, not raw counts", bin: "good" },
+            { id: "i4", text: "Stopping the moment B looks good", bin: "bad" },
+            { id: "i5", text: "Deciding on ten samples per arm", bin: "bad" },
+            { id: "i6", text: "Changing the metric after seeing results", bin: "bad" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why are offline evals and live A/B tests both needed, rather than one replacing the other?",
+          sampleAnswer: "Evals run on a frozen set of cases, so they catch regressions cheaply and quickly before a change ever merges, gating the merge. But that case set can never cover the full, messy distribution of real requests, so a change can pass evals and still hurt real users. An A/B test measures the real metric on live traffic, gating the rollout and revealing the offline-versus-online gap. They sit at different stages: evals protect the merge, A/B tests protect the rollout, and you want both."
+        }
+      ],
+      hints: [
+        "results[variant][1] is the total for that variant; increment it once per event.",
+        "results[variant][0] is the successes; add the success value (0 or 1) to it.",
+        "Compute the rate as successes / total * 100, guarding against a zero total."
+      ],
+      challenge_title: "The Experiment Readout",
+      challenge_description: "Roll up a stream of A/B outcomes into a readout: each arm's success rate, and a verdict that respects minimum sample size and a decision margin.",
+      challenge_story: "Your team was sure the new prompt was better — the demo sparkled, the offline eval agreed — so they shipped it to everyone, and a week later real engagement had quietly slipped. Never decide on vibes again. You stand up an **A/B test**: live traffic is split between control A and variant B, and each request logs whether it succeeded. The experiment just closed. Compute each arm's success rate and produce an honest verdict that refuses to crown a winner on too little data or too thin a margin.",
+      challenge_statement: "You are given \`N\` outcome events and a \`min_samples\` requirement. Each event names a variant (\`A\` or \`B\`) and an outcome (\`1\` = success, \`0\` = failure).\n\nFor each variant compute its success rate as a percentage, rounded to **1 decimal place** (a variant with zero events has a rate of \`0.0\`). Then decide the verdict:\n\n- If **either** arm has fewer than \`min_samples\` events, output \`INCONCLUSIVE\`.\n- Otherwise, if the absolute difference between the two rates is **less than 1.0** percentage points, output \`INCONCLUSIVE\`.\n- Otherwise output \`WINNER A\` or \`WINNER B\` for whichever arm has the higher rate.",
+      challenge_input_format: "The first line contains two space-separated integers: `N min_samples`.\nEach of the next `N` lines contains a variant token (`A` or `B`) and an outcome (`0` or `1`), space-separated.",
+      challenge_output_format: "Three lines:\n- `A <successes>/<total> <rate to 1 decimal>`\n- `B <successes>/<total> <rate to 1 decimal>`\n- one of `WINNER A`, `WINNER B`, or `INCONCLUSIVE`",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "1 ≤ min_samples ≤ 100000",
+        "Each variant is exactly 'A' or 'B'; each outcome is 0 or 1.",
+        "A variant with zero events has rate 0.0 and counts as below min_samples.",
+        "The decision margin is 1.0 percentage point: a gap < 1.0 is INCONCLUSIVE."
+      ],
+      challenge_examples: [
+        { input: "6 2\nA 1\nA 0\nB 1\nB 1\nA 1\nB 1", output: "A 2/3 66.7\nB 3/3 100.0\nWINNER B", explanation: "A: 2 of 3 = 66.7%. B: 3 of 3 = 100.0%. Both arms meet min_samples 2, and the 33.3-point gap clears the margin, so B wins." },
+        { input: "3 5\nA 1\nB 0\nA 1", output: "A 2/2 100.0\nB 0/1 0.0\nINCONCLUSIVE", explanation: "A has only 2 events and B only 1, both below min_samples 5, so the result is INCONCLUSIVE regardless of the rates." }
+      ],
+      challenge_notes: "The min_samples gate is what stops you from crowning a winner on noise: a 100%-vs-0% split on a couple of requests is meaningless. The 1.0-point margin guards against calling a near-tie a victory. Real tests use proper statistical significance, but a sample floor plus a margin captures the same intuition.",
+      challenge_hints: [
+        "Keep a [successes, total] pair per variant and update both as you read each event.",
+        "Compute each rate as successes / total * 100, treating a zero total as 0.0.",
+        "Check the min_samples gate on both totals first, then the margin, then compare rates."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, min_samples = map(int, data[idx].split()); idx += 1
+    counts = {"A": [0, 0], "B": [0, 0]}  # [successes, total]
+    for _ in range(n):
+        variant, outcome = data[idx].split(); idx += 1
+        # TODO: increment total and add the outcome to successes for this variant.
+        pass
+
+    # TODO: compute rates, print the two arm lines, then decide the verdict.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, min_samples = map(int, data[idx].split()); idx += 1
+    counts = {"A": [0, 0], "B": [0, 0]}  # [successes, total]
+    for _ in range(n):
+        variant, outcome = data[idx].split(); idx += 1
+        counts[variant][1] += 1
+        if outcome == "1":
+            counts[variant][0] += 1
+
+    rates = {}
+    for v in ("A", "B"):
+        s, t = counts[v]
+        rates[v] = (s / t * 100) if t > 0 else 0.0
+        print(f"{v} {s}/{t} {rates[v]:.1f}")
+
+    if counts["A"][1] < min_samples or counts["B"][1] < min_samples:
+        print("INCONCLUSIVE")
+    elif abs(rates["A"] - rates["B"]) < 1.0:
+        print("INCONCLUSIVE")
+    elif rates["A"] > rates["B"]:
+        print("WINNER A")
+    else:
+        print("WINNER B")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "6 2\nA 1\nA 0\nB 1\nB 1\nA 1\nB 1", expected_output: "A 2/3 66.7\nB 3/3 100.0\nWINNER B", description: "Both arms meet the sample floor and B's higher rate clears the margin." },
+        { input: "3 5\nA 1\nB 0\nA 1", expected_output: "A 2/2 100.0\nB 0/1 0.0\nINCONCLUSIVE", description: "Too few samples in each arm forces INCONCLUSIVE despite a huge raw gap." },
+        { input: "4 2\nA 1\nA 0\nB 1\nB 0", expected_output: "A 1/2 50.0\nB 1/2 50.0\nINCONCLUSIVE", description: "Equal rates: the gap is under the 1.0-point margin, so no winner is declared." }
+      ]
+    },
+    {
+      id: "ai-16-l8",
+      project_id: "ai-16",
+      order: 8,
+      title: "Incident Response for LLM Apps",
+      concept: "Incidents",
+      xp_reward: 10,
+      explanation: `At 2:14 a.m. the error rate spiked. A prompt change shipped that afternoon had slowly poisoned a fraction of answers, and by night a third of requests were failing. The on-call engineer was paged, stared at a dashboard with no playbook, and spent forty frantic minutes guessing before someone said the words that fixed it: "just roll back the last deploy." It worked in ninety seconds. The outage was not the bug. The outage was the **lack of a plan** for the bug.
+
+## What it is
+
+**Incident response** is the prepared, repeatable process for when your LLM app misbehaves in production: detect it, mitigate it fast, then learn from it. It rests on three pillars. **Rollback** is the fastest mitigation — return to the last known-good version (the versioning from lesson 6 is what makes this possible). **On-call** is the human who is paged and the playbook they follow. The **postmortem** is the blameless write-up afterward that turns one painful night into a permanent fix.
+
+The guiding instinct: during an incident, **stop the bleeding first, understand it later.** Roll back now; root-cause in daylight.
+
+## How it works
+
+Detection comes from the metrics you already trace (lessons 2 and 4): when a signal like error rate crosses a threshold, an alert fires and a human is paged. The first move is almost always rollback:
+
+\`\`\`python
+def on_alert(metric, value, threshold):
+    if value >= threshold:
+        page_oncall(metric, value)          # wake the human
+        rollback_to_last_good()             # mitigate FIRST
+        # only after the bleeding stops do you investigate
+        open_incident(metric, value)
+
+# rolling back is cheap because deploys are versioned
+def rollback_to_last_good():
+    deploy(previous_version_id)             # seconds, by id
+\`\`\`
+
+The sequence matters. You page, you mitigate (usually by rolling back to the previous version id), and only then do you diagnose. Trying to root-cause a live outage while users suffer is how a ten-minute incident becomes an hour. After recovery, you write a **postmortem**: a timeline, the root cause, and concrete action items, with no finger-pointing — the goal is a system that cannot fail the same way twice.
+
+## Why it matters
+
+How you handle the bad night is what separates a hobby project from a service:
+
+- **Time to detect and recover is the real metric.** Everything fails eventually (lesson 5); the question is how long until you notice and how fast you recover. Alerts shrink the first; rollback shrinks the second.
+- **Rollback beats a hotfix under fire.** Patching a live bug at 2 a.m. is slow and risky. Returning to a known-good version is fast and safe — fix forward later, calmly.
+- **Blameless postmortems make you better.** Blaming a person hides the systemic gap (no alert, no rollback button) that actually caused the slow response. Blameless write-ups surface those gaps.
+- **Practice before the fire.** Teams that rehearse rollback and run game-days respond in minutes; teams seeing the runbook for the first time at 2 a.m. flail.
+
+A caution: an LLM incident is not always a crash. A subtle quality regression — politer but wrong answers, a creeping refusal rate — can do real damage while every server returns 200 OK. Alert on quality signals, not just errors.
+
+## The mental model to keep
+
+You will have a bad night; the only choice is whether you have a plan for it. **Detect fast, roll back first, postmortem without blame** — turn each incident into the reason the next one is shorter.`,
+      key_terms: [
+        { term: "Incident response", definition: "The prepared process to detect, mitigate, and learn from a production failure." },
+        { term: "Rollback", definition: "Returning to the last known-good version as the fastest way to stop an active incident." },
+        { term: "On-call", definition: "The engineer who is paged when an alert fires, following a defined playbook." },
+        { term: "Postmortem", definition: "A blameless write-up after an incident: timeline, root cause, and action items to prevent a recurrence." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A fire drill, not a fire fight", content: "You do not invent an evacuation route while the building burns; you rehearse it cold so the real fire is muscle memory. A runbook and a practiced rollback are that drill for your service.", position: "before" },
+        { type: "warning", title: "200 OK can still be an incident", content: "An LLM can fail by quietly returning wrong-but-polite answers while every health check passes. Alert on quality signals, not only on error codes and crashes.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "The path from spike to fix",
+        steps: [
+          { label: "Detect", desc: "A traced metric crosses a threshold and fires an alert." },
+          { label: "Page on-call", desc: "A human is woken with the signal and a playbook." },
+          { label: "Roll back", desc: "Return to the last known-good version to stop the bleeding." },
+          { label: "Postmortem", desc: "Write a blameless timeline, root cause, and action items." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "During a live incident, what is usually the correct first action?",
+          options: ["Root-cause the bug before doing anything", "Roll back to the last known-good version to stop the bleeding", "Wait to see if it resolves itself"],
+          correct_index: 1,
+          explanation: "Mitigate first: rolling back to a known-good version stops user impact quickly; diagnosis comes after recovery."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why is rollback usually preferred over a live hotfix during an incident?",
+          options: [
+            "Hotfixes are illegal",
+            "Returning to a known-good version is fast and safe, while patching under fire is slow and risky",
+            "Rollback fixes the root cause permanently",
+            "Hotfixes always make things worse"
+          ],
+          correct_index: 1,
+          explanation: "Rollback restores known-good behavior in seconds; a 2 a.m. hotfix is error-prone, so you fix forward later in daylight."
+        },
+        {
+          question: "What makes a postmortem 'blameless', and why does that matter?",
+          options: [
+            "It names who caused the outage",
+            "It focuses on systemic gaps rather than individuals, surfacing the missing alert or rollback that slowed response",
+            "It is kept secret from the team",
+            "It skips the timeline"
+          ],
+          correct_index: 1,
+          explanation: "Blaming a person hides the real cause (a missing safeguard); a blameless write-up exposes the systemic gap so it can be fixed."
+        },
+        {
+          question: "Why must LLM incident detection watch quality signals, not just error codes?",
+          options: [
+            "Error codes are never useful",
+            "An LLM can return wrong-but-polite answers with a 200 OK, so a quality regression hides behind healthy status codes",
+            "Quality signals are cheaper to log",
+            "The provider requires it"
+          ],
+          correct_index: 1,
+          explanation: "A subtle quality regression damages users while every server responds normally, so you need quality-based alerts to catch it."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Incident response check",
+          questions: [
+            { question: "The first priority during a live incident is to find the root cause before mitigating.", type: "true_false", correct_answer: "false", explanation: "Stop the bleeding first, usually by rolling back; root-cause analysis comes after recovery." },
+            { question: "The blameless write-up after an incident, with a timeline and action items, is called a ______.", type: "fill_in", correct_answer: "postmortem", explanation: "A postmortem turns one incident into a permanent fix without blaming individuals." }
+          ]
+        }
+      ],
+      starter_code: `# Decide the on-call response based on a metric crossing its threshold.
+def respond(error_rate, threshold):
+    # TODO: if error_rate >= threshold, return "page+rollback", else return "ok".
+    pass
+
+print(respond(35.0, 20.0))
+print(respond(5.0, 20.0))
+`,
+      solution_code: `def respond(error_rate, threshold):
+    if error_rate >= threshold:
+        return "page+rollback"
+    return "ok"
+
+print(respond(35.0, 20.0))
+print(respond(5.0, 20.0))
+`,
+      expected_output: `page+rollback
+ok`,
+      step_throughs: [
+        {
+          title: "one incident, from spike to recovery",
+          steps: [
+            { label: "Detect the spike", detail: "A traced metric like error rate crosses its threshold. This is why lessons 2 and 4 mattered: you can only alert on signals you record.", code: "if error_rate >= threshold: alert()" },
+            { label: "Page on-call", detail: "An alert wakes the on-call engineer with the metric, the value, and a link to the runbook, so they start with context, not a cold dashboard.", code: 'page_oncall(metric="error_rate", value=33.0)' },
+            { label: "Roll back first", detail: "Mitigate before diagnosing: redeploy the previous known-good version by id. Because deploys are versioned (lesson 6), this takes seconds.", code: "deploy(previous_version_id)  # stop the bleeding" },
+            { label: "Postmortem in daylight", detail: "Once recovered, write the timeline, root cause, and action items with no blame, so the same failure cannot recur.", code: "write_postmortem(timeline, root_cause, action_items)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "An alert fires at 2 a.m.: error rate is 33% against a 20% threshold. The on-call engineer wants to read the code and find the bug first. What should they do instead, and why?",
+          steps: [
+            "Reading code while a third of requests fail keeps users in the outage for as long as the investigation takes.",
+            "The fastest mitigation is to roll back to the last known-good version, which restores normal behavior in seconds.",
+            "Only after recovery should they diagnose the root cause, calmly, without users suffering."
+          ],
+          output: "Roll back to the last known-good version first to stop the impact, then root-cause after recovery."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Every server returns 200 OK and latency is normal, yet users complain the assistant has started refusing reasonable requests. Error-rate alerts never fired. Diagnose the gap and the fix.",
+          steps: [
+            "The failure is a quality regression, not a crash, so HTTP-level health checks all pass and the error-rate alert stays silent.",
+            "Without a quality signal, no alert fires, so detection time balloons and you only learn from complaints.",
+            "Fix detection: track a quality metric (refusal rate, thumbs-up rate, or an online eval score) and alert when it degrades.",
+            "Then the same incident response applies: page, roll back the prompt or model version that introduced it, and postmortem."
+          ],
+          output: "It is a quality incident masked by healthy status codes; add quality-signal alerts, then page, roll back, and postmortem."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "no incident plan vs prepared incident response",
+          columns: ["When it breaks", "No plan", "Prepared response"],
+          rows: [
+            { cells: ["Detection", "A user complaint, hours later", "An alert on a traced metric"] },
+            { cells: ["First action", "Guess and hotfix live", "Roll back to last known-good"] },
+            { cells: ["Recovery time", "Long and frantic", "Minutes, by rehearsed runbook"] },
+            { cells: ["Afterward", "Blame and forget", "Blameless postmortem and a fix"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "good incident response vs anti-pattern",
+          bins: [
+            { id: "good", label: "Good incident response" },
+            { id: "bad", label: "Anti-pattern" }
+          ],
+          items: [
+            { id: "i1", text: "Roll back to last known-good first", bin: "good" },
+            { id: "i2", text: "Alert on quality signals, not just errors", bin: "good" },
+            { id: "i3", text: "Write a blameless postmortem with action items", bin: "good" },
+            { id: "i4", text: "Root-cause the live bug before mitigating", bin: "bad" },
+            { id: "i5", text: "Blame the engineer who shipped the change", bin: "bad" },
+            { id: "i6", text: "Have no runbook and improvise at 2 a.m.", bin: "bad" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: how do the earlier lessons (tracing, cost monitoring, versioning, fallbacks) all feed into incident response?",
+          sampleAnswer: "Incident response depends on everything before it. Tracing and cost monitoring produce the metrics you alert on, so you can detect an incident instead of waiting for complaints. Versioning makes rollback possible, because you can only return to a known-good state if past deploys are pinned and identifiable. Fallbacks reduce how often a provider failure even becomes a user-facing incident. So incident response is not a separate system; it is the moment all the production discipline you built earlier pays off, letting you detect fast, roll back cleanly, and learn without blame."
+        }
+      ],
+      hints: [
+        "Compare error_rate to threshold with >= so the boundary counts as an incident.",
+        "Return the string 'page+rollback' when the threshold is met or exceeded.",
+        "Return 'ok' otherwise, since the metric is within healthy range."
+      ],
+      challenge_title: "The Incident Timeline",
+      challenge_description: "Replay a minute-by-minute error stream through an alert-and-rollback policy: detect when the error rate crosses the threshold, then measure how long the incident lasted before recovery.",
+      challenge_story: "A bad deploy once poisoned a third of answers overnight, and the on-call engineer burned forty minutes guessing before someone said 'just roll back.' Now you have a plan. Your monitoring reports the error rate every minute, and an alert fires the moment it crosses the threshold, triggering a rollback. You want to measure the incident the way a postmortem does: when did it start, how many minutes did the degradation last, and did it recover. Replay the minute stream through the policy and produce that timeline.",
+      challenge_statement: "You are given \`N\` minutes of monitoring and an integer error-rate \`threshold\` (a percent). Each minute reports \`errors\` and \`total\` requests; that minute's error rate is \`errors / total * 100\` (a minute with zero total requests has a rate of \`0.0\`).\n\nFind the **first** minute (0-indexed) whose error rate is **at or above** the threshold — that is when the incident is detected. From that minute onward, count the **consecutive** minutes that stay at or above the threshold; that is the downtime. The incident **recovers** if a later minute drops below the threshold.\n\nIf no minute ever reaches the threshold, report no incident.",
+      challenge_input_format: "The first line contains two space-separated integers: `N threshold`.\nEach of the next `N` lines contains two space-separated integers: `errors total`.",
+      challenge_output_format: "Three lines:\n- `detected <minute index, or -1 if none>`\n- `downtime <consecutive minutes at or above threshold from detection, 0 if none>`\n- `recovered <1 if a later minute dropped below threshold, else 0>`",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "0 ≤ threshold ≤ 100",
+        "0 ≤ errors ≤ total ≤ 1000000",
+        "A minute with total = 0 has an error rate of 0.0.",
+        "Detection uses the first minute with rate ≥ threshold; downtime is the consecutive run from there."
+      ],
+      challenge_examples: [
+        { input: "5 20\n0 100\n30 100\n40 100\n5 100\n2 100", output: "detected 1\ndowntime 2\nrecovered 1", explanation: "Minute 0 is 0% (healthy). Minute 1 is 30% >= 20%, so detection is minute 1. Minutes 1 and 2 (30%, 40%) stay above, so downtime is 2. Minute 3 is 5% < 20%, so it recovered." },
+        { input: "3 50\n10 100\n5 100\n0 50", output: "detected -1\ndowntime 0\nrecovered 0", explanation: "No minute reaches 50% (rates are 10%, 5%, 0%), so there is no incident: detected -1, no downtime, no recovery." }
+      ],
+      challenge_notes: "Detection time and recovery time are the metrics a postmortem cares about, not the bug itself. Counting the consecutive at-or-above run mirrors how a rollback would end the incident once the healthy version takes over; a minute back below the threshold marks recovery.",
+      challenge_hints: [
+        "Compute each minute's rate as errors / total * 100, treating total = 0 as 0.0.",
+        "Scan for the first index where rate >= threshold to set the detection minute.",
+        "From detection, count consecutive minutes at or above threshold; stop and set recovered = 1 at the first minute below."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, threshold = map(int, data[idx].split()); idx += 1
+    minutes = []
+    for _ in range(n):
+        errors, total = map(int, data[idx].split()); idx += 1
+        minutes.append((errors, total))
+
+    # TODO: find first minute with rate >= threshold (detection),
+    #       count consecutive minutes at/above from there (downtime),
+    #       and whether a later minute drops below (recovered).
+    detected = -1
+    downtime = 0
+    recovered = 0
+
+    print(f"detected {detected}")
+    print(f"downtime {downtime}")
+    print(f"recovered {recovered}")
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, threshold = map(int, data[idx].split()); idx += 1
+    minutes = []
+    for _ in range(n):
+        errors, total = map(int, data[idx].split()); idx += 1
+        minutes.append((errors, total))
+
+    def rate(errors, total):
+        return (errors / total * 100) if total > 0 else 0.0
+
+    detected = -1
+    for i, (e, t) in enumerate(minutes):
+        if rate(e, t) >= threshold:
+            detected = i
+            break
+
+    downtime = 0
+    recovered = 0
+    if detected != -1:
+        for i in range(detected, n):
+            e, t = minutes[i]
+            if rate(e, t) >= threshold:
+                downtime += 1
+            else:
+                recovered = 1
+                break
+
+    print(f"detected {detected}")
+    print(f"downtime {downtime}")
+    print(f"recovered {recovered}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "5 20\n0 100\n30 100\n40 100\n5 100\n2 100", expected_output: "detected 1\ndowntime 2\nrecovered 1", description: "Incident detected at minute 1, lasts 2 minutes, then recovers." },
+        { input: "3 50\n10 100\n5 100\n0 50", expected_output: "detected -1\ndowntime 0\nrecovered 0", description: "No minute crosses the threshold, so there is no incident." },
+        { input: "4 25\n1 100\n50 100\n60 100\n80 100", expected_output: "detected 1\ndowntime 3\nrecovered 0", description: "Edge case: incident detected at minute 1 and never recovers within the window." }
       ]
     }
   ]

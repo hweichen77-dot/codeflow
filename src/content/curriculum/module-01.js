@@ -6,7 +6,7 @@ export default {
     difficulty: "beginner",
     category: "foundations",
     estimated_time: 45,
-    lessons_count: 4,
+    lessons_count: 8,
     tags: ["llm", "intuition", "tokens", "prediction", "fundamentals"],
     order: 1,
     cover_image: ""
@@ -1094,6 +1094,1081 @@ main()
         { input: "80\n2\nwater boils at 100C\nthe sun is a star\n3\n95 the sun is a star\n90 the moon is made of cheese\n40 dragons are real", expected_output: "the sun is a star -> TRUST\nthe moon is made of cheese -> VERIFY\ndragons are real -> REJECT\nTRUSTED 1", description: "Grounding wins over confidence; threshold splits the rest." },
         { input: "50\n0\n2\n60 alpha\n30 beta", expected_output: "alpha -> VERIFY\nbeta -> REJECT\nTRUSTED 0", description: "No grounded facts: pure confidence gating." },
         { input: "70\n1\nknown fact\n2\n70 unknown claim\n69 another claim", expected_output: "unknown claim -> VERIFY\nanother claim -> REJECT\nTRUSTED 0", description: "Threshold is inclusive: exactly 70 routes to VERIFY, 69 to REJECT." }
+      ]
+    },
+    {
+      id: "ai-01-l5",
+      project_id: "ai-01",
+      order: 5,
+      title: "Probability Distributions: The Next-Token Lottery",
+      concept: "Probability",
+      xp_reward: 10,
+      explanation: `When the model "picks the next token," it does not pick. It rolls a weighted die. Before any word comes out, the model holds a full **probability distribution** over every token in its vocabulary at once — maybe 50,000 numbers, each saying "this is how likely I am to come next." The word you see is one draw from that lottery.
+
+## What it is
+
+A **probability distribution** is a list of likelihoods that covers every option and sums to exactly 1.0 (100%). For next-token prediction, there is one entry per vocabulary token. " blue" might get 0.62, " green" 0.10, " falling" 0.03, and tens of thousands of others split the rest. The model never outputs just one guess — it always produces the whole spread, and sampling reaches in to pull one out.
+
+But the model does not compute these probabilities directly. It first produces raw, unbounded scores called **logits** — one per token, any real number, positive or negative. A function named **softmax** then squashes those logits into a clean probability distribution.
+
+## How it works
+
+Softmax does two jobs: it makes every number positive (by exponentiating), then it normalizes them to sum to 1. Bigger logit in, bigger probability out — but the gaps get exaggerated, so the top candidate often dominates.
+
+\`\`\`python
+import math
+
+logits = {"blue": 8.0, "green": 6.0, "red": 2.0}
+exps = {tok: math.exp(v) for tok, v in logits.items()}
+total = sum(exps.values())
+probs = {tok: e / total for tok, e in exps.items()}
+# probs ~ {"blue": 0.88, "green": 0.12, "red": 0.002} -> sums to 1.0
+\`\`\`
+
+Then **sampling** draws one token according to those weights, ties back to the prediction loop from lesson 1: predict the distribution, sample a token, append it, repeat. **Temperature** (from lesson 1's worked example) is the dial that flattens or sharpens this distribution before the draw — high temperature evens out the odds and adds variety, low temperature spikes the top token and makes output predictable.
+
+## Why it matters
+
+- **Determinism is a choice.** Always take the single highest-probability token (greedy) and the model is repeatable. Sample, and the same prompt yields different answers — same distribution, different draw.
+- **"Confidence" is just a probability.** A token at 0.97 is not *verified*; it is only the model's predicted likelihood. Lesson 4 already warned: plausible is not true.
+- **The long tail is real.** Most probability piles onto a few tokens, but a tiny sliver is spread across thousands. Crank temperature up and you start drawing from that weird tail — which is how creative (and unhinged) outputs happen.
+
+## The mental model to keep
+
+The model does not choose a word. **It builds a full distribution over the whole vocabulary, then runs a weighted lottery.** Softmax sets the odds; sampling pulls the ticket.`,
+      key_terms: [
+        { term: "Probability distribution", definition: "A list of likelihoods over every possible next token that sums to 1.0." },
+        { term: "Logits", definition: "Raw, unbounded scores the model produces per token before they become probabilities." },
+        { term: "Softmax", definition: "The function that turns logits into a valid probability distribution that sums to 1." },
+        { term: "Sampling", definition: "Drawing one token at random according to the distribution's weights." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A weighted raffle, not a choice", content: "Imagine a raffle where 'blue' holds 620 tickets, 'green' 100, and thousands of rare words share the rest. The model doesn't decide the winner — it draws a ticket. Softmax printed the tickets; sampling pulls one.", position: "before" },
+        { type: "insight", title: "Logits are the unfair scores", content: "Logits can be any number, even negative. Softmax exponentiates them, so a logit lead of just 2 can turn into a near-total probability win. Big scores don't add up — they blow up.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "From scores to a sampled token",
+        steps: [
+          { label: "Compute logits", desc: "One raw score per vocabulary token, any real number." },
+          { label: "Apply softmax", desc: "Exponentiate and normalize so the scores sum to 1.0." },
+          { label: "Get a distribution", desc: "Every token now has a probability; the top few dominate." },
+          { label: "Sample one token", desc: "Draw a token by its weight, append it, and predict again." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What does softmax take in, and what does it produce?",
+          options: ["Words in, words out", "Raw logits in, a probability distribution out", "Tokens in, token IDs out"],
+          correct_index: 1,
+          explanation: "Softmax converts unbounded logits into positive probabilities that sum to 1.0."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why must the next-token probabilities sum to exactly 1.0?",
+          options: [
+            "It makes the numbers prettier to print",
+            "They form a probability distribution: one token will be chosen, so the options must cover 100% of the possibilities",
+            "Because the vocabulary always has 100 tokens",
+            "To keep the logits positive"
+          ],
+          correct_index: 1,
+          explanation: "A distribution assigns likelihoods across all outcomes; since exactly one token is drawn, those likelihoods must total 1."
+        },
+        {
+          question: "How can the same prompt give different answers on different runs?",
+          options: [
+            "The weights change between runs",
+            "Sampling draws a token from the distribution, so a less-likely token can win on some runs",
+            "The vocabulary is reshuffled each time",
+            "Softmax is random"
+          ],
+          correct_index: 1,
+          explanation: "Greedy decoding is deterministic, but sampling draws by weight, so runs can diverge at any step where a non-top token is picked."
+        },
+        {
+          question: "What does raising the temperature do to the distribution before sampling?",
+          options: [
+            "Sharpens it so the top token almost always wins",
+            "Flattens it, evening out the odds and adding variety",
+            "Deletes the rare tokens",
+            "Converts probabilities back into logits"
+          ],
+          correct_index: 1,
+          explanation: "Higher temperature flattens the distribution, giving lower-probability tokens a better shot — more creative, less predictable output."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Distribution sense-check",
+          questions: [
+            { question: "The model outputs a single best word, not a probability for every token.", type: "true_false", correct_answer: "false", explanation: "It always produces a full distribution over the whole vocabulary; one token is then sampled." },
+            { question: "The function that turns raw logits into probabilities that sum to 1 is called ______.", type: "fill_in", correct_answer: "softmax", explanation: "Softmax exponentiates and normalizes the logits." }
+          ]
+        }
+      ],
+      starter_code: `# Turn raw logits into a probability distribution with softmax.
+import math
+
+logits = {"blue": 8.0, "green": 6.0, "red": 2.0}
+
+# TODO: exponentiate each logit, sum them, then divide to get probabilities.
+# Print each token with its probability rounded to 3 decimals.
+print(logits)
+`,
+      solution_code: `import math
+
+logits = {"blue": 8.0, "green": 6.0, "red": 2.0}
+
+exps = {tok: math.exp(v) for tok, v in logits.items()}
+total = sum(exps.values())
+probs = {tok: e / total for tok, e in exps.items()}
+
+for tok, p in probs.items():
+    print(f"{tok}: {p:.3f}")
+print(f"sum: {sum(probs.values()):.3f}")
+`,
+      expected_output: `blue: 0.879
+green: 0.119
+red: 0.002
+sum: 1.000`,
+      step_throughs: [
+        {
+          title: "one token, drawn from the whole vocabulary",
+          steps: [
+            { label: "Score every token", detail: "The model emits a logit for each vocabulary token. These are raw, unbounded, and can be negative.", code: "logits = {blue: 8.0, green: 6.0, red: 2.0}" },
+            { label: "Exponentiate", detail: "Softmax raises e to each logit, forcing every value positive and stretching the gaps between them.", code: "exp(8)=2981, exp(6)=403, exp(2)=7.4" },
+            { label: "Normalize to a distribution", detail: "Divide each by the total so everything sums to 1.0. Now they are real probabilities.", code: "blue=0.88, green=0.12, red=0.002  (sum 1.0)" },
+            { label: "Sample one ticket", detail: "Draw a token by its weight. 'blue' usually wins, but on a high-temperature run 'green' can slip through.", code: "draw -> ' blue'  (append, then predict again)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Two tokens have probabilities 0.7 and 0.3. If the model uses greedy decoding (always take the top), which token comes out?",
+          steps: [
+            "Greedy decoding ignores randomness and picks the single highest-probability token.",
+            "0.7 is greater than 0.3, so the first token wins.",
+            "And it wins every single run, because greedy is deterministic."
+          ],
+          output: "The 0.7 token, every time."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A token has logit 4.0 and another has logit 2.0. Roughly what share of probability does the first get after softmax over just these two? (e^2 is about 7.39.)",
+          steps: [
+            "Softmax compares exponentials: e^4 vs e^2.",
+            "e^4 = (e^2)^2 = 7.39^2 = about 54.6, and e^2 = about 7.39.",
+            "Share of the first = 54.6 / (54.6 + 7.39) = 54.6 / 61.99.",
+            "That is about 0.88 — a logit lead of 2 turns into an 88% probability share."
+          ],
+          output: "About 88% — softmax exaggerates the gap between logits."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "logits vs probabilities",
+          columns: ["Aspect", "Logits", "Probabilities (after softmax)"],
+          rows: [
+            { cells: ["Range", "Any real number, can be negative", "Between 0 and 1"] },
+            { cells: ["Sum", "Whatever it happens to be", "Exactly 1.0"] },
+            { cells: ["Produced by", "The model's final layer", "Softmax applied to logits"] },
+            { cells: ["What you sample from", "No — not a distribution yet", "Yes — this is the lottery"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "logits vs probability distribution",
+          bins: [
+            { id: "logit", label: "True of logits" },
+            { id: "prob", label: "True of the probability distribution" }
+          ],
+          items: [
+            { id: "i1", text: "Can be any real number, even negative", bin: "logit" },
+            { id: "i2", text: "Always sums to exactly 1.0", bin: "prob" },
+            { id: "i3", text: "Raw scores before softmax", bin: "logit" },
+            { id: "i4", text: "Every value sits between 0 and 1", bin: "prob" },
+            { id: "i5", text: "What sampling draws a token from", bin: "prob" },
+            { id: "i6", text: "Produced by the model's final layer", bin: "logit" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is it more accurate to say the model 'samples' a token than to say it 'knows' the next word?",
+          sampleAnswer: "The model never settles on one answer — it produces a probability for every token at once, then a draw selects one according to those weights. Because the choice is a weighted random draw rather than a lookup of a known fact, the same prompt can yield different words, and a high probability only means likely, not correct."
+        }
+      ],
+      hints: [
+        "math.exp(x) gives e raised to x; apply it to each logit first.",
+        "Sum all the exponentials, then divide each one by that sum.",
+        "The probabilities should always add up to 1.0 — print the sum to check."
+      ],
+      challenge_title: "Softmax Sampler Odds",
+      challenge_description: "Build the core of next-token selection: take raw logits, run softmax to get a distribution, and report the probability of the top candidates the way a sampler would weigh them.",
+      challenge_story: "You're implementing the decoder's final stage. The model has just produced one **logit** per candidate token — raw scores, no bounds. Before sampling can pick a token, those logits must become a real **probability distribution**. Your team wants the top **k** candidates shown as percentages so they can eyeball how 'peaked' the model is. To keep the simulator deterministic and free of floating-point surprises, you'll use a simplified normalization: treat each logit as its own un-exponentiated weight and report each candidate's share of the total. Sort by weight (highest first), breaking ties alphabetically.",
+      challenge_statement: "You are given `n` candidate tokens, each with an integer logit (weight), and an integer `k`.\n\n1. Sort the tokens by logit **descending**; break ties by token text **ascending** (lexicographic).\n2. Keep the top `k` tokens.\n3. Let `S` be the sum of the logits of those top `k` tokens. For each kept token, its probability is `logit / S * 100`.\n4. Print each kept token (in the sorted order) followed by its percentage, rounded to exactly **2 decimal places**.",
+      challenge_input_format: "The first line has two integers `n k`. Each of the next `n` lines has a token (no spaces) and its integer logit, separated by a space.",
+      challenge_output_format: "`k` lines, each `<token> <percentage>` where the percentage is formatted to exactly 2 decimal places.",
+      challenge_constraints: [
+        "1 ≤ k ≤ n ≤ 100000",
+        "1 ≤ logit ≤ 1000000",
+        "Tokens contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "4 3\ncat 8\ndog 6\nfish 2\nbird 4", output: "cat 44.44\ndog 33.33\nbird 22.22", explanation: "Sorted by logit: cat 8, dog 6, bird 4, fish 2. Top 3 are cat, dog, bird; their sum is 18. cat = 8/18 = 44.44%, dog = 6/18 = 33.33%, bird = 4/18 = 22.22%." },
+        { input: "2 2\nyes 3\nno 1", output: "yes 75.00\nno 25.00", explanation: "Sum is 4. yes = 3/4 = 75%, no = 1/4 = 25%." },
+      ],
+      challenge_notes: "Real softmax exponentiates each logit first, which makes the top token dominate far more sharply than this linear version. We skip the exponential here only to keep the arithmetic clean and deterministic — the idea (normalize so shares sum to 100%) is identical. The tie-break keeps output unambiguous when two tokens share a logit.",
+      challenge_hints: [
+        "Read all tokens into a list of (token, logit) tuples, then sort with key=lambda x: (-x[1], x[0]).",
+        "Slice the first k after sorting, then sum their logits to get S.",
+        "Format each share with an f-string like f\"{tok} {logit/S*100:.2f}\".",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, k = map(int, data[0].split())
+    # TODO: read n (token, logit) pairs, sort by logit desc then token asc,
+    #       keep the top k, and print each token's share of their summed logits.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, k = map(int, data[idx].split())
+    idx += 1
+    tokens = []
+    for _ in range(n):
+        tok, logit = data[idx].split()
+        tokens.append((tok, int(logit)))
+        idx += 1
+    tokens.sort(key=lambda x: (-x[1], x[0]))
+    top = tokens[:k]
+    s = sum(t[1] for t in top)
+    for tok, logit in top:
+        pct = logit / s * 100
+        print(f"{tok} {pct:.2f}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "4 3\ncat 8\ndog 6\nfish 2\nbird 4", expected_output: "cat 44.44\ndog 33.33\nbird 22.22", description: "Top-3 selection then normalize the kept logits to percentages." },
+        { input: "2 2\nyes 3\nno 1", expected_output: "yes 75.00\nno 25.00", description: "All tokens kept; simple two-way split." },
+        { input: "3 1\na 5\nb 5\nc 1", expected_output: "a 100.00", description: "Tie on logit resolved alphabetically; the single kept token holds 100%." },
+        { input: "3 3\nz 1\nm 1\na 1", expected_output: "a 33.33\nm 33.33\nz 33.33", description: "Equal logits split evenly; ties order alphabetically." }
+      ]
+    },
+    {
+      id: "ai-01-l6",
+      project_id: "ai-01",
+      order: 6,
+      title: "Weights and Parameters",
+      concept: "Weights",
+      xp_reward: 10,
+      explanation: `"GPT-3 has 175 billion parameters." You've seen numbers like this thrown around like horsepower stats. But what *is* a parameter? It is just a single number. The whole model — everything it knows about grammar, facts, code, and tone — is stored in billions of these plain numbers, and nothing else.
+
+## What it is
+
+A **parameter** (also called a **weight**) is one tunable number inside the model. Lesson 3 mentioned weights as the thing training adjusts; here we open the box. A model is a giant grid of these numbers organized into layers. When you run a prompt through, the model multiplies your token values by these weights, adds them up, and passes the result forward — over and over, through every layer — until logits pop out the other end.
+
+There is no separate "knowledge database." The fact that Paris is the capital of France is not stored as a sentence anywhere. It is smeared across millions of weights as a pattern that makes "Paris" the likely continuation of "The capital of France is."
+
+## How it works
+
+Each weight starts as a random number. Training (lesson 3) nudges every weight, billions of times, until the whole grid predicts text well. A toy version of the multiply-and-sum that weights perform:
+
+\`\`\`python
+# a tiny "layer": each input is scaled by a weight, then summed
+inputs  = [1.0, 2.0, 3.0]
+weights = [0.5, -1.0, 0.25]
+
+output = sum(x * w for x, w in zip(inputs, weights))
+# 1.0*0.5 + 2.0*-1.0 + 3.0*0.25 = 0.5 - 2.0 + 0.75 = -0.75
+\`\`\`
+
+A real model does this with billions of weights across dozens of layers. **Parameter count** is simply how many of these numbers the model has. More parameters means more capacity to store patterns — but also more memory, more compute, and a bigger training bill.
+
+## Why it matters
+
+- **Size sets the floor on cost and speed.** A 7-billion-parameter model can run on a laptop; a 400-billion one needs a server rack. Parameter count drives memory, latency, and price.
+- **More parameters usually means more capable — up to a point.** Bigger models tend to handle subtler patterns and rarer knowledge. But the gains shrink as you scale, which is the whole topic of the next lesson.
+- **Parameters are frozen at inference.** Lesson 3 again: when you chat, the weights do not move. You are reading the printed grid, not editing it.
+- **The number is marketing-adjacent.** A well-trained 13B model can beat a sloppy 70B one. Parameter count is a rough proxy for capability, not a guarantee.
+
+## The mental model to keep
+
+A model is **billions of dials**, each holding one number. Training spent millions of dollars setting every dial. **Inference just reads the dials** to turn your prompt into a prediction — the dials never move while you use it.`,
+      key_terms: [
+        { term: "Parameter", definition: "A single tunable number inside the model; billions of them together define its behavior." },
+        { term: "Weight", definition: "Another name for a parameter — the value an input gets multiplied by inside a layer." },
+        { term: "Parameter count", definition: "How many tunable numbers a model has, often quoted in billions." },
+        { term: "Capacity", definition: "How much pattern and knowledge a model can store, tied loosely to its parameter count." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Billions of dials", content: "Picture a mixing board with billions of dials, each set to one number. Training is the months-long session that tuned every dial. Inference is just playing the board as-is — no dial moves while the music plays.", position: "before" },
+        { type: "insight", title: "Knowledge has no address", content: "There is no row in the model that says 'Paris = capital of France.' That fact lives as a pattern spread across millions of weights. You can't point to where a fact is stored — only that the dials together make it likely.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "What a parameter does in one pass",
+        steps: [
+          { label: "Input arrives", desc: "Token values enter a layer as numbers." },
+          { label: "Multiply by weights", desc: "Each input is scaled by its parameter." },
+          { label: "Sum and pass on", desc: "The scaled values are added and sent forward." },
+          { label: "Repeat through layers", desc: "Billions of weights later, logits come out." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What is a single parameter in a language model?",
+          options: ["A whole sentence of stored knowledge", "One tunable number", "A token in the vocabulary"],
+          correct_index: 1,
+          explanation: "A parameter is just one number; billions of them together make up the model."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Where is the fact 'Paris is the capital of France' stored in the model?",
+          options: [
+            "In a labeled fact database inside the model",
+            "As a pattern spread across many weights, with no single address",
+            "In the context window",
+            "In a lookup table of cities"
+          ],
+          correct_index: 1,
+          explanation: "Knowledge is distributed across millions of weights as patterns, not stored as discrete facts you can point to."
+        },
+        {
+          question: "What does a higher parameter count tend to cost you?",
+          options: [
+            "Nothing — bigger is always free",
+            "More memory, more compute, and more latency",
+            "Fewer tokens of context",
+            "A smaller vocabulary"
+          ],
+          correct_index: 1,
+          explanation: "More parameters need more memory and compute to store and run, which raises cost and slows responses."
+        },
+        {
+          question: "Why can a smaller, well-trained model sometimes beat a larger one?",
+          options: [
+            "Smaller models cheat",
+            "Parameter count is only a rough proxy for capability; training quality and data matter too",
+            "Larger models always have corrupted weights",
+            "Smaller models have more parameters secretly"
+          ],
+          correct_index: 1,
+          explanation: "Capability depends on data and training quality, not just raw size, so a sharp small model can outperform a sloppy big one."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Parameter check",
+          questions: [
+            { question: "A model's weights keep changing while you chat with it.", type: "true_false", correct_answer: "false", explanation: "Weights are frozen at inference; only training changes them." },
+            { question: "Another word for a single tunable number inside the model is a ______.", type: "fill_in", correct_answer: "weight", explanation: "Parameter and weight mean the same thing." }
+          ]
+        }
+      ],
+      starter_code: `# A toy 'layer': scale each input by a weight, then sum the results.
+inputs  = [1.0, 2.0, 3.0]
+weights = [0.5, -1.0, 0.25]
+
+# TODO: multiply each input by its weight and add them all up.
+print(inputs)
+`,
+      solution_code: `inputs  = [1.0, 2.0, 3.0]
+weights = [0.5, -1.0, 0.25]
+
+output = sum(x * w for x, w in zip(inputs, weights))
+print(f"output: {output}")
+`,
+      expected_output: `output: -0.75`,
+      step_throughs: [
+        {
+          title: "from billions of numbers to a prediction",
+          steps: [
+            { label: "Weights start random", detail: "Before training, every parameter is a meaningless random number. The model predicts gibberish.", code: "weights = random grid of billions of numbers" },
+            { label: "Training tunes every dial", detail: "Lesson 3's nudge runs billions of times, adjusting each weight so the grid predicts real text.", code: "weight += lr * (target - guess)  # x billions" },
+            { label: "Freeze the grid", detail: "Training ends; the dials lock into a fixed file. Parameter count is just how many dials there are.", code: "175,000,000,000 frozen parameters" },
+            { label: "Read the dials to predict", detail: "Your prompt flows through the frozen weights — multiply, sum, pass on — until logits come out.", code: "logits = prompt run through frozen weights" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A layer has inputs [2, 4] and weights [1.0, 0.5]. What single number does it pass forward?",
+          steps: [
+            "Multiply each input by its matching weight: 2 x 1.0 = 2.0 and 4 x 0.5 = 2.0.",
+            "Sum the results: 2.0 + 2.0 = 4.0.",
+            "That sum is what the layer passes on to the next layer."
+          ],
+          output: "4.0"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Model A has 7 billion parameters and runs on a laptop. Model B has 400 billion. Your task is simple grammar fixing on a phone. Which is the better pick and why?",
+          steps: [
+            "Parameter count sets the floor on memory, speed, and cost — 400B needs a server rack, not a phone.",
+            "Grammar fixing is a common, well-covered task that does not need rare knowledge or deep reasoning.",
+            "A 7B model has plenty of capacity for that, and runs cheaply and fast on-device.",
+            "Bigger is not better when the smaller model already clears the task; you'd just pay more for no gain."
+          ],
+          output: "Model A — its capacity covers the task, at far lower cost and latency."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "small model vs large model",
+          columns: ["Dimension", "Small (e.g. 7B)", "Large (e.g. 400B)"],
+          rows: [
+            { cells: ["Memory needed", "Runs on a laptop", "Needs a server rack"] },
+            { cells: ["Speed", "Fast responses", "Slower per token"] },
+            { cells: ["Knowledge depth", "Good on common tasks", "Better on rare or subtle ones"] },
+            { cells: ["Cost per request", "Cheap", "Expensive"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "true of parameters vs not true",
+          bins: [
+            { id: "true", label: "True of parameters" },
+            { id: "false", label: "Not true" }
+          ],
+          items: [
+            { id: "i1", text: "Each one is a single tunable number", bin: "true" },
+            { id: "i2", text: "They store facts as labeled sentences", bin: "false" },
+            { id: "i3", text: "Training sets their values", bin: "true" },
+            { id: "i4", text: "They change while you chat", bin: "false" },
+            { id: "i5", text: "More of them raises memory and cost", bin: "true" },
+            { id: "i6", text: "Knowledge is spread across many of them", bin: "true" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is parameter count only a rough guide to how good a model is?",
+          sampleAnswer: "Parameter count measures capacity — how much a model could store — but not how well that capacity was used. A model trained on better data with a smarter process can pack more useful patterns into fewer weights, so a sharp 13B model can beat a carelessly trained 70B one. Size sets the ceiling, but training quality decides how close you get to it."
+        }
+      ],
+      hints: [
+        "zip(inputs, weights) pairs each input with its weight.",
+        "Multiply each pair (x * w) and sum the products.",
+        "A generator inside sum() does the multiply-and-add in one line."
+      ],
+      challenge_title: "Parameter Budget Report",
+      challenge_description: "Add up a model's parameters layer by layer, report each layer's share of the total, and decide whether the whole thing fits in a hardware memory budget.",
+      challenge_story: "You're sizing a model for deployment. Every **layer** holds some number of **parameters** (weights), and the full model is just the sum of them all. Before you commit hardware, the team needs a breakdown: how big is each layer relative to the whole, and does the total fit inside the device's parameter **budget**? Build the report so they can see at a glance where the weight lives and whether it will load.",
+      challenge_statement: "You are given `n` layers, each with a name and an integer parameter count, followed by an integer `budget`.\n\n1. Compute the total parameter count across all layers.\n2. For each layer, in input order, print its name and its share of the total as a percentage rounded to exactly **1 decimal place**.\n3. Print a line `TOTAL <sum>` with the total parameter count.\n4. Print `FITS` if the total is **less than or equal to** the budget, otherwise `TOO BIG`.",
+      challenge_input_format: "The first line is the integer `n`. Each of the next `n` lines has a layer name (no spaces) and its integer parameter count. The final line is the integer `budget`.",
+      challenge_output_format: "`n` lines of `<name> <percentage>` (1 decimal place), then `TOTAL <sum>`, then `FITS` or `TOO BIG`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 10000",
+        "1 ≤ parameter count per layer ≤ 1000000000",
+        "1 ≤ budget ≤ 1000000000000",
+        "Layer names contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "3\nembedding 1000\nattention 5000\nmlp 4000\n12000", output: "embedding 10.0\nattention 50.0\nmlp 40.0\nTOTAL 10000\nFITS", explanation: "Total is 10000. embedding = 1000/10000 = 10.0%, attention = 50.0%, mlp = 40.0%. 10000 <= 12000, so FITS." },
+        { input: "2\na 600\nb 600\n1000", output: "a 50.0\nb 50.0\nTOTAL 1200\nTOO BIG", explanation: "Total 1200 exceeds the 1000 budget, so TOO BIG, even though each layer is an even 50% share." },
+      ],
+      challenge_notes: "The budget check is inclusive: a model exactly equal to the budget still FITS. In real life, parameter count is only part of the memory story — each weight also takes 2 or 4 bytes, plus overhead for activations — but counting parameters is the first sizing step every team does.",
+      challenge_hints: [
+        "Read all layers into a list first so you can sum the total before computing shares.",
+        "Each share is count/total*100; format with f\"{share:.1f}\".",
+        "Compare total <= budget for the final FITS / TOO BIG line.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0].strip())
+    # TODO: read n (name, count) layers and the budget, then print each layer's
+    #       share, the total, and FITS or TOO BIG.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip())
+    idx += 1
+    total = 0
+    layers = []
+    for _ in range(n):
+        name, params = data[idx].split()
+        params = int(params)
+        layers.append((name, params))
+        total += params
+        idx += 1
+    budget = int(data[idx].strip())
+    for name, params in layers:
+        pct = params / total * 100
+        print(f"{name} {pct:.1f}")
+    print(f"TOTAL {total}")
+    print("FITS" if total <= budget else "TOO BIG")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\nembedding 1000\nattention 5000\nmlp 4000\n12000", expected_output: "embedding 10.0\nattention 50.0\nmlp 40.0\nTOTAL 10000\nFITS", description: "Per-layer shares, total, and an in-budget model." },
+        { input: "2\na 600\nb 600\n1000", expected_output: "a 50.0\nb 50.0\nTOTAL 1200\nTOO BIG", description: "Total exceeds the budget." },
+        { input: "1\nsolo 5000\n5000", expected_output: "solo 100.0\nTOTAL 5000\nFITS", description: "Single layer holds 100%; total exactly equals budget so it FITS." }
+      ]
+    },
+    {
+      id: "ai-01-l7",
+      project_id: "ai-01",
+      order: 7,
+      title: "Attention in Plain English",
+      concept: "Attention",
+      xp_reward: 10,
+      explanation: `Read this: "The trophy didn't fit in the suitcase because it was too big." What does "it" mean — the trophy or the suitcase? You knew instantly: the trophy. To predict the next word sensibly, a model has to make the same call — it has to *look back* at the right earlier words. The mechanism that lets it do that is called **attention**, and it is the single idea that made modern LLMs work.
+
+## What it is
+
+**Attention** is how the model decides, for each next-token prediction, which earlier tokens matter most. Not every previous word is equally relevant. When predicting the word after "it was too big," the model needs to weight "trophy" heavily and "suitcase" lightly. Attention assigns each earlier token a **relevance weight**, then blends them by those weights to inform the prediction.
+
+Think of it as the model asking, at every step: *given what I'm trying to predict right now, which words in the context should I pay the most attention to?*
+
+## How it works
+
+For the token it is currently focused on, the model computes a relevance score against every earlier token. Those scores get turned into weights that sum to 1 (yes — softmax again, from lesson 5). Then the earlier tokens are mixed together in proportion to their weights. High-weight tokens dominate the blend; near-zero ones are effectively ignored.
+
+\`\`\`python
+# relevance scores for earlier tokens when predicting the next one
+context = ["The", "cat", "sat"]
+scores  = [1.0,   2.0,   7.0]   # "sat" matters most here
+
+total = sum(scores)
+weights = [s / total for s in scores]
+# weights ~ [0.10, 0.20, 0.70] -> the model leans hardest on "sat"
+\`\`\`
+
+The model does this for every token, in parallel, across many separate **attention heads** — each head learns to track a different kind of relationship (one might follow subject-verb links, another might track quotation marks). Stack this through every layer and the model builds a rich sense of which words depend on which.
+
+## Why it matters
+
+- **It captures long-range meaning.** Attention can link "it" back to a noun many words earlier, which is why models handle pronouns, context, and structure so well.
+- **It is the "T" in GPT.** GPT stands for Generative Pre-trained **Transformer**, and the Transformer is the architecture built around attention. No attention, no modern LLM.
+- **It explains the context window.** Every token attends to every other, so doubling the context roughly quadruples the attention work — which is why long contexts are expensive (lesson 2's token cost, now you know the deeper reason).
+
+## The mental model to keep
+
+At every step the model asks **"which earlier words matter most for what comes next?"** and weights them accordingly. **Attention is selective focus** — not all context counts equally, and the model learns where to look.`,
+      key_terms: [
+        { term: "Attention", definition: "The mechanism that weights how relevant each earlier token is for predicting the next one." },
+        { term: "Relevance weight", definition: "A number saying how much a given earlier token should influence the current prediction." },
+        { term: "Attention head", definition: "One of many parallel attention computations, each learning a different kind of relationship." },
+        { term: "Transformer", definition: "The neural network architecture built around attention; the 'T' in GPT." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Reading with a highlighter", content: "Imagine rereading a sentence and highlighting only the words that matter for the next one you'll write. Attention is that highlighter, applied automatically at every step — bright on the relevant words, faint on the rest.", position: "before" },
+        { type: "insight", title: "Softmax shows up again", content: "Attention turns relevance scores into weights that sum to 1 using softmax — the same function from lesson 5. The model is constantly normalizing scores into distributions, whether over the vocabulary or over earlier tokens.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How attention focuses each prediction",
+        steps: [
+          { label: "Score earlier tokens", desc: "Rate how relevant each past token is right now." },
+          { label: "Normalize to weights", desc: "Softmax turns scores into weights summing to 1." },
+          { label: "Blend by weight", desc: "Mix earlier tokens in proportion to their weights." },
+          { label: "Inform the prediction", desc: "The focused blend shapes the next-token logits." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What does attention let the model do?",
+          options: ["Store facts permanently", "Weight which earlier tokens matter most for the next prediction", "Translate tokens into letters"],
+          correct_index: 1,
+          explanation: "Attention assigns relevance to earlier tokens so the model focuses on the words that matter."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "When predicting the next word, how does attention treat the earlier tokens?",
+          options: [
+            "It weights every earlier token equally",
+            "It gives each earlier token a relevance weight and blends them accordingly",
+            "It ignores all but the most recent token",
+            "It only looks at the first token"
+          ],
+          correct_index: 1,
+          explanation: "Attention assigns each earlier token a weight based on relevance, then mixes them by those weights."
+        },
+        {
+          question: "What is the 'T' in GPT?",
+          options: [
+            "Tokenizer",
+            "Transformer, the architecture built around attention",
+            "Training",
+            "Temperature"
+          ],
+          correct_index: 1,
+          explanation: "GPT means Generative Pre-trained Transformer, and the Transformer is the attention-based architecture."
+        },
+        {
+          question: "Why do longer contexts get expensive so quickly?",
+          options: [
+            "The vocabulary grows with the context",
+            "Every token attends to every other, so cost grows faster than the length itself",
+            "Longer contexts use bigger tokens",
+            "The model retrains on each request"
+          ],
+          correct_index: 1,
+          explanation: "Attention compares every token against every other, so doubling the length roughly quadruples the work."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Attention check",
+          questions: [
+            { question: "Attention gives every earlier token the same importance when predicting the next one.", type: "true_false", correct_answer: "false", explanation: "It assigns different relevance weights; some tokens matter far more than others." },
+            { question: "The architecture built around attention, the 'T' in GPT, is the ______.", type: "fill_in", correct_answer: "transformer", explanation: "GPT stands for Generative Pre-trained Transformer." }
+          ]
+        }
+      ],
+      starter_code: `# Turn attention scores into weights and find the most-attended token.
+context = ["The", "cat", "sat"]
+scores  = [1.0, 2.0, 7.0]
+
+# TODO: normalize the scores into weights that sum to 1,
+#       then print each token with its weight.
+print(context)
+`,
+      solution_code: `context = ["The", "cat", "sat"]
+scores  = [1.0, 2.0, 7.0]
+
+total = sum(scores)
+weights = [s / total for s in scores]
+
+for tok, w in zip(context, weights):
+    print(f"{tok}: {w:.2f}")
+
+focus = context[weights.index(max(weights))]
+print(f"focus: {focus}")
+`,
+      expected_output: `The: 0.10
+cat: 0.20
+sat: 0.70
+focus: sat`,
+      step_throughs: [
+        {
+          title: "resolving 'it' with attention",
+          steps: [
+            { label: "Predicting after a pronoun", detail: "The model reaches 'it was too big' and must figure out what 'it' refers to before predicting onward.", code: 'context = "The trophy did not fit ... because it was too big"' },
+            { label: "Score earlier tokens", detail: "Attention rates every earlier token for relevance. 'trophy' (the thing that is big) scores high; 'suitcase' scores low.", code: "trophy: 6.0, suitcase: 1.0, the: 0.2 ..." },
+            { label: "Normalize with softmax", detail: "Scores become weights that sum to 1, so 'trophy' captures most of the focus.", code: "trophy: 0.78, suitcase: 0.13, ... (sum 1.0)" },
+            { label: "Blend and predict", detail: "The weighted blend leans on 'trophy', so the model continues sensibly about the trophy being too big.", code: "next tokens stay consistent with 'trophy'" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Three earlier tokens have attention scores [1, 1, 8]. Which token does the model focus on most?",
+          steps: [
+            "Higher score means more relevance, so the third token (score 8) dominates.",
+            "Normalized, its weight is 8 / (1+1+8) = 0.8, versus 0.1 each for the others.",
+            "The model blends mostly the third token into its prediction."
+          ],
+          output: "The third token, with about 80% of the attention weight."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "If processing a context of length 100 costs roughly 100x100 attention comparisons, about how much more work is a context of length 200?",
+          steps: [
+            "Attention compares every token against every other, so cost scales with length squared.",
+            "Length 100 costs about 100 x 100 = 10,000 comparisons.",
+            "Length 200 costs about 200 x 200 = 40,000 comparisons.",
+            "40,000 / 10,000 = 4, so doubling the context roughly quadruples the attention work."
+          ],
+          output: "About 4x the work — cost grows with the square of the length."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "no attention vs attention",
+          columns: ["Aspect", "Without attention", "With attention"],
+          rows: [
+            { cells: ["Token relevance", "All earlier tokens treated equally", "Each earlier token weighted by relevance"] },
+            { cells: ["Long-range links", "Struggles to connect distant words", "Links 'it' to a noun many words back"] },
+            { cells: ["Pronouns and structure", "Often confused", "Resolved by focusing on the right token"] },
+            { cells: ["Powers modern LLMs", "No", "Yes — the Transformer is built on it"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "true of attention vs not true",
+          bins: [
+            { id: "true", label: "True of attention" },
+            { id: "false", label: "Not true" }
+          ],
+          items: [
+            { id: "i1", text: "Weights earlier tokens by relevance", bin: "true" },
+            { id: "i2", text: "Treats every past token equally", bin: "false" },
+            { id: "i3", text: "Uses softmax to make weights sum to 1", bin: "true" },
+            { id: "i4", text: "Is the 'T' (Transformer) behind GPT", bin: "true" },
+            { id: "i5", text: "Stores facts in a lookup table", bin: "false" },
+            { id: "i6", text: "Lets the model link distant words", bin: "true" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is attention better than just looking at the most recent few words?",
+          sampleAnswer: "Meaning often depends on words far back in the sentence — a pronoun can refer to a noun introduced many tokens earlier. Looking only at the last few words would miss that link, but attention scores every earlier token for relevance and can put heavy weight on a distant one when it matters. That selective, long-range focus is what lets the model handle pronouns, structure, and context coherently."
+        }
+      ],
+      hints: [
+        "Sum the scores, then divide each score by that sum to get weights.",
+        "zip(context, weights) lets you print each token with its weight.",
+        "max(weights) finds the largest weight; weights.index(...) gives its position."
+      ],
+      challenge_title: "Attention Focus Finder",
+      challenge_description: "Implement the heart of attention: turn relevance scores over earlier tokens into weights that sum to 1, then report which token the model focuses on most.",
+      challenge_story: "You're debugging why a model resolved a pronoun a certain way, and you want to *see* its attention. The model has produced a relevance **score** for each earlier token relative to the one it is predicting next. Your job: normalize those scores into **weights** that sum to 1 (the model's focus distribution) and surface the single token it leaned on hardest. This is exactly what attention does at every step, minus the matrix math.",
+      challenge_statement: "You are given `n` earlier tokens, each with an integer relevance score.\n\n1. Let `T` be the sum of all scores. Each token's weight is `score / T`.\n2. Print each token, in input order, with its weight as a percentage rounded to exactly **1 decimal place**.\n3. Print a final line `FOCUS <token>` naming the token with the **highest** weight. If two tokens tie on weight, choose the one that appears **earliest** in the input.",
+      challenge_input_format: "The first line is the integer `n`. Each of the next `n` lines has a token (no spaces) and its integer relevance score, separated by a space.",
+      challenge_output_format: "`n` lines of `<token> <percentage>` (1 decimal place), then `FOCUS <token>`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ score ≤ 1000000",
+        "At least one score is positive, so the total is never zero.",
+        "Tokens contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "3\nThe 1\ncat 2\nsat 7", output: "The 10.0\ncat 20.0\nsat 70.0\nFOCUS sat", explanation: "Total is 10. The = 1/10 = 10.0%, cat = 20.0%, sat = 70.0%. 'sat' has the highest weight, so FOCUS sat." },
+        { input: "4\na 5\nbig 5\nred 3\ndog 7", output: "a 25.0\nbig 25.0\nred 15.0\ndog 35.0\nFOCUS dog", explanation: "Total 20. dog at 7/20 = 35.0% is the highest, so FOCUS dog." },
+      ],
+      challenge_notes: "This is a single-head, single-step view of attention: real models run many heads across many layers and use softmax (which exponentiates first). The linear normalization here keeps the arithmetic clean while preserving the key idea — relevance scores become a focus distribution that sums to 1. The earliest-wins tie-break makes the FOCUS line deterministic.",
+      challenge_hints: [
+        "Read all (token, score) pairs first so you can sum the total before computing weights.",
+        "Each weight percentage is score/total*100; format with f\"{pct:.1f}\".",
+        "Track the best weight as you go and only replace it on a strictly greater value, so the earliest token wins ties.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0].strip())
+    # TODO: read n (token, score) pairs, normalize scores into weights,
+    #       print each token's weight, then print FOCUS <top token>.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip())
+    idx += 1
+    tokens = []
+    scores = []
+    for _ in range(n):
+        parts = data[idx].split()
+        tokens.append(parts[0])
+        scores.append(int(parts[1]))
+        idx += 1
+    total = sum(scores)
+    weights = []
+    for i in range(n):
+        w = scores[i] / total
+        weights.append(w)
+        print(f"{tokens[i]} {w*100:.1f}")
+    best_i = 0
+    best_w = -1.0
+    for i in range(n):
+        if weights[i] > best_w:
+            best_w = weights[i]
+            best_i = i
+    print(f"FOCUS {tokens[best_i]}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\nThe 1\ncat 2\nsat 7", expected_output: "The 10.0\ncat 20.0\nsat 70.0\nFOCUS sat", description: "Scores normalized to weights; highest-weight token is the focus." },
+        { input: "4\na 5\nbig 5\nred 3\ndog 7", expected_output: "a 25.0\nbig 25.0\nred 15.0\ndog 35.0\nFOCUS dog", description: "Mixed weights with the focus on the largest." },
+        { input: "2\nfirst 4\nsecond 4", expected_output: "first 50.0\nsecond 50.0\nFOCUS first", description: "Tie on weight resolved to the earliest token." },
+        { input: "1\nonly 9", expected_output: "only 100.0\nFOCUS only", description: "A single token holds all the attention." }
+      ]
+    },
+    {
+      id: "ai-01-l8",
+      project_id: "ai-01",
+      order: 8,
+      title: "Why Bigger Models Got Smarter",
+      concept: "Scaling",
+      xp_reward: 10,
+      explanation: `For years, AI researchers expected progress to come from clever new ideas. Then something almost embarrassing happened: the biggest leaps came mostly from making models *bigger* and feeding them *more data*. Same basic recipe, cranked up. This is the story of **scaling**, and it is why a 2020s chatbot can do things a 2010s one could not dream of.
+
+## What it is
+
+**Scaling laws** are the observed, remarkably smooth relationship between a model's resources and its performance. Pour in more **parameters** (lesson 6), more training **data**, and more **compute**, and prediction error falls in a predictable way. Crucially, these three must grow *together* — a giant model starved of data, or a mountain of data run through a tiny model, both waste the effort.
+
+The surprise is how regular it is. Plot loss against scale and you get a clean downward curve, not a chaotic mess. That predictability let labs forecast that a bigger model *would* be better before spending the millions to build it.
+
+## How it works
+
+As you scale, two things happen at once.
+
+First, prediction loss drops smoothly — but with **diminishing returns**. Each doubling of resources buys a smaller improvement than the last. A toy version of that shrinking-gain curve:
+
+\`\`\`python
+# loss falls as a power of model size, but ever more slowly
+base, alpha = 10.0, 0.5
+for params in [1, 100, 10000]:
+    loss = base * params ** (-alpha)
+    print(params, round(loss, 3))
+# 1 -> 10.0,  100 -> 1.0,  10000 -> 0.1  (100x size for each 10x gain)
+\`\`\`
+
+Second — and this is the wild part — some abilities appear **emergently**. Below a certain scale a model simply cannot do multi-step arithmetic or follow complex instructions, and then past a threshold the ability shows up, almost like a phase change. The smooth loss curve hides these sudden capability jumps.
+
+## Why it matters
+
+- **It set the strategy of the whole field.** "Just scale it" became a multi-billion-dollar bet because the curves kept holding. Much of the 2020s AI boom is scaling, not new algorithms.
+- **Diminishing returns are real.** Each new tier of capability costs disproportionately more. That is why frontier models are so expensive and why the gap between releases can feel smaller over time.
+- **Bigger is not infinitely better.** You eventually run short of high-quality data and hit cost walls. Scaling is powerful, not magic — and lesson 6's lesson still holds: a well-trained smaller model can beat a poorly-trained giant.
+
+## The mental model to keep
+
+**More parameters plus more data plus more compute equals lower error and, past thresholds, new abilities — but every gain costs more than the last.** Scaling is a dependable engine with a rising fuel bill.`,
+      key_terms: [
+        { term: "Scaling laws", definition: "The smooth, predictable relationship between a model's resources and its prediction error." },
+        { term: "Compute", definition: "The total processing power spent training a model, growing alongside parameters and data." },
+        { term: "Emergent abilities", definition: "Skills that appear only once a model passes a certain scale, seemingly all at once." },
+        { term: "Diminishing returns", definition: "Each added unit of scale buys a smaller improvement than the one before it." }
+      ],
+      callouts: [
+        { type: "insight", title: "Three dials, turned together", content: "Scaling is not just 'more parameters.' Parameters, data, and compute have to grow in step. A huge model fed too little data, or a flood of data run through a tiny model, both waste the spend.", position: "before" },
+        { type: "warning", title: "Returns shrink as you climb", content: "Each doubling of resources buys less than the last doubling. That is why frontier models cost so much for gains that can look incremental — you are paying more and more for less and less.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "What scaling buys you",
+        steps: [
+          { label: "Grow the three dials", desc: "More parameters, more data, more compute together." },
+          { label: "Loss falls smoothly", desc: "Prediction error drops along a predictable curve." },
+          { label: "Cross thresholds", desc: "Past certain scales, new abilities emerge suddenly." },
+          { label: "Returns diminish", desc: "Each further gain costs disproportionately more." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What three things must grow together for scaling to pay off?",
+          options: ["Tokens, temperature, and vocabulary", "Parameters, data, and compute", "Layers, prompts, and users"],
+          correct_index: 1,
+          explanation: "Scaling laws require parameters, training data, and compute to increase in balance."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What do scaling laws describe?",
+          options: [
+            "A random relationship between size and quality",
+            "A smooth, predictable drop in prediction error as resources grow",
+            "How fast a model types",
+            "The size of the vocabulary"
+          ],
+          correct_index: 1,
+          explanation: "Scaling laws are the observed, regular curve linking parameters, data, and compute to lower loss."
+        },
+        {
+          question: "What is an emergent ability?",
+          options: [
+            "A skill present in every model from the start",
+            "A skill that appears only once the model passes a certain scale",
+            "A bug that grows with size",
+            "A feature you pay extra to unlock"
+          ],
+          correct_index: 1,
+          explanation: "Some capabilities show up suddenly past a scale threshold, even though the loss curve itself is smooth."
+        },
+        {
+          question: "Why do frontier models cost so much for seemingly modest gains?",
+          options: [
+            "Bigger models waste tokens",
+            "Diminishing returns: each tier of capability costs disproportionately more",
+            "They retrain on every request",
+            "Larger vocabularies are expensive"
+          ],
+          correct_index: 1,
+          explanation: "Each doubling of scale buys a smaller improvement, so pushing the frontier costs ever more for each step."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Scaling check",
+          questions: [
+            { question: "Adding more parameters alone, without more data or compute, reliably makes a model much better.", type: "true_false", correct_answer: "false", explanation: "Parameters, data, and compute must scale together; one alone wastes the others." },
+            { question: "Skills that appear only past a certain model scale are called ______ abilities.", type: "fill_in", correct_answer: "emergent", explanation: "Emergent abilities show up suddenly once scale crosses a threshold." }
+          ]
+        }
+      ],
+      starter_code: `# Show diminishing returns: loss falls as a power of model size.
+base, alpha = 10.0, 0.5
+
+# TODO: for each size, compute loss = base * size ** (-alpha) and print it.
+for size in [1, 100, 10000]:
+    print(size)
+`,
+      solution_code: `base, alpha = 10.0, 0.5
+
+for size in [1, 100, 10000]:
+    loss = base * size ** (-alpha)
+    print(f"{size}: {loss:.3f}")
+`,
+      expected_output: `1: 10.000
+100: 1.000
+10000: 0.100`,
+      step_throughs: [
+        {
+          title: "scaling up, gain by gain",
+          steps: [
+            { label: "Start small", detail: "A tiny model has high loss and lacks complex skills entirely — no multi-step reasoning yet.", code: "params = 1x  ->  loss high, few abilities" },
+            { label: "Scale all three dials", detail: "Grow parameters, data, and compute together. Loss drops along the predictable scaling curve.", code: "10x params + 10x data + 10x compute" },
+            { label: "Cross a threshold", detail: "Past a certain scale, a new ability suddenly appears — arithmetic or instruction-following emerges.", code: "loss <= threshold  ->  new ability unlocks" },
+            { label: "Hit diminishing returns", detail: "Keep scaling and loss still falls, but each gain costs far more than the last. The bill outpaces the benefit.", code: "100x more spend  ->  10x less error" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Loss follows loss = 10 / sqrt(size). What is the loss at size 100 versus size 10000?",
+          steps: [
+            "At size 100: sqrt(100) = 10, so loss = 10 / 10 = 1.0.",
+            "At size 10000: sqrt(10000) = 100, so loss = 10 / 100 = 0.1.",
+            "You multiplied size by 100 but only cut loss by 10x — that is diminishing returns."
+          ],
+          output: "Loss 1.0 at size 100, 0.1 at size 10000 — a 100x size for a 10x gain."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A lab has a giant model but only a small dataset, and it underperforms. Their plan is to make the model even bigger. Why might that not help?",
+          steps: [
+            "Scaling laws require parameters, data, and compute to grow together.",
+            "The model is already starved of data, so it cannot learn enough patterns to use its capacity.",
+            "Adding parameters gives the model more room but nothing new to learn from — the bottleneck is data, not size.",
+            "The fix is more (and better) data and compute to match the model, not more parameters alone."
+          ],
+          output: "Data is the bottleneck; growing only the model wastes parameters that have nothing to learn from."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "small scale vs large scale",
+          columns: ["Aspect", "Small scale", "Large scale"],
+          rows: [
+            { cells: ["Prediction loss", "Higher", "Lower (smoothly)"] },
+            { cells: ["Complex abilities", "Often absent", "Can emerge past thresholds"] },
+            { cells: ["Cost", "Cheap", "Very expensive"] },
+            { cells: ["Return on each doubling", "Larger early gains", "Diminishing returns"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "true of scaling vs not true",
+          bins: [
+            { id: "true", label: "True of scaling" },
+            { id: "false", label: "Not true" }
+          ],
+          items: [
+            { id: "i1", text: "Parameters, data, and compute grow together", bin: "true" },
+            { id: "i2", text: "Each gain costs less than the last", bin: "false" },
+            { id: "i3", text: "Some abilities emerge past a threshold", bin: "true" },
+            { id: "i4", text: "Loss falls along a predictable curve", bin: "true" },
+            { id: "i5", text: "More parameters alone always suffices", bin: "false" },
+            { id: "i6", text: "Returns diminish as you scale up", bin: "true" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: if scaling reliably improves models, why don't labs just keep making them infinitely bigger?",
+          sampleAnswer: "Scaling gives diminishing returns, so each new tier of capability costs far more than the last while delivering less improvement. On top of that, the three dials must grow together, and high-quality training data is finite — you eventually run short of it. Combined with hard limits on compute and budget, those rising costs and shrinking gains mean infinite scaling is impractical, even though the curves themselves keep pointing down."
+        }
+      ],
+      hints: [
+        "size ** (-alpha) is the same as 1 / size ** alpha.",
+        "With alpha = 0.5, size ** (-0.5) is 1 / sqrt(size).",
+        "Multiply by base and format the loss to 3 decimals when you print."
+      ],
+      challenge_title: "Scaling Law Simulator",
+      challenge_description: "Model how prediction loss falls as you scale a model up, and flag the point where a new ability emerges once loss drops below a threshold.",
+      challenge_story: "Your lab is deciding how big to build the next model. Training is governed by a **scaling law**: loss = base_loss x size raised to the power of negative alpha. As you grow the model `size`, loss falls — but with diminishing returns. Your team has also noticed that a key **emergent ability** (multi-step reasoning) only appears once loss drops to or below a target **threshold**. Simulate several candidate sizes, report each one's loss, mark which ones unlock the ability, and count how many do.",
+      challenge_statement: "You are given `base_loss` and `alpha` (floats), then a `threshold` (float), then `q` candidate model sizes.\n\nFor each size `N`, compute `loss = base_loss * N ** (-alpha)`.\n\n- Print the size, its loss rounded to exactly **4 decimal places**, and a status: `EMERGENT` if the loss is **less than or equal to** the threshold, otherwise `BASIC`.\n- After all candidates, print `EMERGENT <count>` giving how many sizes unlocked the ability.",
+      challenge_input_format: "The first line has two space-separated floats: `base_loss alpha`. The second line is the float `threshold`. The third line is the integer `q`. Each of the next `q` lines is one integer size `N`.",
+      challenge_output_format: "`q` lines of `<N> <loss> <STATUS>` (loss to 4 decimal places), then a final line `EMERGENT <count>`.",
+      challenge_constraints: [
+        "0.0 < base_loss ≤ 1000.0",
+        "0.0 < alpha ≤ 5.0",
+        "0.0 < threshold ≤ 1000.0",
+        "1 ≤ q ≤ 10000",
+        "1 ≤ N ≤ 1000000000",
+      ],
+      challenge_examples: [
+        { input: "10.0 0.5\n1.0\n3\n4\n100\n10000", output: "4 5.0000 BASIC\n100 1.0000 EMERGENT\n10000 0.1000 EMERGENT\nEMERGENT 2", explanation: "loss = 10 / sqrt(N). At N=4: 10/2 = 5.0 > 1.0, BASIC. At N=100: 10/10 = 1.0 <= 1.0, EMERGENT. At N=10000: 10/100 = 0.1, EMERGENT. Two unlocked." },
+        { input: "8.0 1.0\n2.0\n2\n2\n8", output: "2 4.0000 BASIC\n8 1.0000 EMERGENT\nEMERGENT 1", explanation: "loss = 8 / N. At N=2: 4.0 > 2.0, BASIC. At N=8: 1.0 <= 2.0, EMERGENT. One unlocked." },
+      ],
+      challenge_notes: "The threshold is inclusive: a loss exactly equal to the threshold counts as EMERGENT. Notice how much you must grow N for a small loss drop — that is the diminishing-returns reality of scaling. Real scaling laws also depend on data and compute, not size alone, but the power-law shape here is the genuine curve labs observe.",
+      challenge_hints: [
+        "Read base_loss and alpha from the first line as floats with map(float, ...).",
+        "Compute each loss as base_loss * N ** (-alpha); Python handles the negative exponent directly.",
+        "Compare loss <= threshold for EMERGENT, and keep a running count to print at the end.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    base_loss, alpha = map(float, data[0].split())
+    threshold = float(data[1].strip())
+    q = int(data[2].strip())
+    # TODO: for each of the q sizes, compute loss = base_loss * N ** (-alpha),
+    #       print N, the loss to 4 decimals, and EMERGENT/BASIC; then the count.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    base_loss, alpha = map(float, data[idx].split())
+    idx += 1
+    threshold = float(data[idx].strip())
+    idx += 1
+    q = int(data[idx].strip())
+    idx += 1
+    emergent = 0
+    for _ in range(q):
+        n = int(data[idx].strip())
+        idx += 1
+        loss = base_loss * (n ** (-alpha))
+        status = "EMERGENT" if loss <= threshold else "BASIC"
+        if status == "EMERGENT":
+            emergent += 1
+        print(f"{n} {loss:.4f} {status}")
+    print(f"EMERGENT {emergent}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "10.0 0.5\n1.0\n3\n4\n100\n10000", expected_output: "4 5.0000 BASIC\n100 1.0000 EMERGENT\n10000 0.1000 EMERGENT\nEMERGENT 2", description: "Power-law loss with two sizes crossing the threshold." },
+        { input: "8.0 1.0\n2.0\n2\n2\n8", expected_output: "2 4.0000 BASIC\n8 1.0000 EMERGENT\nEMERGENT 1", description: "Inverse-size law; threshold reached at the larger model." },
+        { input: "5.0 0.5\n0.1\n1\n4", expected_output: "4 2.5000 BASIC\nEMERGENT 0", description: "No size reaches the strict threshold, so nothing emerges." }
       ]
     }
   ]

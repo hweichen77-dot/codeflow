@@ -6,7 +6,7 @@ export default {
     difficulty: "advanced",
     category: "production_ops",
     estimated_time: 180,
-    lessons_count: 5,
+    lessons_count: 8,
     tags: ["fine-tuning", "evals", "prompt-engineering", "testing", "claude-api"],
     order: 8,
     cover_image: ""
@@ -1563,6 +1563,915 @@ main()
         { input: "3\n3\nexact\nParis\nparis\ncontains\nThe answer is 42\n42\nnumeric\n3.14\n3.0 0.2", expected_output: "3/3\n100%\nFAIL none\nSHIP", description: "All three scorer types pass; meets baseline → SHIP." },
         { input: "4\n4\nexact\nyes\nyes\nexact\nno\nyes\ncontains\nhello world\nworld\nnumeric\n9.9\n10 0.5", expected_output: "3/4\n75%\nFAIL 2\nBLOCK", description: "One regression named; passed below baseline → BLOCK." },
         { input: "1\n1\nnumeric\nNaNvalue\n5 0.1", expected_output: "0/1\n0%\nFAIL 1\nBLOCK", description: "Edge: non-numeric output fails the numeric scorer cleanly instead of crashing." }
+      ]
+    },
+    {
+      id: "ai-08-l6",
+      project_id: "ai-08",
+      order: 6,
+      title: "Building a Training Dataset",
+      concept: "Dataset",
+      xp_reward: 10,
+      explanation: `You finally decided fine-tuning is worth it (lesson 1 told you when). Now comes the part that actually determines whether it works: the dataset. Teams obsess over which base model to pick and then feed it 5,000 sloppy, contradictory examples — and wonder why the fine-tune is worse than the prompt they started with. The model can only learn the patterns you show it. Garbage examples teach garbage habits, faithfully.
+
+## What it is
+
+A **training dataset** for fine-tuning is a list of input→output **examples** that demonstrate the exact behavior you want baked into the weights. Each example is a pair: the input the model will see, and the ideal output it should produce. For a chat-style fine-tune each row is usually a small JSON object — a prompt and the gold completion:
+
+\`\`\`json
+{"input": "Refund my order #4421", "output": "billing"}
+\`\`\`
+
+The model doesn't learn what you *tell* it to do; it learns what your examples *show* it doing, over and over. So the dataset is the spec. If the spec is inconsistent, the learned behavior is too.
+
+## How it works
+
+Three properties decide whether a dataset teaches the right thing:
+
+- **Quality over quantity.** 300 clean, consistent examples beat 3,000 noisy ones. Every wrong or sloppy label is a lesson the model dutifully memorizes. One mislabeled row isn't a rounding error — it's a counter-example actively fighting your goal.
+- **Balance.** If 90% of your examples are one class, the model learns to just guess that class. Roughly even coverage per class keeps it from collapsing onto the majority.
+- **Coverage.** Include the edge cases, the rephrasings, the formats real users will actually send — not just the clean happy path. The model can only generalize from variety it has seen.
+
+A quick sanity check before you ever start a training run is to count examples per class and flag any class that is starved:
+
+\`\`\`python
+from collections import Counter
+
+dataset = [
+    {"input": "charge me twice?", "output": "billing"},
+    {"input": "where is my package", "output": "shipping"},
+    {"input": "double charged again", "output": "billing"},
+]
+counts = Counter(row["output"] for row in dataset)
+print(counts)                      # Counter({'billing': 2, 'shipping': 1})
+weak = [c for c, n in counts.items() if n < 50]
+print("under-covered:", weak)      # classes needing more examples
+\`\`\`
+
+## Why it matters
+
+Dataset quality has a higher ceiling effect than almost any other knob. A pristine 400-row set routinely beats a careless 4,000-row one, because the careless set quietly teaches contradictions: two near-identical inputs labeled differently tell the model the task is random. **Deduplicate** too — copies don't add signal, they just over-weight whatever they happen to say, skewing balance without you noticing. And watch for leakage of the label into the input (a row that literally contains the answer): the model learns the shortcut, scores great in training, and falls apart on real inputs that lack the tell.
+
+## The mental model to keep
+
+A training set is a stack of worked examples handed to a very literal student. It copies your habits exactly — including your mistakes. Curate ruthlessly: clean, balanced, and covering the real distribution beats big every time.`,
+      key_terms: [
+        { term: "Training example", definition: "One input→output pair in the dataset that demonstrates the behavior you want the fine-tune to learn." },
+        { term: "Class balance", definition: "Having roughly even numbers of examples per category, so the model doesn't collapse onto the majority class." },
+        { term: "Coverage", definition: "How well the dataset spans the real range of inputs — edge cases, rephrasings, and formats users actually send." },
+        { term: "Deduplication", definition: "Removing duplicate examples so copies don't over-weight a single pattern and quietly skew balance." }
+      ],
+      callouts: [
+        {
+          type: "analogy",
+          title: "A very literal student",
+          content: "The model is a student who copies the worked examples you hand it exactly — including any sloppy ones. It can't tell which examples were careless. Every mislabeled row is a lesson it faithfully learns.",
+          position: "before"
+        },
+        {
+          type: "warning",
+          title: "Watch for label leakage",
+          content: "If an input literally contains its own answer, the model learns the shortcut, scores great in training, then fails on real inputs that lack the tell. Strip the answer out of the input before training.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "Curating a training set",
+        steps: [
+          { label: "Collect pairs", desc: "Gather real input→output examples of the target behavior." },
+          { label: "Clean + dedup", desc: "Fix bad labels and drop duplicate rows." },
+          { label: "Check balance", desc: "Count per class; top up any starved category." },
+          { label: "Cover edges", desc: "Add rephrasings and edge cases users really send." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "You have 4,000 examples but 88% are one class. What's the most likely failure?",
+          options: ["The model trains too slowly", "The model learns to just guess the majority class", "The dataset is too small to train on"],
+          correct_index: 1,
+          explanation: "Severe imbalance lets the model maximize accuracy by always predicting the dominant class, ignoring the rest."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Which dataset is most likely to produce the best fine-tune?",
+          options: [
+            "4,000 examples with many noisy, inconsistent labels",
+            "400 clean, consistent, well-balanced examples",
+            "50 perfect examples, all of the same class",
+            "10,000 duplicated copies of 100 examples"
+          ],
+          correct_index: 1,
+          explanation: "Quality and balance beat raw size; the clean, balanced 400-row set teaches consistent patterns."
+        },
+        {
+          question: "Why is deduplicating the dataset important?",
+          options: [
+            "Duplicates make the file too large to upload",
+            "Copies over-weight one pattern and skew class balance without adding new signal",
+            "Duplicates always contain wrong labels",
+            "The model refuses to train on repeated rows"
+          ],
+          correct_index: 1,
+          explanation: "Identical rows add no new information but tilt the effective class distribution toward whatever they say."
+        },
+        {
+          question: "What does 'coverage' mean for a training dataset?",
+          options: [
+            "The total number of examples",
+            "How well examples span the real range of inputs, including edge cases and rephrasings",
+            "Whether the file is backed up",
+            "The fraction of examples labeled correctly"
+          ],
+          correct_index: 1,
+          explanation: "Coverage is about variety — the model can only generalize to input shapes it actually saw during training."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Dataset habits",
+          questions: [
+            { question: "A few hundred clean, balanced examples can outperform thousands of noisy ones.", type: "true_false", correct_answer: "true", explanation: "Quality and consistency matter more than raw count for fine-tuning." },
+            { question: "Removing duplicate rows so they don't over-weight one pattern is called ______.", type: "fill_in", correct_answer: "deduplication", explanation: "Deduplication keeps copies from skewing the effective class balance." }
+          ]
+        }
+      ],
+      starter_code: `from collections import Counter
+
+dataset = [
+    {"input": "charge me twice?", "output": "billing"},
+    {"input": "where is my package", "output": "shipping"},
+    {"input": "double charged again", "output": "billing"},
+]
+
+# Count examples per class, then flag any class with fewer than 2 examples.
+counts = None              # fix: count the output labels
+weak = None                # fix: classes with fewer than 2 examples
+print(dict(counts))
+print("under-covered:", weak)`,
+      solution_code: `from collections import Counter
+
+dataset = [
+    {"input": "charge me twice?", "output": "billing"},
+    {"input": "where is my package", "output": "shipping"},
+    {"input": "double charged again", "output": "billing"},
+]
+
+counts = Counter(row["output"] for row in dataset)
+weak = [c for c, n in counts.items() if n < 2]
+print(dict(counts))
+print("under-covered:", weak)`,
+      expected_output: `{'billing': 2, 'shipping': 1}
+under-covered: ['shipping']`,
+      step_throughs: [
+        {
+          title: "turning raw logs into a clean training set",
+          steps: [
+            { label: "Collect raw pairs", detail: "Pull real inputs and the correct outputs from logs or human labeling. This is the unfiltered starting pile.", code: 'raw = [{"input": "...", "output": "billing"}, ...]  # messy' },
+            { label: "Dedup + clean", detail: "Drop exact-duplicate rows and fix mislabeled ones. Every copy and every bad label is a lesson the model will memorize.", code: "rows = dedupe(raw); fix_bad_labels(rows)" },
+            { label: "Count per class", detail: "Tally examples by output label to see where coverage is thin before you commit GPU time.", code: "Counter -> {'billing': 280, 'shipping': 12}" },
+            { label: "Balance + cover edges", detail: "Top up starved classes and add real rephrasings and edge cases, so the model generalizes instead of memorizing the happy path.", code: "add_examples('shipping', 268)  # bring it up to par" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A 1,000-example dataset has 950 'approve' labels and 50 'deny' labels. Why will a model trained on it struggle on real 'deny' cases?",
+          steps: [
+            "The dataset is severely imbalanced — 95% of examples are one class.",
+            "A model can score 95% just by always predicting 'approve', so it has little pressure to learn 'deny'.",
+            "It saw only 50 'deny' examples, far too few to generalize the patterns that distinguish them."
+          ],
+          output: "The imbalance lets it ignore 'deny'; it needs far more 'deny' examples to learn that class."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You have 600 raw examples. 120 are exact duplicates, and 30 of the unique ones are mislabeled. Roughly how many trustworthy training examples do you actually have, and which problem hurts the fine-tune more?",
+          steps: [
+            "Remove the 120 duplicates first: 600 - 120 = 480 unique rows.",
+            "Of those, 30 carry wrong labels, leaving 480 - 30 = 450 clean, trustworthy examples.",
+            "Duplicates mostly waste capacity and skew balance, but mislabeled rows are worse: each one actively teaches the wrong pattern.",
+            "Fix the labels before training; a contradictory example fights your goal harder than a redundant one does."
+          ],
+          output: "About 450 trustworthy examples; the 30 mislabeled rows hurt more because they teach the wrong behavior outright."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "what makes a training set good vs bad",
+          columns: ["Property", "Weak dataset", "Strong dataset"],
+          rows: [
+            { cells: ["Size vs quality", "Huge but noisy", "Smaller but clean and consistent"] },
+            { cells: ["Class balance", "One class dominates", "Roughly even per class"] },
+            { cells: ["Coverage", "Only the happy path", "Edge cases + rephrasings users send"], highlight: true },
+            { cells: ["Duplicates", "Many, skewing balance", "Deduplicated"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "helps or hurts the training set?",
+          bins: [
+            { id: "help", label: "Improves the dataset" },
+            { id: "hurt", label: "Harms the dataset" }
+          ],
+          items: [
+            { id: "i1", text: "Roughly even examples per class", bin: "help" },
+            { id: "i2", text: "88% of rows in a single class", bin: "hurt" },
+            { id: "i3", text: "Including real edge cases and rephrasings", bin: "help" },
+            { id: "i4", text: "Hundreds of exact-duplicate rows", bin: "hurt" },
+            { id: "i5", text: "Fixing mislabeled examples before training", bin: "help" },
+            { id: "i6", text: "Inputs that literally contain their own answer", bin: "hurt" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can a smaller, clean dataset beat a much larger noisy one for fine-tuning?",
+          sampleAnswer: "Fine-tuning bakes whatever patterns the examples show into the weights, and the model can't tell a careful label from a careless one. A noisy set teaches contradictions — two similar inputs labeled differently make the task look random — and imbalance lets the model cheat by guessing the majority class. A smaller clean, balanced set gives consistent, unambiguous signal, so the model learns the actual rule instead of memorizing noise. More rows only help if every row is trustworthy."
+        }
+      ],
+      hints: [
+        "Counter takes an iterable; feed it each row's output label.",
+        "Use a comprehension over counts.items() to find classes below the threshold.",
+        "Counter behaves like a dict, so dict(counts) prints it cleanly."
+      ],
+      challenge_title: "The Dataset Auditor",
+      challenge_description: "Audit a raw labeled dataset: drop duplicates, count examples per class, and flag any class too starved to fine-tune on.",
+      challenge_story: "You're about to kick off an expensive fine-tuning run for a support-ticket classifier, and the data team handed you a freshly scraped dataset of labeled examples. Before you burn GPU hours, you need to audit it. Real scraped data is dirty: the same ticket appears multiple times, and some categories barely have any examples while others are flooded. Your job is to deduplicate the rows, count clean examples per class, and flag any class that falls below the minimum the team agreed is trainable. Catch a starved class now, or watch the fine-tune fail to learn it later.",
+      challenge_statement: "You are given **N** raw labeled rows. Each row is a label and an example text separated by a single tab character.\n\nTwo rows are **duplicates** when they have the same label AND the same text after normalizing the text (strip leading/trailing whitespace and lowercase it). Keep only the first occurrence of each duplicate; discard the rest.\n\nAfter deduplication, count how many clean examples each label has. A label is **weak** if its count is strictly less than `min_per_class`.\n\nReport the number of rows kept and the number of duplicates dropped, the number of distinct classes, and the weak classes.",
+      challenge_input_format: "Line 1: integer `N`. Line 2: integer `min_per_class`. Each of the next `N` lines is one row: a label, a tab character, then the example text (the text may contain spaces).",
+      challenge_output_format: "Three lines:\n1. Two space-separated integers: rows kept then duplicates dropped.\n2. The number of distinct classes among the kept rows.\n3. `WEAK` followed by the weak class labels in first-seen order separated by spaces, or `BALANCED` if no class is weak.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "1 ≤ min_per_class ≤ 100000",
+        "Each label and text line has length ≤ 500",
+        "Labels contain no tab characters"
+      ],
+      challenge_examples: [
+        { input: "3\n2\nbilling\tMy card was charged twice\nbilling\tmy card was charged twice\nshipping\tWhere is my order", output: "2 1\n2\nWEAK billing shipping", explanation: "Rows 1 and 2 are duplicates (same label, text matches after lowercasing), so one is dropped: 2 kept, 1 dup. Two classes remain (billing 1, shipping 1), both below the 2 floor, so both are weak in first-seen order." },
+        { input: "5\n2\na\tone\nb\ttwo\na\tthree\nb\tfour\nc\tfive", output: "5 0\n3\nWEAK c", explanation: "No duplicates. Counts: a=2, b=2, c=1. Only c is below 2, so it is the lone weak class." }
+      ],
+      challenge_notes: "Split each row on the first tab only (`line.split('\\t', 1)`) since the text may itself contain spaces. Normalize text with `text.strip().lower()` for the dedup key, but keep labels as-is. Track first-seen label order with a list so the weak output is deterministic.",
+      challenge_hints: [
+        "Build a set of (label, normalized_text) keys; skip a row whose key you've already seen and count it as a duplicate.",
+        "Tally kept rows per label in a dict, recording each label's first appearance in a separate list for ordering.",
+        "After the loop, walk the first-seen list and collect labels whose count is below min_per_class."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    min_per_class = int(data[idx]); idx += 1
+    # TODO: dedup rows, count per class, flag weak classes.
+    # Print "<kept> <dropped>", the class count, then WEAK ... or BALANCED.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    min_per_class = int(data[idx]); idx += 1
+    counts = {}
+    order = []
+    seen = set()
+    kept = 0
+    dropped = 0
+    for _ in range(n):
+        parts = data[idx].split('\\t', 1); idx += 1
+        label = parts[0]
+        text = parts[1] if len(parts) > 1 else ""
+        key = (label, text.strip().lower())
+        if key in seen:
+            dropped += 1
+            continue
+        seen.add(key)
+        kept += 1
+        if label not in counts:
+            counts[label] = 0
+            order.append(label)
+        counts[label] += 1
+    weak = [lbl for lbl in order if counts[lbl] < min_per_class]
+    print(f"{kept} {dropped}")
+    print(len(counts))
+    if weak:
+        print("WEAK " + " ".join(weak))
+    else:
+        print("BALANCED")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\n2\nbilling\tMy card was charged twice\nbilling\tmy card was charged twice\nshipping\tWhere is my order", expected_output: "2 1\n2\nWEAK billing shipping", description: "Case-insensitive dedup drops the near-duplicate; both small classes flagged weak." },
+        { input: "5\n2\na\tone\nb\ttwo\na\tthree\nb\tfour\nc\tfive", expected_output: "5 0\n3\nWEAK c", description: "No duplicates; only the single-example class c is below the floor." },
+        { input: "4\n1\nx\thello\nx\tworld\ny\tfoo\ny\tbar", expected_output: "4 0\n2\nBALANCED", description: "Both classes meet a floor of 1, so the dataset is balanced." },
+        { input: "1\n5\nspam\tbuy now", expected_output: "1 0\n1\nWEAK spam", description: "Edge: a single row cannot meet a floor of 5, so its class is weak." }
+      ]
+    },
+    {
+      id: "ai-08-l7",
+      project_id: "ai-08",
+      order: 7,
+      title: "Overfitting and Generalization",
+      concept: "Overfitting",
+      xp_reward: 10,
+      explanation: `Your fine-tune scores 99% on the data you trained it on. You ship it. In production it scores 71%. Nothing broke — you just measured the wrong thing. A model that aces the exact questions it studied has told you almost nothing about how it handles new ones. That gap between studied and unseen is the single most important idea in evaluating any trained model.
+
+## What it is
+
+**Overfitting** is when a model learns the training examples *too* well — memorizing their specific quirks instead of the general rule. It looks brilliant on data it has seen and falls apart on data it hasn't. **Generalization** is the opposite and the actual goal: performing well on inputs the model was never trained on, because it learned the underlying pattern rather than the answer key.
+
+The only way to tell them apart is to never let the model see its own exam. You split your data:
+
+- **Training set** — the model learns from these.
+- **Test set (held-out)** — locked in a vault, never used in training, used *only* to measure real performance.
+
+## How it works
+
+You hold back a slice of data before training — commonly 80% train, 20% test — and you guard it. The model trains on the 80%, then you score it on the untouched 20%. The comparison is the whole signal:
+
+\`\`\`python
+def diagnose(train_acc, test_acc):
+    gap = train_acc - test_acc
+    if gap > 0.10:
+        return "overfitting"      # memorized the training set
+    if train_acc < 0.70:
+        return "underfitting"     # hasn't learned enough
+    return "generalizing"         # healthy
+
+print(diagnose(0.99, 0.71))   # overfitting  (gap 0.28)
+print(diagnose(0.88, 0.85))   # generalizing (gap 0.03)
+print(diagnose(0.55, 0.54))   # underfitting (both low)
+\`\`\`
+
+A small gap means the model learned the rule. A large gap — high train, low test — is the textbook fingerprint of overfitting. Both low means **underfitting**: it never learned enough to begin with.
+
+## Why it matters
+
+Train accuracy is a vanity metric. A model can hit 100% on training data by simply memorizing every answer, and that number tells you *nothing* about the inputs your users will actually send. **Test accuracy is the honest number** because those examples were never part of learning — they stand in for the unseen real world. This is why the test set must stay sealed: the instant you tune your prompt or pick a model version based on the test score, that set has leaked into your decisions and stops being held-out. It's now training data with extra steps, and your reported number is inflated. Serious teams keep a third **validation set** for tuning and only touch the test set once, at the very end.
+
+## The mental model to keep
+
+Training accuracy is the practice exam you've already seen the answers to; test accuracy is the real exam with fresh questions. Anyone can ace the practice. Only generalization counts — and you can only see it on data the model never studied.`,
+      key_terms: [
+        { term: "Overfitting", definition: "When a model memorizes the training data's quirks instead of the general rule, scoring high on seen data and poorly on unseen data." },
+        { term: "Generalization", definition: "Performing well on inputs never seen during training — the actual goal of any trained model." },
+        { term: "Train/test split", definition: "Reserving a slice of data (the held-out test set) that the model never trains on, used only to measure real performance." },
+        { term: "Underfitting", definition: "When a model hasn't learned enough — both training and test accuracy are low." }
+      ],
+      callouts: [
+        {
+          type: "analogy",
+          title: "Practice exam vs real exam",
+          content: "Training accuracy is a practice test you've already seen the answer key for — anyone can ace it. Test accuracy is the real exam with fresh questions. Only the second one tells you whether the model actually learned.",
+          position: "before"
+        },
+        {
+          type: "warning",
+          title: "Touch the test set and it's burned",
+          content: "The moment you tune a prompt or pick a model version based on the test score, that set has leaked into your decisions and is no longer held-out. Keep a separate validation set for tuning; touch the real test set only once, at the end.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "Why you need a held-out set",
+        steps: [
+          { label: "Split the data", desc: "Reserve ~20% as a sealed test set before training." },
+          { label: "Train on the rest", desc: "The model learns only from the training portion." },
+          { label: "Score on held-out", desc: "Measure accuracy on data the model never saw." },
+          { label: "Read the gap", desc: "Big train-minus-test gap means overfitting." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "A model scores 0.98 on training data and 0.72 on held-out data. What does this signal?",
+          options: ["Underfitting — it learned too little", "Overfitting — it memorized the training set", "Perfect generalization"],
+          correct_index: 1,
+          explanation: "A large gap with high train and low test accuracy is the classic fingerprint of overfitting."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why is training accuracy a poor measure of real-world performance?",
+          options: [
+            "It is always lower than test accuracy",
+            "A model can hit it by memorizing the answers, which says nothing about unseen inputs",
+            "It cannot be computed for fine-tuned models",
+            "It only works for classification tasks"
+          ],
+          correct_index: 1,
+          explanation: "Memorizing training data inflates train accuracy without reflecting how the model handles new inputs."
+        },
+        {
+          question: "What is the defining symptom of overfitting?",
+          options: [
+            "Both train and test accuracy are low",
+            "High training accuracy paired with much lower test accuracy",
+            "Test accuracy higher than training accuracy",
+            "The model trains very slowly"
+          ],
+          correct_index: 1,
+          explanation: "Overfitting shows up as a large gap: strong on seen data, weak on unseen data."
+        },
+        {
+          question: "Why must the test set stay sealed and untouched during development?",
+          options: [
+            "To save disk space",
+            "Because using it to tune choices leaks it into training and inflates the reported number",
+            "Because test data is always smaller",
+            "So the model trains faster"
+          ],
+          correct_index: 1,
+          explanation: "Once you make decisions based on the test score, it's effectively training data and no longer an honest measure."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Split sense-check",
+          questions: [
+            { question: "A model that scores 100% on training data is guaranteed to perform well in production.", type: "true_false", correct_answer: "false", explanation: "It may have memorized the training set; only held-out test accuracy reflects real performance." },
+            { question: "Performing well on inputs the model never saw during training is called ______.", type: "fill_in", correct_answer: "generalization", explanation: "Generalization is the real goal, measured on the held-out test set." }
+          ]
+        }
+      ],
+      starter_code: `def diagnose(train_acc, test_acc):
+    gap = train_acc - test_acc
+    # overfitting: gap > 0.10
+    # underfitting: train_acc < 0.70
+    # otherwise: generalizing
+    return None  # fix
+
+print(diagnose(0.99, 0.71))
+print(diagnose(0.88, 0.85))
+print(diagnose(0.55, 0.54))`,
+      solution_code: `def diagnose(train_acc, test_acc):
+    gap = train_acc - test_acc
+    if gap > 0.10:
+        return "overfitting"
+    if train_acc < 0.70:
+        return "underfitting"
+    return "generalizing"
+
+print(diagnose(0.99, 0.71))
+print(diagnose(0.88, 0.85))
+print(diagnose(0.55, 0.54))`,
+      expected_output: `overfitting
+generalizing
+underfitting`,
+      step_throughs: [
+        {
+          title: "diagnosing a fine-tune from two numbers",
+          steps: [
+            { label: "Split before training", detail: "Reserve a held-out slice the model will never learn from. Everything downstream depends on this set staying sealed.", code: "train, test = split(data, 0.8)  # 80/20" },
+            { label: "Train, then measure both", detail: "Fit on the training portion, then score on both the training set and the untouched test set.", code: "train_acc = 0.99   test_acc = 0.71" },
+            { label: "Compute the gap", detail: "Subtract test from train. The size of the gap is the diagnosis, not either number alone.", code: "gap = 0.99 - 0.71 = 0.28" },
+            { label: "Read the verdict", detail: "A large gap with high train accuracy means the model memorized the training set instead of the rule.", code: "gap 0.28 > 0.10  ->  overfitting" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A fine-tune scores 0.92 on the training set and 0.90 on the held-out test set. Is it overfitting?",
+          steps: [
+            "Compute the gap: 0.92 - 0.90 = 0.02.",
+            "A gap of 0.02 is tiny — the model performs almost as well on unseen data as on seen data.",
+            "Small gap plus solid test accuracy means it learned the general rule, not the answer key."
+          ],
+          output: "No — a 0.02 gap with high test accuracy means it's generalizing well."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Two candidate fine-tunes: Model A scores train 0.99 / test 0.74; Model B scores train 0.86 / test 0.84. Which would you ship, and why is the higher training score a trap?",
+          steps: [
+            "Model A's gap is 0.99 - 0.74 = 0.25 — a huge gap, the fingerprint of overfitting.",
+            "Model B's gap is 0.86 - 0.84 = 0.02 — it generalizes.",
+            "Production performance is predicted by test accuracy, not train accuracy: B's 0.84 beats A's 0.74.",
+            "A's higher training number is a trap because it reflects memorization of the training set, which users never send."
+          ],
+          output: "Ship Model B: its test accuracy (0.84) is higher and its small gap shows it generalizes, while A overfit."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "underfitting vs generalizing vs overfitting",
+          columns: ["State", "Train accuracy", "Test accuracy", "What to do"],
+          rows: [
+            { cells: ["Underfitting", "Low", "Low", "Train more / better data; model learned too little"] },
+            { cells: ["Generalizing", "High", "High (small gap)", "Ship it — the goal"], highlight: true },
+            { cells: ["Overfitting", "Very high", "Much lower", "More/varied data, less training; it memorized"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "sort each signal by what it diagnoses",
+          bins: [
+            { id: "over", label: "Overfitting" },
+            { id: "gen", label: "Healthy generalization" }
+          ],
+          items: [
+            { id: "i1", text: "Train 0.99, test 0.70", bin: "over" },
+            { id: "i2", text: "Train 0.87, test 0.85", bin: "gen" },
+            { id: "i3", text: "Aces seen data, fails new inputs", bin: "over" },
+            { id: "i4", text: "Small gap between train and test", bin: "gen" },
+            { id: "i5", text: "Memorized training quirks", bin: "over" },
+            { id: "i6", text: "Learned the underlying rule", bin: "gen" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does a model with 100% training accuracy tell you almost nothing about how it will perform for real users?",
+          sampleAnswer: "A model can reach 100% on training data simply by memorizing every example it was shown, including their specific quirks, without ever learning the general rule. Real users send inputs the model has never seen, so what matters is whether it generalizes — and the training score can't reveal that because those answers were available during learning. Only a held-out test set, untouched during training, stands in for the unseen real world and gives an honest read."
+        }
+      ],
+      hints: [
+        "Compute gap = train_acc - test_acc first.",
+        "Check the overfitting condition (gap > 0.10) before the underfitting one.",
+        "If neither special case fires, the model is generalizing."
+      ],
+      challenge_title: "The Overfit Detector",
+      challenge_description: "Diagnose a batch of fine-tune runs from their train/test gaps and find the run that generalizes best.",
+      challenge_story: "Your team kicked off a sweep of fine-tune experiments overnight, each with different data and training settings, and every run logged its accuracy on both the training set and the sealed held-out test set. Now you have a stack of (train, test) numbers and one decision to make: which run actually generalizes, and which ones just memorized their training data? Build the detector that flags overfitting runs by their train-minus-test gap and surfaces the single run with the best honest performance — the one you'd actually ship.",
+      challenge_statement: "You are given **N** fine-tune runs. Each run reports two integer percentages: `train` accuracy and `test` accuracy. Runs are numbered `1..N` in input order.\n\nYou are also given a `gap_threshold` percentage. A run is **overfitting** when `train - test > gap_threshold`.\n\nDo two things:\n\n1. Count how many runs are overfitting.\n2. Find the run with the highest `test` accuracy (the best generalizer). If several tie on test accuracy, pick the one with the **lowest** run number.",
+      challenge_input_format: "Line 1: integer `N`. Line 2: integer `gap_threshold` (a percentage). Each of the next `N` lines has two space-separated integer percentages: `train test`.",
+      challenge_output_format: "Two lines:\n1. The number of overfitting runs.\n2. Two space-separated integers: the run number of the best generalizer then its test accuracy.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "0 ≤ gap_threshold ≤ 100",
+        "0 ≤ train, test ≤ 100"
+      ],
+      challenge_examples: [
+        { input: "3\n10\n98 80\n85 83\n99 70", output: "2\n2 83", explanation: "Gaps: run 1 = 18 (>10, overfit), run 2 = 2 (ok), run 3 = 29 (>10, overfit). Two overfit. Highest test accuracy is run 2 at 83." },
+        { input: "2\n5\n90 90\n80 70", output: "1\n1 90", explanation: "Run 1 gap 0, run 2 gap 10 which is >5 → overfitting, so 1 overfit run. Best test accuracy is run 1 at 90." }
+      ],
+      challenge_notes: "The overfitting test is strict (`>`), so a gap exactly equal to the threshold does not count as overfitting. For the best generalizer, iterate once tracking the max test accuracy seen so far and only replacing on a strictly greater value — that naturally keeps the lowest run number on ties.",
+      challenge_hints: [
+        "Read N and gap_threshold, then loop N times reading train and test as ints.",
+        "Increment an overfit counter whenever `train - test > gap_threshold`.",
+        "Track the best test accuracy and its 1-based index; only update when you see a strictly higher test value."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    gap_threshold = int(data[idx]); idx += 1
+    # TODO: count overfitting runs and find the best generalizer.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    gap_threshold = int(data[idx]); idx += 1
+    overfit = 0
+    best_test = -1
+    best_id = -1
+    for i in range(1, n + 1):
+        parts = data[idx].split(); idx += 1
+        train = int(parts[0])
+        test = int(parts[1])
+        if train - test > gap_threshold:
+            overfit += 1
+        if test > best_test:
+            best_test = test
+            best_id = i
+    print(overfit)
+    print(f"{best_id} {best_test}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\n10\n98 80\n85 83\n99 70", expected_output: "2\n2 83", description: "Two runs exceed the gap threshold; run 2 generalizes best." },
+        { input: "2\n5\n90 90\n80 70", expected_output: "1\n1 90", description: "A gap exactly above the threshold counts; run 1 has the best test score." },
+        { input: "3\n10\n70 70\n60 60\n70 70", expected_output: "0\n1 70", description: "Edge: tie on top test accuracy resolves to the lowest run number; none overfit." },
+        { input: "1\n0\n50 50", expected_output: "0\n1 50", description: "Edge: zero gap with a zero threshold is not overfitting (strict greater-than)." }
+      ]
+    },
+    {
+      id: "ai-08-l8",
+      project_id: "ai-08",
+      order: 8,
+      title: "Tracking Evals Over Time",
+      concept: "Tracking",
+      xp_reward: 10,
+      explanation: `A single eval score is a snapshot. The real value shows up when you have a hundred of them, lined up by version, and you can finally answer the question every AI team argues about: "did we actually get better, or does it just feel that way?" A prompt change here, a model upgrade there, a new few-shot example — without a record, you're relitigating the same debate every week. Tracking turns scattered runs into a trend line.
+
+## What it is
+
+**Eval tracking** is recording every eval run — tagged with what produced it — so you can compare scores across versions over time. Each entry is a row: which **prompt version** or **model version** was tested, when, and what it scored. Together they form a **regression dashboard**: a history that shows whether each change moved the number up, down, or nowhere.
+
+The unit of comparison is the *version*. You change one thing (the prompt, the model, the temperature), re-run the same frozen eval set, and log the result against that version label. Same yardstick, different version — that's what makes the comparison fair.
+
+## How it works
+
+You keep a list of runs in order and walk it, comparing each score to the one before. A drop from one version to the next is a **regression** — the thing you most want to catch:
+
+\`\`\`python
+runs = [
+    ("v1.0-prompt", 0.78),
+    ("v1.1-prompt", 0.83),
+    ("v1.2-model",  0.79),   # regression: dropped from 0.83
+    ("v1.3-prompt", 0.88),
+]
+
+prev = None
+best = max(runs, key=lambda r: r[1])
+for version, score in runs:
+    flag = ""
+    if prev is not None and score < prev:
+        flag = f"  REGRESSION (was {prev})"
+    print(f"{version}: {score}{flag}")
+    prev = score
+print(f"best so far: {best[0]} at {best[1]}")
+\`\`\`
+
+The dashboard shows v1.2 dipped — a model swap that looked like an upgrade actually hurt the eval — and that v1.3 is the new high-water mark. Without the history, the v1.2 regression sails by unnoticed.
+
+## Why it matters
+
+Memory lies and vibes drift. Three weeks into a project nobody remembers whether the "improved" system prompt actually beat the original or just felt fresher — the trend line settles it with data. Tracking also makes regressions **attributable**: when the number drops, the version tag tells you exactly which change to blame, so you bisect in one glance instead of guessing. It turns the **best score** into a defensible baseline you can gate against (lesson 5), and it exposes slow erosion — the death-by-a-thousand-tweaks decline where each change costs half a point and nobody notices until you're ten points down. A chart of score-by-version is the difference between *managing* an AI system and *hoping*.
+
+## The mental model to keep
+
+One eval score answers "how good is it right now?" A tracked history answers "are we getting better?" — the only question that matters across a project's life. Log every run against its version, watch the trend, and let the dashboard, not your memory, tell you the truth.`,
+      key_terms: [
+        { term: "Eval tracking", definition: "Recording every eval run tagged with the version that produced it, so scores can be compared across time." },
+        { term: "Regression dashboard", definition: "A history of eval scores by version that shows whether each change moved the number up, down, or nowhere." },
+        { term: "Version", definition: "A labeled state of the system (prompt, model, or settings) tested against the same eval set for a fair comparison." },
+        { term: "Regression", definition: "A drop in the eval score from one version to the next — the thing tracking is built to catch." }
+      ],
+      callouts: [
+        {
+          type: "insight",
+          title: "Vibes drift, the trend line doesn't",
+          content: "Three weeks in, nobody remembers if the 'improved' prompt actually beat the original. A chart of score-by-version settles the argument with data instead of memory.",
+          position: "before"
+        },
+        {
+          type: "tip",
+          title: "Tag every run with its version",
+          content: "A score with no version label is almost useless later. Always record which prompt/model produced it so a regression is attributable to a single change.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "From scattered runs to a trend",
+        steps: [
+          { label: "Change one thing", desc: "Edit the prompt, swap the model, or tune a setting." },
+          { label: "Re-run the eval", desc: "Score against the same frozen eval set." },
+          { label: "Log with version", desc: "Record the score tagged with the version label." },
+          { label: "Compare over time", desc: "Read the trend; flag any drop as a regression." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Why tag each eval score with a version label?",
+          options: ["To make the dashboard look busier", "So a score drop is attributable to a specific change", "To make the eval run faster"],
+          correct_index: 1,
+          explanation: "The version tag tells you exactly which change to blame when the number moves."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does eval tracking let you answer that a single eval score cannot?",
+          options: [
+            "How fast the model responds",
+            "Whether the system is getting better or worse over time",
+            "How many tokens a prompt uses",
+            "Which GPU the model runs on"
+          ],
+          correct_index: 1,
+          explanation: "A single score is a snapshot; a tracked history reveals the trend across versions."
+        },
+        {
+          question: "On a regression dashboard, what counts as a regression?",
+          options: [
+            "Any version with a long name",
+            "A version whose score is lower than the previous version's",
+            "The first version ever logged",
+            "A version that uses a new model"
+          ],
+          correct_index: 1,
+          explanation: "A regression is a drop in the eval score from one version to the next."
+        },
+        {
+          question: "Why must each version be re-run against the same frozen eval set?",
+          options: [
+            "To save storage space",
+            "So the comparison is fair — same yardstick, only the version changes",
+            "Because eval sets expire over time",
+            "To make older versions look worse"
+          ],
+          correct_index: 1,
+          explanation: "Changing the eval set between runs would make score differences meaningless; the set must stay fixed."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Tracking habits",
+          questions: [
+            { question: "Comparing eval scores across versions requires keeping the eval set the same between runs.", type: "true_false", correct_answer: "true", explanation: "Only a fixed yardstick makes version-to-version score differences meaningful." },
+            { question: "A drop in the eval score from one version to the next is called a ______.", type: "fill_in", correct_answer: "regression", explanation: "Catching regressions is the core purpose of an eval-tracking dashboard." }
+          ]
+        }
+      ],
+      starter_code: `runs = [
+    ("v1.0-prompt", 0.78),
+    ("v1.1-prompt", 0.83),
+    ("v1.2-model",  0.79),
+    ("v1.3-prompt", 0.88),
+]
+
+prev = None
+best = max(runs, key=lambda r: r[1])
+for version, score in runs:
+    flag = ""
+    # mark a regression when this score is below the previous one
+    if None:  # fix this condition
+        flag = f"  REGRESSION (was {prev})"
+    print(f"{version}: {score}{flag}")
+    prev = score
+print(f"best so far: {best[0]} at {best[1]}")`,
+      solution_code: `runs = [
+    ("v1.0-prompt", 0.78),
+    ("v1.1-prompt", 0.83),
+    ("v1.2-model",  0.79),
+    ("v1.3-prompt", 0.88),
+]
+
+prev = None
+best = max(runs, key=lambda r: r[1])
+for version, score in runs:
+    flag = ""
+    if prev is not None and score < prev:
+        flag = f"  REGRESSION (was {prev})"
+    print(f"{version}: {score}{flag}")
+    prev = score
+print(f"best so far: {best[0]} at {best[1]}")`,
+      expected_output: `v1.0-prompt: 0.78
+v1.1-prompt: 0.83
+v1.2-model: 0.79  REGRESSION (was 0.83)
+v1.3-prompt: 0.88
+best so far: v1.3-prompt at 0.88`,
+      step_throughs: [
+        {
+          title: "reading a regression dashboard",
+          steps: [
+            { label: "Log each run with its version", detail: "Every eval result is stored as a (version, score) pair in the order it ran, building the history.", code: 'runs.append(("v1.2-model", 0.79))' },
+            { label: "Walk versions in order", detail: "Step through the runs one at a time, holding onto the previous score to compare against.", code: "for version, score in runs:" },
+            { label: "Flag the drops", detail: "When a score falls below the one before it, that version introduced a regression — tag it.", code: "0.79 < 0.83  ->  REGRESSION at v1.2-model" },
+            { label: "Surface the best", detail: "Track the highest score seen; it becomes the baseline you gate future changes against.", code: "best = v1.3-prompt @ 0.88" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Versions score in order: 0.80, 0.84, 0.84, 0.81. How many regressions (a score below the immediately previous one) are there?",
+          steps: [
+            "Compare each version to the one before it.",
+            "0.84 vs 0.80: up. 0.84 vs 0.84: equal, not a drop. 0.81 vs 0.84: down — one regression.",
+            "Only the final step is a decrease, so the count is 1."
+          ],
+          output: "1 regression (the drop from 0.84 to 0.81)."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Five versions score 0.90, 0.88, 0.87, 0.86, 0.85 — each change loses one point. No single drop looks alarming. Why is tracking still essential here, and what's the best score you can gate against?",
+          steps: [
+            "Each step is only a 0.01–0.02 dip, small enough to dismiss in isolation as noise.",
+            "But the trend is monotonically down: cumulatively the system fell from 0.90 to 0.85, a five-point erosion.",
+            "This 'death by a thousand tweaks' is invisible without a tracked history — memory excuses each small drop.",
+            "The best score logged is the very first, 0.90, so that's the baseline a gate should hold the line at."
+          ],
+          output: "Tracking exposes the slow 5-point erosion no single drop reveals; the best score to gate against is the original 0.90."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "no tracking vs a regression dashboard",
+          columns: ["Question", "No tracking (memory/vibes)", "Regression dashboard"],
+          rows: [
+            { cells: ["Did the change help?", "We think so?", "Score went 0.83 -> 0.88, yes"] },
+            { cells: ["Which change broke it?", "Guess and bisect by hand", "The version tag names it instantly"], highlight: true },
+            { cells: ["Slow erosion over weeks", "Goes unnoticed", "Visible as a downward trend"] },
+            { cells: ["Baseline to gate against", "Unknown", "The best logged score" ] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "good tracking practice, or anti-pattern?",
+          bins: [
+            { id: "good", label: "Good practice" },
+            { id: "bad", label: "Anti-pattern" }
+          ],
+          items: [
+            { id: "i1", text: "Tag every eval run with its prompt/model version", bin: "good" },
+            { id: "i2", text: "Re-run each version on the same frozen eval set", bin: "good" },
+            { id: "i3", text: "Change the eval set between version comparisons", bin: "bad" },
+            { id: "i4", text: "Keep a history to spot slow erosion", bin: "good" },
+            { id: "i5", text: "Rely on memory of how outputs felt last week", bin: "bad" },
+            { id: "i6", text: "Log scores with no version label", bin: "bad" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can a series of tiny, individually-harmless score drops be more dangerous than one big visible drop?",
+          sampleAnswer: "A single large drop is obvious and gets investigated immediately, but a string of small drops each looks like noise, so every one gets waved off as 'probably fine.' Without a tracked history you only ever see the latest change in isolation, never the cumulative slide, so the system can erode many points over weeks while everyone believes it's holding steady. A regression dashboard makes the downward trend visible even when no single step looks alarming, which is exactly when you'd otherwise miss it."
+        }
+      ],
+      hints: [
+        "Guard against the first iteration where prev is still None.",
+        "A regression is when the current score is strictly less than the previous one.",
+        "Update prev to the current score at the end of each loop iteration."
+      ],
+      challenge_title: "The Regression Dashboard",
+      challenge_description: "Walk a version history of eval scores: count regressions, find the worst single drop, and report the best version overall.",
+      challenge_story: "Your eval suite has been running on every prompt and model change for months, and each run logged a version label and an integer score. Today the team wants a dashboard summary before deciding what to ship next. You need three things from the history: how many times a version scored worse than the one right before it (the regressions), which version caused the single biggest drop (the prime suspect to investigate), and which version holds the all-time best score (the baseline to beat). Build the report that turns a raw log into a decision.",
+      challenge_statement: "You are given **N** eval runs in chronological order. Each run is a version label and an integer score, separated by a single space (the label may itself contain spaces, but the score is always the last whitespace-separated field).\n\nWalking the history in order, compute:\n\n1. The number of **regressions** — runs whose score is strictly less than the immediately previous run's score.\n2. The **worst drop**: among regressions, the largest `previous_score - score`, and the label of the version that caused it. If there are no regressions, report `NONE`.\n3. The **best version**: the label with the highest score. If several tie on the highest score, report the **earliest** (first in chronological order).",
+      challenge_input_format: "Line 1: integer `N`. Each of the next `N` lines is a run: a version label, then the integer score as the final space-separated field.",
+      challenge_output_format: "Three lines:\n1. The best version's label and its score, space-separated.\n2. The number of regressions.\n3. The worst-drop version's label and the drop as `-<amount>` (e.g. `v1.2 -3`), or `NONE` if there were no regressions.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "0 ≤ score ≤ 100",
+        "Each line has length ≤ 200",
+        "Version labels are non-empty"
+      ],
+      challenge_examples: [
+        { input: "4\nv1.0 70\nv1.1 75\nv1.2 72\nv1.3 80", output: "v1.3 80\n1\nv1.2 -3", explanation: "Scores 70->75 (up), 75->72 (down by 3, a regression), 72->80 (up). One regression; its drop of 3 is the worst, caused by v1.2. Best score is v1.3 at 80." },
+        { input: "5\nv1 60\nv2 50\nv3 55\nv4 40\nv5 90", output: "v5 90\n2\nv4 -15", explanation: "Drops: 60->50 (10 at v2) and 55->40 (15 at v4). Two regressions; the 15-point fall at v4 is worst. Best is v5 at 90." }
+      ],
+      challenge_notes: "Split each line from the right with `line.rsplit(' ', 1)` so a multi-word version label stays intact while the trailing score peels off. Track the previous score to detect regressions, and for ties on the best score keep the first by only replacing when you find a strictly higher value.",
+      challenge_hints: [
+        "Use `rsplit(' ', 1)` to separate the trailing integer score from the label.",
+        "Hold the previous score; when the current is strictly lower, it's a regression — track the largest drop and its label.",
+        "Track the best score and its label, updating only on a strictly greater score so ties keep the earliest version."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    # TODO: walk the runs, count regressions, find the worst drop and best version.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    regressions = 0
+    worst_drop = 0
+    worst_version = ""
+    best_score = -1
+    best_version = ""
+    prev_score = None
+    for _ in range(n):
+        parts = data[idx].rsplit(' ', 1); idx += 1
+        version = parts[0]
+        score = int(parts[1])
+        if prev_score is not None and score < prev_score:
+            regressions += 1
+            drop = prev_score - score
+            if drop > worst_drop:
+                worst_drop = drop
+                worst_version = version
+        prev_score = score
+        if score > best_score:
+            best_score = score
+            best_version = version
+    print(f"{best_version} {best_score}")
+    print(regressions)
+    if worst_drop > 0:
+        print(f"{worst_version} -{worst_drop}")
+    else:
+        print("NONE")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "4\nv1.0 70\nv1.1 75\nv1.2 72\nv1.3 80", expected_output: "v1.3 80\n1\nv1.2 -3", description: "One regression; v1.3 holds the best score." },
+        { input: "5\nv1 60\nv2 50\nv3 55\nv4 40\nv5 90", expected_output: "v5 90\n2\nv4 -15", description: "Two regressions; the 15-point fall at v4 is the worst drop." },
+        { input: "1\nv1 50", expected_output: "v1 50\n0\nNONE", description: "Edge: a single run has no previous score, so no regressions." },
+        { input: "3\nv1 80\nv2 80\nv3 80", expected_output: "v1 80\n0\nNONE", description: "Edge: equal scores are not regressions; ties on best resolve to the earliest version." }
       ]
     }
   ]

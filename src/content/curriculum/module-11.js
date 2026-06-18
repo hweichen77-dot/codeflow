@@ -6,7 +6,7 @@ export default {
     difficulty: "intermediate",
     category: "vision_multimodal",
     estimated_time: 50,
-    lessons_count: 5,
+    lessons_count: 8,
     tags: ["multimodal", "vision", "images", "ocr", "generation"],
     order: 11,
     cover_image: ""
@@ -1474,6 +1474,885 @@ main()
         { input: "2\nreceipt 800 4000 40 150 1\nbanner 800 4000 40 150 0", expected_output: "receipt high $0.014370\nbanner low $0.004770\nALL_LOW $0.009540\nALL_HIGH $0.028740\nSAVINGS $0.019200", description: "Mixed routing with a savings calculation." },
         { input: "1\nchip 256 4096 40 150 1", expected_output: "chip high $0.014658\nALL_LOW $0.003138\nALL_HIGH $0.014658\nSAVINGS $0.011520", description: "Single high-detail request against its low baseline." },
         { input: "1\nidle 0 0 0 0 0", expected_output: "idle low $0.000000\nALL_LOW $0.000000\nALL_HIGH $0.000000\nSAVINGS $0.000000", description: "Edge case: a zero-token request costs exactly $0.000000 with no savings." }
+      ]
+    },
+    {
+      id: "ai-11-l6",
+      project_id: "ai-11",
+      order: 6,
+      title: "Prompting With Images",
+      concept: "Prompting",
+      xp_reward: 10,
+      explanation: `Hand a model a photo of a crowded desk with no instruction and it free-associates: "A wooden desk with a laptop, a coffee mug, some papers..." Hand it the same photo with "How many cables are plugged into the laptop? Answer with just a number." and you get \`3\`. Same pixels, wildly different answers. The image supplies the *facts*; your text decides which facts come out. Learning to aim that text is the whole skill of this lesson.
+
+## What it is
+
+**Image prompting** is combining a text instruction with an image in one request so the words steer what the model reports about the picture. The image is the evidence; the prompt is the question, the format, and the constraints. From earlier lessons you already know both the words and the picture become tokens in one shared context — so the instruction literally sits next to the image and shapes the prediction.
+
+A bare image invites a generic description. A pointed instruction turns the model into a specific tool: a counter, an extractor, a classifier, a grader.
+
+## How it works
+
+Your text does three jobs at once, each pulling the answer in a direction:
+
+1. **Task** — what to do: describe, count, locate, compare, judge.
+2. **Scope** — what to look at: "only the price tags," "ignore the background."
+3. **Format** — how to answer: "one word," "JSON with keys color and count," "yes or no."
+
+\`\`\`python
+content = [
+    {"type": "text", "text":
+        "Count the red cars only. Reply with just an integer, no words."},
+    {"type": "image", "source": image_source}
+]
+# The image holds the scene; the instruction decides the model
+# reports a single number instead of a paragraph.
+\`\`\`
+
+Because many models read top to bottom, putting the instruction *before* the image frames how it looks at the picture. A vague prompt leaves the model free to wander; a tight one collapses the answer to exactly the slice you asked for.
+
+## Why it matters
+
+Steering with text is what turns a vision model from a party trick into a reliable component:
+
+- **Specificity beats volume.** "Is the traffic light red, yellow, or green? One word." is more reliable than "tell me about this image."
+- **Format instructions make output parseable.** Asking for JSON or a single token means your code can read the answer without fragile string surgery.
+- **Constraints curb hallucination.** "If you cannot read it, answer UNKNOWN" stops the model from inventing a confident guess.
+- **Negative instructions narrow scope.** "Ignore reflections and watermarks" removes distractors before they pollute the answer.
+
+## The mental model to keep
+
+The picture is the dataset; your prompt is the query. **Aim the words and you choose which facts the image gives up** — a sharp instruction in front of the same pixels is the difference between a rambling caption and the one number you needed.`,
+      key_terms: [
+        { term: "Image prompting", definition: "Pairing a text instruction with an image so the words steer what the model reports about it." },
+        { term: "Instruction scope", definition: "The part of a prompt that limits what the model should look at, like 'only the price tags.'" },
+        { term: "Format instruction", definition: "Telling the model the exact shape of the answer, such as one word or JSON." },
+        { term: "Grounding constraint", definition: "A rule like 'answer UNKNOWN if you cannot tell' that curbs invented answers." }
+      ],
+      callouts: [
+        { type: "analogy", title: "The image is a dataset, the prompt is the query", content: "A photo holds far more facts than you want. Your instruction is the SQL query against it: ask for one column and you get one column, not the whole table dumped as prose.", position: "before" },
+        { type: "tip", title: "Put the instruction first", content: "Many models read top to bottom, so an instruction placed before the image frames how the model looks at it. Lead with the task, then attach the picture.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How text steers an image answer",
+        steps: [
+          { label: "State the task", desc: "Describe, count, locate, compare, or judge." },
+          { label: "Set the scope", desc: "Name what to look at and what to ignore." },
+          { label: "Fix the format", desc: "One word, an integer, or JSON with named keys." },
+          { label: "Attach the image", desc: "The model answers exactly the slice you framed." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Why does adding a specific instruction to an image change the answer so much?",
+          options: ["The instruction edits the image pixels", "The text shares context with the image and steers which facts the model reports", "The model ignores the image when text is present"],
+          correct_index: 1,
+          explanation: "Text and image tokens live in one context, so a pointed instruction collapses the answer to the slice you asked for."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Which prompt is most likely to give a reliable, parseable answer about an image?",
+          options: [
+            "Tell me about this image",
+            "Is the traffic light red, yellow, or green? Reply with one word",
+            "What do you think is happening here",
+            "Describe everything you see in detail"
+          ],
+          correct_index: 1,
+          explanation: "A specific task plus a tight format constraint produces a single, predictable token your code can read."
+        },
+        {
+          question: "What is the purpose of adding 'answer UNKNOWN if you cannot tell' to an image prompt?",
+          options: [
+            "It makes the model respond faster",
+            "It curbs hallucination by giving the model an honest out instead of forcing a guess",
+            "It lowers the token cost of the image",
+            "It changes the image resolution"
+          ],
+          correct_index: 1,
+          explanation: "A grounding constraint lets the model admit uncertainty rather than inventing a confident wrong answer."
+        },
+        {
+          question: "Why does instruction placement (before vs after the image) sometimes matter?",
+          options: [
+            "Images can only appear at the end of a request",
+            "Many models read top to bottom, so a leading instruction frames how they look at the picture",
+            "Placing text first compresses the image",
+            "The API rejects text that follows an image"
+          ],
+          correct_index: 1,
+          explanation: "Because the model reads the sequence in order, an instruction before the image sets the lens it views the picture through."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Steering check",
+          questions: [
+            { question: "A more specific instruction generally produces a more reliable answer than a vague one for the same image.", type: "true_false", correct_answer: "true", explanation: "Specificity narrows the answer to exactly the slice you need." },
+            { question: "Telling the model to reply as JSON with named keys is a ______ instruction.", type: "fill_in", correct_answer: "format", explanation: "Format instructions fix the shape of the output so code can parse it." }
+          ]
+        }
+      ],
+      starter_code: `# Build an image prompt that steers the answer to a single number.
+task = "Count the red cars only."
+scope = "Ignore parked cars and reflections."
+fmt = "Reply with just an integer, no words."
+
+# TODO: combine task, scope, and format into one instruction string,
+#       then build a content list with that text block and an image block.
+instruction = ""
+print(instruction)
+`,
+      solution_code: `task = "Count the red cars only."
+scope = "Ignore parked cars and reflections."
+fmt = "Reply with just an integer, no words."
+
+instruction = task + " " + scope + " " + fmt
+
+content = [
+    {"type": "text", "text": instruction},
+    {"type": "image", "source": {"type": "url", "url": "https://example.com/street.jpg"}}
+]
+
+print(instruction)
+print(len(content), "blocks")
+print(content[0]["type"], content[1]["type"])
+`,
+      expected_output: `Count the red cars only. Ignore parked cars and reflections. Reply with just an integer, no words.
+2 blocks
+text image`,
+      step_throughs: [
+        {
+          title: "turning a vague ask into a steered one",
+          steps: [
+            { label: "Start vague", detail: "A bare prompt lets the model wander and return a generic paragraph about the whole scene.", code: '"Tell me about this photo." -> long caption' },
+            { label: "Add the task", detail: "Name the single operation you want, which collapses the description into an action.", code: '"How many people are wearing hats?"' },
+            { label: "Add scope and format", detail: "Limit what to look at and pin the answer shape so the output is predictable and parseable.", code: '"... Count only adults. Reply with one integer."' },
+            { label: "Attach the image", detail: "Put the instruction first, then the picture; the model answers exactly the framed slice.", code: 'content = [text_block, image_block] -> "4"' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'You send a photo of a single traffic light with the prompt "Describe this image." You actually just need to know if it is safe to go. What is a better prompt?',
+          steps: [
+            "The vague prompt returns a description of the pole, sky, and street, not the one fact you need.",
+            "State the exact task: what color is the light.",
+            "Fix the format so the answer is trivial to act on: one word."
+          ],
+          output: '"What color is the traffic light? Reply with one word: red, yellow, or green."'
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You extract prices from shelf photos, but the model keeps describing the whole shelf and occasionally invents a price for a blurry tag. How do you fix the prompt?",
+          steps: [
+            "Scope the task to only the price tags, telling it to ignore products and signage.",
+            "Fix the format as JSON so your code can parse it directly, for example a list of objects with name and price.",
+            'Add a grounding constraint: if a tag is unreadable, set its price to null instead of guessing.',
+            "Place the instruction before the image so it frames the read."
+          ],
+          output: 'Scope to price tags only, request JSON, and instruct null for unreadable tags so blurry prices are not invented.'
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "vague prompt vs steered prompt",
+          columns: ["Aspect", "Vague prompt", "Steered prompt"],
+          rows: [
+            { cells: ["Example", '"Describe this image"', '"How many red cars? One integer."'] },
+            { cells: ["Output shape", "Long, unpredictable prose", "One token your code can parse"] },
+            { cells: ["Hallucination risk", "Higher, free to wander", "Lower, constrained and scoped"] },
+            { cells: ["Usefulness in code", "Needs fragile parsing", "Drops straight into your pipeline"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which instruction part is this?",
+          bins: [
+            { id: "task", label: "Task" },
+            { id: "format", label: "Scope or Format" }
+          ],
+          items: [
+            { id: "i1", text: "Count the people in the photo", bin: "task" },
+            { id: "i2", text: "Reply with just an integer", bin: "format" },
+            { id: "i3", text: "Identify the dog breed", bin: "task" },
+            { id: "i4", text: "Ignore the background", bin: "format" },
+            { id: "i5", text: "Return JSON with keys color and count", bin: "format" },
+            { id: "i6", text: "Decide if the receipt total exceeds 50", bin: "task" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: if the image already contains the answer, why does the wording of your text instruction matter so much?",
+          sampleAnswer: "The image holds far more facts than any one question needs, and the model only reports what your instruction aims it at. Because the text and image share the same context, the prompt acts like a query against the picture: it picks the task, narrows the scope to the relevant part, and fixes the answer's shape. Vague wording leaves the model free to return a generic caption or even guess, while a specific instruction collapses the response to exactly the slice you can use."
+        }
+      ],
+      hints: [
+        "Join the task, scope, and format strings with spaces into one instruction.",
+        "The content list holds a text block (the instruction) and an image block.",
+        "Each block is a dict with a 'type' key, just like earlier lessons."
+      ],
+      challenge_title: "The Instruction Auditor",
+      challenge_description: "Compare what each image prompt asked the model to report against what the model actually returned, score how faithfully it followed the instruction, and flag missing and extra fields.",
+      challenge_story: "You run a quality dashboard for a vision pipeline. Every request pairs an image with an instruction listing the exact fields the model should report — say \`merchant\`, \`date\`, \`total\`. The model doesn't always comply: sometimes it omits a requested field, sometimes it volunteers extra fields nobody asked for (chatty drift that bloats your tokens). You need an **instruction auditor** that, for every response, computes a follow-rate score, names the fields that went missing, and names the extras the model threw in — so you can tell which prompts steer cleanly and which need tightening.",
+      challenge_statement: "Every request asks the model to report the same set of **requested** fields. For each response, you are given the fields the model actually **reported**.\n\nFor each response, in input order:\n\n1. Compute its **score**: the count of requested fields that appear in the response, times 100, integer-divided by the number of requested fields (\`hits * 100 // R\`).\n2. **missing** = requested fields not reported, in the order they appear in the requested list.\n3. **extra** = reported fields that were not requested, in the order they appear in the response.\n\nPrint one line per response, starting with \`<name> <score>\`. If there are missing fields, append \` MISSING \` and the missing names joined by commas. If there are extra fields, append \` EXTRA \` and the extra names joined by commas (MISSING before EXTRA when both occur).\n\nFinally print \`AVG <a>\` where \`a\` is the integer average of all scores (\`sum_of_scores // n\`).",
+      challenge_input_format: "The first line is an integer `n`: the number of responses.\n\nThe second line lists the requested fields, space-separated (this set is the same for all responses).\n\nEach of the next `n` lines is `name|reported`, where `reported` is a space-separated list of fields the model returned. The reported list may be empty (nothing after the `|`).",
+      challenge_output_format: "Print `n` per-response lines as described, then one `AVG <a>` line.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "1 ≤ number of requested fields ≤ 50",
+        "Field names contain no spaces or `|`; names are unique within a list.",
+      ],
+      challenge_examples: [
+        { input: "2\ntotal date merchant\nr1|merchant total date tax\nr2|merchant", output: "r1 100 EXTRA tax\nr2 33 MISSING total,date\nAVG 66", explanation: "r1 reports all 3 requested (3*100//3 = 100) plus an unrequested 'tax' (extra). r2 reports only merchant: 1*100//3 = 33, missing total and date. Average = (100+33)//2 = 66." },
+        { input: "1\na b\nx|b a", output: "x 100\nAVG 100", explanation: "Both requested fields present and no extras, so a clean 100 with no MISSING or EXTRA segment." },
+      ],
+      challenge_notes: "Score uses integer division on purpose: 1 of 3 fields is reported as 33, not 33.33, keeping output unambiguous. The MISSING-before-EXTRA ordering and the requested-list ordering for missing fields make the output deterministic so it can be diffed in tests. A high extra count is a real signal: a chatty model that volunteers fields you never asked for is wasting tokens and ignoring your format instruction.",
+      challenge_hints: [
+        "Build a set of requested fields and a set of reported fields per line for fast membership tests, but iterate the original lists to preserve order.",
+        "Split each response line on the single `|`; handle an empty reported part by treating it as an empty list.",
+        "Assemble the line in pieces: always `name score`, then conditionally ` MISSING ...`, then conditionally ` EXTRA ...`.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    requested = data[idx].split(); idx += 1
+    # TODO: for each response, compute score, missing, extra; print the line.
+    # Then print AVG <integer average of scores>.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    requested = data[idx].split(); idx += 1
+    req_set = set(requested)
+    R = len(requested)
+    total_score = 0
+    out = []
+    for _ in range(n):
+        parts = data[idx].split("|"); idx += 1
+        name = parts[0]
+        reported = parts[1].split() if parts[1].strip() != "" else []
+        rep_set = set(reported)
+        hits = sum(1 for f in requested if f in rep_set)
+        score = hits * 100 // R
+        total_score += score
+        missing = [f for f in requested if f not in rep_set]
+        extra = [f for f in reported if f not in req_set]
+        seg = name + " " + str(score)
+        if missing:
+            seg += " MISSING " + ",".join(missing)
+        if extra:
+            seg += " EXTRA " + ",".join(extra)
+        out.append(seg)
+    out.append("AVG " + str(total_score // n))
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "2\ntotal date merchant\nr1|merchant total date tax\nr2|merchant", expected_output: "r1 100 EXTRA tax\nr2 33 MISSING total,date\nAVG 66", description: "A perfect-with-extra response and a mostly-missing one, then the average." },
+        { input: "1\na b\nx|b a", expected_output: "x 100\nAVG 100", description: "All requested present, no extras: clean line with no segments." },
+        { input: "1\nname\nempty|", expected_output: "empty 0 MISSING name\nAVG 0", description: "Edge case: an empty reported list scores 0 and flags the missing field." },
+        { input: "2\ncolor\na|color size\nb|", expected_output: "a 100 EXTRA size\nb 0 MISSING color\nAVG 50", description: "One field requested; extra and missing handled, average rounds with integer division." }
+      ]
+    },
+    {
+      id: "ai-11-l7",
+      project_id: "ai-11",
+      order: 7,
+      title: "Multi-Image and Video Frames",
+      concept: "Sequences",
+      xp_reward: 10,
+      explanation: `A model cannot watch a video. It has no eyes and no clock. So how do products "analyze a clip"? They cheat: they pull out still frames at intervals, line them up like a flipbook, and feed that handful of images into the same vision request you already know. A two-minute video becomes maybe twenty pictures. Once you see that trick, "video understanding" stops being a different feature and becomes multi-image prompting with a sampling step in front.
+
+## What it is
+
+**Multi-image prompting** is putting more than one image in a single request so the model can compare, sequence, or reason across them. **Video frame sampling** is the special case where those images are stills pulled from a video at a chosen rate — one frame per second, every tenth frame, or however dense you need.
+
+The model treats the frames as an ordered list of pictures, not as motion. It infers what changed between them the way you would by flipping through photos, not by watching playback.
+
+## How it works
+
+The content list simply holds several image blocks, often interleaved with text that labels them:
+
+\`\`\`python
+content = [
+    {"type": "text", "text": "These are frames sampled every 2 seconds."},
+    {"type": "image", "source": frame_0},
+    {"type": "text", "text": "Frame at t=2s:"},
+    {"type": "image", "source": frame_2},
+    {"type": "text", "text": "What changed between the two frames?"}
+]
+# Each frame is patched into image tokens, all read in one sequence.
+\`\`\`
+
+Two numbers govern everything:
+
+1. **Sampling rate.** How many frames you pull. Sparse sampling is cheap but can miss fast events; dense sampling catches detail but multiplies tokens.
+2. **Tokens per frame.** Every frame is patched like any image, so total cost is frames times tokens-per-frame. Ten frames is roughly ten images on the bill.
+
+## Why it matters
+
+Sequences unlock comparison tasks, but the trade-offs are sharp:
+
+- **Sampling rate is a recall vs cost dial.** Too sparse and a one-second event slips between frames; too dense and you pay for near-duplicate stills.
+- **Token cost stacks fast.** Frames times tokens-per-frame can dwarf the text. Lower per-frame detail or sample fewer frames to keep the bill sane.
+- **Order must be explicit.** The model has no timeline, so label each frame ("t=0s," "before," "after") or it may not know which came first.
+- **Context limits cap how many frames fit.** A long video cannot go in all at once; you sample, summarize, or chunk.
+
+## The mental model to keep
+
+A model never watches video; it flips through a stack of stills you chose. **You decide how many frames to send and label their order** — sampling rate trades recall against cost, and without labels the model cannot tell before from after.`,
+      key_terms: [
+        { term: "Multi-image prompt", definition: "A request containing more than one image so the model can compare or sequence them." },
+        { term: "Frame sampling", definition: "Pulling still images from a video at a chosen rate to feed a vision model." },
+        { term: "Sampling rate", definition: "How frequently frames are taken; it trades event recall against token cost." },
+        { term: "Tokens per frame", definition: "The image-token cost of one frame; total cost is frames times this number." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A flipbook, not a movie", content: "The model flips through the stills you handed it, like reading a flipbook, and infers motion from the differences. It never sees smooth playback, only the frames you sampled.", position: "before" },
+        { type: "warning", title: "Sparse sampling misses fast events", content: "If you sample one frame every five seconds, a two-second action can fall entirely between frames and the model will never know it happened. Match the rate to how fast things change.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "From a video to a multi-image request",
+        steps: [
+          { label: "Pick a sampling rate", desc: "Decide how often to grab a frame." },
+          { label: "Extract frames", desc: "Pull stills from the video at that rate." },
+          { label: "Label and order them", desc: "Tag each frame so the model knows the sequence." },
+          { label: "Send as one request", desc: "All frames become image tokens in one prompt." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "How does a vision model 'analyze a video'?",
+          options: ["It streams and watches the playback in real time", "It reads still frames sampled from the video as an ordered set of images", "It converts the video to audio first"],
+          correct_index: 1,
+          explanation: "Products sample frames at intervals and feed them as a multi-image prompt; the model never watches motion."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What is the main trade-off when choosing a frame sampling rate?",
+          options: [
+            "Color accuracy vs file format",
+            "Event recall vs token cost: dense catches detail but costs more, sparse is cheap but can miss fast events",
+            "Upload speed vs download speed",
+            "Image width vs image height"
+          ],
+          correct_index: 1,
+          explanation: "More frames catch brief events but multiply tokens; fewer frames are cheaper but risk missing what happens between them."
+        },
+        {
+          question: "Why should you label each frame with its order or timestamp?",
+          options: [
+            "Labels make the images load faster",
+            "The model has no timeline, so labels tell it which frame came before which",
+            "Labels reduce the token cost of each frame",
+            "The API requires a caption on every image"
+          ],
+          correct_index: 1,
+          explanation: "Without explicit order cues the model cannot reliably tell before from after; it sees an unordered stack of stills."
+        },
+        {
+          question: "Roughly how does the image-token cost of a 10-frame request compare to a single image of the same detail?",
+          options: [
+            "About the same, frames are free",
+            "About 10 times as much, since each frame is patched like its own image",
+            "Half as much, because frames are compressed together",
+            "It depends only on the video length, not the frames"
+          ],
+          correct_index: 1,
+          explanation: "Each frame is patched into image tokens independently, so ten frames cost roughly ten times one frame."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Sequences check",
+          questions: [
+            { question: "A vision model watches video playback directly, frame by frame, in real time.", type: "true_false", correct_answer: "false", explanation: "It reads a sampled set of still frames as images; it never watches motion." },
+            { question: "Pulling still images from a video at a chosen interval to feed the model is called frame ______.", type: "fill_in", correct_answer: "sampling", explanation: "Frame sampling turns a video into a handful of images." }
+          ]
+        }
+      ],
+      starter_code: `# Sample frame indices from a video and estimate the token cost.
+total_frames = 120     # frames in the clip
+step = 30              # take one frame every 30 frames
+tokens_per_frame = 256
+
+# TODO: list the sampled indices (0, step, 2*step, ...) and total tokens.
+sampled = []
+print("sampled count:", len(sampled))
+`,
+      solution_code: `total_frames = 120
+step = 30
+tokens_per_frame = 256
+
+sampled = list(range(0, total_frames, step))
+total_tokens = len(sampled) * tokens_per_frame
+
+print("sampled indices:", sampled)
+print("sampled count:", len(sampled))
+print("total image tokens:", total_tokens)
+`,
+      expected_output: `sampled indices: [0, 30, 60, 90]
+sampled count: 4
+total image tokens: 1024`,
+      step_throughs: [
+        {
+          title: "turning a clip into a comparison prompt",
+          steps: [
+            { label: "Pick the rate", detail: "Decide how dense to sample. One frame every 30 frames of a 120-frame clip gives four stills.", code: "step = 30  # frames between samples" },
+            { label: "Extract the frames", detail: "Pull the still images at those indices. These are ordinary images now, not video.", code: "frames = [video[i] for i in range(0, 120, 30)]" },
+            { label: "Label the order", detail: "Tag each frame with a timestamp or 'before/after' so the model knows the sequence.", code: 'blocks = ["t=0s", img0, "t=1s", img1, ...]' },
+            { label: "Ask across them", detail: "Add a comparison instruction and send all frames in one request; each is patched into image tokens.", code: '"What changed between the first and last frame?"' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A 60-frame clip is sampled every 20 frames. Which frame indices get sent, and how many images is that?",
+          steps: [
+            "Start at index 0 and step by 20 while staying under 60.",
+            "Indices: 0, 20, 40 (60 is out of range).",
+            "That is 3 frames, so 3 images in the request."
+          ],
+          output: "Frames 0, 20, 40 -> 3 images"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You need to detect a 1-second event in a 30 fps clip, but you currently sample one frame every 2 seconds at 1000 tokens per frame. Why might you miss the event, and what is the cost trade if you fix it?",
+          steps: [
+            "At one frame per 2 seconds, a 1-second event can occur entirely between two sampled frames and never appear.",
+            "To guarantee catching a 1-second event you need at least one frame per second, doubling the sampling rate.",
+            "Doubling the frames doubles the image tokens, so cost per clip roughly doubles too.",
+            "If budget is tight, keep the denser rate but lower tokens-per-frame, since detecting presence needs less detail than reading text."
+          ],
+          output: "Sample at least once per second to catch the event; that doubles frames and cost, which you can offset with lower per-frame detail."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "sparse vs dense frame sampling",
+          columns: ["Aspect", "Sparse sampling", "Dense sampling"],
+          rows: [
+            { cells: ["Frames sent", "Few", "Many"] },
+            { cells: ["Token cost", "Low", "High, scales with frames"] },
+            { cells: ["Catches fast events", "May miss them", "Reliably captures them"] },
+            { cells: ["Best for", "Slow, steady scenes", "Quick actions or fine timing"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "sample sparsely vs densely",
+          bins: [
+            { id: "sparse", label: "Sparse is fine" },
+            { id: "dense", label: "Sample densely" }
+          ],
+          items: [
+            { id: "i1", text: "A slow time-lapse of a sunset", bin: "sparse" },
+            { id: "i2", text: "A fast sports replay to find the foul", bin: "dense" },
+            { id: "i3", text: "A static lecture slideshow", bin: "sparse" },
+            { id: "i4", text: "A one-second hand gesture to classify", bin: "dense" },
+            { id: "i5", text: "A security feed of an empty hallway", bin: "sparse" },
+            { id: "i6", text: "A quick magic trick to spot the sleight", bin: "dense" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: a model cannot watch video, so how does sending sampled frames let it answer 'what changed in this clip?'",
+          sampleAnswer: "The video is reduced to a handful of still frames pulled at intervals, and those stills are sent as an ordered, labeled list of images in one request. Each frame is patched into image tokens and read in the same context, so the model can compare them the way a person flips through photos and infers what moved or changed between them. It never sees motion; it reasons over the differences between the frames you chose, which is why the sampling rate and the order labels decide what it can possibly notice."
+        }
+      ],
+      hints: [
+        "range(0, total_frames, step) gives the sampled indices.",
+        "len() of that list is how many frames you send.",
+        "Total tokens is the number of frames times tokens_per_frame."
+      ],
+      challenge_title: "The Frame Sampler",
+      challenge_description: "Sample frames from a clip at a fixed interval, report the token cost, detect scene cuts between consecutive sampled frames, and compute the clip's duration.",
+      challenge_story: "You're building the **frame sampler** that sits in front of a vision model's video feature. A raw clip is far too many frames to send, so you pull every Nth frame, label them in order, and ship them as a multi-image prompt. Product wants three numbers before each request goes out: how many frames you'll send (and what that costs in image tokens), how many **scene cuts** appear among the sampled frames (a cut is a big jump in brightness between two consecutive samples), and the clip's wall-clock duration. Build the sampler so the team can tune the interval against cost and recall instead of guessing.",
+      challenge_statement: "A clip has \`n\` frames, recorded at \`fps\` frames per second. Each frame \`i\` has an integer **brightness** value.\n\nDo all of the following:\n\n1. **Sample** frames at indices \`0, step, 2*step, ...\` while the index is less than \`n\`. Let \`k\` be the number of sampled frames.\n2. **Tokens.** Each sampled frame costs \`tpf\` image tokens; total is \`k * tpf\`.\n3. **Cuts.** For each pair of consecutive sampled frames, if the absolute difference of their brightness values is **strictly greater** than \`thresh\`, count it as a scene cut.\n4. **Duration.** The clip runs \`n / fps\` seconds.\n\nPrint exactly four lines:\n\`SAMPLED <k>\`, \`TOKENS <k*tpf>\`, \`CUTS <cuts>\`, \`DURATION <d>\` where \`d\` is the duration formatted to exactly 2 decimal places.",
+      challenge_input_format: "The first line has three integers `fps step tpf`.\n\nThe second line has one integer `thresh`: the brightness-jump cutoff for a scene cut.\n\nThe third line has one integer `n`: the number of frames.\n\nThe fourth line has `n` space-separated integers: the brightness of each frame, in order.",
+      challenge_output_format: "Print four lines: `SAMPLED <k>`, `TOKENS <tokens>`, `CUTS <cuts>`, and `DURATION <d>` (duration to exactly 2 decimals).",
+      challenge_constraints: [
+        "1 ≤ fps ≤ 240",
+        "1 ≤ step ≤ 100000",
+        "1 ≤ tpf ≤ 100000",
+        "0 ≤ thresh ≤ 255",
+        "1 ≤ n ≤ 100000",
+        "0 ≤ brightness ≤ 255",
+      ],
+      challenge_examples: [
+        { input: "4 2 256\n50\n8\n10 11 20 21 90 91 95 96", output: "SAMPLED 4\nTOKENS 1024\nCUTS 1\nDURATION 2.00", explanation: "Step 2 samples indices 0,2,4,6 -> brightness 10,20,90,95 (k=4, tokens 4*256=1024). Consecutive diffs are 10, 70, 5; only 70 exceeds 50, so 1 cut. Duration 8/4 = 2.00s." },
+        { input: "30 1 100\n30\n3\n0 100 0", output: "SAMPLED 3\nTOKENS 300\nCUTS 2\nDURATION 0.10", explanation: "Step 1 samples all 3 frames (300 tokens). Diffs 100 and 100 both exceed 30, so 2 cuts. Duration 3/30 = 0.10s." },
+      ],
+      challenge_notes: "Sampling at fixed indices is the simplest scheme; real pipelines also sample by timestamp or only on detected motion. The strictly-greater cut test and the 2-decimal duration keep the output deterministic. Notice how a larger step shrinks both the token bill and the chance of catching a fast event between samples -- the recall-vs-cost dial from the lesson, made concrete.",
+      challenge_hints: [
+        "Get the sampled indices with `range(0, n, step)`; `k` is the length of that range.",
+        "For cuts, walk the sampled indices pairwise and test `abs(b[cur] - b[prev]) > thresh`.",
+        "Format duration with `\"{:.2f}\".format(n / fps)` so a value like 0.1 prints as `0.10`.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    fps, step, tpf = map(int, data[idx].split()); idx += 1
+    thresh = int(data[idx].strip()); idx += 1
+    n = int(data[idx].strip()); idx += 1
+    brightness = list(map(int, data[idx].split())); idx += 1
+    # TODO: sample frame indices, count tokens and cuts, compute duration.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    fps, step, tpf = map(int, data[idx].split()); idx += 1
+    thresh = int(data[idx].strip()); idx += 1
+    n = int(data[idx].strip()); idx += 1
+    brightness = list(map(int, data[idx].split())); idx += 1
+
+    sampled = list(range(0, n, step))
+    k = len(sampled)
+    tokens = k * tpf
+
+    cuts = 0
+    for i in range(1, k):
+        prev = brightness[sampled[i - 1]]
+        cur = brightness[sampled[i]]
+        if abs(cur - prev) > thresh:
+            cuts += 1
+
+    duration = n / fps
+
+    print("SAMPLED " + str(k))
+    print("TOKENS " + str(tokens))
+    print("CUTS " + str(cuts))
+    print("DURATION " + "{:.2f}".format(duration))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "4 2 256\n50\n8\n10 11 20 21 90 91 95 96", expected_output: "SAMPLED 4\nTOKENS 1024\nCUTS 1\nDURATION 2.00", description: "Stepped sampling with one scene cut among four frames." },
+        { input: "30 1 100\n30\n3\n0 100 0", expected_output: "SAMPLED 3\nTOKENS 300\nCUTS 2\nDURATION 0.10", description: "Every frame sampled; two cuts and a sub-second duration." },
+        { input: "24 100 200\n10\n5\n5 6 7 8 9", expected_output: "SAMPLED 1\nTOKENS 200\nCUTS 0\nDURATION 0.21", description: "Edge case: step larger than the clip yields a single frame and zero cuts." },
+        { input: "10 2 50\n0\n4\n5 5 5 5", expected_output: "SAMPLED 2\nTOKENS 100\nCUTS 0\nDURATION 0.40", description: "Edge case: identical brightness never exceeds the threshold, so no cuts." }
+      ]
+    },
+    {
+      id: "ai-11-l8",
+      project_id: "ai-11",
+      order: 8,
+      title: "Editing and Variations",
+      concept: "Editing",
+      xp_reward: 10,
+      explanation: `Generating a brand-new image from text is easy. Changing one thing in a photo you already have, while leaving everything else untouched, is the hard and useful part. "Remove the trash can from this street photo but keep the building exactly as it is" is not a fresh generation problem; it is an editing problem. The trick is to give the model an existing image to start from instead of pure noise, and to tell it which pixels it is allowed to touch.
+
+## What it is
+
+Three related operations all start from an input image rather than from scratch:
+
+- **Image-to-image** feeds an existing image plus a prompt; the model produces a new image that keeps the input's structure but applies your change. A **strength** dial controls how far it strays from the original.
+- **Inpainting** edits only a masked region. A **mask** marks which pixels may change; everything outside the mask is preserved exactly.
+- **Variations** generate new images that resemble an input without a text prompt, useful for "give me more like this."
+
+## How it works
+
+Recall the denoising loop from the generation lesson. Editing changes where the loop *starts*. Instead of pure random noise, it begins from a noised version of your input image, so the structure survives the cleanup:
+
+\`\`\`python
+# Image-to-image: start from the input, not from pure noise
+noised = add_noise(input_image, strength)  # strength 0..1
+image = noised
+for step in range(num_steps):
+    noise = model.predict_noise(image, prompt)
+    image = image - small_amount(noise)
+# low strength -> close to original; high strength -> bolder change
+\`\`\`
+
+For **inpainting**, the mask gates every step: masked pixels are denoised toward the prompt, while unmasked pixels are pinned back to the original after each step, so only the masked area changes. The mask is the contract that keeps the rest of the photo intact.
+
+## Why it matters
+
+Editing is where vision generation earns its keep in real products, with its own pitfalls:
+
+- **Strength is a similarity dial.** Low strength barely changes the image; high strength can drift so far it ignores the original. Tune it to the edit.
+- **Mask quality decides the seam.** A sloppy mask leaves visible halos or edits bleeding outside the region. Tight masks give clean edits.
+- **Edits compound errors.** Re-editing an already-edited image repeatedly degrades it, like photocopying a photocopy.
+- **Provenance and consent.** Editing real photos of real people raises the same rights and misuse concerns as generation, only sharper.
+
+## The mental model to keep
+
+Editing is generation that starts from your image, not from noise. **The strength dial sets how far it drifts, and the mask says which pixels it may touch** — get those two right and you change exactly one thing while the rest of the picture stays put.`,
+      key_terms: [
+        { term: "Image-to-image", definition: "Generating a new image starting from an existing one plus a prompt, keeping its structure." },
+        { term: "Inpainting", definition: "Editing only a masked region of an image while preserving everything outside the mask." },
+        { term: "Mask", definition: "A marking of which pixels an edit may change; unmasked pixels stay unchanged." },
+        { term: "Strength", definition: "A dial from low to high that sets how far an edit drifts from the original image." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Start from your photo, not from static", content: "Plain generation starts from TV static. Editing starts from a lightly-noised copy of your image, so the model cleans it back up toward your prompt while the original structure survives.", position: "before" },
+        { type: "warning", title: "Edits compound like photocopies", content: "Each round of re-editing degrades the image a little, like copying a copy. For multiple changes, prefer one well-masked edit over many stacked passes.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How an inpainting edit works",
+        steps: [
+          { label: "Provide the image", desc: "Start from your existing photo, not from noise." },
+          { label: "Mark the mask", desc: "Mark which pixels the model may change." },
+          { label: "Denoise the masked area", desc: "Regenerate only inside the mask toward the prompt." },
+          { label: "Pin the rest", desc: "Pixels outside the mask are kept exactly as before." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What does the mask do in an inpainting edit?",
+          options: ["It makes the whole image brighter", "It marks which pixels may change while preserving everything outside it", "It deletes the original image"],
+          correct_index: 1,
+          explanation: "The mask gates the edit: masked pixels are regenerated, unmasked pixels are pinned to the original."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "How does image-to-image differ from plain text-to-image generation?",
+          options: [
+            "It uses no prompt at all",
+            "It starts the denoising loop from a noised version of your input image instead of pure noise",
+            "It only works on black-and-white images",
+            "It is always cheaper because it skips denoising"
+          ],
+          correct_index: 1,
+          explanation: "Editing begins from your image (lightly noised) so its structure survives, rather than starting from random static."
+        },
+        {
+          question: "What does a low strength setting do in image-to-image editing?",
+          options: [
+            "Makes the output drift far from the original",
+            "Keeps the result close to the original, applying only a subtle change",
+            "Increases the resolution",
+            "Removes the prompt's influence entirely"
+          ],
+          correct_index: 1,
+          explanation: "Low strength stays near the input; high strength allows bolder, larger changes that can ignore the original."
+        },
+        {
+          question: "Why can repeatedly re-editing the same image degrade it?",
+          options: [
+            "The file format changes each time",
+            "Each edit compounds small errors, like photocopying a photocopy",
+            "The model runs out of tokens",
+            "Editing always lowers the resolution by half"
+          ],
+          correct_index: 1,
+          explanation: "Stacked edits accumulate artifacts; one well-masked edit usually beats many passes."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Editing check",
+          questions: [
+            { question: "Inpainting changes the entire image, not just a selected region.", type: "true_false", correct_answer: "false", explanation: "Inpainting changes only the masked region and preserves everything outside it." },
+            { question: "The dial that controls how far an edit drifts from the original image is called ______.", type: "fill_in", correct_answer: "strength", explanation: "Strength trades similarity to the original against the boldness of the change." }
+          ]
+        }
+      ],
+      starter_code: `# Simulate inpainting on a tiny grid: fill a masked rectangle with a value,
+# leave everything outside the mask unchanged.
+grid = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+]
+r0, c0, r1, c1, fill = 1, 1, 2, 2, 0  # mask rows 1..2, cols 1..2
+
+# TODO: set cells inside the mask to fill; count how many actually changed.
+changed = 0
+print("changed:", changed)
+`,
+      solution_code: `grid = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+]
+r0, c0, r1, c1, fill = 1, 1, 2, 2, 0
+
+changed = 0
+for r in range(len(grid)):
+    for c in range(len(grid[0])):
+        if r0 <= r <= r1 and c0 <= c <= c1:
+            if grid[r][c] != fill:
+                changed += 1
+            grid[r][c] = fill
+
+print("changed:", changed)
+print("grid:", grid)
+`,
+      expected_output: `changed: 4
+grid: [[1, 2, 3], [4, 0, 0], [7, 0, 0]]`,
+      step_throughs: [
+        {
+          title: "removing an object with a masked edit",
+          steps: [
+            { label: "Provide the photo", detail: "Start from the real image, not from noise. Its structure is what you want to keep.", code: "image = load('street.jpg')" },
+            { label: "Mark the mask", detail: "Mark only the pixels covering the object to remove, for example the trash can.", code: "mask = box(x1, y1, x2, y2)  # only the can" },
+            { label: "Denoise inside the mask", detail: "The model regenerates the masked region toward the prompt, painting in plausible background.", code: '"fill with matching sidewalk" -> masked area only' },
+            { label: "Pin the rest", detail: "Pixels outside the mask are restored to the original after each step, so the building is untouched.", code: "image[~mask] = original[~mask]  # rest preserved" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You want to slightly warm the colors of a portrait without changing the subject's pose or features. Should you use low or high strength image-to-image?",
+          steps: [
+            "A subtle color shift means you want to stay very close to the original.",
+            "High strength would drift far enough to alter the pose or face.",
+            "Low strength keeps the structure and applies only the gentle change."
+          ],
+          output: "Low strength — it preserves the original while applying a subtle shift."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You need to remove a logo from a product photo but keep the product pixel-identical. The whole-image image-to-image keeps subtly altering the product. What is the better approach and why?",
+          steps: [
+            "Whole-image editing lets every pixel change, so the product drifts even when you only meant to touch the logo.",
+            "Inpainting with a tight mask over just the logo restricts changes to that region.",
+            "Pixels outside the mask are pinned to the original, so the product stays exactly as it was.",
+            "Tighten the mask edges to avoid halos where the edit meets the untouched area."
+          ],
+          output: "Use inpainting with a tight mask over the logo so only that region changes and the product is preserved."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "generation vs editing operations",
+          columns: ["Operation", "Starts from", "What changes", "Best for"],
+          rows: [
+            { cells: ["Text-to-image", "Pure noise", "Everything (new image)", "Creating from scratch"] },
+            { cells: ["Image-to-image", "Noised input image", "Whole image, guided by strength", "Restyling or nudging a photo"] },
+            { cells: ["Inpainting", "Input image + mask", "Only the masked region", "Removing or replacing one part"] },
+            { cells: ["Variations", "Input image, no prompt", "A fresh similar image", "More like this"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which operation fits the task?",
+          bins: [
+            { id: "inpaint", label: "Inpainting (masked)" },
+            { id: "img2img", label: "Image-to-image or variations" }
+          ],
+          items: [
+            { id: "i1", text: "Erase a trash can, keep the rest identical", bin: "inpaint" },
+            { id: "i2", text: "Restyle a whole photo as a watercolor", bin: "img2img" },
+            { id: "i3", text: "Replace just the sky in a landscape", bin: "inpaint" },
+            { id: "i4", text: "Get five more designs like this one", bin: "img2img" },
+            { id: "i5", text: "Remove a logo from one corner only", bin: "inpaint" },
+            { id: "i6", text: "Slightly warm the colors of an entire image", bin: "img2img" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: how does editing reuse the denoising loop from plain image generation, and what makes it preserve the original?",
+          sampleAnswer: "Editing runs the same denoise-step-by-step loop, but instead of starting from pure random static it starts from a lightly noised copy of your input image, so the original structure is already baked into the starting point and survives the cleanup. The strength dial sets how much noise is added, which decides how far the result can drift. For inpainting, a mask pins the unmasked pixels back to the original after each step, so only the masked region is actually regenerated, leaving the rest of the photo untouched."
+        }
+      ],
+      hints: [
+        "Loop over every cell; check if its row and column fall inside the mask rectangle.",
+        "A cell is inside the mask when r0 <= r <= r1 and c0 <= c <= c1.",
+        "Increment changed only when the existing value differs from the fill value, then set it."
+      ],
+      challenge_title: "The Inpaint Engine",
+      challenge_description: "Apply a sequence of masked edits to an image grid, clamp each mask to the image bounds, count the pixels each edit actually changes, and report the final image checksum.",
+      challenge_story: "You're building the core of an **inpainting engine**. The image is a grid of integer pixel values, and an editor sends a list of rectangular **masks**, each with a fill value -- 'paint this region to X.' Masks may be dragged partly off-canvas, so you must **clamp** them to the image bounds before applying. Edits are applied in order, and a later edit can overwrite an earlier one (edits compound, exactly like the lesson warned). Your engine must report, per edit, how many pixels actually changed value (painting a pixel to the color it already had does not count), and after all edits, the **checksum** of the final image so the result can be verified.",
+      challenge_statement: "You have a grid of \`rows\` x \`cols\` integer pixels. Then \`m\` edits are applied **in order**. Each edit is a rectangle \`r0 c0 r1 c1\` (inclusive corners, with \`r0 <= r1\` and \`c0 <= c1\`) and a \`fill\` value.\n\nFor each edit:\n\n1. **Clamp** the rectangle to the grid: clamp \`r0,c0\` up to 0 and \`r1,c1\` down to \`rows-1, cols-1\`. If the clamped rectangle is empty (lies entirely off-grid), it changes nothing.\n2. For every pixel inside the clamped rectangle, set it to \`fill\`. Count a pixel as **changed** only if its value was different from \`fill\` before this edit.\n3. Print \`EDIT <i> <changed>\` where \`i\` is the 1-based edit number and \`changed\` is how many pixels that edit changed.\n\nAfter all edits, print \`CHECKSUM <s>\` where \`s\` is the sum of every pixel value in the final grid.",
+      challenge_input_format: "The first line has two integers `rows cols`.\n\nThe next `rows` lines each have `cols` space-separated integers: the starting pixel values.\n\nThe next line has one integer `m`: the number of edits.\n\nEach of the next `m` lines has five integers `r0 c0 r1 c1 fill`.",
+      challenge_output_format: "Print `m` lines `EDIT <i> <changed>` in order, then one `CHECKSUM <s>` line.",
+      challenge_constraints: [
+        "1 ≤ rows, cols ≤ 200",
+        "0 ≤ pixel values, fill ≤ 1000000",
+        "1 ≤ m ≤ 1000",
+        "-1000 ≤ r0, c0, r1, c1 ≤ 1000, with r0 ≤ r1 and c0 ≤ c1",
+      ],
+      challenge_examples: [
+        { input: "3 3\n1 2 3\n4 5 6\n7 8 9\n1\n1 1 2 2 0", output: "EDIT 1 4\nCHECKSUM 17", explanation: "The mask covers cells (1,1)=5, (1,2)=6, (2,1)=8, (2,2)=9, all set to 0 -- 4 changed. Remaining values 1+2+3+4+7 = 17." },
+        { input: "2 2\n9 1\n2 3\n1\n0 0 5 5 9", output: "EDIT 1 3\nCHECKSUM 36", explanation: "The mask clamps to the whole 2x2 grid and fills 9. (0,0) was already 9 so only 3 pixels change, but all four become 9 -> checksum 36." },
+      ],
+      challenge_notes: "Clamping before applying is the whole trick: an editor's drag can run off the canvas, and a naive loop would crash or skip. Counting only real changes (skipping pixels already equal to fill) mirrors how production editors report 'pixels touched' for undo and cost accounting. Because edits apply in order, a later mask overwriting an earlier one is exactly the compounding-edits effect from the lesson.",
+      challenge_hints: [
+        "Clamp with `max(0, r0)`, `min(rows-1, r1)` and likewise for columns; if the clamped range is empty, the edit changes nothing.",
+        "Loop the clamped rows and columns; increment the counter only when `grid[r][c] != fill`, then assign `fill`.",
+        "Compute the checksum at the end with `sum(sum(row) for row in grid)`.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    rows, cols = map(int, data[idx].split()); idx += 1
+    grid = []
+    for _ in range(rows):
+        grid.append(list(map(int, data[idx].split()))); idx += 1
+    m = int(data[idx].strip()); idx += 1
+    # TODO: apply each clamped masked edit, print EDIT lines, then CHECKSUM.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    rows, cols = map(int, data[idx].split()); idx += 1
+    grid = []
+    for _ in range(rows):
+        grid.append(list(map(int, data[idx].split()))); idx += 1
+    m = int(data[idx].strip()); idx += 1
+    out = []
+    for e in range(1, m + 1):
+        r0, c0, r1, c1, fill = map(int, data[idx].split()); idx += 1
+        rr0 = max(0, r0)
+        cc0 = max(0, c0)
+        rr1 = min(rows - 1, r1)
+        cc1 = min(cols - 1, c1)
+        changed = 0
+        if rr0 <= rr1 and cc0 <= cc1:
+            for r in range(rr0, rr1 + 1):
+                row = grid[r]
+                for c in range(cc0, cc1 + 1):
+                    if row[c] != fill:
+                        changed += 1
+                        row[c] = fill
+        out.append("EDIT " + str(e) + " " + str(changed))
+    checksum = sum(sum(row) for row in grid)
+    out.append("CHECKSUM " + str(checksum))
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 3\n1 2 3\n4 5 6\n7 8 9\n1\n1 1 2 2 0", expected_output: "EDIT 1 4\nCHECKSUM 17", description: "A single interior mask fills four cells to zero." },
+        { input: "2 2\n9 1\n2 3\n1\n0 0 5 5 9", expected_output: "EDIT 1 3\nCHECKSUM 36", description: "Mask clamps to the whole grid; one pixel already equals the fill so only three change." },
+        { input: "2 2\n4 4\n4 4\n1\n0 0 0 0 4", expected_output: "EDIT 1 0\nCHECKSUM 16", description: "Edge case: filling a cell with its existing value counts as zero changes." },
+        { input: "2 2\n1 1\n1 1\n2\n0 0 1 1 5\n0 0 0 0 9", expected_output: "EDIT 1 4\nEDIT 2 1\nCHECKSUM 24", description: "Two compounding edits: the second overwrites part of the first; final grid is 9 5 5 5 = 24." }
       ]
     }
   ]

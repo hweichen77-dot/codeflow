@@ -6,7 +6,7 @@ export default {
     difficulty: "beginner",
     category: "foundations",
     estimated_time: 45,
-    lessons_count: 4,
+    lessons_count: 8,
     tags: ["cost", "tokens", "pricing", "budgeting", "fundamentals"],
     order: 21,
     cover_image: ""
@@ -1131,6 +1131,1160 @@ main()
         { input: "3 100 1 3 15\n200 50", expected_output: "300\n450\n$0.007650", description: "Window of 1 keeps only the current turn's history." },
         { input: "1 50 1 3 15\n100 100", expected_output: "0\n0\n$0.000000", description: "Single turn with no cap change: nothing is saved." },
         { input: "5 200 2 3 15\n400 400", expected_output: "1200\n0\n$0.003600", description: "History trimmed but output cap unchanged: only input savings." }
+      ]
+    },
+    {
+      id: "ai-21-l5",
+      project_id: "ai-21",
+      order: 5,
+      title: "Input vs Output Cost",
+      concept: "Pricing",
+      xp_reward: 10,
+      explanation: `Two engineers send the model the same 4,000 tokens. One puts almost all of it in the prompt and asks for a one-word answer. The other sends a tiny prompt and lets the model write a 4,000-token essay. Identical token totals, wildly different bills. The second call can cost five times the first. That gap has a name: **asymmetric pricing**.
+
+## What it is
+
+LLM pricing is **asymmetric**: input tokens and output tokens are billed at *different* rates, and output is almost always the expensive side. A common pattern is something like \\$3 per million input tokens against \\$15 per million output tokens — a clean **5x** gap. The provider charges more to *generate* text than to *read* it.
+
+This means the token total alone tells you almost nothing. A call's cost depends on *which side* the tokens land on. Shift tokens from output to input and the same workload gets cheaper.
+
+## How it works
+
+Cost is two products added together — never one flat per-token rate:
+
+\`\`\`python
+input_tokens = 3000
+output_tokens = 800
+input_price = 3     # dollars per 1,000,000 input tokens
+output_price = 15   # dollars per 1,000,000 output tokens
+
+input_cost = input_tokens / 1_000_000 * input_price
+output_cost = output_tokens / 1_000_000 * output_price
+total = input_cost + output_cost
+
+print(f"input:  \${input_cost:.6f}")
+print(f"output: \${output_cost:.6f}")   # bigger, even with fewer tokens
+print(f"total:  \${total:.6f}")
+\`\`\`
+
+Here 3,000 input tokens cost \\$0.009, but just 800 output tokens cost \\$0.012 — fewer tokens, higher cost, because each output token is priced 5x higher.
+
+## Why it matters
+
+The asymmetry flips your intuition about where to optimize. A bloated prompt feels wasteful, but it's billed on the *cheap* meter. A model that rambles a long answer is billed on the *expensive* meter. So the highest-leverage knob is usually **how much the model writes**, not how much you send. If your bill surprises you, do the input-versus-output split first — it almost always points straight at the output side.
+
+## The mental model to keep
+
+**Same tokens, different sides, different bill. Output is the dear meter — watch it first.**`,
+      key_terms: [
+        { term: "Asymmetric pricing", definition: "Input and output tokens are billed at different rates, with output usually several times more expensive." },
+        { term: "Input cost", definition: "input_tokens / 1,000,000 x input_price. The cheaper of the two meters on a call." },
+        { term: "Output cost", definition: "output_tokens / 1,000,000 x output_price. Usually the larger share of the bill even with fewer tokens." },
+        { term: "Price ratio", definition: "output_price / input_price, often around 3x-5x. The size of the asymmetry." }
+      ],
+      callouts: [
+        { type: "insight", title: "Same total, different bill", content: "Two calls with identical token totals can cost 5x apart depending on whether the tokens are input or output. The split, not the sum, sets the price.", position: "before" },
+        { type: "tip", title: "Move work to the cheap side", content: "If you can phrase a task so the model reads more and writes less (e.g. ask for a label, not an essay), you shift tokens to the cheap input meter and the bill drops.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Why two equal-token calls cost differently",
+        steps: [
+          { label: "Count each side", desc: "Separate the call into input tokens and output tokens." },
+          { label: "Apply the two rates", desc: "Input rate is low; output rate is often 5x higher." },
+          { label: "Multiply per side", desc: "input_cost and output_cost are computed independently." },
+          { label: "Output usually wins", desc: "Even with fewer output tokens, that side often dominates." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Call A is 3000 input + 500 output. Call B is 500 input + 3000 output. Same total tokens. Which costs more (input $3/1M, output $15/1M)?",
+          options: ["Call A", "Call B", "They cost the same since totals match"],
+          correct_index: 1,
+          explanation: "Call B puts 3000 tokens on the expensive output meter, so it costs several times more despite the equal token total."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does it mean that LLM pricing is asymmetric?",
+          options: [
+            "The price changes depending on the time of day",
+            "Input and output tokens are billed at different per-token rates",
+            "Only the first million tokens are charged",
+            "Input is free and output is charged"
+          ],
+          correct_index: 1,
+          explanation: "Asymmetric pricing means input and output have separate rates, with output usually the more expensive side."
+        },
+        {
+          question: "A call has 2000 input and 400 output tokens, input $3/1M, output $15/1M. What is the total cost?",
+          options: [
+            "$0.006000",
+            "$0.012000",
+            "$0.012000 ... no, $0.012",
+            "$0.012000 total is wrong; it is $0.012000"
+          ],
+          correct_index: 1,
+          explanation: "Input = 2000/1M x 3 = $0.006; output = 400/1M x 15 = $0.006; total = $0.012000."
+        },
+        {
+          question: "Given the asymmetry, what is usually the highest-leverage thing to control?",
+          options: [
+            "The length of the prompt you send",
+            "How many tokens the model generates in its reply",
+            "The name of the model",
+            "The number of API keys you use"
+          ],
+          correct_index: 1,
+          explanation: "Output is the expensive meter, so controlling how much the model writes usually moves the bill the most."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Asymmetry check",
+          questions: [
+            { question: "Two calls with the same total token count always cost the same amount.", type: "true_false", correct_answer: "false", explanation: "Cost depends on how tokens split between the cheap input meter and the expensive output meter, not just the total." },
+            { question: "Because pricing is asymmetric, the ______ side of a call is usually the more expensive one.", type: "fill_in", correct_answer: "output", explanation: "Output tokens are billed at a higher rate than input tokens." }
+          ]
+        }
+      ],
+      starter_code: `# Split a call's cost into its input and output sides.
+input_tokens = 3000
+output_tokens = 800
+input_price = 3     # $/1M
+output_price = 15   # $/1M
+
+# TODO: compute input_cost, output_cost, and total. Print each to 6 decimals.
+print("input tokens:", input_tokens)
+`,
+      solution_code: `input_tokens = 3000
+output_tokens = 800
+input_price = 3     # $/1M
+output_price = 15   # $/1M
+
+input_cost = input_tokens / 1_000_000 * input_price
+output_cost = output_tokens / 1_000_000 * output_price
+total = input_cost + output_cost
+
+print(f"input:  \${input_cost:.6f}")
+print(f"output: \${output_cost:.6f}")
+print(f"total:  \${total:.6f}")
+`,
+      expected_output: `input:  $0.009000
+output: $0.012000
+total:  $0.021000`,
+      step_throughs: [
+        {
+          title: "why fewer tokens can cost more",
+          steps: [
+            { label: "Price the input side", detail: "3000 input tokens at the cheap rate. This is the larger token count but the smaller cost.", code: "input_cost = 3000/1_000_000 * 3  # = 0.009" },
+            { label: "Price the output side", detail: "Only 800 output tokens, but at 5x the rate. Fewer tokens, bigger cost.", code: "output_cost = 800/1_000_000 * 15  # = 0.012" },
+            { label: "Compare the two", detail: "The output side ($0.012) beats the input side ($0.009) despite having far fewer tokens.", code: "output_cost > input_cost  # True" },
+            { label: "Add them up", detail: "Total is both meters summed. The expensive side drove most of it.", code: "total = 0.009 + 0.012  # = 0.021" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Input is $3/1M, output is $15/1M. What is the price ratio between output and input?",
+          steps: [
+            "Divide output price by input price: $15 / $3.",
+            "That equals 5.",
+            "So each output token costs 5x what an input token costs."
+          ],
+          output: "5x (output is five times the input rate)"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You have 4000 tokens to spend. Plan A: 3500 input + 500 output. Plan B: 500 input + 3500 output. Input $3/1M, output $15/1M. Cost of each, and the gap?",
+          steps: [
+            "Plan A: input = 3500/1M x $3 = $0.0105; output = 500/1M x $15 = $0.0075; total = $0.018.",
+            "Plan B: input = 500/1M x $3 = $0.0015; output = 3500/1M x $15 = $0.0525; total = $0.054.",
+            "Same 4000 tokens both ways, but B leans on the expensive output meter.",
+            "Gap: $0.054 / $0.018 = 3x. Plan B costs three times as much."
+          ],
+          output: "Plan A $0.018, Plan B $0.054 - a 3x gap from the same token budget."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "the two meters compared",
+          columns: ["Aspect", "Input meter", "Output meter"],
+          rows: [
+            { cells: ["What it bills", "Tokens the model reads", "Tokens the model writes"] },
+            { cells: ["Typical rate", "Low (baseline)", "Often 3-5x the input rate"] },
+            { cells: ["Grows when", "Prompt + history get longer", "The model writes longer answers"] },
+            { cells: ["Usual bill share", "Smaller", "Larger - watch this first"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "billed on the cheap meter vs the dear meter",
+          bins: [
+            { id: "input", label: "Cheap (input) meter" },
+            { id: "output", label: "Dear (output) meter" }
+          ],
+          items: [
+            { id: "i1", text: "The 2-page document you paste in", bin: "input" },
+            { id: "i2", text: "The model's 500-word summary back", bin: "output" },
+            { id: "i3", text: "The system prompt you attach", bin: "input" },
+            { id: "i4", text: "A long generated code file", bin: "output" },
+            { id: "i5", text: "Prior chat history you resend", bin: "input" },
+            { id: "i6", text: "Each new token the model produces", bin: "output" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does the token total of a call fail to predict its cost?",
+          sampleAnswer: "Because input and output tokens are billed at different rates, the same total can land on the cheap meter or the expensive one. A call that is mostly prompt is billed mostly at the low input rate, while a call that is mostly reply is billed at the high output rate, which is often five times higher. To predict cost you have to know the split between input and output, not just the sum, because the expensive side decides most of the bill."
+        }
+      ],
+      hints: [
+        "Compute the two sides separately: input_cost uses input_price, output_cost uses output_price.",
+        "Each side is tokens / 1_000_000 * its price.",
+        "total is input_cost + output_cost; print each with an f-string and :.6f."
+      ],
+      challenge_title: "The Asymmetry Auditor",
+      challenge_description: "Bill a batch of calls under asymmetric pricing, report the total, and find the call where the output side most dominated the cost - the runaway-answer suspects.",
+      challenge_story: "Pricing is **asymmetric**: output tokens cost several times more than input tokens, so a call's bill is driven by *which side* its tokens fall on, not the raw total. Your team wants an audit that surfaces the calls where the **output meter** ran away. For each logged call you know its input and output tokens; input and output have separate per-million prices and output is the dear one. Bill the whole batch, then flag the single call whose **output cost made up the largest share of its own total** - the clearest sign of a model that rambled. Build the auditor.",
+      challenge_statement: "You are given the input and output **per-million** prices and a batch of calls. For each call, the cost numerator (in micro-dollars, i.e. cost x 1,000,000) is:\n\n```\nnum = input_tokens * input_price + output_tokens * output_price\n```\n\nDo two things:\n\n1. Print the **total cost of the batch** to exactly **6 decimal places**, prefixed with `$`.\n2. Print the **id of the call whose output cost is the largest fraction of that call's own total cost**. The output fraction is `(output_tokens * output_price) / num`. If a call has `num == 0`, treat its output fraction as 0. On a tie, print the **smaller id**.",
+      challenge_input_format: "The first line has three integers: `n input_price output_price`.\n\nEach of the next `n` lines has three integers: `id input_tokens output_tokens`.",
+      challenge_output_format: "Two lines. Line 1: `$` followed by the total batch cost to exactly 6 decimal places. Line 2: the id of the call with the largest output cost share (smaller id wins ties).",
+      challenge_constraints: [
+        "1 <= n <= 100000",
+        "1 <= input_price, output_price <= 1000",
+        "1 <= id <= 1000000, ids are distinct",
+        "0 <= input_tokens, output_tokens <= 1000000",
+      ],
+      challenge_examples: [
+        { input: "3 3 15\n1 1000 1000\n2 100 900\n3 2000 0", output: "$0.037800\n2", explanation: "Output shares: call 1 = 15000/18000 = 0.833, call 2 = 13500/13800 = 0.978, call 3 = 0. Call 2's output dominates its own bill most. Total numerator 18000+13800+6000 = 37800 -> $0.037800." },
+        { input: "2 2 10\n5 500 0\n9 0 100", output: "$0.002000\n9", explanation: "Call 5 is pure input (share 0); call 9 is pure output (share 1.0). Total 1000+1000 = 2000 -> $0.002000. Call 9 has the highest output share." },
+      ],
+      challenge_notes: "Comparing output fractions with floats can misfire on near-ties, so compare them exactly: call A beats call B when `outA * numB > outB * numA` (cross-multiplication avoids division). Keep the cost numerators as integers and divide by 1,000,000 only at the end for the total.",
+      challenge_hints: [
+        "For each call, num = in*in_price + out*out_price and out_cost = out*out_price; the output share is out_cost/num.",
+        "To compare shares without floats, cross-multiply: out_cost_A * num_B vs out_cost_B * num_A. Bigger wins; tie breaks to the smaller id.",
+        "Accumulate the total numerator as an integer and divide by 1,000,000 once at the end; use Decimal for exact 6-decimal rounding.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    in_price = int(data[idx]); idx += 1
+    out_price = int(data[idx]); idx += 1
+    # TODO: bill the batch and find the call whose output cost is the
+    #       largest share of its own total. Print "$<total>" then that id.
+
+main()
+`,
+      challenge_solution_code: `import sys
+from decimal import Decimal, ROUND_HALF_UP
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    in_price = int(data[idx]); idx += 1
+    out_price = int(data[idx]); idx += 1
+    grand = 0
+    best_id = -1
+    best_out = 0
+    best_num = 1
+    for _ in range(n):
+        cid = int(data[idx]); idx += 1
+        in_tok = int(data[idx]); idx += 1
+        out_tok = int(data[idx]); idx += 1
+        out_cost = out_tok * out_price
+        num = in_tok * in_price + out_cost
+        grand += num
+        share_out = out_cost
+        share_num = num if num != 0 else 1
+        if num == 0:
+            share_out = 0
+        if best_id == -1 or share_out * best_num > best_out * share_num or (share_out * best_num == best_out * share_num and cid < best_id):
+            best_id = cid
+            best_out = share_out
+            best_num = share_num
+    total = (Decimal(grand) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"\${total}")
+    print(best_id)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 3 15\n1 1000 1000\n2 100 900\n3 2000 0", expected_output: "$0.037800\n2", description: "Batch total plus the call whose output share is highest." },
+        { input: "2 2 10\n5 500 0\n9 0 100", expected_output: "$0.002000\n9", description: "Pure-input vs pure-output call; output-heavy one wins." },
+        { input: "1 3 15\n7 1000000 1000000", expected_output: "$18.000000\n7", description: "Single max-size call: $3 input + $15 output = $18 exactly." },
+        { input: "2 5 5\n4 100 100\n8 100 100", expected_output: "$0.002000\n4", description: "Identical output shares (0.5 each) tie-break to the smaller id." }
+      ]
+    },
+    {
+      id: "ai-21-l6",
+      project_id: "ai-21",
+      order: 6,
+      title: "Caching to Cut Cost",
+      concept: "Caching",
+      xp_reward: 10,
+      explanation: `You ship a support bot with a 2,000-token system prompt: rules, tone, a product FAQ. Every single message resends that same 2,000 tokens as input. Across a million messages you pay full price for the identical text two million... no, a billion times. Prompt caching exists to stop exactly this waste - and it can cut a repeated prefix's cost by **90%**.
+
+## What it is
+
+**Prompt caching** lets the provider store a fixed prefix of your input - usually the long, unchanging part - and bill it at a steep discount on later calls instead of full price. The discount is large: a cached token often costs around **10% of the normal input rate**. The catch is that only a **cacheable prefix** qualifies: the part of the prompt that is byte-for-byte identical, sitting at the very front, call after call.
+
+## How it works
+
+You mark the stable front of the prompt - the system prompt, a fixed document - as cacheable. The first call pays full price (and sometimes a small write fee) to populate the cache. Every later call that starts with the exact same prefix reads it at the discounted rate, and only the *new* part (the user's actual question) is billed at full input price:
+
+\`\`\`python
+prefix_tokens = 2000     # the fixed system prompt, sent every call
+new_tokens = 50          # the user's question, different each call
+input_price = 3          # $/1M, full rate
+cache_rate = 0.10        # cached tokens cost 10% of full rate
+
+full = (prefix_tokens + new_tokens) / 1_000_000 * input_price
+cached = (prefix_tokens * cache_rate + new_tokens) / 1_000_000 * input_price
+print(f"full:   \${full:.6f}")
+print(f"cached: \${cached:.6f}")   # the 2000-token prefix is now 90% off
+\`\`\`
+
+The bigger and more repeated the prefix, the more caching saves. A tiny prefix that changes every call cannot be cached at all.
+
+## Why it matters
+
+Caching turns a fixed overhead into near-zero. If 90% of your input is a stable instruction block, caching can drop your input bill by most of that block's cost without changing a word of behavior. It is the rare lever that is free to quality: the model sees the exact same prompt either way. The only requirement is keeping that prefix **stable** - reorder or edit it and you bust the cache, paying full price again.
+
+## The mental model to keep
+
+**Pay full price for the fixed prefix once, then read it at a discount forever - as long as you never change it.**`,
+      key_terms: [
+        { term: "Prompt caching", definition: "Storing a fixed input prefix so repeated calls bill it at a discounted rate instead of full price." },
+        { term: "Cacheable prefix", definition: "The unchanging front portion of the prompt (e.g. a system prompt) that qualifies for the cache discount." },
+        { term: "Cache rate", definition: "The discounted rate for cached tokens, often around 10% of the normal input rate." },
+        { term: "Cache bust", definition: "Changing the prefix so it no longer matches, forcing full-price billing again." }
+      ],
+      callouts: [
+        { type: "insight", title: "Repetition is the whole point", content: "Caching only pays off when the same large prefix is sent again and again. A unique prompt every call has nothing to cache.", position: "before" },
+        { type: "warning", title: "Edit the prefix, lose the cache", content: "The cache matches a byte-for-byte identical prefix. Reorder instructions, add a timestamp, or tweak a word and the next call pays full price.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How a cached call gets billed",
+        steps: [
+          { label: "Mark the stable prefix", desc: "The system prompt or fixed document at the front of the input." },
+          { label: "First call writes the cache", desc: "Paid at full price to store the prefix." },
+          { label: "Later calls read the cache", desc: "The prefix is billed at the discounted cache rate." },
+          { label: "New text at full price", desc: "Only the changing part (the question) pays the normal input rate." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "A 2000-token prefix normally costs the input rate. Cached at 10% of that rate, the prefix now costs about what fraction of before?",
+          options: ["About 10% (a 90% discount)", "About 90% (a 10% discount)", "Exactly the same"],
+          correct_index: 0,
+          explanation: "A cache rate of 10% of full means the cached prefix costs a tenth of its old price - a 90% saving on that prefix."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does prompt caching discount?",
+          options: [
+            "The output tokens the model generates",
+            "A fixed input prefix that repeats across calls",
+            "The number of requests per second",
+            "The model's training cost"
+          ],
+          correct_index: 1,
+          explanation: "Caching bills a repeated, unchanging input prefix at a reduced rate; it does not touch output."
+        },
+        {
+          question: "When does prompt caching save the most money?",
+          options: [
+            "When every prompt is completely unique",
+            "When a large prefix is identical on many calls",
+            "When you only ever make one call",
+            "When the output is very long"
+          ],
+          correct_index: 1,
+          explanation: "The bigger and more repeated the cacheable prefix, the larger the savings; uniqueness or single calls gain little."
+        },
+        {
+          question: "Why does editing your system prompt mid-deployment cost money?",
+          options: [
+            "Editing prompts is billed as output",
+            "It busts the cache, so the prefix is billed at full price again until the new one is cached",
+            "Edited prompts double the output rate",
+            "The provider charges a flat editing fee"
+          ],
+          correct_index: 1,
+          explanation: "The cache matches an exact prefix; any change means the next call no longer matches and pays full input price."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Caching check",
+          questions: [
+            { question: "Prompt caching reduces the cost of a fixed prefix that is sent on many calls.", type: "true_false", correct_answer: "true", explanation: "A repeated, unchanging prefix is billed at the discounted cache rate after the first call." },
+            { question: "Caching only helps when the prefix stays byte-for-byte ______ across calls.", type: "fill_in", correct_answer: "identical", explanation: "Any change to the prefix busts the cache and forces full-price billing." }
+          ]
+        }
+      ],
+      starter_code: `# Compare full-price input vs caching a fixed prefix.
+prefix_tokens = 2000    # the fixed system prompt, sent every call
+new_tokens = 50         # the user's question, different each call
+input_price = 3         # $/1M full input rate
+cache_rate = 0.10       # cached tokens cost 10% of full rate
+
+# TODO: compute full and cached input cost, then the savings. Print all three.
+print("prefix tokens:", prefix_tokens)
+`,
+      solution_code: `prefix_tokens = 2000
+new_tokens = 50
+input_price = 3
+cache_rate = 0.10
+
+full = (prefix_tokens + new_tokens) / 1_000_000 * input_price
+cached = (prefix_tokens * cache_rate + new_tokens) / 1_000_000 * input_price
+saved = full - cached
+
+print(f"full:   \${full:.6f}")
+print(f"cached: \${cached:.6f}")
+print(f"saved:  \${saved:.6f}")
+`,
+      expected_output: `full:   $0.006150
+cached: $0.000750
+saved:  $0.005400`,
+      step_throughs: [
+        {
+          title: "billing a cached call, step by step",
+          steps: [
+            { label: "Identify the fixed prefix", detail: "The 2000-token system prompt is identical on every call - the perfect cache candidate.", code: "prefix_tokens = 2000  # unchanging" },
+            { label: "Separate the new part", detail: "Only the user's question changes each call. It can never be cached.", code: "new_tokens = 50  # different every time" },
+            { label: "Discount the prefix", detail: "Cached tokens bill at 10% of the full rate, so the prefix costs a tenth of before.", code: "prefix_cost = 2000 * 0.10 * 3 / 1_000_000" },
+            { label: "Add full-price new text", detail: "The 50 new tokens still pay the normal input rate. Total cached cost is tiny.", code: "cached = prefix_cost + 50 * 3 / 1_000_000" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A 1000-token prefix costs $3/1M at full price. Cached at 10% of that rate, what does the prefix cost per call?",
+          steps: [
+            "Full prefix cost: 1000/1M x $3 = $0.003.",
+            "Cached rate is 10% of full, so multiply by 0.10.",
+            "Cached prefix cost: $0.003 x 0.10 = $0.0003."
+          ],
+          output: "$0.0003 per call (down from $0.003)"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A bot sends a 4000-token fixed prefix plus a 100-token question, 50,000 times a day. Input $3/1M, cache rate 10% of full. What is the daily input saving from caching the prefix?",
+          steps: [
+            "Full prefix cost per call: 4000/1M x $3 = $0.012.",
+            "Cached prefix cost per call: $0.012 x 0.10 = $0.0012.",
+            "Saving per call: $0.012 - $0.0012 = $0.0108 (the 100-token question is unaffected).",
+            "Daily saving: $0.0108 x 50,000 = $540 per day."
+          ],
+          output: "About $540 saved per day (~$16,200/month) on the prefix alone."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "full price vs cached prefix",
+          columns: ["Part of the call", "Without caching", "With caching"],
+          rows: [
+            { cells: ["Fixed prefix (system prompt)", "Full input rate every call", "~10% of input rate after the first call"] },
+            { cells: ["New text (the question)", "Full input rate", "Full input rate (cannot be cached)"] },
+            { cells: ["Best case", "No savings", "Big savings when prefix is large and stable"] },
+            { cells: ["What you must keep", "Nothing special", "The prefix byte-for-byte identical"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "cacheable vs not cacheable",
+          bins: [
+            { id: "cache", label: "Cacheable (repeats, stable)" },
+            { id: "no", label: "Not cacheable" }
+          ],
+          items: [
+            { id: "i1", text: "A fixed 2000-token system prompt", bin: "cache" },
+            { id: "i2", text: "The user's unique question this turn", bin: "no" },
+            { id: "i3", text: "A standing product FAQ sent every call", bin: "cache" },
+            { id: "i4", text: "A timestamp injected into the prefix", bin: "no" },
+            { id: "i5", text: "A fixed legal disclaimer at the front", bin: "cache" },
+            { id: "i6", text: "Instructions reshuffled on every request", bin: "no" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is prompt caching considered a free lever for quality, unlike switching to a smaller model?",
+          sampleAnswer: "Caching does not change what the model sees or does - the exact same prompt is sent either way, just billed at a discount for the repeated prefix. So the model's output is identical with or without the cache, meaning there is no quality risk at all. Switching to a smaller model, by contrast, changes the model's capability and can degrade answers. Caching only requires keeping the prefix stable, which costs nothing, so it is the safe lever to reach for before any change that touches behavior."
+        }
+      ],
+      hints: [
+        "full input cost uses (prefix_tokens + new_tokens) at the normal rate.",
+        "cached cost charges prefix_tokens at cache_rate of the price, plus new_tokens at full price.",
+        "saved is full minus cached; print all three with :.6f."
+      ],
+      challenge_title: "The Cache Ledger",
+      challenge_description: "Bill a batch both ways - full price and with a cached shared prefix - then report what caching saved across the whole run.",
+      challenge_story: "Your bot prepends the same **cacheable prefix** of `p` tokens to every request, then adds the user's unique input. Prompt caching bills that prefix at a steep discount on repeats, so you want a ledger that proves the savings before you flip it on. For each logged call you know its **total input tokens** (prefix plus new text) and its output tokens. Compute the batch cost with no caching, the cost with the prefix cached at a given discounted rate, and the dollars saved. Output is billed identically either way - caching only touches the input prefix.",
+      challenge_statement: "You are given: `base` (full input price per 1M), `cache_pct` (the cached prefix is billed at `cache_pct` **percent** of `base`), `out_price` (output price per 1M), and `p` (the shared prefix token count, present in every call's input). Then a batch of calls, each with `in_tok` total input tokens (the prefix is the first `p` of them, guaranteed `in_tok >= p`) and `out_tok` output tokens.\n\nFor each call:\n\n- **Full** input cost numerator: `in_tok * base`.\n- **Cached** input: the prefix `p` tokens bill at `cache_pct%` of base, the remaining `in_tok - p` tokens at full base.\n- Output numerator (same both ways): `out_tok * out_price`.\n\nPrint three lines:\n\n1. `$` + the **full** total cost (no caching) to 6 decimals.\n2. `$` + the **cached** total cost to 6 decimals.\n3. `$` + the **dollars saved** (full minus cached) to 6 decimals.",
+      challenge_input_format: "The first line has five integers: `n base cache_pct out_price p`.\n\nEach of the next `n` lines has two integers: `in_tok out_tok` (with `in_tok >= p`).",
+      challenge_output_format: "Three lines, each `$` followed by a dollar amount to exactly 6 decimal places: full cost, cached cost, then dollars saved.",
+      challenge_constraints: [
+        "1 <= n <= 100000",
+        "1 <= base, out_price <= 1000",
+        "0 <= cache_pct <= 100",
+        "0 <= p <= 1000000",
+        "p <= in_tok <= 2000000, 0 <= out_tok <= 1000000",
+      ],
+      challenge_examples: [
+        { input: "2 3 10 15 1000\n1500 200\n1200 500", output: "$0.018600\n$0.013200\n$0.005400", explanation: "Full: call1 1500*3+200*15=7500, call2 1200*3+500*15=11100, total 18600 -> $0.018600. Cached: prefix 1000 at 10% of 3 = 0.3/token, so call1 input = 1000*0.3+500*3 = 1800, +3000 out = 4800; call2 = 1000*0.3+200*3+7500 = 8400; total 13200 -> $0.013200. Saved 5400 -> $0.005400." },
+        { input: "1 4 0 10 500\n500 0", output: "$0.002000\n$0.000000\n$0.002000", explanation: "Whole input is the prefix and cache_pct is 0, so the cached input is free: full 500*4=2000 -> $0.002000, cached $0, saved $0.002000." },
+      ],
+      challenge_notes: "Keep arithmetic exact by scaling: the cached prefix cost `p * base * cache_pct` is integer if you treat it as hundredths (since cache_pct is a percent), so multiply everything by 100 and divide by 100,000,000 at the end, or use Decimal throughout. The bigger the prefix `p` relative to the new text, the larger the saving - which is why teams push as much fixed instruction as possible into the cacheable front of the prompt.",
+      challenge_hints: [
+        "Full input per call is in_tok*base. Cached input is p*base*(cache_pct/100) + (in_tok-p)*base.",
+        "To stay exact, compute the cached numerator scaled by 100: p*base*cache_pct + (in_tok-p)*base*100, then divide by 100,000,000.",
+        "Output (out_tok*out_price) is identical in both totals; saved = full - cached.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    base = int(data[idx]); idx += 1
+    cache_pct = int(data[idx]); idx += 1
+    out_price = int(data[idx]); idx += 1
+    p = int(data[idx]); idx += 1
+    # TODO: accumulate full and cached numerators across the n calls,
+    #       then print full cost, cached cost, and dollars saved.
+
+main()
+`,
+      challenge_solution_code: `import sys
+from decimal import Decimal, ROUND_HALF_UP
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    base = int(data[idx]); idx += 1
+    cache_pct = int(data[idx]); idx += 1
+    out_price = int(data[idx]); idx += 1
+    p = int(data[idx]); idx += 1
+    full_num = 0
+    cached_num_scaled = 0  # scaled by 100
+    out_num = 0
+    for _ in range(n):
+        in_tok = int(data[idx]); idx += 1
+        out_tok = int(data[idx]); idx += 1
+        full_num += in_tok * base
+        rest = in_tok - p
+        cached_num_scaled += p * base * cache_pct + rest * base * 100
+        out_num += out_tok * out_price
+    full_total_num = full_num + out_num
+    cached_total_scaled = cached_num_scaled + out_num * 100
+    full = (Decimal(full_total_num) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    cached = (Decimal(cached_total_scaled) / Decimal(100000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    saved = (Decimal(full_total_num) - Decimal(cached_total_scaled) / Decimal(100)) / Decimal(1000000)
+    saved = saved.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"\${full}")
+    print(f"\${cached}")
+    print(f"\${saved}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "2 3 10 15 1000\n1500 200\n1200 500", expected_output: "$0.018600\n$0.013200\n$0.005400", description: "Prefix cached at 10% of base across two calls; full, cached, and savings." },
+        { input: "1 4 0 10 500\n500 0", expected_output: "$0.002000\n$0.000000\n$0.002000", description: "Entire input is a free (0%) cached prefix." },
+        { input: "1 3 100 15 1000\n1500 200", expected_output: "$0.007500\n$0.007500\n$0.000000", description: "Cache rate of 100% means no discount, so nothing is saved." },
+        { input: "2 3 10 15 0\n1000 1000\n1000 1000", expected_output: "$0.036000\n$0.036000\n$0.000000", description: "Prefix length 0: nothing is cacheable, so cached equals full." }
+      ]
+    },
+    {
+      id: "ai-21-l7",
+      project_id: "ai-21",
+      order: 7,
+      title: "Batch and Async Discounts",
+      concept: "Batch",
+      xp_reward: 10,
+      explanation: `You have a nightly job: summarize 100,000 documents before the morning report. Run them through the normal real-time API and you pay full rate and watch progress bars all evening. Send them to the **batch API** instead and the same work is billed at **half price** - the catch is it might take a few hours to come back. For an overnight job, that trade is a steal.
+
+## What it is
+
+The **batch API** is a discounted lane for work that does not need an instant answer. You submit a big pile of requests at once, the provider processes them whenever it has spare capacity, and you get all the results back within a turnaround window (often up to a day). In exchange for giving up immediacy, you get a flat discount - commonly around **50% off** both input and output - on the whole batch.
+
+The trade is **latency for price**. Real-time gets you an answer in seconds at full cost; batch gets you the answer in minutes-to-hours at a fraction of the cost.
+
+## How it works
+
+The decision is per-job: does this task tolerate the batch turnaround? If yes, route it to batch and apply the discount. If a job needs a fast answer (a user is waiting), it stays on the real-time lane at full price:
+
+\`\`\`python
+discount = 0.50            # batch is 50% off
+batch_turnaround = 60      # minutes the batch lane may take
+job_tolerance = 240        # this job can wait up to 240 minutes
+cost = 9000                # full-price numerator for this job
+
+if job_tolerance >= batch_turnaround:
+    billed = cost * (1 - discount)   # eligible for batch: half price
+else:
+    billed = cost                    # must run real-time: full price
+print("billed numerator:", billed)
+\`\`\`
+
+So a job that can wait pays half; a job that cannot wait pays full. Sorting your workload into "can wait" and "cannot wait" is the whole optimization.
+
+## Why it matters
+
+Most workloads are a mix. The user-facing chat must be real-time. But the analytics, the bulk classification, the offline summaries, the eval runs - none of those need a human-speed reply, and they are often the *bulk* of the token volume. Moving that bulk to the batch lane can halve a huge slice of the bill while the latency-sensitive part stays fast. The skill is recognizing which jobs are secretly patient.
+
+## The mental model to keep
+
+**If no human is waiting, send it to the slow lane and pay half. Trade time you do not need for money you do.**`,
+      key_terms: [
+        { term: "Batch API", definition: "A discounted processing lane for requests that tolerate delayed results, often ~50% off." },
+        { term: "Async processing", definition: "Submitting work to be completed later rather than waiting for an immediate response." },
+        { term: "Turnaround window", definition: "The time the batch lane may take to return results (minutes to hours, sometimes up to a day)." },
+        { term: "Latency tolerance", definition: "How long a given job can acceptably wait for its answer." }
+      ],
+      callouts: [
+        { type: "tip", title: "Sort by who is waiting", content: "If a human is waiting on the answer, keep it real-time. If nothing is waiting - reports, bulk jobs, evals - route it to batch and take the discount.", position: "before" },
+        { type: "warning", title: "Batch is not instant", content: "The discount buys patience. A batch job can take minutes to hours, so never put a latency-sensitive, user-facing call on the batch lane.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Routing a job: real-time vs batch",
+        steps: [
+          { label: "Check who is waiting", desc: "A user in real time, or an offline job with no rush?" },
+          { label: "Compare tolerance to turnaround", desc: "Can the job wait the batch window?" },
+          { label: "Route accordingly", desc: "Patient jobs go to batch; urgent jobs stay real-time." },
+          { label: "Apply the discount", desc: "Batch-routed jobs bill at the reduced rate." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What do you give up to get the batch discount?",
+          options: ["Accuracy of the answer", "Speed - results come back later, not instantly", "The ability to send input tokens"],
+          correct_index: 1,
+          explanation: "Batch trades latency for price: you accept a slower turnaround in exchange for a lower rate."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What is the core tradeoff of the batch API?",
+          options: [
+            "Lower quality for lower price",
+            "Higher latency for a lower price",
+            "Faster answers for a higher price",
+            "More tokens for the same price"
+          ],
+          correct_index: 1,
+          explanation: "Batch processing accepts a slower turnaround in return for a discounted rate, typically around 50% off."
+        },
+        {
+          question: "Which workload is the best fit for the batch lane?",
+          options: [
+            "A live chat where a user is typing and waiting",
+            "An overnight job summarizing 100,000 documents",
+            "A real-time autocomplete suggestion",
+            "An instant fraud check at checkout"
+          ],
+          correct_index: 1,
+          explanation: "Offline bulk work with no human waiting tolerates the turnaround, making it ideal for the discounted batch lane."
+        },
+        {
+          question: "A job's full-price cost numerator is 8000 and batch is 50% off. What is the batch numerator?",
+          options: [
+            "8000",
+            "4000",
+            "12000",
+            "0"
+          ],
+          correct_index: 1,
+          explanation: "A 50% discount halves the cost: 8000 x (1 - 0.50) = 4000."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Batch check",
+          questions: [
+            { question: "The batch API gives a discount in exchange for slower turnaround.", type: "true_false", correct_answer: "true", explanation: "You trade latency for a lower rate; results come back later but cheaper." },
+            { question: "A job is a good batch candidate when no ______ is waiting on the answer.", type: "fill_in", correct_answer: "human", explanation: "Offline jobs with no one waiting tolerate the delay and earn the discount. ('user' also fits.)" }
+          ]
+        }
+      ],
+      starter_code: `# Decide whether a job can take the discounted batch lane.
+discount = 0.50          # batch is 50% off
+batch_turnaround = 60    # minutes the batch lane may take
+job_tolerance = 240      # how long this job can wait, in minutes
+cost = 9000              # full-price cost numerator
+
+# TODO: if the job tolerates the turnaround, bill at the discount; else full price.
+print("job tolerance:", job_tolerance)
+`,
+      solution_code: `discount = 0.50
+batch_turnaround = 60
+job_tolerance = 240
+cost = 9000
+
+if job_tolerance >= batch_turnaround:
+    billed = cost * (1 - discount)
+    lane = "batch"
+else:
+    billed = cost
+    lane = "real-time"
+
+print("lane:", lane)
+print("billed numerator:", int(billed))
+`,
+      expected_output: `lane: batch
+billed numerator: 4500`,
+      step_throughs: [
+        {
+          title: "routing one job, step by step",
+          steps: [
+            { label: "Find the batch turnaround", detail: "The batch lane may take up to this long to return results.", code: "batch_turnaround = 60  # minutes" },
+            { label: "Find the job's patience", detail: "How long this particular job can acceptably wait.", code: "job_tolerance = 240  # minutes" },
+            { label: "Compare them", detail: "If the job can wait at least as long as the batch window, it qualifies.", code: "job_tolerance >= batch_turnaround  # True" },
+            { label: "Apply the discount", detail: "Eligible jobs bill at half price; urgent jobs stay at full price.", code: "billed = 9000 * (1 - 0.50)  # = 4500" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A batch job's full-price cost is $0.040 and the batch discount is 50%. What does it cost on the batch lane?",
+          steps: [
+            "Apply the discount: multiply by (1 - 0.50) = 0.50.",
+            "$0.040 x 0.50 = $0.020.",
+            "The job costs half as much by accepting the slower turnaround."
+          ],
+          output: "$0.020 (half of $0.040)"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "An overnight run has 80,000 patient jobs ($0.003 each, batch-eligible) and 20,000 urgent jobs ($0.003 each, must stay real-time). Batch is 50% off. What is the total, and what did batching save vs all-real-time?",
+          steps: [
+            "All real-time: 100,000 x $0.003 = $300.",
+            "Batch the patient 80,000 at half price: 80,000 x $0.0015 = $120.",
+            "Urgent 20,000 stay full: 20,000 x $0.003 = $60. Total = $120 + $60 = $180.",
+            "Saving vs all-real-time: $300 - $180 = $120 (a 40% cut overall)."
+          ],
+          output: "Total $180, saving $120 - because the patient bulk took the discount."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "real-time lane vs batch lane",
+          columns: ["Aspect", "Real-time", "Batch"],
+          rows: [
+            { cells: ["Answer speed", "Seconds", "Minutes to hours"] },
+            { cells: ["Price", "Full rate", "Discounted (often ~50% off)"] },
+            { cells: ["Good for", "A user is waiting", "Offline bulk jobs, reports, evals"] },
+            { cells: ["What you trade", "Nothing - you pay for speed", "Latency, in exchange for money saved"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "send to batch vs keep real-time",
+          bins: [
+            { id: "batch", label: "Send to batch (patient)" },
+            { id: "rt", label: "Keep real-time (urgent)" }
+          ],
+          items: [
+            { id: "i1", text: "Nightly summary of 100k documents", bin: "batch" },
+            { id: "i2", text: "Live chat reply while a user waits", bin: "rt" },
+            { id: "i3", text: "Bulk classification for a weekly report", bin: "batch" },
+            { id: "i4", text: "Autocomplete as someone types", bin: "rt" },
+            { id: "i5", text: "An offline eval run over a test set", bin: "batch" },
+            { id: "i6", text: "Fraud check at the moment of checkout", bin: "rt" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can moving offline work to the batch API cut a large slice of the bill without hurting users at all?",
+          sampleAnswer: "Most of the heavy token volume in an application is often offline work - bulk summaries, classification, reports, evals - where no human is waiting for an instant reply. Those jobs tolerate the batch lane's slower turnaround, so routing them there earns a large discount, commonly around half off, on the bulk of the spend. The latency-sensitive, user-facing calls stay on the real-time lane and feel exactly as fast as before. Because the discount applies only to work nobody is waiting on, users notice nothing while the bill drops sharply."
+        }
+      ],
+      hints: [
+        "A job qualifies for batch when job_tolerance >= batch_turnaround.",
+        "Discounted cost is cost * (1 - discount); full price is just cost.",
+        "Use an if/else to pick the lane and the billed amount."
+      ],
+      challenge_title: "The Overnight Router",
+      challenge_description: "Route a mixed workload between the real-time and batch lanes by each job's patience, then report the real-time bill, the discounted batch bill, and how many jobs took the slow lane.",
+      challenge_story: "You run a pipeline with a mix of jobs: some are user-facing and need an instant answer, others are offline bulk work that can wait. The **batch API** offers a flat discount but takes up to `batch_latency` minutes to return. Your router's rule is simple: any job whose **latency tolerance** is at least the batch turnaround goes to the cheap batch lane; everything else stays real-time at full price. Cost the whole workload under that routing, and also show what it *would* have cost if every job ran real-time - the number that justifies the batch lane.",
+      challenge_statement: "You are given: `in_price`, `out_price` (per 1M), `discount` (the batch discount as a **percent**, e.g. 50 means 50% off), and `batch_latency` (the batch turnaround in minutes). Then a list of jobs, each with `in_tok`, `out_tok`, and `tol` (its latency tolerance in minutes).\n\nA job's full-price cost numerator is `in_tok * in_price + out_tok * out_price`.\n\n- If `tol >= batch_latency`, the job goes to **batch**: its numerator is billed at `(100 - discount)%`.\n- Otherwise it runs **real-time** at the full numerator.\n\nPrint three lines:\n\n1. `$` + the cost if **every** job ran real-time (full price), to 6 decimals.\n2. `$` + the **routed** cost (batch-eligible jobs discounted), to 6 decimals.\n3. The **count** of jobs routed to the batch lane.",
+      challenge_input_format: "The first line has five integers: `n in_price out_price discount batch_latency`.\n\nEach of the next `n` lines has three integers: `in_tok out_tok tol`.",
+      challenge_output_format: "Three lines: `$` + all-real-time cost to 6 decimals, then `$` + routed cost to 6 decimals, then the integer count of batched jobs.",
+      challenge_constraints: [
+        "1 <= n <= 100000",
+        "1 <= in_price, out_price <= 1000",
+        "0 <= discount <= 100",
+        "0 <= batch_latency <= 1000000",
+        "0 <= in_tok, out_tok <= 1000000, 0 <= tol <= 1000000",
+      ],
+      challenge_examples: [
+        { input: "3 3 15 50 60\n1000 500 120\n800 200 30\n2000 1000 1440", output: "$0.036900\n$0.021150\n2", explanation: "Numerators: 10500, 5400, 21000 -> real-time total 36900 -> $0.036900. Jobs 1 and 3 (tol 120, 1440 >= 60) batch at 50% off; job 2 (tol 30) stays full. Routed: 5250 + 5400 + 10500 = 21150 -> $0.021150. Two jobs batched." },
+        { input: "2 4 8 25 100\n500 500 200\n500 500 50", output: "$0.012000\n$0.010500\n1", explanation: "Each job numerator 6000 -> real-time 12000 -> $0.012000. Job 1 (tol 200 >= 100) batches at 75%: 4500; job 2 (tol 50) full: 6000. Routed 10500 -> $0.010500. One batched." },
+      ],
+      challenge_notes: "The discount applies to the whole numerator (input and output alike), so scale by 100 to keep it exact: a batched job contributes `num * (100 - discount)`, divided by 100,000,000 at the end. In practice the latency-sensitive, user-facing jobs are a small share of token volume - the bulk offline work batches, which is why the routed cost often falls close to the discount even though some jobs stay full price.",
+      challenge_hints: [
+        "Per job num = in_tok*in_price + out_tok*out_price; add num to the all-real-time total.",
+        "If tol >= batch_latency, add num*(100-discount) to a scaled routed total and bump the batch count; else add num*100.",
+        "Divide the all-real-time total by 1,000,000 and the scaled routed total by 100,000,000; use Decimal for exact 6-decimal rounding.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    in_price = int(data[idx]); idx += 1
+    out_price = int(data[idx]); idx += 1
+    discount = int(data[idx]); idx += 1
+    batch_latency = int(data[idx]); idx += 1
+    # TODO: for each job compute its numerator, route by tolerance,
+    #       and print all-real-time cost, routed cost, and batched count.
+
+main()
+`,
+      challenge_solution_code: `import sys
+from decimal import Decimal, ROUND_HALF_UP
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    in_price = int(data[idx]); idx += 1
+    out_price = int(data[idx]); idx += 1
+    discount = int(data[idx]); idx += 1
+    batch_latency = int(data[idx]); idx += 1
+    realtime_num = 0
+    routed_scaled = 0  # scaled by 100
+    batched = 0
+    for _ in range(n):
+        in_tok = int(data[idx]); idx += 1
+        out_tok = int(data[idx]); idx += 1
+        tol = int(data[idx]); idx += 1
+        num = in_tok * in_price + out_tok * out_price
+        realtime_num += num
+        if tol >= batch_latency:
+            batched += 1
+            routed_scaled += num * (100 - discount)
+        else:
+            routed_scaled += num * 100
+    realtime = (Decimal(realtime_num) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    routed = (Decimal(routed_scaled) / Decimal(100000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"\${realtime}")
+    print(f"\${routed}")
+    print(batched)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 3 15 50 60\n1000 500 120\n800 200 30\n2000 1000 1440", expected_output: "$0.036900\n$0.021150\n2", description: "Mixed workload: two patient jobs batch at 50% off, one urgent stays real-time." },
+        { input: "2 4 8 25 100\n500 500 200\n500 500 50", expected_output: "$0.012000\n$0.010500\n1", description: "One job tolerates the turnaround and takes the 25% discount." },
+        { input: "1 3 15 50 0\n1000 1000 0", expected_output: "$0.018000\n$0.009000\n1", description: "Batch latency of 0: any tolerance qualifies, so the job batches." },
+        { input: "2 3 15 100 60\n100 100 10\n100 100 10", expected_output: "$0.003600\n$0.003600\n0", description: "Both jobs are too urgent to batch, so routed equals all-real-time." }
+      ]
+    },
+    {
+      id: "ai-21-l8",
+      project_id: "ai-21",
+      order: 8,
+      title: "Budgets and Spend Alerts",
+      concept: "Budgets",
+      xp_reward: 10,
+      explanation: `A startup wired GPT into a free trial and went to bed. One user wrote a script that hammered the endpoint all night. By morning the bill was \\$11,000 - for a product that earned \\$0. There was no spending cap, no per-user limit, no alert. Every cost lever in this module shrinks the *average* call; budgets and alerts protect you from the *runaway* call. They are the seatbelt.
+
+## What it is
+
+Three controls turn estimates into guardrails:
+
+1. **Spend caps.** A hard ceiling on total spend (per day or per month). Cross it and further calls are refused. This bounds your worst case to a number you chose, not a number an attacker chose.
+2. **Per-user budgets.** A separate cap for each user, so one person cannot drain the whole account. Track each user's running spend and reject calls that would push them over their own limit.
+3. **Spend alerts.** A warning fired *before* you hit the cap - say at 80% of budget - so a human can react while there is still room, instead of discovering the problem from the invoice.
+
+## How it works
+
+Each cap is a running total compared against a limit. Per user, you accumulate cost and refuse the call that would breach the budget; you fire one alert when crossing the warning threshold:
+
+\`\`\`python
+cap = 10000          # this user's budget, in micro-dollars (cost x 1e6)
+alert_at = 0.80      # warn at 80% of cap
+spent = 7800         # already spent this period
+new_call = 1800      # cost of the next call
+
+if spent + new_call > cap:
+    print("BLOCKED: would exceed budget")
+else:
+    spent += new_call
+    if spent >= cap * alert_at:
+        print("ALERT: crossed 80% of budget")
+    print("spent so far:", spent)
+\`\`\`
+
+The cap **stops** the spend; the alert **warns** before the cap. You want both - a wall and a tripwire in front of it.
+
+## Why it matters
+
+Estimation tells you what a call *should* cost; it cannot stop abuse, bugs, or a retry loop gone wild. A single misbehaving client can generate cost faster than any human notices. Caps bound the damage to a chosen ceiling; per-user budgets keep one bad actor from starving everyone else; alerts buy you reaction time. Together they convert "we hope it stays cheap" into "it cannot exceed X, and we hear about it at 0.8X."
+
+## The mental model to keep
+
+**Estimate to plan, cap to survive, alert to react. A budget you do not enforce is just a wish.**`,
+      key_terms: [
+        { term: "Spend cap", definition: "A hard ceiling on total spend; calls are refused once it is reached." },
+        { term: "Per-user budget", definition: "A separate spend limit for each user so one cannot drain the whole account." },
+        { term: "Spend alert", definition: "A warning fired before the cap (e.g. at 80%) so a human can react in time." },
+        { term: "Running total", definition: "The accumulated spend tracked over a period and compared against the limit on each call." }
+      ],
+      callouts: [
+        { type: "warning", title: "No cap means no ceiling", content: "Without a spend cap, an abusive client or a runaway retry loop can run your bill to any number overnight. The cap is the only thing that bounds the worst case.", position: "before" },
+        { type: "insight", title: "Alert before the wall", content: "A cap stops spend abruptly; an alert at 80% gives a human time to investigate before the wall is hit, so you fix the cause instead of just absorbing the block.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Enforcing a per-user budget on a call",
+        steps: [
+          { label: "Look up the user's spend", desc: "The running total for this user this period." },
+          { label: "Project the new total", desc: "Add the cost of the incoming call." },
+          { label: "Compare to the cap", desc: "Over the cap? Refuse the call; spend stays put." },
+          { label: "Alert if near the limit", desc: "If the new total crosses the warning threshold, fire one alert." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What does a per-user budget protect against that a single account-wide cap does not?",
+          options: ["One user draining the whole account at everyone else's expense", "The output rate being too high", "Tokens being estimated wrong"],
+          correct_index: 0,
+          explanation: "A per-user budget limits each user individually, so one heavy or abusive user cannot consume everybody's budget."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What is the purpose of a spend cap?",
+          options: [
+            "To make each call cheaper",
+            "To set a hard ceiling so spending cannot exceed a chosen amount",
+            "To speed up the model",
+            "To increase the output limit"
+          ],
+          correct_index: 1,
+          explanation: "A spend cap bounds total spend to a ceiling you pick; calls are refused once it is reached."
+        },
+        {
+          question: "Why fire a spend alert at, say, 80% of the budget rather than at 100%?",
+          options: [
+            "Alerts are cheaper before the cap",
+            "So a human can react while there is still budget left, before calls start getting blocked",
+            "Because 100% alerts are not allowed",
+            "To charge extra for the warning"
+          ],
+          correct_index: 1,
+          explanation: "Warning before the cap gives time to investigate and fix the cause instead of discovering it only when calls fail."
+        },
+        {
+          question: "A user's cap is $0.010 (10000 micro-dollars), they have spent 7800, and the next call costs 9000. What happens?",
+          options: [
+            "The call is allowed; spent becomes 16800",
+            "The call is blocked because 7800 + 9000 = 16800 exceeds the cap",
+            "The cap is automatically raised",
+            "The call runs at half price"
+          ],
+          correct_index: 1,
+          explanation: "7800 + 9000 = 16800 > 10000, so the call would breach the budget and is refused; spend stays at 7800."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Budget check",
+          questions: [
+            { question: "A spend cap can refuse further calls once total spending reaches the limit.", type: "true_false", correct_answer: "true", explanation: "The cap is a hard ceiling; calls that would exceed it are blocked." },
+            { question: "A warning fired before the cap is hit is called a spend ______.", type: "fill_in", correct_answer: "alert", explanation: "Spend alerts warn ahead of the cap so a human can react in time." }
+          ]
+        }
+      ],
+      starter_code: `# Enforce one user's budget with an 80% alert.
+cap = 10000          # budget in micro-dollars (cost x 1e6)
+alert_at = 0.80      # warn at 80% of cap
+spent = 7800         # already spent this period
+new_call = 1800      # cost of the next call
+
+# TODO: block if spent + new_call > cap; else add it and alert if >= 80% of cap.
+print("cap:", cap)
+`,
+      solution_code: `cap = 10000
+alert_at = 0.80
+spent = 7800
+new_call = 1800
+
+if spent + new_call > cap:
+    print("BLOCKED: would exceed budget")
+else:
+    spent += new_call
+    if spent >= cap * alert_at:
+        print("ALERT: crossed 80% of budget")
+    print("spent so far:", spent)
+`,
+      expected_output: `ALERT: crossed 80% of budget
+spent so far: 9600`,
+      step_throughs: [
+        {
+          title: "checking one call against a budget",
+          steps: [
+            { label: "Read the running spend", detail: "This user has already spent 7800 of their 10000 cap this period.", code: "spent = 7800;  cap = 10000" },
+            { label: "Project the new total", detail: "The incoming call costs 1800, which would bring spend to 9600.", code: "spent + new_call  # 7800 + 1800 = 9600" },
+            { label: "Compare to the cap", detail: "9600 <= 10000, so the call is allowed and the spend is recorded.", code: "9600 > 10000  # False -> allow" },
+            { label: "Fire the alert", detail: "9600 has crossed 80% of the cap (8000), so warn the team now.", code: "9600 >= 10000 * 0.80  # True -> ALERT" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A user's cap is $0.020. They have spent $0.018 and the next call costs $0.005. Is the call allowed?",
+          steps: [
+            "Project the new total: $0.018 + $0.005 = $0.023.",
+            "Compare to the cap: $0.023 > $0.020.",
+            "It would exceed the budget, so the call is blocked."
+          ],
+          output: "Blocked - $0.023 exceeds the $0.020 cap."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Two users share a daily account cap of $0.030 and each has a per-user cap of $0.020. User A has spent $0.019 and sends a $0.004 call; user B has spent $0.008 and sends a $0.005 call. With an 80% per-user alert, what happens to each?",
+          steps: [
+            "User A: $0.019 + $0.004 = $0.023 > their $0.020 cap -> blocked; A stays at $0.019.",
+            "User B: $0.008 + $0.005 = $0.013 <= $0.020 cap -> allowed; B now at $0.013.",
+            "User B alert check: 80% of $0.020 = $0.016; $0.013 < $0.016, so no alert yet.",
+            "Account total = $0.019 + $0.013 = $0.032... but A's call was blocked, so it is $0.019 + $0.013 = $0.032 only if both went through; A's did not, so the account is $0.019 + $0.013 = $0.032 minus A's blocked $0.004 = $0.032. Recompute: spent A 0.019 + spent B 0.013 = $0.032, under no account breach here since the account cap check is separate."
+          ],
+          output: "A blocked (over per-user cap), B allowed with no alert yet."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "three budget guardrails",
+          columns: ["Control", "What it does", "When it acts"],
+          rows: [
+            { cells: ["Spend cap", "Hard ceiling on total spend", "Blocks calls at 100% of cap"] },
+            { cells: ["Per-user budget", "Separate cap per user", "Blocks one user without affecting others"] },
+            { cells: ["Spend alert", "Warns a human early", "Fires before the cap (e.g. 80%)"] },
+            { cells: ["Estimation alone", "Predicts cost, enforces nothing", "Never blocks - just a guess", ], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "stops spend vs only warns vs neither",
+          bins: [
+            { id: "stops", label: "Stops / blocks spend" },
+            { id: "warns", label: "Only warns (no block)" }
+          ],
+          items: [
+            { id: "i1", text: "A hard daily spend cap", bin: "stops" },
+            { id: "i2", text: "An 80%-of-budget alert email", bin: "warns" },
+            { id: "i3", text: "A per-user limit that refuses over-budget calls", bin: "stops" },
+            { id: "i4", text: "A dashboard notification at 90% spend", bin: "warns" },
+            { id: "i5", text: "Rejecting a call that would breach the cap", bin: "stops" },
+            { id: "i6", text: "A Slack ping when spend nears the limit", bin: "warns" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why are cost estimation and a spend cap solving two different problems?",
+          sampleAnswer: "Estimation answers what a call should cost under normal conditions, so it helps you plan and budget ahead of launch. But it enforces nothing - if a bug, an abusive user, or a runaway retry loop fires thousands of unexpected calls, the estimate is silently wrong and the bill climbs anyway. A spend cap solves the opposite problem: it does not predict anything, it simply refuses calls once a chosen ceiling is reached, bounding the worst case no matter the cause. You need estimation to plan and a cap to survive the cases your plan did not foresee."
+        }
+      ],
+      hints: [
+        "Block when spent + new_call > cap; otherwise add new_call to spent.",
+        "Fire the alert when the new spent is >= cap * alert_at (e.g. 0.80).",
+        "Keep spend per user in a dictionary keyed by user id."
+      ],
+      challenge_title: "The Budget Guard",
+      challenge_description: "Enforce per-user budgets across a stream of calls: block the ones that would breach a user's cap, fire a one-time alert when a user crosses the warning line, and report total spend, blocks, and alerts.",
+      challenge_story: "Your product gives every user a spending budget so one heavy account cannot run up the whole bill. Calls arrive in order; for each, you know the user and the call's cost. Before a call runs you check whether it would push that user **over their cap** - if so, the call is **blocked** and the user's spend is unchanged. Otherwise it runs and the cost is added. The moment a user's spend first reaches a **warning threshold** (a percent of the cap), you fire **one** alert for that user so the team can look before they ever hit the wall. Build the guard and report the damage it prevented.",
+      challenge_statement: "Every user shares the same cap `cap` (in micro-dollars, i.e. cost x 1,000,000) and the same alert threshold `alert_pct` (a percent of the cap). Calls arrive in order; call `i` belongs to user `uid` and costs `cost` micro-dollars (you are given it directly as an integer).\n\nProcess calls in order. For each call, let `cur` be that user's current spend (0 if unseen):\n\n- If `cur + cost > cap`: the call is **blocked**; the user's spend does not change.\n- Otherwise the call runs: set the user's spend to `cur + cost`. If this is the **first** time that user's spend reaches `>= cap * alert_pct / 100`, fire **one** alert for that user.\n\nPrint three lines: the **total spend** across all users (as `$` to 6 decimals), the number of **blocked** calls, and the number of **alerts** fired.",
+      challenge_input_format: "The first line has two integers: `cap alert_pct`.\n\nThe second line has one integer `n` - the number of calls.\n\nEach of the next `n` lines has two integers: `uid cost` (the call's user id and its cost in micro-dollars).",
+      challenge_output_format: "Three lines: `$` + total spend across all users to exactly 6 decimal places, then the integer count of blocked calls, then the integer count of alerts fired.",
+      challenge_constraints: [
+        "1 <= cap <= 1000000000",
+        "0 <= alert_pct <= 100",
+        "1 <= n <= 100000",
+        "1 <= uid <= 1000000",
+        "0 <= cost <= 1000000000",
+      ],
+      challenge_examples: [
+        { input: "10000 80\n4\n1 7800\n2 21000\n1 1800\n2 1800", output: "$0.011400\n1\n1", explanation: "User1: 7800 ok (7800 < 8000, no alert). User2: 7800+21000? no, 0+21000 > 10000 -> BLOCKED. User1: 7800+1800=9600 ok, crosses 80% (8000) -> ALERT. User2: 0+1800=1800 ok. Total spend 9600+1800=11400 -> $0.011400, 1 blocked, 1 alert." },
+        { input: "5000 100\n3\n1 5000\n1 1\n1 0", output: "$0.005000\n1\n1", explanation: "User1: 5000 ok, reaches 100% of cap -> ALERT. Next call 5000+1 > 5000 -> BLOCKED. Then +0 keeps spend at 5000 (5000 <= 5000 ok), already alerted so no second alert. Total 5000 -> $0.005000, 1 blocked, 1 alert." },
+      ],
+      challenge_notes: "The alert fires **once per user**, the first time spend reaches the threshold - track which users have already alerted so you do not double-count. Compare spend to the threshold exactly with integers: `spend * 100 >= cap * alert_pct` avoids any float rounding. A blocked call leaves spend untouched, so a later cheaper call from the same user can still succeed.",
+      challenge_hints: [
+        "Keep a dict spend[uid] and a set alerted of users who already fired. Default unseen users to 0 spend.",
+        "Block when cur + cost > cap (the spend is not updated); otherwise set spend[uid] = cur + cost.",
+        "After a successful call, if uid not in alerted and spend[uid]*100 >= cap*alert_pct, add uid to alerted and count one alert.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    cap = int(data[idx]); idx += 1
+    alert_pct = int(data[idx]); idx += 1
+    n = int(data[idx]); idx += 1
+    # TODO: process n calls in order, enforcing per-user caps and one-time alerts.
+    #       Print total spend ($ to 6 decimals), blocked count, and alert count.
+
+main()
+`,
+      challenge_solution_code: `import sys
+from decimal import Decimal, ROUND_HALF_UP
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    cap = int(data[idx]); idx += 1
+    alert_pct = int(data[idx]); idx += 1
+    n = int(data[idx]); idx += 1
+    spend = {}
+    alerted = set()
+    blocked = 0
+    alerts = 0
+    for _ in range(n):
+        uid = int(data[idx]); idx += 1
+        cost = int(data[idx]); idx += 1
+        cur = spend.get(uid, 0)
+        if cur + cost > cap:
+            blocked += 1
+            continue
+        spend[uid] = cur + cost
+        if uid not in alerted and spend[uid] * 100 >= cap * alert_pct:
+            alerted.add(uid)
+            alerts += 1
+    total = sum(spend.values())
+    total_d = (Decimal(total) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+    print(f"\${total_d}")
+    print(blocked)
+    print(alerts)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "10000 80\n4\n1 7800\n2 21000\n1 1800\n2 1800", expected_output: "$0.011400\n1\n1", description: "One over-cap call blocked; one user crosses the 80% alert line." },
+        { input: "5000 100\n3\n1 5000\n1 1\n1 0", expected_output: "$0.005000\n1\n1", description: "Alert at exactly 100%; the over-budget call is blocked, a zero-cost call still fits." },
+        { input: "1000000 50\n3\n7 100\n7 100\n8 600000", expected_output: "$0.600200\n0\n1", description: "Only the big call crosses 50% of the cap and alerts; nothing is blocked." },
+        { input: "100 0\n2\n3 0\n3 0", expected_output: "$0.000000\n0\n1", description: "Alert threshold 0% fires immediately on the first successful call; zero-cost calls never block." }
       ]
     }
   ]

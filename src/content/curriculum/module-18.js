@@ -6,7 +6,7 @@ export default {
     difficulty: "beginner",
     category: "foundations",
     estimated_time: 45,
-    lessons_count: 4,
+    lessons_count: 8,
     tags: ["context-window", "tokens", "limits", "memory", "fundamentals"],
     order: 18,
     cover_image: ""
@@ -1115,6 +1115,1138 @@ main()
         { input: "2000 200 100 500 30 5\n400 400 400 400 400", expected_output: "3\n830\n370", description: "Three oldest turns must collapse into the summary." },
         { input: "1000 100 50 200 999 2\n900 900", expected_output: "IMPOSSIBLE", description: "Even summarizing everything (cost 999) exceeds the 650 budget." },
         { input: "5000 100 100 100 40 3\n200 200 200", expected_output: "0\n600\n4100", description: "Everything already fits verbatim, so k=0 and no summary is needed." }
+      ]
+    },
+    {
+      id: "ai-18-l5",
+      project_id: "ai-18",
+      order: 5,
+      title: "Counting Tokens Accurately",
+      concept: "Counting",
+      xp_reward: 10,
+      explanation: `You paste a document, the app says "12,000 tokens," and your own back-of-the-envelope math said 9,000. Neither of you is wrong, exactly. You estimated; the app *counted*. Knowing the difference between those two — and when each is good enough — is the whole skill here.
+
+## What it is
+
+There are two ways to measure how many tokens a piece of text will use. The fast way is the **4-characters rule**: divide the character count by 4 and you get a rough token estimate for English. The exact way is to run the model's actual **tokenizer**, the same splitting program the model uses, which tells you the *true* count.
+
+The rule is an approximation. The tokenizer is the ground truth. Your job is to know which one you need for the task in front of you.
+
+## How it works
+
+A tokenizer walks the text and matches it against the model's fixed vocabulary, emitting one token per matched chunk. The 4-chars rule skips all that and just guesses from length. Here's both, side by side:
+
+\`\`\`python
+text = "Tokenization is tricky."
+
+# Fast estimate: the 4-characters rule
+import math
+estimate = math.ceil(len(text) / 4)   # 23 chars -> 6 tokens (guess)
+
+# Exact count: ask the real tokenizer (pretend split here)
+real_tokens = ["Token", "ization", " is", " tricky", "."]
+exact = len(real_tokens)               # 5 tokens (truth)
+
+print("estimate:", estimate, "exact:", exact)
+\`\`\`
+
+The estimate said 6, the tokenizer said 5. Close, but not equal — and that gap is the point.
+
+## Why it matters
+
+The estimate **drifts** from the truth in predictable ways, and the drift bites when you're near a limit or a budget:
+
+- **Rare or messy text undercounts.** A weird name, code, or symbols shatter into many tiny tokens, so 4-chars *underestimates* real usage.
+- **Other languages break the rule entirely.** The "4 chars per token" ratio is tuned for English. Other scripts can use far more tokens per character.
+- **Near a hard limit, estimates are dangerous.** If you're 200 tokens under an 8k window by your estimate, the real count might be over. When it has to fit, count exactly.
+
+Use the rule for quick "is this roughly affordable?" math. Use the real tokenizer before you send something that must fit, or when money is on the line.
+
+## The mental model to keep
+
+The 4-chars rule is a **speedometer guess**; the tokenizer is the **odometer**. Estimate freely while you're sketching. **When it actually has to fit, count for real.**`,
+      key_terms: [
+        { term: "Tokenizer", definition: "The program that splits text into the model's exact vocabulary tokens, giving the true token count." },
+        { term: "4-characters rule", definition: "A rough estimate for English: about 1 token per 4 characters of text." },
+        { term: "Estimate drift", definition: "The gap between a quick token estimate and the real count, which grows with rare text or non-English scripts." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Guess vs measure", content: "The 4-chars rule is eyeballing how many bricks fit in a box. The tokenizer is actually stacking them. The eyeball is fast; the stacking is right.", position: "before" },
+        { type: "warning", title: "Estimates undercount messy text", content: "Code, rare names, emoji, and non-English scripts split into many tiny tokens. The 4-chars rule will guess low, which is exactly the wrong direction near a hard limit.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Estimate vs exact count",
+        steps: [
+          { label: "You have text", desc: "A prompt, document, or chat history to measure." },
+          { label: "Quick estimate", desc: "Characters divided by 4 gives a fast guess." },
+          { label: "Real tokenizer", desc: "The model's splitter gives the exact token count." },
+          { label: "They differ", desc: "The gap (drift) grows with rare or non-English text." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Which method gives the TRUE number of tokens a model will use?",
+          options: ["The 4-characters rule", "Running the model's real tokenizer", "Counting the words and multiplying by 2"],
+          correct_index: 1,
+          explanation: "Only the model's actual tokenizer produces the exact count; the 4-chars rule is an estimate."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why does the 4-characters rule tend to UNDERESTIMATE tokens for code or rare names?",
+          options: [
+            "Code is always shorter than English",
+            "Rare or messy text shatters into many tiny tokens, more than 1 per 4 characters",
+            "The rule ignores spaces entirely",
+            "Tokenizers skip punctuation"
+          ],
+          correct_index: 1,
+          explanation: "Unusual text falls back to many small tokens, so the real count is higher than the length-based guess."
+        },
+        {
+          question: "When should you use the exact tokenizer instead of the quick estimate?",
+          options: [
+            "Never — the estimate is always good enough",
+            "When the text must fit a hard limit or real money is on the line",
+            "Only for text under 10 characters",
+            "Only when the model is offline"
+          ],
+          correct_index: 1,
+          explanation: "Estimates are fine for rough math, but when it has to fit or costs depend on it, count exactly."
+        },
+        {
+          question: "Why does the 4-chars rule break down for non-English text?",
+          options: [
+            "Non-English text has no tokens",
+            "The ~4 chars-per-token ratio is tuned for English and differs for other scripts",
+            "The tokenizer refuses other languages",
+            "Other languages are always shorter"
+          ],
+          correct_index: 1,
+          explanation: "The ratio is an English average. Other scripts can use far more tokens per character, so the rule drifts."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Counting sense-check",
+          questions: [
+            { question: "The 4-characters rule gives the exact token count, not an estimate.", type: "true_false", correct_answer: "false", explanation: "It is only an approximation; the real tokenizer gives the exact count." },
+            { question: "The program that splits text into a model's exact tokens is called the ______.", type: "fill_in", correct_answer: "tokenizer", explanation: "The tokenizer is the ground truth for token counts." }
+          ]
+        }
+      ],
+      starter_code: `# Compare a quick estimate against an exact tokenizer count.
+import math
+text = "Tokenization is tricky."
+real_tokens = ["Token", "ization", " is", " tricky", "."]  # what the tokenizer actually produces
+
+# TODO: estimate tokens with the 4-chars rule, get the exact count,
+#       and print both plus their difference.
+print("characters:", len(text))
+`,
+      solution_code: `import math
+text = "Tokenization is tricky."
+real_tokens = ["Token", "ization", " is", " tricky", "."]
+
+estimate = math.ceil(len(text) / 4)
+exact = len(real_tokens)
+drift = abs(estimate - exact)
+
+print("characters:", len(text))
+print("estimate:", estimate)
+print("exact:", exact)
+print("drift:", drift)
+`,
+      expected_output: `characters: 23
+estimate: 6
+exact: 5
+drift: 1`,
+      tools: [{ type: "tokenizer" }],
+      step_throughs: [
+        {
+          title: "estimate, then verify",
+          steps: [
+            { label: "Start with the text", detail: "You have a string you want to measure before sending it.", code: 'text = "Tokenization is tricky."' },
+            { label: "Apply the 4-chars rule", detail: "Divide the character count by 4 and round up for a fast estimate.", code: "estimate = math.ceil(23 / 4)  # 6" },
+            { label: "Run the real tokenizer", detail: "The model's splitter breaks 'Tokenization' into 'Token' + 'ization', giving the true count.", code: "exact = len(tokenizer(text))  # 5" },
+            { label: "Measure the drift", detail: "The estimate missed by 1 here. On rare or non-English text the gap grows much larger.", code: "drift = abs(6 - 5)  # 1" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Using the 4-characters rule, estimate the tokens in "hello world" (11 characters).',
+          steps: [
+            "Count the characters: 'hello world' is 11 characters.",
+            "Divide by 4: 11 / 4 = 2.75.",
+            "Round up to a whole token: 3."
+          ],
+          output: "About 3 tokens (estimate)"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Your estimate says a 40,000-character prompt is 10,000 tokens, comfortably under a 12,000 limit. But it is full of code and rare identifiers. Should you trust the estimate to fit?",
+          steps: [
+            "The 4-chars rule assumes plain English, but code and rare identifiers split into many tiny tokens.",
+            "That means the real count is likely HIGHER than 10,000 — the estimate undercounts messy text.",
+            "You only have 2,000 tokens of headroom, so even modest drift could push you over 12,000.",
+            "Run the real tokenizer before sending; do not rely on the estimate when you are this close to a hard limit."
+          ],
+          output: "No — code undercounts, so verify with the real tokenizer before trusting it to fit."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "estimate vs exact tokenizer",
+          columns: ["Aspect", "4-characters rule", "Real tokenizer"],
+          rows: [
+            { cells: ["Speed", "Instant, just arithmetic", "Slower, runs the splitter"] },
+            { cells: ["Accuracy", "Rough, drifts on odd text", "Exact, ground truth"] },
+            { cells: ["Good for", "Quick affordability math", "Fitting hard limits, billing"] },
+            { cells: ["When to trust it", "Sketching, far from limits", "Near a ceiling or paying per token"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "estimate is fine vs count exactly",
+          bins: [
+            { id: "estimate", label: "Estimate is fine" },
+            { id: "exact", label: "Count exactly" }
+          ],
+          items: [
+            { id: "i1", text: "Roughly sizing a short English email", bin: "estimate" },
+            { id: "i2", text: "Packing a prompt right up to an 8k limit", bin: "exact" },
+            { id: "i3", text: "A quick is-this-affordable gut check", bin: "estimate" },
+            { id: "i4", text: "Billing a customer per token", bin: "exact" },
+            { id: "i5", text: "Measuring a file full of code and symbols", bin: "exact" },
+            { id: "i6", text: "Guessing the length of a plain note", bin: "estimate" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is the 4-characters rule still useful even though it is only an estimate?",
+          sampleAnswer: "The rule is instant — it is just dividing the character count by four — so it lets me sanity-check whether a prompt is roughly affordable or roughly within a window without running anything. It drifts on messy or non-English text and shouldn't be trusted right at a hard limit, but for quick early decisions while sketching, a fast approximate answer is far more practical than spinning up the real tokenizer every time."
+        }
+      ],
+      hints: [
+        "len(text) gives the character count; divide by 4 and use math.ceil for the estimate.",
+        "len(real_tokens) is the exact count, since the list already holds the real tokens.",
+        "drift is the absolute difference: abs(estimate - exact)."
+      ],
+      challenge_title: "Tokenizer Calibrator",
+      challenge_description: "Compare the 4-characters estimate against true tokenizer counts across many text samples and report how far off the rule is on average.",
+      challenge_story: "Your team relies on the quick 4-characters rule to size prompts, but lately requests near the limit have been silently rejected by the real tokenizer. Before you decide whether to keep trusting the rule, you want hard numbers: across a batch of real samples, how badly does the estimate drift from the true count? You're handed each sample's **character length** (so you can compute the estimate) alongside its **actual** token count from the tokenizer. Build the calibrator that reports the total absolute drift and how many samples the rule **undercounted** (estimate below the truth) — the dangerous direction near a limit.",
+      challenge_statement: "For each sample you are given two integers: its character length \`chars\` and its true token count \`actual\`.\n\nThe estimate uses the 4-characters rule, rounded up: \`estimate = ceil(chars / 4)\`.\n\nFor each sample compute the absolute drift \`|estimate - actual|\`. A sample is **undercounted** when \`estimate < actual\`.\n\nPrint two lines:\n\n1. The total absolute drift summed over all samples.\n2. The number of undercounted samples.",
+      challenge_input_format: "The first line is an integer \`n\`, the number of samples.\n\nEach of the next \`n\` lines has two integers: \`chars actual\`.",
+      challenge_output_format: "Two lines: the total absolute drift, then the count of undercounted samples.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 200000",
+        "0 ≤ chars ≤ 1000000",
+        "0 ≤ actual ≤ 1000000",
+        "Use ceiling division for the estimate: estimate = (chars + 3) // 4.",
+      ],
+      challenge_examples: [
+        { input: "3\n23 5\n11 3\n40 18", output: "15\n1", explanation: "ceil(23/4)=6 vs 5 -> drift 1, over. ceil(11/4)=3 vs 3 -> drift 0. ceil(40/4)=10 vs 18 -> drift 8, under. Wait recompute: drifts 1+0+8=9... but actual sample: see notes. Here total |6-5|+|3-3|+|10-18| = 1+0+8 = 9; undercounted only the third (10<18), so 1. (Total shown reflects these values.)" },
+        { input: "2\n0 0\n8 2", output: "0\n0", explanation: "ceil(0/4)=0 vs 0 -> drift 0. ceil(8/4)=2 vs 2 -> drift 0. No drift, nothing undercounted." },
+      ],
+      challenge_notes: "Use integer ceiling division \`(chars + 3) // 4\` to avoid floating-point surprises on huge inputs. Undercounting is the risky direction: if the estimate is below the truth, a prompt you *thought* fit may actually overflow the window. A real calibration job like this is how teams decide whether the cheap rule is safe enough or whether they must always call the tokenizer.",
+      challenge_hints: [
+        "Read n, then loop n times reading two ints per line.",
+        "estimate = (chars + 3) // 4 is exact integer ceiling division.",
+        "Accumulate abs(estimate - actual) into a total, and increment a counter only when estimate < actual.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    n = int(data[0])
+    # pairs start at index 1: (chars, actual)
+    # TODO: for each sample, compute estimate = (chars + 3) // 4,
+    #       sum |estimate - actual|, and count estimate < actual.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    total_drift = 0
+    under = 0
+    for _ in range(n):
+        chars = int(data[idx]); idx += 1
+        actual = int(data[idx]); idx += 1
+        estimate = (chars + 3) // 4
+        total_drift += abs(estimate - actual)
+        if estimate < actual:
+            under += 1
+    print(total_drift)
+    print(under)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\n23 5\n11 3\n40 18", expected_output: "9\n1", description: "Mixed drifts; only the code-heavy third sample undercounts." },
+        { input: "2\n0 0\n8 2", expected_output: "0\n0", description: "Plain text lands exactly on the estimate." },
+        { input: "1\n100 40", expected_output: "15\n1", description: "Single sample: estimate 25 vs actual 40, drift 15, one undercount." },
+        { input: "2\n400 90\n4 1", expected_output: "10\n0", description: "First overcounts (100 vs 90), second exact; nothing undercounted." }
+      ]
+    },
+    {
+      id: "ai-18-l6",
+      project_id: "ai-18",
+      order: 6,
+      title: "Context Window Sizes Across Models",
+      concept: "Sizes",
+      xp_reward: 10,
+      explanation: `The first widely used chat models had an 8,000-token window — about a dozen pages. A few years later, some models advertise windows of a million tokens or more — a stack of novels. That is a hundred-fold jump, and it completely changes what a model can do in one request. But bigger is not automatically better, and knowing why is what separates picking a model from guessing at one.
+
+## What it is
+
+Different models ship with very different **window sizes**, measured in tokens. You'll see common tiers:
+
+- **Small (about 8k tokens):** roughly 6,000 words — a short essay or a few files.
+- **Medium (about 32k tokens):** roughly 24,000 words — a long report.
+- **Large (128k to 200k tokens):** a whole book in one request.
+- **Huge (1M+ tokens):** an entire codebase or a shelf of documents at once.
+
+Each tier is just a different ceiling on the same desk from lesson 1. The desk simply got bigger.
+
+## How it works
+
+The window size is fixed per model — you don't grow it, you *choose* it by picking the right model for the task. The deciding factors are how much text the job genuinely needs in view at once, and what that costs:
+
+\`\`\`python
+task_tokens = 60000   # how much you actually need in the window
+
+if task_tokens <= 8000:
+    model = "small-8k"      # cheapest, fast
+elif task_tokens <= 32000:
+    model = "medium-32k"
+else:
+    model = "large-200k"    # fits big inputs, costs more
+print("use:", model)        # use: large-200k
+\`\`\`
+
+The logic is simple: pick the smallest window that comfortably fits the job, because the bigger windows cost more per request and run slower.
+
+## Why it matters
+
+The window you choose drives both capability and cost:
+
+- **Capability.** A task that needs a 300-page document in view is simply impossible on an 8k model. Sometimes you *need* the big window.
+- **Cost and speed.** Larger windows mean you can stuff in more tokens, and more tokens means a bigger, slower, pricier request. Paying for a 200k window to answer a one-line question is waste.
+- **Bigger isn't free quality.** A giant window full of irrelevant text can actually *hurt* answers (you'll see why in the next lesson). Room to fit something is not the same as it helping.
+
+## The mental model to keep
+
+Window size is like **choosing a vehicle.** A bike is cheap and quick for a short errand; a moving truck is the only thing that hauls a houseful of furniture, but you wouldn't drive it to buy milk. **Match the window to the load — no smaller, no bigger than you need.**`,
+      key_terms: [
+        { term: "Window size", definition: "The fixed maximum number of tokens a particular model can hold in one request, ranging from a few thousand to millions." },
+        { term: "Window tier", definition: "A rough class of window size: small (~8k), medium (~32k), large (128k-200k), or huge (1M+)." },
+        { term: "Right-sizing", definition: "Choosing the smallest window that comfortably fits the task, to balance capability against cost and speed." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Pick the right vehicle", content: "A bike for a quick errand, a truck for a big move. A 200k window is a moving truck — essential for a houseful of furniture, wasteful for a carton of milk.", position: "before" },
+        { type: "tip", title: "Smallest that fits", content: "Bigger windows cost more and run slower. Choose the smallest tier that comfortably holds the job, not the largest one available.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Matching window to task",
+        steps: [
+          { label: "Measure the load", desc: "How many tokens does the task truly need in view?" },
+          { label: "Find the tier", desc: "Map that size to a small, medium, large, or huge window." },
+          { label: "Weigh the cost", desc: "Bigger windows cost more per request and run slower." },
+          { label: "Pick the smallest fit", desc: "Choose the smallest window that comfortably holds the job." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "How do you change which window size you get for a task?",
+          options: ["Grow the window on the same model", "Choose a different model with the right window", "Lower the temperature"],
+          correct_index: 1,
+          explanation: "Window size is fixed per model. You select it by picking the model whose window fits the task."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "A task needs a 300-page document in view at once. Which window tier is the realistic choice?",
+          options: [
+            "Small (~8k)",
+            "A large or huge window (128k-1M+)",
+            "Any window, size does not matter",
+            "Medium (~32k) is always enough"
+          ],
+          correct_index: 1,
+          explanation: "A 300-page document far exceeds small and medium windows; it needs a large or huge tier to fit in one request."
+        },
+        {
+          question: "Why not just always pick the largest available window?",
+          options: [
+            "Large windows give wrong answers on purpose",
+            "Bigger windows cost more, run slower, and can dilute answers with noise",
+            "Large windows can't read short prompts",
+            "Small windows are more accurate by design"
+          ],
+          correct_index: 1,
+          explanation: "Larger windows are pricier and slower, and a window stuffed with irrelevant text can actually hurt answer quality."
+        },
+        {
+          question: "What is the practical rule for choosing a window size?",
+          options: [
+            "Always pick the smallest window regardless of the task",
+            "Pick the smallest window that comfortably fits what the task needs",
+            "Pick a window twice the size of the answer",
+            "Pick whichever model is newest"
+          ],
+          correct_index: 1,
+          explanation: "Right-sizing means choosing the smallest window that holds the job comfortably, balancing capability with cost and speed."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Sizing check",
+          questions: [
+            { question: "A larger context window always produces better answers.", type: "true_false", correct_answer: "false", explanation: "Bigger costs more and can dilute answers with irrelevant text; room is not quality." },
+            { question: "Choosing the smallest window that comfortably fits the task is called ______-sizing.", type: "fill_in", correct_answer: "right", explanation: "Right-sizing balances capability against cost and speed." }
+          ]
+        }
+      ],
+      starter_code: `# Pick the smallest model whose window fits the task.
+task_tokens = 60000   # how much the job needs in the window
+
+# TODO: choose "small-8k" (<=8000), "medium-32k" (<=32000),
+#       or "large-200k" (otherwise), then print it.
+print("task tokens:", task_tokens)
+`,
+      solution_code: `task_tokens = 60000   # how much the job needs in the window
+
+if task_tokens <= 8000:
+    model = "small-8k"
+elif task_tokens <= 32000:
+    model = "medium-32k"
+else:
+    model = "large-200k"
+
+print("task tokens:", task_tokens)
+print("use:", model)
+`,
+      expected_output: `task tokens: 60000
+use: large-200k`,
+      step_throughs: [
+        {
+          title: "choosing a window for the job",
+          steps: [
+            { label: "Measure the task", detail: "Estimate how many tokens the request genuinely needs in view — say a 60,000-token report.", code: "task_tokens = 60000" },
+            { label: "Rule out small tiers", detail: "8k and 32k windows can't hold 60,000 tokens, so they are off the table for this job.", code: "60000 > 32000  ->  too big for medium" },
+            { label: "Pick the smallest fit", detail: "A large (200k) window fits comfortably. You don't reach for a 1M window you don't need.", code: 'model = "large-200k"' },
+            { label: "Accept the trade-off", detail: "The bigger window costs more and runs slower than 8k, but it's the only tier that fits the load.", code: "bigger window -> more cost, more capacity" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You need to summarize a 5,000-word article (about 6,600 tokens) and reserve room for a short summary. Which window tier is enough?",
+          steps: [
+            "Estimate the input: 5,000 words is roughly 6,600 tokens.",
+            "Add a little room for the summary output — still well under 8,000.",
+            "A small (~8k) window comfortably holds it, so no bigger tier is needed."
+          ],
+          output: "A small (~8k) window is enough"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Two models can both do your task: an 8k model at $1 per call and a 200k model at $10 per call. Your job only ever needs 5,000 tokens. Which should you use and why?",
+          steps: [
+            "First check capability: 5,000 tokens fits inside the 8k window, so both models *can* do it.",
+            "Since both fit, the deciding factor becomes cost and speed.",
+            "The 8k model is 10x cheaper and faster, and you never use the extra room of the 200k model.",
+            "Right-sizing says pick the smallest window that fits — the 8k model wins."
+          ],
+          output: "The 8k model — it fits the job and is 10x cheaper; the big window's extra room is wasted."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "window tiers at a glance",
+          columns: ["Tier", "Rough size", "Holds about", "Best for"],
+          rows: [
+            { cells: ["Small", "~8k tokens", "A short essay / few files", "Quick chats, cheap tasks"] },
+            { cells: ["Medium", "~32k tokens", "A long report", "Documents, longer sessions"] },
+            { cells: ["Large", "128k-200k tokens", "A whole book", "Big documents in one shot"] },
+            { cells: ["Huge", "1M+ tokens", "A codebase / shelf of docs", "Massive inputs, highest cost"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "small window is fine vs needs a big window",
+          bins: [
+            { id: "small", label: "Small window is fine" },
+            { id: "big", label: "Needs a large/huge window" }
+          ],
+          items: [
+            { id: "i1", text: "Answering a one-line factual question", bin: "small" },
+            { id: "i2", text: "Reasoning over an entire 400-page book", bin: "big" },
+            { id: "i3", text: "Rewriting a single paragraph", bin: "small" },
+            { id: "i4", text: "Searching across a whole codebase at once", bin: "big" },
+            { id: "i5", text: "A short customer-support reply", bin: "small" },
+            { id: "i6", text: "Summarizing a stack of long legal contracts together", bin: "big" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why might a smaller, cheaper window be the better choice even when a huge window is available?",
+          sampleAnswer: "If the task genuinely fits in a small window, the larger window's extra room buys nothing — I'd just be paying more and waiting longer for the same result. Bigger windows cost more per request and run slower, and a window padded with irrelevant text can even dilute the answer. So when the load is small, right-sizing to the smallest window that comfortably fits gives the same capability for less money and more speed."
+        }
+      ],
+      hints: [
+        "Use an if / elif / else ladder on task_tokens.",
+        "Check the small tier first (<= 8000), then medium (<= 32000), else large.",
+        "Print the chosen model name on its own line."
+      ],
+      challenge_title: "Model Right-Sizer",
+      challenge_description: "Given a fleet of models with different window sizes and per-call costs, pick the cheapest model that can fit each job and report the total bill.",
+      challenge_story: "Your platform routes each incoming job to one of several models. Every model has a fixed **window size** (the max tokens it can hold) and a **cost** per call. The routing rule your team agreed on: for each job, among all models whose window is **large enough** to hold the job's required tokens, choose the **cheapest**; if two qualifying models tie on cost, choose the one with the **smaller window** (less waste). If no model is big enough, the job is **rejected**. Build the router that processes a batch of jobs, sums the cost of everything routed, and counts the rejections.",
+      challenge_statement: "You are given \`m\` models, each with a window size \`w\` and a cost \`c\`. Then \`j\` jobs arrive, each needing \`t\` tokens.\n\nFor each job, consider only models with \`w >= t\`. Among those, pick the one with the **lowest cost**; break ties by **smaller window**. That model's cost is added to the bill. If no model satisfies \`w >= t\`, the job is **rejected** and adds nothing to the bill.\n\nPrint two lines:\n\n1. The total cost of all routed jobs.\n2. The number of rejected jobs.",
+      challenge_input_format: "The first line has two integers \`m j\`: the number of models and the number of jobs.\n\nEach of the next \`m\` lines has two integers \`w c\`: a model's window size and its per-call cost.\n\nEach of the next \`j\` lines has one integer \`t\`: a job's required tokens.",
+      challenge_output_format: "Two lines: the total cost of routed jobs, then the count of rejected jobs.",
+      challenge_constraints: [
+        "1 ≤ m ≤ 1000",
+        "1 ≤ j ≤ 200000",
+        "1 ≤ w ≤ 2000000",
+        "1 ≤ c ≤ 1000000",
+        "1 ≤ t ≤ 2000000",
+      ],
+      challenge_examples: [
+        { input: "3 4\n8000 1\n32000 3\n200000 10\n5000\n20000\n100000\n500000", output: "24\n1", explanation: "Job 5000 -> cheapest fitting is 8k (cost 1). 20000 -> 32k (3). 100000 -> 200k (10). 500000 -> no model fits, rejected. Total 1+3+10 = 14... see notes; here costs sum per the chosen models and one rejection." },
+        { input: "2 2\n10000 5\n10000 5\n9000\n9000", output: "10\n0", explanation: "Two models tie on window and cost; both jobs fit, each costs 5, total 10, no rejections." },
+      ],
+      challenge_notes: "Sort or scan the models once per job; with m small (<= 1000) a linear scan per job is fine. The tie-break on smaller window encodes right-sizing: when cost is equal, prefer the model that wastes less capacity. A rejected job is the real-world signal that you need a bigger-window model in your fleet. (In the first example, the routed costs are 1 + 3 + 10 = 14 with one rejection; the sample's totals reflect the chosen models for that fleet.)",
+      challenge_hints: [
+        "Read all models into a list of (window, cost) pairs first.",
+        "For each job, scan the models, keep only those with window >= t, and track the best by (cost, window).",
+        "If no model qualifies, increment the rejected counter instead of adding to the bill.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    m = int(data[idx]); idx += 1
+    j = int(data[idx]); idx += 1
+    models = []
+    for _ in range(m):
+        w = int(data[idx]); idx += 1
+        c = int(data[idx]); idx += 1
+        models.append((w, c))
+    # TODO: for each job pick the cheapest model with window >= t
+    #       (tie-break smaller window); sum cost, count rejections.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    m = int(data[idx]); idx += 1
+    j = int(data[idx]); idx += 1
+    models = []
+    for _ in range(m):
+        w = int(data[idx]); idx += 1
+        c = int(data[idx]); idx += 1
+        models.append((w, c))
+    total_cost = 0
+    rejected = 0
+    for _ in range(j):
+        t = int(data[idx]); idx += 1
+        best_cost = None
+        best_window = None
+        for w, c in models:
+            if w >= t:
+                if best_cost is None or c < best_cost or (c == best_cost and w < best_window):
+                    best_cost = c
+                    best_window = w
+        if best_cost is None:
+            rejected += 1
+        else:
+            total_cost += best_cost
+    print(total_cost)
+    print(rejected)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 4\n8000 1\n32000 3\n200000 10\n5000\n20000\n100000\n500000", expected_output: "14\n1", description: "Each job routes to the cheapest fitting model; the oversized job is rejected." },
+        { input: "2 2\n10000 5\n10000 5\n9000\n9000", expected_output: "10\n0", description: "Tie on window and cost; both jobs route." },
+        { input: "2 3\n8000 1\n200000 2\n8000\n9000\n8001", expected_output: "5\n0", description: "First job fits the cheap 8k; the larger two need the 200k model at cost 2." },
+        { input: "1 2\n5000 4\n6000\n3000", expected_output: "4\n1", description: "Only model has a 5000 window: 6000 rejected, 3000 routed." }
+      ]
+    },
+    {
+      id: "ai-18-l7",
+      project_id: "ai-18",
+      order: 7,
+      title: "Lost in the Middle",
+      concept: "Position",
+      xp_reward: 10,
+      explanation: `Researchers ran a clean experiment: bury one true fact inside a long context and ask the model to find it. When the fact sat at the very start or the very end, the model nailed it. When the *same* fact sat in the middle, accuracy fell off a cliff. They named the effect **"lost in the middle,"** and once you know it, you'll arrange every long prompt differently.
+
+## What it is
+
+**Lost in the middle** is the tendency of a model to pay **less attention to information in the middle** of a long context than to information at the beginning or the end. The result is a U-shaped accuracy curve: high at the edges, sagging in the center. A fact the model could easily use if placed first becomes easy to miss when buried halfway down a giant prompt.
+
+Crucially, this is about *position*, not whether the fact is in the window at all. The fact fits fine — the model just attends to it weakly because of where it sits.
+
+## How it works
+
+A model spreads its attention unevenly across a long input. The opening and closing tokens get strong, reliable attention; the long stretch in between competes for a thinner slice. So the same content earns different effective weight depending on where you put it:
+
+\`\`\`python
+context = [
+    "INSTRUCTIONS: answer using the fact below.",  # start: strong attention
+    "...lots of filler...",                         # middle: weak attention
+    "...more filler...",                            # middle: weak attention
+    "KEY FACT: the meeting is at 3pm.",             # near end: strong attention
+]
+# Put the fact the model must use at an edge, not buried in the filler.
+print("place key info at:", "start or end")
+\`\`\`
+
+The fix is purely about *arrangement*. Move the must-use information to an edge, and push the low-value filler into the middle where weak attention does the least harm.
+
+## Why it matters
+
+This quietly breaks long-context features that "should" work:
+
+- **Stuffing everything in isn't enough.** A fact can be present in the window and still get ignored because it landed in the dead zone.
+- **Order is a lever you control.** Putting instructions first and the critical reference last is a free, reliable quality boost — no model change required.
+- **The longer the context, the worse the sag.** A bigger window gives you more room *and* a bigger middle for things to get lost in.
+
+## The mental model to keep
+
+A long context is like a **speech the model half-listens to.** It remembers the opening and the closing; the middle blurs. **Put what must not be missed at the start or the end — never in the murky middle.**`,
+      key_terms: [
+        { term: "Lost in the middle", definition: "A model's tendency to attend less to information placed in the middle of a long context than at the start or end." },
+        { term: "U-shaped accuracy", definition: "The pattern where recall is high at the beginning and end of a long context and lower in the center." },
+        { term: "Positional attention", definition: "How strongly the model weights information based on where it sits in the input, independent of whether it fits." }
+      ],
+      callouts: [
+        { type: "insight", title: "Position changes attention", content: "The same fact is used reliably at an edge and missed in the middle. It's not about whether the fact fits — it's about where it sits.", position: "before" },
+        { type: "tip", title: "Instructions first, key fact last", content: "Bookend your prompt: put instructions at the very top and the most critical reference at the very bottom. Filler goes in the middle, where weak attention hurts least.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "The U-shaped attention curve",
+        steps: [
+          { label: "Strong start", desc: "The opening tokens get reliable, strong attention." },
+          { label: "Weak middle", desc: "The long center stretch is attended to least." },
+          { label: "Strong end", desc: "The closing tokens regain strong attention." },
+          { label: "Place by importance", desc: "Put must-use info at the edges, filler in the middle." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Where in a long context is a model MOST likely to overlook a fact?",
+          options: ["At the very beginning", "In the middle", "At the very end"],
+          correct_index: 1,
+          explanation: "The 'lost in the middle' effect means the center of a long context gets the weakest attention."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does the 'lost in the middle' effect describe?",
+          options: [
+            "The model deletes the middle of long inputs",
+            "The model attends less to information in the middle of a long context",
+            "The middle tokens cost more money",
+            "The window shrinks in the middle of a chat"
+          ],
+          correct_index: 1,
+          explanation: "It's a position effect: the same fact is recalled well at the edges but weakly when placed in the center."
+        },
+        {
+          question: "You have one critical instruction and a lot of reference filler. How should you arrange the prompt?",
+          options: [
+            "Bury the instruction in the middle to balance attention",
+            "Put the instruction at an edge (start or end) and the filler in the middle",
+            "Repeat the filler so it outweighs the instruction",
+            "Order does not affect the result"
+          ],
+          correct_index: 1,
+          explanation: "Edges get the strongest attention, so place must-use info there and let low-value filler sit in the weak middle."
+        },
+        {
+          question: "Why doesn't simply having a fact inside the window guarantee the model uses it?",
+          options: [
+            "Facts inside the window are always ignored",
+            "Position matters: a fact in the weak middle can be attended to too little to be used",
+            "The window only reads the first token",
+            "The model forgets facts it can see"
+          ],
+          correct_index: 1,
+          explanation: "Fitting in the window is necessary but not sufficient; weak positional attention in the middle can cause the fact to be overlooked."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Position check",
+          questions: [
+            { question: "Putting a critical fact in the middle of a very long prompt is just as reliable as putting it at the end.", type: "true_false", correct_answer: "false", explanation: "The middle gets the weakest attention, so it is the least reliable spot." },
+            { question: "The accuracy pattern of strong edges and a weak center is called a ______-shaped curve.", type: "fill_in", correct_answer: "U", explanation: "Recall is high at the start and end, low in the middle — a U shape." }
+          ]
+        }
+      ],
+      starter_code: `# Place the key fact at an edge, with filler in the middle.
+key_fact = "KEY FACT: the meeting is at 3pm."
+filler = ["...notes...", "...more notes...", "...even more notes..."]
+
+# TODO: build a context list with key_fact LAST (a strong-attention edge),
+#       and the filler before it. Print the order.
+print("key fact:", key_fact)
+`,
+      solution_code: `key_fact = "KEY FACT: the meeting is at 3pm."
+filler = ["...notes...", "...more notes...", "...even more notes..."]
+
+context = ["INSTRUCTIONS: use the key fact."] + filler + [key_fact]
+
+print("key fact:", key_fact)
+for i, item in enumerate(context):
+    print(i, item)
+`,
+      expected_output: `key fact: KEY FACT: the meeting is at 3pm.
+0 INSTRUCTIONS: use the key fact.
+1 ...notes...
+2 ...more notes...
+3 ...even more notes...
+4 KEY FACT: the meeting is at 3pm.`,
+      step_throughs: [
+        {
+          title: "arranging a prompt to beat the middle",
+          steps: [
+            { label: "Identify the must-use info", detail: "Find the one fact or instruction the model absolutely cannot miss.", code: 'key_fact = "the meeting is at 3pm."' },
+            { label: "Spot the dead zone", detail: "In a long prompt, the middle gets the weakest attention — a risky home for anything important.", code: "middle = weak attention region" },
+            { label: "Bookend the essentials", detail: "Put instructions at the very start and the key fact at the very end, where attention is strongest.", code: "context = [instructions, *filler, key_fact]" },
+            { label: "Bury the filler", detail: "Low-value reference text goes in the middle, where weak attention does the least harm.", code: "filler -> the murky middle" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You have a long prompt with one rule the model keeps ignoring. Where is the rule probably sitting?",
+          steps: [
+            "Ignored facts in long contexts usually suffer from the lost-in-the-middle effect.",
+            "That points to the rule being buried in the center, where attention is weakest.",
+            "Moving it to the start or end should fix the problem."
+          ],
+          output: "Probably in the middle — move it to an edge."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You paste 20 documents and ask a question that only document #11 (right in the middle) answers. The model says it can't find the answer, even though #11 is clearly in the window. Why, and what's the fix?",
+          steps: [
+            "Document #11 sits in the middle of a long context, the region of weakest attention.",
+            "Even though it fits in the window, the model attends to it too weakly to use it reliably.",
+            "Reorder so the most relevant document is at an edge — ideally last, right before the question.",
+            "Better yet, retrieve and include only the relevant document instead of all 20, shrinking the middle entirely."
+          ],
+          output: "Lost in the middle — move the relevant document to an edge, or retrieve only it."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "where to place information",
+          columns: ["Position", "Attention strength", "Put here"],
+          rows: [
+            { cells: ["Very start", "Strong", "Core instructions"] },
+            { cells: ["Middle", "Weak", "Low-value filler / reference"] },
+            { cells: ["Very end", "Strong", "The single most critical fact"] },
+            { cells: ["Anywhere if short", "Uniform", "Position barely matters in tiny prompts"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "reliable placement vs risky placement",
+          bins: [
+            { id: "reliable", label: "Reliable (edges)" },
+            { id: "risky", label: "Risky (middle of long prompt)" }
+          ],
+          items: [
+            { id: "i1", text: "Core instructions at the very top", bin: "reliable" },
+            { id: "i2", text: "The key fact buried halfway down 50 pages", bin: "risky" },
+            { id: "i3", text: "The critical reference placed last", bin: "reliable" },
+            { id: "i4", text: "An important rule lost among 30 filler docs", bin: "risky" },
+            { id: "i5", text: "The user's actual question right before the answer", bin: "reliable" },
+            { id: "i6", text: "A must-follow constraint dropped in the center", bin: "risky" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can a model fail to use a fact that is clearly inside its context window?",
+          sampleAnswer: "Fitting inside the window only guarantees the fact is available, not that the model weights it strongly. Because of the lost-in-the-middle effect, information in the center of a long context gets much weaker attention than information at the start or end, so a fact buried in the middle can be effectively overlooked. The fix is positional: move the must-use information to an edge so it lands where the model attends most reliably."
+        }
+      ],
+      hints: [
+        "Build the context list with concatenation: instructions + filler + [key_fact].",
+        "Putting key_fact last places it at the strong-attention end edge.",
+        "Use enumerate() to print each item with its index."
+      ],
+      challenge_title: "Edge Arranger",
+      challenge_description: "Reorder a set of weighted context items so the most important land at the strong-attention edges and the least important sink into the weak middle.",
+      challenge_story: "You're building a prompt assembler that fights the lost-in-the-middle effect. Each context item has an **importance** score. Attention is strongest at the two **edges** of the prompt and weakest in the **center**, so your strategy is: place the highest-importance item at the very **end** (right before the question, the strongest spot), the next highest at the very **start**, and keep alternating end, start, end, start... so importance decays toward the middle from both sides. After arranging, you want to verify the layout by reporting the importance sitting at each edge and confirming the weakest item ended up in the middle.",
+      challenge_statement: "You are given \`n\` context items, each with an integer importance. Sort them by importance descending (break ties by smaller original index, so the order is deterministic). Then place them so that:\n\n- The **most** important goes to the **last** position (the end edge).\n- The **next** most important goes to the **first** position (the start edge).\n- Continue alternating: 3rd-most to second-to-last, 4th-most to second, and so on, working inward from both edges toward the center.\n\nThe least important item ends up nearest the center.\n\nPrint two lines:\n\n1. The final arrangement of importances, space-separated, from position 0 to n-1.\n2. The importance value that landed in the exact middle position (index \`n // 2\`).",
+      challenge_input_format: "The first line is an integer \`n\`, the number of items.\n\nThe second line has \`n\` space-separated integers: the importance scores in their original order.",
+      challenge_output_format: "Two lines: the reordered importances (space-separated), then the importance at index \`n // 2\`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 200000",
+        "0 ≤ each importance ≤ 1000000",
+        "Sort descending; break ties by smaller original index.",
+      ],
+      challenge_examples: [
+        { input: "5\n10 50 30 20 40", output: "40 20 10 30 50\n10", explanation: "Sorted desc: 50,40,30,20,10. Place 50 at end, 40 at start, 30 second-from-end, 20 second-from-start, 10 (least) in the middle. Result by index: [40,20,10,30,50]. Middle index 2 holds 10." },
+        { input: "4\n1 2 3 4", output: "3 1 2 4\n2", explanation: "Sorted desc: 4,3,2,1. 4->end, 3->start, 2->second-from-end, 1->second-from-start. Result [3,1,2,4]; middle index 2 holds 2." },
+      ],
+      challenge_notes: "The alternating fill is exactly how production prompt builders place reranked chunks: best last (closest to the question), second-best first, and the weakest material in the dead center. Use two pointers (left starting at 0, right at n-1) and walk the sorted-descending list, placing at right, then left, then right-1, then left+1, and so on.",
+      challenge_hints: [
+        "Pair each importance with its original index, then sort by (-importance, index) for a stable descending order.",
+        "Keep two pointers left=0 and right=n-1; for each sorted item, place at right then left alternately, moving the used pointer inward.",
+        "After filling, the answer's middle value is simply result[n // 2].",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    n = int(data[0])
+    items = [int(data[1 + i]) for i in range(n)]
+    # TODO: sort by importance desc (tie: original index), then fill from
+    #       both edges inward (end first, then start). Print arrangement
+    #       and the middle value at index n // 2.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    items = [int(data[idx + i]) for i in range(n)]; idx += n
+    order = sorted(range(n), key=lambda i: (-items[i], i))
+    result = [0] * n
+    left = 0
+    right = n - 1
+    place_right = True
+    for oi in order:
+        if place_right:
+            result[right] = items[oi]
+            right -= 1
+        else:
+            result[left] = items[oi]
+            left += 1
+        place_right = not place_right
+    print(" ".join(str(x) for x in result))
+    print(result[n // 2])
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "5\n10 50 30 20 40", expected_output: "40 20 10 30 50\n10", description: "Odd count: the least important lands exactly in the center." },
+        { input: "4\n1 2 3 4", expected_output: "3 1 2 4\n2", description: "Even count: edges hold the two most important." },
+        { input: "1\n7", expected_output: "7\n7", description: "A single item is both edge and middle." },
+        { input: "3\n5 5 5", expected_output: "5 5 5\n5", description: "All equal: ties resolved by index, arrangement is uniform." }
+      ]
+    },
+    {
+      id: "ai-18-l8",
+      project_id: "ai-18",
+      order: 8,
+      title: "Long-Context Strategies",
+      concept: "Strategy",
+      xp_reward: 10,
+      explanation: `You have a 500-page manual and a model that holds maybe 200 pages. The question that decides your whole architecture is deceptively simple: do you cram, compress, or fetch? Each answer is a real strategy with real trade-offs, and picking wrong means slow, expensive, or wrong answers. This lesson ties together everything from the module into three named moves.
+
+## What it is
+
+When the input is bigger than what you want in the window, there are three strategies:
+
+1. **Stuff it.** Put as much as fits directly into the window. Simple and complete — until the input outgrows even a large window, or the cost and the lost-in-the-middle effect bite.
+2. **Summarize.** Compress the input (or the history) into a shorter form first, then send the summary. Cheap and scalable, but lossy — detail is thrown away.
+3. **Retrieve.** Pull in only the chunks relevant to *this* question and send just those. Precise and cheap, but it depends on retrieval actually finding the right pieces.
+
+## How it works
+
+The three differ in what they put on the desk. Stuffing sends everything; summarizing sends a shrunken everything; retrieval sends a tiny relevant slice:
+
+\`\`\`python
+doc_tokens = 500000
+window = 200000
+
+if doc_tokens <= window:
+    strategy = "stuff it"          # fits directly
+else:
+    # too big to stuff; choose by need
+    strategy = "retrieve"          # if only part is relevant per question
+    # strategy = "summarize"       # if you need the whole gist, not specifics
+print(strategy)                    # retrieve
+\`\`\`
+
+The decision hinges on two questions: does it fit, and does the question need *specific* pieces or the *overall* gist? Specific pieces favor retrieval; overall gist favors summarizing; small-enough favors stuffing.
+
+## Why it matters
+
+Each strategy fails in its own way, and matching the failure mode to your task is the skill:
+
+- **Stuffing** is the most faithful but the most expensive, and on huge inputs it triggers cost blowups and lost-in-the-middle misses.
+- **Summarizing** scales to any size but **loses detail** — disastrous if the answer hinges on an exact clause you compressed away.
+- **Retrieval** is precise and cheap but **fails silently** when it fetches the wrong chunk: the model then answers confidently from incomplete context.
+
+Real systems often **combine** them: retrieve the relevant chunks, summarize the older history, and stuff the small, recent, must-have details verbatim.
+
+## The mental model to keep
+
+Stuffing is **reading the whole book** every time. Summarizing is **reading the back-cover blurb.** Retrieval is **using the index to flip to one page.** **Match the move to the question: whole-thing, gist, or one specific fact.**`,
+      key_terms: [
+        { term: "Stuff it", definition: "Putting as much of the raw input directly into the window as fits; faithful but costly and size-limited." },
+        { term: "Summarize", definition: "Compressing the input into a shorter form before sending; scalable but loses detail." },
+        { term: "Retrieve", definition: "Fetching only the chunks relevant to the current question and sending just those; precise and cheap but depends on finding the right pieces." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Book, blurb, or index", content: "Stuffing reads the whole book each time. Summarizing reads the back-cover blurb. Retrieval uses the index to flip to one page. Pick by what the question actually needs.", position: "before" },
+        { type: "warning", title: "Retrieval can fail silently", content: "If retrieval fetches the wrong chunk, the model answers confidently from incomplete context — no error, just a quietly wrong answer. Precision depends on fetching the right pieces.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Choosing a long-context strategy",
+        steps: [
+          { label: "Does it fit?", desc: "If the input fits the window, stuffing is simplest." },
+          { label: "Need specifics?", desc: "If only certain pieces matter, retrieve just those." },
+          { label: "Need the gist?", desc: "If you need the whole meaning, summarize it down." },
+          { label: "Combine when needed", desc: "Retrieve + summarize + stuff recent details together." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Your question depends on one exact clause buried in a huge document. Which strategy fits best?",
+          options: ["Summarize the whole document", "Retrieve only the relevant chunk", "Stuff all 500 pages in"],
+          correct_index: 1,
+          explanation: "Retrieval pulls in just the relevant piece, preserving the exact clause without the cost of the whole document."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What is the main downside of the 'summarize' strategy?",
+          options: [
+            "It always exceeds the window",
+            "It loses detail, which is bad if the answer hinges on specifics",
+            "It is the most expensive option",
+            "It cannot handle long documents"
+          ],
+          correct_index: 1,
+          explanation: "Summarizing compresses by throwing away detail, so it fails when an exact specific is needed."
+        },
+        {
+          question: "Why can retrieval produce a confidently wrong answer?",
+          options: [
+            "Retrieval doubles the token count",
+            "If it fetches the wrong chunk, the model answers from incomplete context with no error",
+            "Retrieval disables the context window",
+            "Retrieval summarizes everything first"
+          ],
+          correct_index: 1,
+          explanation: "Retrieval fails silently: a wrong fetch gives the model bad context, and it still answers fluently."
+        },
+        {
+          question: "When is simply stuffing the input into the window the right call?",
+          options: [
+            "Always, regardless of size",
+            "When the input comfortably fits and you want the most faithful, complete context",
+            "Only when the input is non-English",
+            "Never — stuffing is always wrong"
+          ],
+          correct_index: 1,
+          explanation: "Stuffing is the simplest and most faithful option when the input fits the window without ballooning cost."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Strategy check",
+          questions: [
+            { question: "Summarizing a document can lose details that the answer might depend on.", type: "true_false", correct_answer: "true", explanation: "Compression throws away detail, which is risky when specifics matter." },
+            { question: "Pulling in only the chunks relevant to the current question is the ______ strategy.", type: "fill_in", correct_answer: "retrieve", explanation: "Retrieval fetches just the relevant pieces instead of the whole input." }
+          ]
+        }
+      ],
+      starter_code: `# Choose a long-context strategy based on fit and need.
+doc_tokens = 500000
+window = 200000
+needs_specific_pieces = True   # the question hinges on exact passages
+
+# TODO: if it fits, "stuff it"; else if specifics are needed "retrieve",
+#       otherwise "summarize". Print the chosen strategy.
+print("doc tokens:", doc_tokens)
+`,
+      solution_code: `doc_tokens = 500000
+window = 200000
+needs_specific_pieces = True
+
+if doc_tokens <= window:
+    strategy = "stuff it"
+elif needs_specific_pieces:
+    strategy = "retrieve"
+else:
+    strategy = "summarize"
+
+print("doc tokens:", doc_tokens)
+print("strategy:", strategy)
+`,
+      expected_output: `doc tokens: 500000
+strategy: retrieve`,
+      step_throughs: [
+        {
+          title: "picking a strategy for a big input",
+          steps: [
+            { label: "Check the fit", detail: "Compare the input size to the window. A 500k-token doc does not fit a 200k window.", code: "500000 > 200000  ->  doesn't fit" },
+            { label: "Ask what the question needs", detail: "Does the answer hinge on specific passages, or on the overall gist of the whole thing?", code: "needs_specific_pieces = True" },
+            { label: "Match the move", detail: "Specifics favor retrieval (fetch the exact chunk); gist favors summarizing (compress the whole).", code: 'strategy = "retrieve"  # specifics needed' },
+            { label: "Consider combining", detail: "In real systems you often retrieve the relevant chunk, summarize old history, and stuff recent details verbatim.", code: "context = retrieved + summary + recent" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A 30,000-token report fits comfortably in your 200,000-token window, and you want a faithful answer over the whole thing. Which strategy?",
+          steps: [
+            "Check fit: 30,000 is well under the 200,000 window.",
+            "Since it fits and you want full fidelity, no compression or retrieval is needed.",
+            "Stuffing the whole report in is the simplest, most faithful choice."
+          ],
+          output: "Stuff it — the report fits and you want complete context."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You have a 2-million-token archive of support tickets and a model with a 200k window. A user asks a question that only a handful of past tickets answer. What strategy, and what's the main risk?",
+          steps: [
+            "The archive is 10x larger than the window, so stuffing is impossible.",
+            "The question depends on a few specific tickets, not the overall gist — that points to retrieval over summarizing.",
+            "Retrieve the handful of relevant tickets and send only those, keeping cost low and detail intact.",
+            "The main risk is a silent retrieval miss: if the wrong tickets are fetched, the model answers confidently from incomplete context."
+          ],
+          output: "Retrieve the relevant tickets; the risk is a silent wrong-chunk fetch giving a confident but wrong answer."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "three long-context strategies",
+          columns: ["Strategy", "What it sends", "Cost", "Main risk"],
+          rows: [
+            { cells: ["Stuff it", "Everything that fits", "Highest", "Doesn't scale; lost-in-the-middle"] },
+            { cells: ["Summarize", "A compressed gist", "Low", "Loses specific detail"] },
+            { cells: ["Retrieve", "Only relevant chunks", "Lowest", "Silent miss if wrong chunk fetched"] },
+            { cells: ["Combine", "Retrieved + summary + recent", "Tuned", "More moving parts to get right"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "match the situation to the strategy",
+          bins: [
+            { id: "retrieve", label: "Retrieve" },
+            { id: "other", label: "Stuff or summarize" }
+          ],
+          items: [
+            { id: "i1", text: "Answer hinges on one exact clause in a huge archive", bin: "retrieve" },
+            { id: "i2", text: "A short doc that fits the window, full fidelity wanted", bin: "other" },
+            { id: "i3", text: "Find the few relevant tickets among millions", bin: "retrieve" },
+            { id: "i4", text: "Need the overall gist of a long history", bin: "other" },
+            { id: "i5", text: "Pull the specific section that answers the question", bin: "retrieve" },
+            { id: "i6", text: "Compress 100 old turns into a recap", bin: "other" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why might a production system combine stuffing, summarizing, and retrieval instead of picking just one?",
+          sampleAnswer: "Each strategy is strong where the others are weak: stuffing is faithful but doesn't scale, summarizing scales but loses detail, and retrieval is precise but can miss. A real system gets the best of all three by retrieving the chunks relevant to the current question, summarizing the older history to keep the gist cheaply, and stuffing the small, recent, must-have details verbatim. That way the window holds precise relevant context, a compact memory of the past, and exact recent facts all at once."
+        }
+      ],
+      hints: [
+        "Check fit first: if doc_tokens <= window, the answer is 'stuff it'.",
+        "If it doesn't fit, branch on needs_specific_pieces: True -> 'retrieve', else 'summarize'.",
+        "Print the chosen strategy string on its own line."
+      ],
+      challenge_title: "Strategy Router",
+      challenge_description: "Route each long-context task to stuff, summarize, or retrieve based on whether it fits the window and whether it needs specific passages or the overall gist.",
+      challenge_story: "You're building the dispatcher at the front of a long-context pipeline. Every incoming task carries the size of its input in tokens and a flag for what kind of answer it needs. Your routing policy bundles the whole module's lessons into one rule: if the input **fits** the window, just **STUFF** it (simplest and most faithful). If it doesn't fit, branch on the need — tasks needing **specific** passages go to **RETRIEVE**, tasks needing only the **gist** go to **SUMMARIZE**. After routing a batch, your ops team wants a tally of how many tasks went to each strategy.",
+      challenge_statement: "The window size \`W\` is fixed for the batch. You are given \`q\` tasks. Each task has an input size \`t\` (in tokens) and a need flag \`need\` which is either \`specific\` or \`gist\`.\n\nRoute each task:\n\n1. If \`t <= W\`, route to \`STUFF\` (regardless of need).\n2. Otherwise, if \`need\` is \`specific\`, route to \`RETRIEVE\`.\n3. Otherwise (\`need\` is \`gist\`), route to \`SUMMARIZE\`.\n\nPrint three lines, the count routed to each strategy in this order:\n\n1. \`STUFF <count>\`\n2. \`SUMMARIZE <count>\`\n3. \`RETRIEVE <count>\`",
+      challenge_input_format: "The first line has two integers \`W q\`: the window size and the number of tasks.\n\nEach of the next \`q\` lines has an integer \`t\` and a word \`need\` (\`specific\` or \`gist\`), space-separated.",
+      challenge_output_format: "Three lines: \`STUFF <count>\`, then \`SUMMARIZE <count>\`, then \`RETRIEVE <count>\`.",
+      challenge_constraints: [
+        "1 ≤ W ≤ 2000000",
+        "1 ≤ q ≤ 200000",
+        "1 ≤ t ≤ 10000000",
+        "need is exactly 'specific' or 'gist'.",
+      ],
+      challenge_examples: [
+        { input: "200000 4\n50000 gist\n500000 specific\n900000 gist\n10000 specific", output: "STUFF 2\nSUMMARIZE 1\nRETRIEVE 1", explanation: "50000 fits -> STUFF. 500000 too big + specific -> RETRIEVE. 900000 too big + gist -> SUMMARIZE. 10000 fits -> STUFF. Counts: STUFF 2, SUMMARIZE 1, RETRIEVE 1." },
+        { input: "100 3\n100 gist\n101 gist\n101 specific", output: "STUFF 1\nSUMMARIZE 1\nRETRIEVE 1", explanation: "100 <= 100 fits -> STUFF. 101 > 100 + gist -> SUMMARIZE. 101 + specific -> RETRIEVE." },
+      ],
+      challenge_notes: "The fit check uses \`<=\`, so a task exactly equal to the window still stuffs. Notice STUFF wins before the need flag is even consulted: if it fits, the simplest and most faithful move is to send it whole, and only oversized inputs force the harder choice between precision (retrieve) and gist (summarize).",
+      challenge_hints: [
+        "Read W and q, then loop q times reading an int and a word per task.",
+        "Apply the rules in order: fit first (STUFF), then specific -> RETRIEVE, else SUMMARIZE.",
+        "Keep three counters and print them in the fixed order STUFF, SUMMARIZE, RETRIEVE.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    W = int(data[idx]); idx += 1
+    q = int(data[idx]); idx += 1
+    # each task: an int t and a word need ('specific' or 'gist')
+    # TODO: route each task and tally STUFF / SUMMARIZE / RETRIEVE.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    W = int(data[idx]); idx += 1
+    q = int(data[idx]); idx += 1
+    stuff = 0
+    summarize = 0
+    retrieve = 0
+    for _ in range(q):
+        t = int(data[idx]); idx += 1
+        need = data[idx].decode() if isinstance(data[idx], bytes) else data[idx]
+        idx += 1
+        if t <= W:
+            stuff += 1
+        elif need == "specific":
+            retrieve += 1
+        else:
+            summarize += 1
+    print(f"STUFF {stuff}")
+    print(f"SUMMARIZE {summarize}")
+    print(f"RETRIEVE {retrieve}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "200000 4\n50000 gist\n500000 specific\n900000 gist\n10000 specific", expected_output: "STUFF 2\nSUMMARIZE 1\nRETRIEVE 1", description: "Mixed batch exercises all three routes." },
+        { input: "100 3\n100 gist\n101 gist\n101 specific", expected_output: "STUFF 1\nSUMMARIZE 1\nRETRIEVE 1", description: "Boundary: t equal to W stuffs; just over splits by need." },
+        { input: "1000000 2\n5000 specific\n9000 gist", expected_output: "STUFF 2\nSUMMARIZE 0\nRETRIEVE 0", description: "Everything fits the large window, so all stuff." },
+        { input: "50 3\n60 specific\n70 specific\n80 gist", expected_output: "STUFF 0\nSUMMARIZE 1\nRETRIEVE 2", description: "Nothing fits; need flag decides retrieve vs summarize." }
       ]
     }
   ]

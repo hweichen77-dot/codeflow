@@ -6,7 +6,7 @@ export default {
     difficulty: "advanced",
     category: "rag_search",
     estimated_time: 180,
-    lessons_count: 5,
+    lessons_count: 8,
     tags: ["rag", "retrieval", "embeddings", "vector-store", "chunking", "anthropic-api"],
     order: 7,
     cover_image: ""
@@ -1699,6 +1699,899 @@ main()
       challenge_test_cases: [
         { input: "2 512\nclaude-sonnet-4-6\nAcme was founded by Dale in 1999.\nAcme makes rockets.\nWho founded Acme?", expected_output: "claude-sonnet-4-6\n512\n125\nuser\n91", description: "Example 1: a two-chunk grounded request fingerprint." },
         { input: "1 256\nclaude-opus-4-1\nThe Moon orbits Earth.\nWhat orbits Earth?", expected_output: "claude-opus-4-1\n256\n125\nuser\n61", description: "Example 2: a different model and token cap pass through; system length is constant." }
+      ]
+    },
+    {
+      id: "ai-07-l6",
+      project_id: "ai-07",
+      order: 6,
+      title: "Citations and Grounding",
+      concept: "Citations",
+      xp_reward: 10,
+      explanation: `Your RAG system gives a correct answer. A user asks, "Where did that come from?" If you can't point to the exact chunk, you don't have a trustworthy system — you have a confident black box that happened to be right this time.
+
+## What it is
+
+A **citation** is a pointer from a claim in the answer back to the specific retrieved chunk that supports it. Grounding isn't just feeding the model context — it's making the answer *traceable*, so every fact can be checked against its source. Without citations, "the model used my documents" is an act of faith. With them, it's an auditable fact: claim -> chunk -> original document.
+
+This is the difference between a demo and a product. Lawyers, doctors, and analysts will not act on an answer they can't verify. Citations turn "trust me" into "here, look."
+
+## How it works
+
+The trick: don't just paste chunks into the prompt — **label each chunk with an ID**, then instruct the model to tag every sentence with the ID of the chunk it drew from. After the model answers, you parse out those tags and verify each one points to a real, retrieved chunk.
+
+\`\`\`python
+import re
+
+def label_context(chunks):
+    # chunks: list of (id, text); show the id to the model
+    return "\\n".join(f"[{cid}] {text}" for cid, text in chunks)
+
+def extract_citations(answer, valid_ids):
+    cited = re.findall(r"\\[([^\\[\\]]+)\\]", answer)
+    grounded = [c for c in cited if c in valid_ids]
+    invented = [c for c in cited if c not in valid_ids]
+    return grounded, invented
+\`\`\`
+
+If the model emits a citation tag for a chunk it was never given, that is a **citation hallucination** — the answer invented its own source. Catching it is as important as catching a made-up fact, because a fake citation is a fake fact wearing a uniform.
+
+## Why it matters
+
+- **Auditability.** A reviewer can click a citation and read the exact sentence that backs the claim. No re-running the model, no guessing.
+- **Hallucination detection.** An answer with zero valid citations on a factual question is a red flag — it likely came from training memory, not your context.
+- **User trust.** Surfacing sources ("according to [policy1]...") is what makes people comfortable relying on the tool for real decisions.
+- **Debugging retrieval.** If answers cite the wrong chunks, your retrieval is pulling the wrong text — citations expose that immediately.
+
+## The mental model to keep
+
+A grounded answer without citations is a witness who refuses to say how they know. **Make the model show its work: every claim points back to a numbered source, and you verify the pointer is real.**`,
+      key_terms: [
+        { term: "Citation", definition: "A pointer from a claim in the answer back to the specific retrieved chunk that supports it." },
+        { term: "Citation hallucination", definition: "When an answer cites a source ID that was never among the retrieved chunks — an invented reference." },
+        { term: "Traceability", definition: "The property that every claim in an answer can be followed back to a real document passage." },
+        { term: "Chunk ID", definition: "A stable label attached to each retrieved chunk so the model and the verifier can refer to it unambiguously." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Footnotes in a research paper", content: "A claim with no footnote is an assertion; a claim with a footnote you can look up is evidence. Citations turn your RAG answer from an assertion into something a skeptical reader can verify line by line.", position: "before" },
+        { type: "warning", title: "A fake citation is a fake fact", content: "If the model cites a chunk it was never given, treat it exactly like a made-up number. The citation tag looks authoritative, which makes the fabrication more dangerous, not less. Always validate every cited ID against the chunks you actually retrieved.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "From retrieved chunks to a cited answer",
+        steps: [
+          { label: "Label each chunk", desc: "Tag every retrieved chunk with an ID like [c1], [c2]." },
+          { label: "Ask the model to cite", desc: "Instruct it to append the source ID to each sentence it writes." },
+          { label: "Parse the tags", desc: "Pull every [id] marker out of the answer text." },
+          { label: "Verify against sources", desc: "Confirm each cited ID is a real retrieved chunk; flag any invented ones." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What makes an answer 'traceable' in a RAG system?",
+          options: [
+            "Every claim points back to a specific retrieved chunk that supports it",
+            "The answer is shorter than the original document",
+            "The model lowers its temperature before answering"
+          ],
+          correct_index: 0,
+          explanation: "Traceability means each claim can be followed back to a real source passage — that is exactly what citations provide."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why label each retrieved chunk with an ID before sending it to the model?",
+          options: [
+            "So the model can tag each sentence with the ID of the chunk it drew from, making the answer verifiable",
+            "So the chunks compress to fewer tokens",
+            "So the embedding model runs faster",
+            "Because the API rejects unlabeled context"
+          ],
+          correct_index: 0,
+          explanation: "IDs give the model a way to point at its source, and give you a way to verify every pointer after the fact."
+        },
+        {
+          question: "The model cites chunk [c9], but [c9] was never among the retrieved chunks. What is this?",
+          options: [
+            "A citation hallucination — an invented source that must be flagged",
+            "A normal citation that should be trusted",
+            "A sign the retrieval returned too few chunks",
+            "A formatting error with no consequences"
+          ],
+          correct_index: 0,
+          explanation: "A cited ID that doesn't match any retrieved chunk is a fabricated reference — as dangerous as a fabricated fact, since it looks authoritative."
+        },
+        {
+          question: "An answer to a factual question contains zero valid citations. What does that suggest?",
+          options: [
+            "The answer likely came from training memory rather than your context — a hallucination risk",
+            "The retrieval step was perfect",
+            "The answer is automatically more concise",
+            "The model used a system prompt"
+          ],
+          correct_index: 0,
+          explanation: "If nothing in the answer points to your supplied context, the model probably bluffed from memory instead of grounding in your documents."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Citation check",
+          questions: [
+            { question: "Validating that every cited chunk ID matches a real retrieved chunk catches citation hallucinations.", type: "true_false", correct_answer: "true", explanation: "An ID with no matching retrieved chunk is an invented source — exactly what the validation step is designed to catch." },
+            { question: "A pointer from a claim in the answer back to the chunk that supports it is called a ______.", type: "fill_in", correct_answer: "citation", explanation: "Citations make answers traceable back to their sources." }
+          ]
+        }
+      ],
+      starter_code: `import re
+
+chunks = [
+    ("c1", "Refunds are issued within 30 days of delivery."),
+    ("c2", "We ship to over 40 countries worldwide."),
+]
+valid_ids = {cid for cid, _ in chunks}
+
+answer = "You can get a refund within 30 days [c1]. We also ship widely [c2]."
+
+# TODO: extract every [id] tag from the answer.
+# TODO: split them into grounded (id is in valid_ids) and invented (id is not).
+# Print the grounded list and the invented list.
+`,
+      solution_code: `import re
+
+chunks = [
+    ("c1", "Refunds are issued within 30 days of delivery."),
+    ("c2", "We ship to over 40 countries worldwide."),
+]
+valid_ids = {cid for cid, _ in chunks}
+
+answer = "You can get a refund within 30 days [c1]. We also ship widely [c2]."
+
+cited = re.findall(r"\\[([^\\[\\]]+)\\]", answer)
+grounded = [c for c in cited if c in valid_ids]
+invented = [c for c in cited if c not in valid_ids]
+
+print("grounded:", grounded)
+print("invented:", invented)
+`,
+      expected_output: `grounded: ['c1', 'c2']
+invented: []`,
+      step_throughs: [
+        {
+          title: "label -> ask -> parse -> verify",
+          steps: [
+            { label: "Label the chunks", detail: "Prefix each retrieved chunk with a stable ID the model can point at.", code: '[c1] Refunds within 30 days.\\n[c2] Ships to 40 countries.' },
+            { label: "Ask for citations", detail: "Instruct the model to append the source ID to each sentence it writes.", code: '"...append the [id] of the chunk you used."' },
+            { label: "Parse the answer", detail: "Pull every bracketed marker out of the returned text with a regex.", code: 're.findall(r"\\[([^\\[\\]]+)\\]", answer) -> ["c1", "c2"]' },
+            { label: "Verify each citation", detail: "Confirm every cited ID is a real retrieved chunk; flag any that are not.", code: 'invented = [c for c in cited if c not in valid_ids]' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: 'Retrieved chunks are [c1], [c2]. The answer cites only [c1]. Is the answer grounded?',
+          steps: [
+            "Pull the cited IDs out of the answer: ['c1'].",
+            "Check each against the retrieved set {c1, c2}.",
+            "c1 is present, so it is a valid citation and nothing was invented."
+          ],
+          output: "Grounded — cites c1, which is a real retrieved chunk."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: 'Retrieved chunks are [c1], [c2]. The answer reads: "The fee is waived [c1] under the gold tier [c5]." Evaluate it.',
+          steps: [
+            "Extract the cited IDs in order: ['c1', 'c5'].",
+            "c1 is in the retrieved set {c1, c2} — valid.",
+            "c5 is NOT in the retrieved set — it was never supplied, so it is invented.",
+            "The presence of even one invented citation means the answer is partly ungrounded and must be flagged for review."
+          ],
+          output: "grounded=['c1'], invented=['c5'] -> flag the answer"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "uncited answer vs. cited answer",
+          columns: ["Aspect", "Uncited answer", "Cited answer"],
+          rows: [
+            { cells: ["Can a reviewer verify it?", "No — must re-run or trust", "Yes — click the source"] },
+            { cells: ["Detects citation hallucination", "No", "Yes — validate each ID"] },
+            { cells: ["User confidence", "Low for high-stakes use", "High — sources shown"] },
+            { cells: ["Exposes bad retrieval", "Hidden", "Wrong chunk cited = visible"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "valid citation vs. citation problem",
+          bins: [
+            { id: "valid", label: "Valid, grounded citation" },
+            { id: "problem", label: "Citation problem" }
+          ],
+          items: [
+            { id: "i1", text: "Cites [c1], which was retrieved", bin: "valid" },
+            { id: "i2", text: "Cites [c9], never retrieved", bin: "problem" },
+            { id: "i3", text: "Every sentence tags its source chunk", bin: "valid" },
+            { id: "i4", text: "Factual answer with zero citations", bin: "problem" },
+            { id: "i5", text: "Citation points to a real supplied passage", bin: "valid" },
+            { id: "i6", text: "Cites a plausible-looking ID the model made up", bin: "problem" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is a citation that points to a chunk the model was never given just as dangerous as a made-up fact?",
+          sampleAnswer: "A citation looks like evidence, so it raises the reader's trust. If that citation points to a source that doesn't exist among the retrieved chunks, the model has fabricated the very thing that's supposed to prove it isn't fabricating. The reader sees a reference and assumes the claim is checked, when actually nothing backs it — so a fake citation can be more misleading than an obviously unsupported sentence."
+        }
+      ],
+      hints: [
+        "Use re.findall with a pattern like \\[([^\\[\\]]+)\\] to pull the text inside each pair of brackets.",
+        "valid_ids is a set built from the retrieved chunk IDs; membership checks are O(1).",
+        "Split the cited IDs into two lists: those in valid_ids (grounded) and those not (invented)."
+      ],
+      challenge_title: "The Citation Validator",
+      challenge_description: "Parse the citation tags out of a model's answer and decide whether the answer is properly grounded, ungrounded, or citing invented sources.",
+      challenge_story: "Your RAG assistant now appends a source tag like \`[c2]\` to each sentence it writes, pointing back to the chunk it used. Legal will not ship until every answer is auditable: each citation must resolve to a chunk that was actually retrieved, and a factual answer with no citations at all is treated as unverified. You're building the **citation validator** that runs on every response before it reaches a user — it pulls the tags, checks them against the retrieved chunk IDs, and routes the answer to GROUNDED, UNGROUNDED, or INVALID.",
+      challenge_statement: "You are given the IDs of the `N` chunks that were retrieved for this question, followed by a single answer line. A *citation* is any text enclosed in square brackets, e.g. `[c1]`. Extract citations left to right.\n\nClassify the answer:\n\n- If any citation refers to an ID **not** among the retrieved chunks, the answer is **INVALID**. List the invented IDs in the order they first appear (deduplicated).\n- Otherwise, if the answer contains **no** citations at all, it is **UNGROUNDED**.\n- Otherwise, the answer is **GROUNDED**. List the cited IDs in first-appearance order, deduplicated.",
+      challenge_input_format: "Line 1: an integer `N` — the number of retrieved chunks.\nThe next `N` lines: one chunk ID per line.\nThe final line: the answer text (may contain zero or more `[id]` citation tags).",
+      challenge_output_format: "Line 1: one of `GROUNDED`, `UNGROUNDED`, or `INVALID`.\nLine 2:\n- For `GROUNDED`: the cited IDs in first-appearance order, deduplicated, space-separated.\n- For `UNGROUNDED`: the word `NONE`.\n- For `INVALID`: the invented IDs in first-appearance order, deduplicated, space-separated.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "Chunk IDs are non-empty tokens without spaces or brackets.",
+        "The answer line has at most 5000 characters.",
+        "A citation is any maximal run of non-bracket characters inside a matching pair of square brackets.",
+      ],
+      challenge_examples: [
+        { input: "3\nc1\nc2\nc3\nThe window is 30 days [c2] and we ship widely [c1]. See also [c2].", output: "GROUNDED\nc2 c1", explanation: "Citations in order: c2, c1, c2. All are retrieved, so GROUNDED. Deduplicated first-appearance order is c2 then c1." },
+        { input: "3\nc1\nc2\nc3\nThe rate is fixed [c4] per the table.", output: "INVALID\nc4", explanation: "c4 was never retrieved, so the answer cites an invented source and is INVALID." },
+      ],
+      challenge_notes: "This is the production guardrail behind every 'sources' panel you see in a RAG product: a cheap, deterministic check that runs on every answer. The INVALID case is the most important — a citation that resolves to nothing is a fabricated reference, and it must be caught before a human ever trusts it. Use a regex like `re.findall(r\"\\[([^\\[\\]]+)\\]\", answer)` to pull the tags.",
+      challenge_hints: [
+        "Read the N chunk IDs into a set for O(1) membership checks.",
+        "Pull all citations with `re.findall(r\"\\[([^\\[\\]]+)\\]\", answer)`, preserving order.",
+        "Walk the citations once: collect invented IDs (not in the set) and grounded IDs separately, each deduplicated by first appearance.",
+        "Decide in priority order: any invented -> INVALID; else no citations -> UNGROUNDED; else GROUNDED.",
+      ],
+      challenge_starter_code: `import sys
+import re
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    valid = set()
+    # TODO: read N chunk IDs into valid.
+
+    answer = data[idx] if idx < len(data) else ""
+    # TODO: extract citations, classify as GROUNDED / UNGROUNDED / INVALID, print two lines.
+
+main()
+`,
+      challenge_solution_code: `import sys
+import re
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx].strip()); idx += 1
+    valid = set()
+    for _ in range(n):
+        valid.add(data[idx].strip()); idx += 1
+
+    answer = data[idx] if idx < len(data) else ""
+    cited = re.findall(r"\\[([^\\[\\]]+)\\]", answer)
+
+    grounded = []
+    invented = []
+    seen_g = set()
+    seen_i = set()
+    for c in cited:
+        if c in valid:
+            if c not in seen_g:
+                grounded.append(c)
+                seen_g.add(c)
+        else:
+            if c not in seen_i:
+                invented.append(c)
+                seen_i.add(c)
+
+    if invented:
+        print("INVALID")
+        print(" ".join(invented))
+    elif not grounded:
+        print("UNGROUNDED")
+        print("NONE")
+    else:
+        print("GROUNDED")
+        print(" ".join(grounded))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\nc1\nc2\nc3\nThe window is 30 days [c2] and we ship widely [c1]. See also [c2].", expected_output: "GROUNDED\nc2 c1", description: "Example 1: all citations valid; deduplicated first-appearance order." },
+        { input: "3\nc1\nc2\nc3\nThe rate is fixed [c4] per the table.", expected_output: "INVALID\nc4", description: "Example 2: an invented citation makes the answer INVALID." },
+        { input: "2\nc1\nc2\nThe model could not ground this.", expected_output: "UNGROUNDED\nNONE", description: "Edge case: no citation tags at all means UNGROUNDED." },
+        { input: "2\nc1\nc2\nWaiver applies in full [c1].", expected_output: "GROUNDED\nc1", description: "Edge case: a single valid citation grounds the answer." }
+      ]
+    },
+    {
+      id: "ai-07-l7",
+      project_id: "ai-07",
+      order: 7,
+      title: "When Retrieval Fails",
+      concept: "Fallback",
+      xp_reward: 10,
+      explanation: `Someone asks your document Q&A tool, "What's the company's policy on Mars colonization?" There is no such policy. Retrieval dutifully returns the three *least irrelevant* chunks it could find — and your model, handed garbage context, confidently summarizes the garbage. The system didn't break loudly. It failed silently, which is worse.
+
+## What it is
+
+**Retrieval failure** is when the vector store has nothing genuinely relevant, yet still returns *something* — because similarity search always returns the top-k, even when the top match is weak. The **fallback** is the deliberate decision to refuse: detect that the best match is too weak, and have the system say "I don't know" or "not in the docs" instead of answering from junk.
+
+Top-k retrieval never returns empty. Ask about Mars and it hands back your three closest chunks no matter how far away they are. The closest chunk to an unanswerable question is still a wrong chunk.
+
+## How it works
+
+The fix is a **similarity threshold**. After scoring, look at the *best* chunk's similarity. If even the best score falls below a cutoff, the store has nothing relevant — so refuse before you ever build a prompt.
+
+\`\`\`python
+def retrieve_or_refuse(query, store, threshold=0.5, k=3):
+    scored = sorted(
+        ((cid, cosine(embed(query), vec)) for cid, vec in store.items()),
+        key=lambda t: -t[1],
+    )
+    if not scored or scored[0][1] < threshold:
+        return None  # refuse: nothing is relevant enough
+    return [cid for cid, s in scored[:k] if s >= threshold]
+\`\`\`
+
+Two layers protect you, and you want both:
+
+1. **Retrieval-side guard.** If the top score is below threshold, return nothing and short-circuit to "I don't know."
+2. **Prompt-side guard.** Even when chunks pass, the prompt still instructs the model to say "not in the docs" if the supplied text doesn't actually answer the question (lesson 4's safety valve).
+
+Picking the threshold is empirical: too high and you refuse answerable questions; too low and junk slips through. You tune it against a test set, the subject of the next lesson.
+
+## Why it matters
+
+- **Silent wrong answers are the worst failure.** A loud error gets fixed; a confident answer from irrelevant context gets believed and acted on.
+- **Refusing is a feature, not a bug.** "I don't know" is the correct answer to an unanswerable question. A system that never refuses cannot be trusted on the questions it *should* refuse.
+- **It bounds the blast radius.** Out-of-scope questions, typos, and adversarial prompts all tend to produce low top scores — the threshold catches them in one cheap check.
+
+## The mental model to keep
+
+Top-k always hands you *something*. Your job is to ask, **"is the best thing it found actually good enough?"** — and to refuse out loud when the answer is no.`,
+      key_terms: [
+        { term: "Retrieval failure", definition: "When the store holds nothing genuinely relevant but top-k search still returns its closest (weak) chunks anyway." },
+        { term: "Similarity threshold", definition: "A cutoff score below which a chunk is treated as not relevant enough to use." },
+        { term: "Fallback / refusal", definition: "Deliberately answering 'I don't know' or 'not in the docs' when the best match is too weak, instead of answering from junk." },
+        { term: "Silent failure", definition: "A confident, fluent answer built from irrelevant context — wrong without any visible error." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A librarian who always hands you a book", content: "Ask for a book the library doesn't own, and a bad librarian still hands you the nearest one off the shelf. A good librarian checks whether the closest match actually fits your request — and says 'we don't have that' when it doesn't. The threshold is that check.", position: "before" },
+        { type: "insight", title: "Refusing is the trustworthy answer", content: "A RAG system earns trust not by always answering, but by knowing when it can't. The threshold is what lets it draw that line — and it is the single cheapest defense against confidently answering from irrelevant context.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Score, check the best, then answer or refuse",
+        steps: [
+          { label: "Score every chunk", desc: "Cosine-similarity the query against the whole store." },
+          { label: "Find the best score", desc: "Look at the single highest-scoring chunk." },
+          { label: "Compare to threshold", desc: "Is even the best match above the relevance cutoff?" },
+          { label: "Answer or refuse", desc: "Above: keep the passing chunks. Below: return 'I don't know.'" }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Why does top-k retrieval still return chunks for a totally unanswerable question?",
+          options: [
+            "Similarity search always returns the closest k chunks, even when the best one is weak",
+            "It throws an error and returns the last successful result",
+            "It randomly samples chunks when nothing matches"
+          ],
+          correct_index: 0,
+          explanation: "Top-k is ranking, not filtering — it hands back the closest matches regardless of how far away they are. You need a threshold to filter."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does a similarity threshold let a RAG system do?",
+          options: [
+            "Refuse to answer when even the best-matching chunk scores too low",
+            "Increase the embedding dimension automatically",
+            "Guarantee the model never says 'I don't know'",
+            "Skip the embedding step entirely"
+          ],
+          correct_index: 0,
+          explanation: "If the top score is below the cutoff, the store has nothing relevant, so the system refuses instead of answering from junk."
+        },
+        {
+          question: "Why is a silent wrong answer worse than a loud error?",
+          options: [
+            "It looks confident and correct, so it gets believed and acted on with no warning",
+            "It uses more tokens than an error message",
+            "It always crashes the application",
+            "It can only happen during training"
+          ],
+          correct_index: 0,
+          explanation: "A loud error prompts a fix; a fluent answer from irrelevant context is trusted, which is exactly when a wrong answer does the most damage."
+        },
+        {
+          question: "If you set the similarity threshold too HIGH, what goes wrong?",
+          options: [
+            "The system refuses questions it actually could have answered",
+            "It hallucinates more often",
+            "It returns more chunks than k",
+            "It ignores the query embedding"
+          ],
+          correct_index: 0,
+          explanation: "Too high a cutoff rejects genuinely relevant chunks, so the system says 'I don't know' even when the answer was in the docs. Too low lets junk through. You tune it on a test set."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Fallback logic check",
+          questions: [
+            { question: "Top-k similarity search returns an empty list when nothing in the store is relevant.", type: "true_false", correct_answer: "false", explanation: "Top-k always returns its closest k chunks regardless of relevance; a threshold is what filters out weak matches." },
+            { question: "Answering 'I don't know' when the best match is too weak instead of answering from junk is called a ______.", type: "fill_in", correct_answer: "fallback", explanation: "The fallback (refusal) is the deliberate choice to refuse rather than answer from irrelevant context." }
+          ]
+        }
+      ],
+      starter_code: `scores = {
+    "c1": 0.82,
+    "c2": 0.41,
+    "c3": 0.18,
+}
+threshold = 0.5
+
+# TODO: find the best (highest) score.
+# If the best score is below the threshold, print "I don't know."
+# Otherwise print the IDs whose score >= threshold, best first.
+`,
+      solution_code: `scores = {
+    "c1": 0.82,
+    "c2": 0.41,
+    "c3": 0.18,
+}
+threshold = 0.5
+
+ranked = sorted(scores.items(), key=lambda t: (-t[1], t[0]))
+best_id, best_score = ranked[0]
+
+if best_score < threshold:
+    print("I don't know.")
+else:
+    kept = [cid for cid, s in ranked if s >= threshold]
+    print("Answer from:", " ".join(kept))
+`,
+      expected_output: `Answer from: c1`,
+      step_throughs: [
+        {
+          title: "top-k always returns -> check the best -> refuse if weak",
+          steps: [
+            { label: "Score the whole store", detail: "Cosine the query against every chunk; you get a score for each.", code: 'scores = {c1: 0.82, c2: 0.41, c3: 0.18}' },
+            { label: "Top-k returns the closest", detail: "Ranking hands back the nearest chunks no matter how far away they are — it never returns empty.", code: 'ranked[0] = (c1, 0.82)' },
+            { label: "Compare best to threshold", detail: "Look only at the single best score. If even that is below the cutoff, nothing is relevant.", code: 'best_score 0.82 >= threshold 0.5 ?' },
+            { label: "Answer or refuse", detail: "Above the line: keep the passing chunks. Below: short-circuit to a refusal.", code: "keep c1  (or, if best < 0.5, refuse with I don't know.)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Chunk scores are {c1: 0.30, c2: 0.22, c3: 0.10} and the threshold is 0.50. What should the system do?",
+          steps: [
+            "Find the best score: c1 at 0.30.",
+            "Compare to the threshold: 0.30 < 0.50.",
+            "Even the closest chunk is too weak, so nothing in the store is relevant enough."
+          ],
+          output: "Refuse: 'I don't know.'"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Scores are {c1: 0.78, c2: 0.55, c3: 0.31, c4: 0.49} with threshold 0.50 and k=3. Which chunks survive, and in what order?",
+          steps: [
+            "Best score is c1 at 0.78, which clears the 0.50 threshold, so the system answers rather than refuses.",
+            "Rank all chunks by descending score: c1 (0.78), c2 (0.55), c4 (0.49), c3 (0.31).",
+            "Keep only those at or above 0.50: c1 and c2 pass; c4 (0.49) and c3 (0.31) are dropped.",
+            "Even though k=3, only two chunks clear the threshold, so the system uses just those two — the threshold filters, k only caps."
+          ],
+          output: "Keep c1, c2 (in that order); c3 and c4 fall below threshold."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "no threshold vs. threshold + fallback",
+          columns: ["Scenario", "No threshold (always answer)", "Threshold + fallback"],
+          rows: [
+            { cells: ["Best chunk is highly relevant", "Answers correctly", "Answers correctly"] },
+            { cells: ["Best chunk is weak / off-topic", "Answers from junk", "Refuses: 'I don't know'"] },
+            { cells: ["Out-of-scope question", "Confident wrong answer", "Caught by low top score"] },
+            { cells: ["Trustworthy on hard cases", "No", "Yes"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "answer vs. refuse",
+          bins: [
+            { id: "answer", label: "System should answer" },
+            { id: "refuse", label: "System should refuse" }
+          ],
+          items: [
+            { id: "i1", text: "Top score 0.88, threshold 0.5", bin: "answer" },
+            { id: "i2", text: "Top score 0.21, threshold 0.5", bin: "refuse" },
+            { id: "i3", text: "Best chunk clearly answers the question", bin: "answer" },
+            { id: "i4", text: "All chunks are off-topic, best score 0.12", bin: "refuse" },
+            { id: "i5", text: "Top score 0.63, threshold 0.5", bin: "answer" },
+            { id: "i6", text: "Question about a topic absent from the docs", bin: "refuse" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "Explain in your own words why a similarity threshold matters even though the model's prompt already says 'say I don't know if the answer isn't in the context.'",
+          sampleAnswer: "The prompt-side instruction depends on the model correctly judging that the supplied chunks don't answer the question — and models are unreliable at that, especially when the junk chunks are topically nearby. The threshold is a cheaper, deterministic guard that fires before the model is even involved: if the best match is too weak, you refuse without spending a token. Using both layers means a weak retrieval is caught either by the threshold or, if it slips through, by the model's own out."
+        }
+      ],
+      hints: [
+        "Sort the scores by value descending; the first item is the best match.",
+        "Compare only the best score to the threshold to decide answer vs. refuse.",
+        "When answering, keep every chunk whose score is >= threshold, in best-first order."
+      ],
+      challenge_title: "The Refusal Gate",
+      challenge_description: "Implement the retrieval guard that decides whether your RAG system answers from the passing chunks or refuses with 'I don't know.'",
+      challenge_story: "Your document Q&A tool keeps embarrassing the team: when someone asks about a topic that isn't in the docs, top-k retrieval hands back its three least-irrelevant chunks and the model cheerfully summarizes nonsense. The fix is a **refusal gate** that sits between retrieval and the prompt. It looks at the best similarity score: if even the closest chunk is below the relevance threshold, the system refuses outright; otherwise it passes along every chunk that clears the bar, ranked best-first, ready to be stuffed into the prompt.",
+      challenge_statement: "You are given a relevance `threshold` and `N` scored chunks (each an ID and a cosine-similarity score). Decide whether to answer or refuse:\n\n1. Find the **best** (highest) score. On a tie, the lexicographically smaller ID is the best.\n2. If the best score is **strictly less than** `threshold`, the system **refuses**.\n3. Otherwise, the system **answers** using every chunk whose score is **greater than or equal to** `threshold`, ranked by descending score (ties broken by ascending ID).",
+      challenge_input_format: "Line 1: an integer `N` and a float `threshold`, space-separated.\nThe next `N` lines: each a chunk ID and its float score, space-separated.",
+      challenge_output_format: "If the system refuses:\nLine 1: `REFUSE`\nLine 2: `I don't know.`\n\nIf the system answers:\nLine 1: `ANSWER`\nLine 2: the IDs of the passing chunks, space-separated, ranked by descending score (ties broken by ascending ID).",
+      challenge_constraints: [
+        "1 ≤ N ≤ 5000",
+        "0.0 ≤ threshold ≤ 1.0",
+        "-1.0 ≤ score ≤ 1.0",
+        "IDs are non-empty tokens without spaces.",
+      ],
+      challenge_examples: [
+        { input: "3 0.50\nc1 0.82\nc2 0.40\nc3 0.61", output: "ANSWER\nc1 c3", explanation: "Best score is c1 at 0.82, above 0.50, so the system answers. c1 (0.82) and c3 (0.61) clear the threshold; c2 (0.40) is dropped." },
+        { input: "3 0.70\nc1 0.55\nc2 0.41\nc3 0.62", output: "REFUSE\nI don't know.", explanation: "The best score is c3 at 0.62, still below the 0.70 threshold, so nothing is relevant enough and the system refuses." },
+      ],
+      challenge_notes: "This gate is the cheapest, most reliable defense against confidently answering from irrelevant context. The threshold is empirical: too high refuses answerable questions, too low lets junk through — you tune it against a test set (the next lesson's topic). Note the boundary: a chunk exactly at the threshold passes (>=), but the best score must be strictly below to trigger a refusal (<).",
+      challenge_hints: [
+        "Read all chunks into a list of (id, score) tuples.",
+        "Sort by `key=lambda t: (-t[1], t[0])` so the first element is the best (highest score, ascending ID on ties).",
+        "Refuse if the best score < threshold; otherwise keep every chunk with score >= threshold in that sorted order.",
+        "Print exactly two lines for each branch, matching the required wording.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    threshold = float(first[1])
+    chunks = []
+    # TODO: read N (id, score) pairs.
+
+    # TODO: sort best-first, then refuse if best < threshold else answer with passing chunks.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    threshold = float(first[1])
+    chunks = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        chunks.append((parts[0], float(parts[1])))
+
+    chunks.sort(key=lambda t: (-t[1], t[0]))
+    best_score = chunks[0][1]
+
+    if best_score < threshold:
+        print("REFUSE")
+        print("I don't know.")
+    else:
+        kept = [cid for cid, s in chunks if s >= threshold]
+        print("ANSWER")
+        print(" ".join(kept))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 0.50\nc1 0.82\nc2 0.40\nc3 0.61", expected_output: "ANSWER\nc1 c3", description: "Example 1: best clears threshold; two chunks pass." },
+        { input: "3 0.70\nc1 0.55\nc2 0.41\nc3 0.62", expected_output: "REFUSE\nI don't know.", description: "Example 2: even the best score is below threshold, so refuse." },
+        { input: "2 0.50\nz 0.90\na 0.90", expected_output: "ANSWER\na z", description: "Edge case: tied top scores broken by ascending ID." },
+        { input: "1 0.30\nonly 0.30", expected_output: "ANSWER\nonly", description: "Edge case: a score exactly at the threshold passes (>=)." }
+      ]
+    },
+    {
+      id: "ai-07-l8",
+      project_id: "ai-07",
+      order: 8,
+      title: "Evaluating RAG Quality",
+      concept: "Evaluation",
+      xp_reward: 10,
+      explanation: `"It seems to work" is not a metric. You built a RAG pipeline; now a stakeholder asks, "How good is it?" If your answer is a shrug and a couple of cherry-picked demos, you can't tune it, can't compare two versions, and can't catch the day it silently regresses. RAG quality has to be *measured*, and it splits into two halves that fail independently.
+
+## What it is
+
+A RAG system has two stages, so it has two things to measure:
+
+- **Retrieval quality** — did the search return the *right* chunks? Measured with **precision** and **recall**.
+- **Answer quality** — given the retrieved chunks, is the final answer actually *supported* by them? Measured with **faithfulness**.
+
+You need both, because they break separately. Perfect retrieval with an unfaithful model still hallucinates. A faithful model fed the wrong chunks faithfully summarizes the wrong thing.
+
+## How it works
+
+For one test question you have a set of **gold** chunks (the ones that truly answer it) and the set your system **retrieved**. A *hit* is a retrieved chunk that's also gold.
+
+- **Precision** = hits / retrieved. Of what you pulled, how much was relevant? Low precision = you're dragging in junk.
+- **Recall** = hits / gold. Of what you needed, how much did you find? Low recall = you missed the answer.
+- **Faithfulness** = supported claims / total claims. Of the statements in the answer, how many are actually backed by the retrieved context? Low faithfulness = the model is making things up.
+
+\`\`\`python
+def evaluate(retrieved, gold, claim_supported):
+    hits = len(set(retrieved) & set(gold))
+    precision = hits / len(retrieved) if retrieved else 0.0
+    recall = hits / len(gold) if gold else 0.0
+    faithfulness = sum(claim_supported) / len(claim_supported)
+    return precision, recall, faithfulness
+\`\`\`
+
+You run this over a **test set** of many questions and average. There's a tug-of-war: retrieving more chunks raises recall (you catch more gold) but usually lowers precision (you drag in junk too). The right operating point depends on your app.
+
+## Why it matters
+
+- **You can't improve what you can't measure.** Metrics tell you *which* stage to fix — bad recall means tune chunking or the threshold; bad faithfulness means tighten the prompt.
+- **Regression detection.** A test set turns "it feels worse" into a number that drops, so you catch breakage before users do.
+- **Honest comparison.** Two chunking strategies, two thresholds, two models — metrics pick the winner instead of vibes.
+
+## The mental model to keep
+
+**Retrieval and generation fail in different ways, so measure them separately: precision/recall for what you found, faithfulness for what you said about it.**`,
+      key_terms: [
+        { term: "Precision", definition: "Of the chunks you retrieved, the fraction that were actually relevant (hits / retrieved)." },
+        { term: "Recall", definition: "Of the chunks that were truly relevant, the fraction you managed to retrieve (hits / gold)." },
+        { term: "Faithfulness", definition: "The fraction of claims in the answer that are actually supported by the retrieved context." },
+        { term: "Test set", definition: "A fixed collection of questions with known gold chunks, run repeatedly to measure and compare RAG quality." }
+      ],
+      callouts: [
+        { type: "insight", title: "Two stages, two failure modes", content: "Retrieval can fail (wrong chunks) and generation can fail (unsupported claims) completely independently. A single 'is it good?' score hides which one broke. Measure precision/recall and faithfulness separately so a regression tells you exactly where to look.", position: "before" },
+        { type: "tip", title: "The precision-recall tug-of-war", content: "Retrieving more chunks (raising k) tends to raise recall but lower precision, and vice versa. There's no universally 'best' k — pick the operating point your application needs, then hold it fixed while you measure everything else.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Measuring the whole pipeline",
+        steps: [
+          { label: "Compare retrieved vs. gold", desc: "Intersect the chunks you pulled with the chunks that truly answer the question." },
+          { label: "Precision and recall", desc: "hits / retrieved and hits / gold quantify retrieval quality." },
+          { label: "Check answer claims", desc: "For each claim in the answer, is it supported by the retrieved context?" },
+          { label: "Faithfulness + average", desc: "supported / total claims; average all metrics across the test set." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Your retriever pulled 5 chunks; 2 of them were truly relevant (gold). What is the precision?",
+          options: [
+            "0.4 (2 hits / 5 retrieved)",
+            "1.0 (it returned chunks)",
+            "0.2 (2 / 10)"
+          ],
+          correct_index: 0,
+          explanation: "Precision = hits / retrieved = 2 / 5 = 0.4. Of what you pulled, 40% was relevant."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does recall measure in a RAG retrieval step?",
+          options: [
+            "Of the chunks that were truly relevant, the fraction you actually retrieved",
+            "How fast the retriever runs",
+            "The number of tokens in the answer",
+            "Whether the model used a system prompt"
+          ],
+          correct_index: 0,
+          explanation: "Recall = hits / gold. Low recall means you missed relevant chunks the answer needed."
+        },
+        {
+          question: "An answer makes 4 claims; 3 are supported by the retrieved context and 1 is not. What is the faithfulness?",
+          options: [
+            "0.75 (3 supported / 4 total)",
+            "1.00 (it answered)",
+            "0.25 (1 unsupported / 4)",
+            "0.50 (half credit)"
+          ],
+          correct_index: 0,
+          explanation: "Faithfulness = supported claims / total claims = 3 / 4 = 0.75. The one unsupported claim is a hallucination dragging the score down."
+        },
+        {
+          question: "Why measure retrieval quality and answer faithfulness separately instead of one overall score?",
+          options: [
+            "Because retrieval and generation fail independently, so a separate metric tells you which stage to fix",
+            "Because the API requires two numbers",
+            "Because faithfulness is always higher than precision",
+            "Because precision and recall are the same thing"
+          ],
+          correct_index: 0,
+          explanation: "Good retrieval with an unfaithful model still hallucinates; a faithful model on wrong chunks summarizes the wrong thing. Separate metrics localize the failure."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "RAG metrics check",
+          questions: [
+            { question: "Faithfulness measures whether the answer's claims are actually supported by the retrieved context.", type: "true_false", correct_answer: "true", explanation: "Faithfulness = supported claims / total claims; it catches the model making things up even when retrieval was fine." },
+            { question: "Of the chunks that were truly relevant, the fraction your system actually retrieved is called ______.", type: "fill_in", correct_answer: "recall", explanation: "Recall = hits / gold; low recall means you missed relevant chunks." }
+          ]
+        }
+      ],
+      starter_code: `retrieved = ["c1", "c2", "c3"]   # what the system pulled
+gold = ["c1", "c2"]              # the chunks that truly answer the question
+claim_supported = [1, 1, 1, 0]   # 1 = claim backed by context, 0 = not
+
+# TODO: compute precision (hits / retrieved), recall (hits / gold),
+# and faithfulness (supported / total claims). Print each to 4 decimals.
+`,
+      solution_code: `retrieved = ["c1", "c2", "c3"]
+gold = ["c1", "c2"]
+claim_supported = [1, 1, 1, 0]
+
+hits = len(set(retrieved) & set(gold))
+precision = hits / len(retrieved) if retrieved else 0.0
+recall = hits / len(gold) if gold else 0.0
+faithfulness = sum(claim_supported) / len(claim_supported)
+
+print(f"precision: {precision:.4f}")
+print(f"recall: {recall:.4f}")
+print(f"faithfulness: {faithfulness:.4f}")
+`,
+      expected_output: `precision: 0.6667
+recall: 1.0000
+faithfulness: 0.7500`,
+      step_throughs: [
+        {
+          title: "retrieved vs gold -> precision/recall -> claims -> faithfulness",
+          steps: [
+            { label: "Intersect with gold", detail: "Count how many retrieved chunks are also in the gold set — those are the hits.", code: 'hits = len({c1,c2,c3} & {c1,c2}) = 2' },
+            { label: "Precision", detail: "Of everything you pulled, what fraction was relevant?", code: 'precision = 2 / 3 = 0.6667' },
+            { label: "Recall", detail: "Of everything you needed, what fraction did you find?", code: 'recall = 2 / 2 = 1.0000' },
+            { label: "Faithfulness", detail: "Of the answer's claims, what fraction is supported by the context?", code: 'faithfulness = 3 / 4 = 0.7500' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Retrieved = [c1, c2], gold = [c1, c2], all claims supported. Compute precision, recall, faithfulness.",
+          steps: [
+            "Hits = chunks in both retrieved and gold = {c1, c2} = 2.",
+            "Precision = hits / retrieved = 2 / 2 = 1.0.",
+            "Recall = hits / gold = 2 / 2 = 1.0.",
+            "Every claim is supported, so faithfulness = 1.0 — a perfect score on this question."
+          ],
+          output: "precision 1.0, recall 1.0, faithfulness 1.0"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Retrieved = [c1, c2, c9, c8], gold = [c1, c2, c5]. The answer makes 3 claims, all supported. Diagnose the failure.",
+          steps: [
+            "Hits = retrieved intersect gold = {c1, c2} = 2.",
+            "Precision = 2 / 4 = 0.50 — half of what you retrieved (c9, c8) was junk.",
+            "Recall = 2 / 3 = 0.667 — you missed c5, a gold chunk the answer may have needed.",
+            "Faithfulness = 3 / 3 = 1.0 — the model only stated things its context supports.",
+            "Diagnosis: generation is healthy, but retrieval is the weak stage — it pulls junk (low precision) and misses a gold chunk (imperfect recall). Fix chunking or the threshold, not the prompt."
+          ],
+          output: "precision 0.50, recall 0.667, faithfulness 1.0 -> fix retrieval, not generation"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "what each metric tells you",
+          columns: ["Metric", "Formula", "Low score means"],
+          rows: [
+            { cells: ["Precision", "hits / retrieved", "You're dragging in irrelevant junk"] },
+            { cells: ["Recall", "hits / gold", "You're missing relevant chunks"] },
+            { cells: ["Faithfulness", "supported / claims", "The model is making things up"] },
+            { cells: ["All three together", "averaged over a test set", "Localizes which stage to fix"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "retrieval metric vs. generation metric",
+          bins: [
+            { id: "retrieval", label: "Measures retrieval" },
+            { id: "generation", label: "Measures generation" }
+          ],
+          items: [
+            { id: "i1", text: "Precision (hits / retrieved)", bin: "retrieval" },
+            { id: "i2", text: "Faithfulness (supported / claims)", bin: "generation" },
+            { id: "i3", text: "Recall (hits / gold)", bin: "retrieval" },
+            { id: "i4", text: "Are the answer's claims backed by context?", bin: "generation" },
+            { id: "i5", text: "Did we pull the right chunks?", bin: "retrieval" },
+            { id: "i6", text: "Did the model invent unsupported statements?", bin: "generation" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can a RAG system score perfect on faithfulness and still give a useless answer?",
+          sampleAnswer: "Faithfulness only checks whether the answer's claims are supported by the chunks that were retrieved — not whether those chunks were the right ones. If retrieval missed the gold chunk (low recall), the model can faithfully and correctly summarize the wrong context, producing an answer that is fully grounded yet doesn't actually address the question. That's why you measure recall too: a faithful answer over the wrong evidence is still a failure."
+        }
+      ],
+      hints: [
+        "hits = len(set(retrieved) & set(gold)).",
+        "precision = hits / len(retrieved); recall = hits / len(gold); guard against dividing by zero.",
+        "faithfulness = sum of the supported flags / number of claims; format each metric with f-string :.4f."
+      ],
+      challenge_title: "The RAG Scorecard",
+      challenge_description: "Compute the three core RAG quality metrics for one test question and decide whether the answer passes your quality bar.",
+      challenge_story: "Your RAG system is going to production, and 'it seems to work' won't satisfy the review board. You're building the **evaluation harness** that scores the pipeline on a labeled test set. For each question you know the gold chunks (the ones that truly answer it), the chunks your system actually retrieved, and which of the answer's claims a grader marked as supported by the context. Turn that into the three numbers everyone trusts — precision, recall, faithfulness — and a single PASS/FAIL verdict against the quality bar.",
+      challenge_statement: "You are given, for one test question:\n\n- `R` retrieved chunk IDs,\n- `G` gold (truly relevant) chunk IDs,\n- `A` claim flags, each `1` (supported by context) or `0` (unsupported).\n\nA *hit* is a retrieved chunk that is also gold. Compute:\n\n- **precision** = hits / R (or 0.0 if R is 0),\n- **recall** = hits / G (or 0.0 if G is 0),\n- **faithfulness** = (number of 1 flags) / A.\n\nPrint each metric rounded to exactly 4 decimal places, then print `PASS` if precision >= 0.5 AND recall >= 0.5 AND faithfulness == 1.0, otherwise `FAIL`.",
+      challenge_input_format: "Line 1: three integers `R G A`.\nLine 2: `R` retrieved chunk IDs, space-separated.\nLine 3: `G` gold chunk IDs, space-separated.\nLine 4: `A` claim flags (each 0 or 1), space-separated.",
+      challenge_output_format: "Line 1: precision to 4 decimal places.\nLine 2: recall to 4 decimal places.\nLine 3: faithfulness to 4 decimal places.\nLine 4: `PASS` or `FAIL`.",
+      challenge_constraints: [
+        "1 ≤ R ≤ 1000",
+        "1 ≤ G ≤ 1000",
+        "1 ≤ A ≤ 1000",
+        "Chunk IDs are non-empty tokens without spaces; each claim flag is 0 or 1.",
+      ],
+      challenge_examples: [
+        { input: "3 2 4\nc1 c2 c3\nc1 c2\n1 1 1 0", output: "0.6667\n1.0000\n0.7500\nFAIL", explanation: "Hits = {c1,c2} = 2. Precision 2/3 = 0.6667, recall 2/2 = 1.0, faithfulness 3/4 = 0.75. Faithfulness is below 1.0, so FAIL." },
+        { input: "2 2 2\nc1 c2\nc1 c2\n1 1", output: "1.0000\n1.0000\n1.0000\nPASS", explanation: "Perfect retrieval (precision and recall 1.0) and every claim supported (faithfulness 1.0) clears all three bars, so PASS." },
+      ],
+      challenge_notes: "Run this over a whole test set and average to get your headline numbers; here you score a single question. The PASS rule demands perfect faithfulness because an unsupported claim is a hallucination — the exact thing RAG exists to prevent — while it tolerates imperfect precision/recall above 0.5. Watch the rounding: print metrics with an f-string like `f\"{value:.4f}\"`.",
+      challenge_hints: [
+        "Build sets from the retrieved and gold ID lists; hits = len(retrieved_set & gold_set).",
+        "precision = hits / R, recall = hits / G; both denominators are at least 1 here, but guarding for 0 is good habit.",
+        "faithfulness = sum of the flag list / A, since each flag is already 0 or 1.",
+        "PASS requires precision >= 0.5 and recall >= 0.5 and faithfulness == 1.0; print metrics with :.4f.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    r, g, a = map(int, data[idx].split()); idx += 1
+    retrieved = data[idx].split(); idx += 1
+    gold = data[idx].split(); idx += 1
+    flags = list(map(int, data[idx].split())); idx += 1
+    # TODO: compute hits, precision, recall, faithfulness, and the PASS/FAIL verdict.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    r, g, a = map(int, data[idx].split()); idx += 1
+    retrieved = data[idx].split(); idx += 1
+    gold = data[idx].split(); idx += 1
+    flags = list(map(int, data[idx].split())); idx += 1
+
+    hits = len(set(retrieved) & set(gold))
+    precision = hits / r if r else 0.0
+    recall = hits / g if g else 0.0
+    faithfulness = sum(flags) / a if a else 0.0
+
+    print(f"{precision:.4f}")
+    print(f"{recall:.4f}")
+    print(f"{faithfulness:.4f}")
+    if precision >= 0.5 and recall >= 0.5 and faithfulness == 1.0:
+        print("PASS")
+    else:
+        print("FAIL")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 2 4\nc1 c2 c3\nc1 c2\n1 1 1 0", expected_output: "0.6667\n1.0000\n0.7500\nFAIL", description: "Example 1: an unsupported claim drops faithfulness below 1.0, so FAIL." },
+        { input: "2 2 2\nc1 c2\nc1 c2\n1 1", expected_output: "1.0000\n1.0000\n1.0000\nPASS", description: "Example 2: perfect on all three metrics, so PASS." },
+        { input: "4 2 3\nc1 c2 c9 c8\nc1 c2\n1 1 1", expected_output: "0.5000\n1.0000\n1.0000\nPASS", description: "Edge case: precision exactly 0.5 still passes the >= 0.5 bar." }
       ]
     }
   ]

@@ -6,7 +6,7 @@ export default {
     difficulty: "intermediate",
     category: "prompting",
     estimated_time: 50,
-    lessons_count: 5,
+    lessons_count: 8,
     tags: ["prompting", "chain-of-thought", "few-shot", "react", "reasoning"],
     order: 15,
     cover_image: ""
@@ -1424,6 +1424,845 @@ main()
         { input: "5 50 2\n1 80\n2 30\n3 90\n4 50\n5 90", expected_output: "4\n3 5\n180", description: "Full extract-rank-summarize chain with a score tie broken by id." },
         { input: "3 100 5\n1 10\n2 20\n3 30", expected_output: "0\n-\n0", description: "Empty extraction propagates through the chain to `-` and 0." },
         { input: "4 0 2\n7 5\n3 5\n9 1\n1 5", expected_output: "4\n1 3\n10", description: "All survive; equal scores rank by smaller id, so 1 and 3 lead." }
+      ]
+    },
+    {
+      id: "ai-15-l6",
+      project_id: "ai-15",
+      order: 6,
+      title: "Tree of Thoughts",
+      concept: "ToT",
+      xp_reward: 10,
+      explanation: `Chain of thought commits to one line of reasoning and rides it to the end. But hard problems often have a first step that *looks* promising and quietly dooms everything after it. **Tree of thoughts (ToT)** fixes that by refusing to commit early: at each step it spawns several candidate continuations, scores them, keeps the best few, and discards the rest. Reasoning stops being a single rope and becomes a branching, self-pruning search.
+
+## What it is
+
+**Tree of thoughts** is a prompting pattern where the model explores **multiple reasoning paths at once**, arranged as a tree. Each node is a partial reasoning state. From any node the model proposes several next "thoughts" — the branches. An evaluator scores how promising each branch is, and only the strongest survive to be expanded further. Weak branches are **pruned** so the search doesn't waste effort on dead ends.
+
+Where chain of thought is depth-first and irreversible (one path, no backtracking), ToT is a deliberate search: it can abandon a bad branch and pour effort into a better one. The width of the search — how many branches you keep at each level — is the **beam width**.
+
+## How it works
+
+The loop is propose, evaluate, prune, expand:
+
+\`\`\`python
+def tree_of_thoughts(root, beam_width, depth):
+    frontier = [root]
+    for _ in range(depth):
+        candidates = []
+        for node in frontier:
+            for thought in propose_next(node):     # branch out
+                candidates.append((score(thought), thought))
+        candidates.sort(reverse=True)              # best first
+        frontier = [t for _, t in candidates[:beam_width]]  # prune to top-k
+    return best(frontier)
+\`\`\`
+
+Two knobs control the search. **Branching factor** is how many candidates each node proposes. **Beam width** is how many you keep after scoring. A beam width of 1 collapses ToT back into greedy chain of thought — you always follow the single best-looking branch and can never recover from a wrong turn. Widen the beam and the search can carry a slightly-weaker-now branch that pays off later.
+
+## Why it matters
+
+ToT shines exactly where a single chain is fragile: puzzles, planning, math with branch points, and any problem where the first move constrains the rest.
+
+- **It escapes early mistakes.** A greedy chain that takes a bad first step is stuck; ToT keeps alternatives alive and can route around the dead end.
+- **It costs a lot more.** You run many partial reasonings and score each, so token and latency cost scale with branching factor times depth. Reserve it for genuinely hard problems.
+- **It needs a usable evaluator.** Pruning is only as good as the score. A misleading scorer prunes the right branch, and you're worse off than plain CoT.
+
+## The mental model to keep
+
+**Don't bet everything on the first idea. Sprout several, judge them, keep the best few, and search — reasoning as a pruned tree, not a single rope.**`,
+      key_terms: [
+        { term: "Tree of thoughts", definition: "A pattern that explores multiple reasoning branches as a tree, scoring and pruning to find the best path." },
+        { term: "Branch", definition: "One candidate next thought proposed from a reasoning node." },
+        { term: "Pruning", definition: "Discarding low-scoring branches so the search ignores dead ends." },
+        { term: "Beam width", definition: "How many branches are kept after scoring at each level of the tree." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A chess player looking ahead", content: "A good player doesn't lock onto the first move that comes to mind. They picture several moves, weigh how each position looks, and explore the promising ones deeper while ignoring the bad ones. ToT is that for reasoning.", position: "before" },
+        { type: "insight", title: "Beam width 1 is just greedy CoT", content: "Keep only the single best branch at every step and you have ordinary chain of thought with no recovery. The whole power of ToT comes from keeping more than one candidate alive.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How tree of thoughts searches",
+        steps: [
+          { label: "Branch out", desc: "From each live node, propose several candidate next thoughts." },
+          { label: "Evaluate", desc: "Score how promising each candidate branch looks." },
+          { label: "Prune", desc: "Keep only the top few branches; discard the weak ones." },
+          { label: "Expand or finish", desc: "Expand survivors deeper, repeat, then return the best path found." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What happens to tree of thoughts when you set the beam width to 1?",
+          options: ["It explores every possible branch", "It collapses into greedy chain of thought with no backtracking", "It stops working entirely"],
+          correct_index: 1,
+          explanation: "Keeping only one branch per step is exactly greedy CoT: you follow the single best-looking path and can never recover from a bad turn."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What is the key difference between chain of thought and tree of thoughts?",
+          options: [
+            "CoT uses tools while ToT does not",
+            "CoT follows one reasoning path; ToT explores several branches, scores them, and prunes the weak ones",
+            "ToT changes the model's weights",
+            "CoT is always more accurate"
+          ],
+          correct_index: 1,
+          explanation: "ToT is a deliberate, branching search that can abandon bad paths, whereas CoT commits to a single irreversible chain."
+        },
+        {
+          question: "What does pruning accomplish in tree of thoughts?",
+          options: [
+            "It deletes the model's memory",
+            "It discards low-scoring branches so the search stops wasting effort on dead ends",
+            "It lowers the temperature",
+            "It merges all branches into one"
+          ],
+          correct_index: 1,
+          explanation: "Pruning removes weak branches after scoring so the search concentrates effort on the most promising paths."
+        },
+        {
+          question: "What is the main practical cost of tree of thoughts?",
+          options: [
+            "It cannot be debugged",
+            "Running and scoring many partial reasonings multiplies token and latency cost",
+            "It only works on text classification",
+            "It permanently raises the beam width"
+          ],
+          correct_index: 1,
+          explanation: "Cost scales with branching factor times depth, so ToT is reserved for genuinely hard problems."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Tree of thoughts check",
+          questions: [
+            { question: "Tree of thoughts can abandon a bad reasoning branch and explore a better one instead.", type: "true_false", correct_answer: "true", explanation: "Unlike a single chain, ToT keeps multiple branches alive and prunes the weak ones, so it can route around dead ends." },
+            { question: "Discarding low-scoring branches so the search ignores dead ends is called ______.", type: "fill_in", correct_answer: "pruning", explanation: "Pruning is the step that keeps only the most promising branches." }
+          ]
+        }
+      ],
+      starter_code: `# Pick the best branch from a set of scored candidate thoughts (beam width 1 step).
+candidates = [
+    ("multiply first", 3),
+    ("add first", 7),
+    ("guess the answer", 1),
+]
+# TODO: keep only the highest-scoring candidate (the surviving branch).
+print(candidates)
+`,
+      solution_code: `candidates = [
+    ("multiply first", 3),
+    ("add first", 7),
+    ("guess the answer", 1),
+]
+
+best = max(candidates, key=lambda c: c[1])
+
+print("candidates:", candidates)
+print("kept branch:", best[0], "score:", best[1])
+`,
+      expected_output: `candidates: [('multiply first', 3), ('add first', 7), ('guess the answer', 1)]
+kept branch: add first score: 7`,
+      step_throughs: [
+        {
+          title: "one level of the tree: branch, score, prune",
+          steps: [
+            { label: "Start at a node", detail: "You hold a partial reasoning state and need to decide the next thought. With ToT you won't commit to just one.", code: 'frontier = ["3 boxes of 12 apples..."]' },
+            { label: "Branch out", detail: "Propose several candidate next thoughts from this node instead of a single one.", code: 'proposals = ["multiply 3x12", "add 12+12+12", "guess 30"]' },
+            { label: "Evaluate each", detail: "Score how promising each branch looks; a good scorer ranks correct-leaning steps higher.", code: 'scores = [9, 8, 1]  # guess scores low' },
+            { label: "Prune to the beam", detail: "Keep only the top branches (here beam width 2); discard the dead ends and expand the survivors next.", code: 'frontier = ["multiply 3x12", "add 12+12+12"]' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "From a node, the model proposes three branches scored 4, 9, and 2. With beam width 1, which branch survives to be expanded?",
+          steps: [
+            "Beam width 1 means you keep only the single highest-scoring branch.",
+            "Compare the scores: 9 is the largest.",
+            "The branch scored 9 survives; the others (4 and 2) are pruned."
+          ],
+          output: "The branch scored 9 — beam width 1 keeps only the top one."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A puzzle's correct solution starts with a first move that scores only second-best at depth 1, but leads to a far better final state. Why might beam width 1 fail here while beam width 2 succeeds?",
+          steps: [
+            "Beam width 1 keeps only the single best-looking branch at each level, so it prunes the second-best first move immediately.",
+            "But that pruned move was the one that paid off later, so greedy search never even explores it.",
+            "Beam width 2 keeps the top two first moves alive, including the second-best one.",
+            "Expanding that surviving branch reveals its strong downstream states, so the wider beam finds the better overall path."
+          ],
+          output: "Beam width 1 prunes the second-best-now branch that wins later; a wider beam keeps it alive long enough to pay off."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "chain of thought vs tree of thoughts",
+          columns: ["Aspect", "Chain of thought", "Tree of thoughts"],
+          rows: [
+            { cells: ["Reasoning shape", "One linear path", "Branching tree"] },
+            { cells: ["Recover from a bad step", "No, it's committed", "Yes, explore other branches"] },
+            { cells: ["Cost", "One reasoning pass", "Many branches scored (much higher)"] },
+            { cells: ["Best for", "Most multi-step tasks", "Hard search/planning problems"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "tree of thoughts vs chain of thought",
+          bins: [
+            { id: "tot", label: "Tree of thoughts" },
+            { id: "cot", label: "Chain of thought" }
+          ],
+          items: [
+            { id: "i1", text: "Explores several branches per step", bin: "tot" },
+            { id: "i2", text: "Follows a single reasoning path", bin: "cot" },
+            { id: "i3", text: "Scores and prunes weak branches", bin: "tot" },
+            { id: "i4", text: "Commits to its first step irreversibly", bin: "cot" },
+            { id: "i5", text: "Has a tunable beam width", bin: "tot" },
+            { id: "i6", text: "Cheapest reasoning upgrade for one chain", bin: "cot" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can a wider beam width find a correct answer that greedy chain of thought misses?",
+          sampleAnswer: "Greedy CoT keeps only the single best-looking step at each point, so if the path to the right answer begins with a move that scores second-best early on, it gets pruned and never explored. A wider beam keeps several branches alive at once, including the one that looks worse now but leads somewhere better, giving the search a chance to discover that the slower-starting path actually wins."
+        }
+      ],
+      hints: [
+        "max() with a key picks the element with the largest score.",
+        "Use key=lambda c: c[1] so it compares on the score, not the text.",
+        "The kept branch is the tuple max() returns; print its label and score."
+      ],
+      challenge_title: "Prune the Reasoning Tree",
+      challenge_description: "Run a beam search over a tree of reasoning nodes and report the best-scoring path to a leaf.",
+      challenge_story: "Your agent solves hard problems with **tree of thoughts**: each reasoning node branches into candidate next thoughts, and a scorer rates every node. To keep the search affordable you run a **beam search** — at each level you keep only the `B` highest-scoring partial paths and prune the rest. A path's strength is the sum of the scores of the nodes along it. When the search reaches a leaf (a node with no children), that path is a complete answer. Build the beam search that finds the strongest complete path so you can see what survives pruning.",
+      challenge_statement: "You're given a tree of `n` nodes numbered `1..n`; node `1` is the root. Each node has an integer score and a list of child node ids. A **path** runs from the root down to a leaf, and its strength is the **sum of the scores** of the nodes on it.\n\nRun a level-by-level beam search with beam width `B`:\n\n1. Start with the root as the only path.\n2. At each level, expand every live path by one node into all of its children, accumulating the path strength.\n3. Any path that reaches a **leaf** (a node with no children) is a finished candidate answer.\n4. Among all paths at the level, keep only the `B` with the **highest accumulated strength** to expand further. Break ties by **smaller current node id**.\n\nPrint the leaf id of the best finished path and its total strength. If several finished paths tie on strength, prefer the one ending at the **smaller leaf id**.",
+      challenge_input_format: "The first line has two integers `n B`. Each of the next `n` lines describes one node: `id score` followed by zero or more child ids, all space-separated. Node `1` is the root.",
+      challenge_output_format: "One line: `leaf_id total_strength`, separated by a single space.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ B ≤ n",
+        "-1000000000 ≤ score ≤ 1000000000",
+        "The structure is a tree rooted at node 1; every non-root node has exactly one parent.",
+      ],
+      challenge_examples: [
+        { input: "5 2\n1 3 2 3\n2 5 4\n3 1 5\n4 8\n5 2", output: "4 16", explanation: "Root 1(3) branches to 2(acc 8) and 3(acc 4). Both fit the beam. From 2: leaf 4 -> 8+8=16. From 3: leaf 5 -> 4+2=6. The best finished path ends at leaf 4 with strength 16." },
+        { input: "5 1\n1 0 2 3\n2 10 4\n3 1 5\n4 1\n5 100", output: "4 11", explanation: "Beam width 1 greedily keeps only node 2 (acc 10) over node 3 (acc 1), pruning the branch that led to the high-scoring leaf 5. It reaches leaf 4 with strength 0+10+1=11 and never sees the better path." },
+      ],
+      challenge_notes: "Notice example 2: beam width 1 is greedy chain of thought, and it prunes the branch through node 3 that actually leads to the best leaf (strength 101 with a wider beam). Widen the beam and the search keeps that slower-starting branch alive. That trade-off — search quality versus cost — is the whole point of the beam width knob.",
+      challenge_hints: [
+        "Store each node's score and child list; node 1 is the root and a leaf is any node with an empty child list.",
+        "Carry the frontier as a list of (node_id, accumulated_strength); a path that hits a leaf updates your best answer.",
+        "After building the next level, sort by (-strength, node_id) and slice to the first B entries to prune.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, B = map(int, data[0].split())
+    score = [0] * (n + 1)
+    children = [[] for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        node = int(parts[0])
+        score[node] = int(parts[1])
+        children[node] = [int(x) for x in parts[2:]]
+    # TODO: run a beam search of width B from the root (node 1). Track the best
+    # finished path (root-to-leaf strength sum); print "leaf_id total_strength".
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, B = map(int, data[0].split())
+    score = [0] * (n + 1)
+    children = [[] for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        node = int(parts[0])
+        score[node] = int(parts[1])
+        children[node] = [int(x) for x in parts[2:]]
+
+    best_score = None
+    best_leaf = None
+    frontier = [(1, score[1])]
+    while frontier:
+        next_level = []
+        for node, acc in frontier:
+            kids = children[node]
+            if not kids:
+                if best_score is None or acc > best_score or (acc == best_score and node < best_leaf):
+                    best_score = acc
+                    best_leaf = node
+            else:
+                for k in kids:
+                    next_level.append((k, acc + score[k]))
+        if not next_level:
+            break
+        next_level.sort(key=lambda x: (-x[1], x[0]))
+        frontier = next_level[:B]
+    print(f"{best_leaf} {best_score}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "5 2\n1 3 2 3\n2 5 4\n3 1 5\n4 8\n5 2", expected_output: "4 16", description: "Beam keeps both branches; best leaf path is 1->2->4 with strength 16." },
+        { input: "5 1\n1 0 2 3\n2 10 4\n3 1 5\n4 1\n5 100", expected_output: "4 11", description: "Beam width 1 (greedy) prunes the branch leading to the high-scoring leaf 5." },
+        { input: "5 2\n1 0 2 3\n2 10 4\n3 1 5\n4 1\n5 100", expected_output: "5 101", description: "Width 2 keeps the slower-starting branch alive, finding leaf 5 with strength 101." },
+        { input: "1 3\n1 7", expected_output: "1 7", description: "A lone root is itself a leaf; its strength is just its own score." }
+      ]
+    },
+    {
+      id: "ai-15-l7",
+      project_id: "ai-15",
+      order: 7,
+      title: "Reflection and Self-Critique",
+      concept: "Reflection",
+      xp_reward: 10,
+      explanation: `A model writes a function, you ask "are there any bugs in what you just wrote?", and it finds the off-by-one error it created seconds ago. Nothing about the model changed. You simply gave it a second pass — a chance to read its own work with fresh eyes and fix it. That second pass is **reflection**, and it is one of the cheapest quality upgrades you can bolt onto any prompt.
+
+## What it is
+
+**Reflection** (or **self-critique**) is a pattern where the model produces a first answer, then critiques that answer against some standard, and finally revises it. Generation and evaluation become separate steps instead of being crammed into one shot. The model wears two hats in sequence: first the **author**, then the **critic**, then the author again with the critique in hand.
+
+It works for the same reason chain of thought works. A single forward pass that must be correct on the first try is fragile. Splitting it into draft, critique, and revise gives the model explicit room to catch what the draft missed — much like a writer who always edits before publishing.
+
+## How it works
+
+The loop is generate, critique, revise, and optionally repeat:
+
+\`\`\`python
+draft = model(task)                                   # 1. author writes
+critique = model(f"Find every flaw in this:\\n{draft}")  # 2. critic reviews
+final = model(f"Rewrite to fix these issues:\\n{critique}\\n{draft}")  # 3. revise
+\`\`\`
+
+The critique step is doing the real work. A vague "make it better" yields little; a sharp critique grounded in concrete criteria — "check each constraint, list every violation" — produces fixable, specific feedback. You can run the loop once or iterate until the critic finds nothing left to fix or a step budget runs out.
+
+A crucial detail: the critic should judge against an **external standard** where possible — a spec, a checklist, test results, a tool's output. Asking a model to grade itself with no anchor invites it to rubber-stamp its own work.
+
+## Why it matters
+
+Reflection catches a whole class of errors that one-shot prompting ships straight to the user.
+
+- **It fixes self-made mistakes.** Constraint violations, skipped requirements, sloppy formatting — the critic pass surfaces them before they reach anyone.
+- **It costs extra calls.** Draft plus critique plus revise is at least three passes, so reserve it for answers where correctness matters more than latency.
+- **It has a ceiling.** The model can only catch flaws it is capable of recognizing. If it didn't know a fact was wrong when it wrote it, it usually won't catch it on review. Reflection sharpens, it does not add knowledge.
+- **Anchored critique beats vanity critique.** Grounding the critic in tests, specs, or rules makes the difference between real fixes and the model congratulating itself.
+
+## The mental model to keep
+
+**Never ship the first draft. Make the model put on the critic's hat, judge its own work against a real standard, then revise — author, critic, author again.**`,
+      key_terms: [
+        { term: "Reflection", definition: "A pattern where the model drafts an answer, critiques it, and revises based on the critique." },
+        { term: "Self-critique", definition: "The step where the model evaluates its own draft to find flaws to fix." },
+        { term: "Draft-critique-revise loop", definition: "The three-stage cycle of generating, evaluating, and rewriting an answer." },
+        { term: "External standard", definition: "An anchor for critique (spec, checklist, tests, tool output) that prevents the model from rubber-stamping itself." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Write, then edit", content: "No good writer publishes the first draft. They write it, set it down, then read it critically and fix what's wrong. Reflection makes the model do the editing pass it would otherwise skip.", position: "before" },
+        { type: "warning", title: "Reflection sharpens, it doesn't add knowledge", content: "The model can only catch flaws it is able to recognize. If it didn't know a fact was wrong when it wrote it, asking it to review usually won't surface the error. Anchor the critique in tests or specs.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "The draft-critique-revise loop",
+        steps: [
+          { label: "Draft", desc: "The model produces a first-pass answer to the task." },
+          { label: "Critique", desc: "It reviews that draft against a concrete standard and lists flaws." },
+          { label: "Revise", desc: "It rewrites the answer to fix the flaws the critique found." },
+          { label: "Repeat or stop", desc: "Loop again, or stop when no flaws remain or the budget runs out." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What makes a reflection critique step actually useful?",
+          options: ["Telling the model to 'make it better'", "Grounding the critique in concrete criteria or an external standard", "Running it at temperature zero"],
+          correct_index: 1,
+          explanation: "Vague self-grading invites rubber-stamping; concrete, anchored criteria produce specific, fixable feedback."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What are the three core stages of the reflection pattern?",
+          options: [
+            "Tokenize, embed, decode",
+            "Draft an answer, critique it, then revise it",
+            "Train, freeze, infer",
+            "Branch, score, prune"
+          ],
+          correct_index: 1,
+          explanation: "Reflection separates generation from evaluation: the model authors a draft, critiques it, then rewrites to fix the flaws."
+        },
+        {
+          question: "Why does grounding the critique in an external standard matter?",
+          options: [
+            "It makes the answer shorter",
+            "Without an anchor, a model tends to rubber-stamp its own work instead of finding real flaws",
+            "It removes the need for a revise step",
+            "It lowers token cost"
+          ],
+          correct_index: 1,
+          explanation: "A spec, checklist, or test result gives the critic something concrete to judge against, producing genuine fixes rather than self-congratulation."
+        },
+        {
+          question: "Which kind of error is reflection LEAST likely to fix?",
+          options: [
+            "A skipped requirement from the task",
+            "A formatting inconsistency in the draft",
+            "A confident factual claim the model never knew was wrong",
+            "A constraint the draft violated"
+          ],
+          correct_index: 2,
+          explanation: "Reflection can only catch flaws the model is capable of recognizing; it sharpens existing reasoning but does not add missing knowledge."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Reflection check",
+          questions: [
+            { question: "Reflection improves an answer by retraining the model on its own output.", type: "true_false", correct_answer: "false", explanation: "Nothing is retrained; the model simply drafts, critiques, and revises within the prompt using its frozen weights." },
+            { question: "The reflection loop has three stages: draft, ______, and revise.", type: "fill_in", correct_answer: "critique", explanation: "The critique step is where the model evaluates its draft against a standard." }
+          ]
+        }
+      ],
+      starter_code: `# Apply a one-pass self-critique: remove words that violate a banned-words rule.
+draft = ["the", "bad", "cat", "ugh", "sat"]
+banned = {"bad", "ugh"}
+
+# TODO: build the revised answer by dropping any word that is banned.
+print(draft)
+`,
+      solution_code: `draft = ["the", "bad", "cat", "ugh", "sat"]
+banned = {"bad", "ugh"}
+
+revised = [w for w in draft if w not in banned]
+fixes = len(draft) - len(revised)
+
+print("draft:", draft)
+print("revised:", revised)
+print("fixes applied:", fixes)
+`,
+      expected_output: `draft: ['the', 'bad', 'cat', 'ugh', 'sat']
+revised: ['the', 'cat', 'sat']
+fixes applied: 2`,
+      step_throughs: [
+        {
+          title: "draft, critique, revise in one pass",
+          steps: [
+            { label: "Author the draft", detail: "The model produces a first answer without worrying about every rule yet.", code: 'draft = "the bad cat ugh sat happily"' },
+            { label: "Critique against the rules", detail: "Put on the critic hat: check the draft against concrete criteria (banned words, max length) and list every violation.", code: 'flaws = ["banned word: bad", "banned word: ugh", "too long"]' },
+            { label: "Revise to fix flaws", detail: "Rewrite the answer applying each fix the critique found, in order.", code: 'revised = "the cat sat"' },
+            { label: "Stop when clean", detail: "Re-check the revised answer; if no flaws remain (or the budget is spent), ship it.", code: 'critique(revised) -> no flaws -> done' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A model drafts a reply that accidentally uses a banned word. How does a single reflection pass fix this?",
+          steps: [
+            "The critique step checks the draft against the rule that the word is banned and flags it as a violation.",
+            "The revise step rewrites the reply with that word removed or replaced.",
+            "The result obeys the rule the first draft broke, without changing anything about the model itself."
+          ],
+          output: "The critique flags the banned word and the revise step removes it, fixing a self-made mistake."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You add a reflection loop and the critique is just 'looks good, maybe improve it.' Quality barely changes. What's wrong and how do you fix it?",
+          steps: [
+            "A vague critique gives the revise step nothing concrete to act on, so almost nothing changes.",
+            "Worse, an unanchored self-review tends to rubber-stamp the draft rather than hunt for flaws.",
+            "Anchor the critique in concrete criteria: a checklist, the task constraints, or actual test results.",
+            "Ask it to list every specific violation, so the revise step has precise, fixable feedback to apply."
+          ],
+          output: "The critique was too vague and unanchored; ground it in concrete criteria so it produces specific, fixable feedback."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "one-shot answer vs reflection",
+          columns: ["Aspect", "One-shot", "Reflection"],
+          rows: [
+            { cells: ["Passes", "One", "Draft + critique + revise"] },
+            { cells: ["Catches self-made errors", "Often misses them", "Surfaces and fixes them"] },
+            { cells: ["Cost", "One call", "At least three calls"] },
+            { cells: ["Adds missing knowledge", "No", "No (it only sharpens)"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "reflection helps vs reflection won't help",
+          bins: [
+            { id: "helps", label: "Reflection helps" },
+            { id: "wont", label: "Reflection won't help" }
+          ],
+          items: [
+            { id: "i1", text: "A constraint the draft violated", bin: "helps" },
+            { id: "i2", text: "A fact the model never knew was wrong", bin: "wont" },
+            { id: "i3", text: "A skipped requirement from the task", bin: "helps" },
+            { id: "i4", text: "Knowledge missing from training entirely", bin: "wont" },
+            { id: "i5", text: "A formatting inconsistency in the draft", bin: "helps" },
+            { id: "i6", text: "A self-grade with no anchor (rubber-stamp)", bin: "wont" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does splitting an answer into draft, critique, and revise tend to beat a single one-shot attempt?",
+          sampleAnswer: "A one-shot answer has to be right on the first forward pass, with no chance to notice what it missed. Splitting it gives the model explicit room to put on a critic's hat, read its own draft against a concrete standard, and catch self-made errors like skipped requirements or broken constraints, then rewrite to fix them. It mirrors how a writer edits before publishing instead of shipping the first draft."
+        }
+      ],
+      hints: [
+        "Use a list comprehension that keeps each word only if it is not in banned.",
+        "The number of fixes is the original length minus the revised length.",
+        "Print the draft, the revised list, and the fix count."
+      ],
+      challenge_title: "The Self-Critique Pass",
+      challenge_description: "Run a model's draft answer through a two-rule critique-and-revise pass and report the fixes applied.",
+      challenge_story: "Your assistant drafts answers fast but sloppily, so you bolt on a **reflection** step before anything ships. The critic enforces two concrete rules against the draft, which is a list of words: first, **no banned words** are allowed; second, the answer must be at most `L` words long. The revise step applies the critique in order — strip every banned word, then if the result is still too long, trim words from the **end** until it fits. Each individual removal counts as one fix. Build the critique-and-revise pass so you can log how much cleanup each draft needed.",
+      challenge_statement: "You're given a max length `L`, a set of banned words, and a draft answer (a list of words). Apply the self-critique pass in two ordered stages:\n\n1. **Strip banned words** — remove every word that appears in the banned set. Each removed word counts as one fix.\n2. **Trim to length** — if more than `L` words remain, remove words from the **end** one at a time until exactly `L` remain. Each removal counts as one fix.\n\nPrint the total number of fixes applied on the first line, then the final revised answer (words space-separated) on the second line, or `-` if the answer is empty.",
+      challenge_input_format: "Line 1: integer `L`. Line 2: integer `b`, the number of banned words. Line 3: the `b` banned words space-separated (this line is present but empty when `b` is 0). Line 4: the draft answer as space-separated words.",
+      challenge_output_format: "Line 1: the total number of fixes applied. Line 2: the revised answer words space-separated, or `-` if empty.",
+      challenge_constraints: [
+        "0 ≤ L ≤ 100000",
+        "0 ≤ b ≤ 100000",
+        "1 ≤ number of draft words ≤ 100000",
+        "Words are non-empty and contain no spaces",
+      ],
+      challenge_examples: [
+        { input: "3\n2\nbad ugh\nthe bad cat ugh sat happily", output: "3\nthe cat sat", explanation: "Strip banned 'bad' and 'ugh' (2 fixes) leaving [the, cat, sat, happily]. That's 4 words, over L=3, so trim 'happily' from the end (1 fix). Total 3 fixes, final 'the cat sat'." },
+        { input: "5\n0\n\nhello there friend", output: "0\nhello there friend", explanation: "No banned words and only 3 words (within L=5), so no fixes are needed and the draft passes unchanged." },
+      ],
+      challenge_notes: "The order matters: stripping banned words first can drop the length below `L` so no trimming is needed. This mirrors real reflection — the critique enumerates concrete violations and the revise step applies them in a defined order. Reflection only fixes flaws the critic can detect; here the rules are explicit, so every violation is caught.",
+      challenge_hints: [
+        "Stage 1: build a new list keeping only words not in the banned set; the count dropped is original length minus kept length.",
+        "Stage 2: while the kept list is longer than L, pop from the end and increment the fix count.",
+        "Track fixes across both stages; print `-` for the answer line if nothing survives.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    L = int(data[0])
+    b = int(data[1])
+    banned = set(data[2].split()) if b > 0 else set()
+    words = data[3].split()
+    # TODO: stage 1 strip banned words, stage 2 trim from the end to length L,
+    # counting each removal as one fix. Print the fix count and the final answer.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    L = int(data[0])
+    b = int(data[1])
+    banned = set(data[2].split()) if b > 0 else set()
+    words = data[3].split()
+
+    fixes = 0
+    revised = []
+    for w in words:
+        if w in banned:
+            fixes += 1
+        else:
+            revised.append(w)
+    while len(revised) > L:
+        revised.pop()
+        fixes += 1
+
+    print(fixes)
+    print(" ".join(revised) if revised else "-")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3\n2\nbad ugh\nthe bad cat ugh sat happily", expected_output: "3\nthe cat sat", description: "Strip two banned words, then trim one from the end to meet the length cap." },
+        { input: "5\n0\n\nhello there friend", expected_output: "0\nhello there friend", description: "Clean draft within the length limit needs no fixes." },
+        { input: "4\n1\nx\nx x x", expected_output: "3\n-", description: "Every word is banned, so all three are stripped and the answer is empty." },
+        { input: "2\n0\n\na b c d e", expected_output: "3\na b", description: "No banned words; trim three words from the end to reach length 2." }
+      ]
+    },
+    {
+      id: "ai-15-l8",
+      project_id: "ai-15",
+      order: 8,
+      title: "Meta-Prompting",
+      concept: "MetaPrompt",
+      xp_reward: 10,
+      explanation: `You've spent this module hand-crafting prompts: adding triggers, balancing examples, wiring chains. Now flip the script. What if you let a model write the prompt for you? Hand it your goal and a few examples, and ask it to produce the best prompt for the job. That is **meta-prompting** — using a model to write or optimize prompts for another task — and it turns prompt engineering itself into something you can automate.
+
+## What it is
+
+**Meta-prompting** is using one model call to generate or improve the prompt that a second call will actually run. The first call's *output* is a prompt; the second call *consumes* that prompt to do the real work. You stop writing the instructions by hand and instead describe what you want, letting the model draft the instructions.
+
+The idea leans on a strength models have: they have read enormous numbers of prompts and know what well-structured instructions look like. Often a model can write a clearer, better-organized prompt than a human typing in a hurry — especially for formatting, edge-case handling, and explicit step-by-step structure.
+
+## How it works
+
+A meta-prompt asks for a prompt as its answer:
+
+\`\`\`python
+meta = (
+    "Write a clear, reliable prompt that classifies a customer email "
+    "as billing, technical, or other. Require a one-word answer. "
+    "Include two few-shot examples."
+)
+generated_prompt = model(meta)     # the model writes the task prompt
+result = model(generated_prompt + "\\n" + real_email)  # then we run it
+\`\`\`
+
+This unlocks **automatic prompt optimization**: generate several candidate prompts, run each against a small set of labeled examples, score how well each performs, and keep the winner. Prompt engineering becomes a search — propose candidates, evaluate against examples, select the best. It is the same propose-evaluate-select loop you saw in tree of thoughts and self-consistency, now applied to the prompts themselves.
+
+## Why it matters
+
+Meta-prompting scales prompt quality past what hand-tuning can reach.
+
+- **It offloads phrasing and structure** to a model that has seen millions of good prompts, freeing you to specify only the goal.
+- **It enables systematic optimization.** Instead of guessing which wording works, you measure candidates against real examples and pick the best objectively.
+- **It costs extra calls.** Generating and evaluating candidates burns tokens before the real task even runs, so it pays off most when a prompt will be reused many times.
+- **You still need an evaluator.** Picking the best candidate requires a way to score them. Garbage scoring picks garbage prompts, confidently.
+
+## The mental model to keep
+
+**Stop hand-writing every prompt. Describe the goal, let a model draft candidate prompts, measure them against real examples, and keep the winner — prompt engineering as a measurable search.**`,
+      key_terms: [
+        { term: "Meta-prompting", definition: "Using a model to generate or improve the prompt that another model call will run." },
+        { term: "Generated prompt", definition: "The prompt produced as the output of a meta-prompt, then used for the real task." },
+        { term: "Automatic prompt optimization", definition: "Generating candidate prompts, scoring them against examples, and keeping the best." },
+        { term: "Evaluator", definition: "The scoring method that ranks candidate prompts so the best can be selected." }
+      ],
+      callouts: [
+        { type: "analogy", title: "A prompt-writing assistant", content: "Instead of writing the brief yourself, you tell a skilled assistant the goal and let them draft it. The model has read millions of prompts and often structures one better than you would in a rush.", position: "before" },
+        { type: "tip", title: "It's the same propose-evaluate-select loop", content: "Optimizing prompts is the same search you saw in tree of thoughts and voting: generate candidates, score them against real examples, keep the winner. The objects being searched are now prompts.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "How meta-prompting optimizes a prompt",
+        steps: [
+          { label: "Describe the goal", desc: "State the task and constraints to a meta-prompt." },
+          { label: "Generate candidates", desc: "The model drafts one or more candidate prompts." },
+          { label: "Evaluate", desc: "Score each candidate against a small set of labeled examples." },
+          { label: "Select the winner", desc: "Keep the highest-scoring prompt to run on the real task." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What is the output of a meta-prompt?",
+          options: ["The final answer to the user's task", "A prompt that a second call will run", "A set of model weights"],
+          correct_index: 1,
+          explanation: "A meta-prompt produces a prompt as its output; a separate call then consumes that prompt to do the real work."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does meta-prompting actually produce?",
+          options: [
+            "A fine-tuned model",
+            "A prompt that another model call will use to do the real task",
+            "A larger context window",
+            "A majority vote of answers"
+          ],
+          correct_index: 1,
+          explanation: "The first call writes or improves a prompt; the second call consumes that generated prompt to perform the actual task."
+        },
+        {
+          question: "How does automatic prompt optimization choose a prompt?",
+          options: [
+            "It picks the longest candidate",
+            "It generates candidates, scores each against labeled examples, and keeps the best",
+            "It always reuses the first prompt written",
+            "It lowers the temperature until one works"
+          ],
+          correct_index: 1,
+          explanation: "Optimization is a propose-evaluate-select search: candidates are measured against real examples and the top scorer wins."
+        },
+        {
+          question: "When does meta-prompting pay off the most?",
+          options: [
+            "For a one-off prompt used a single time",
+            "When a prompt will be reused many times, amortizing the extra generation and evaluation cost",
+            "Only at temperature zero",
+            "When you have no examples to test against"
+          ],
+          correct_index: 1,
+          explanation: "Generating and evaluating candidates costs extra calls up front, so the payoff is largest when the resulting prompt is reused repeatedly."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Meta-prompting check",
+          questions: [
+            { question: "Meta-prompting uses a model to write or improve a prompt that another call will run.", type: "true_false", correct_answer: "true", explanation: "The first call's output is a prompt; a second call consumes it to do the real task." },
+            { question: "Generating candidate prompts, scoring them against examples, and keeping the best is called automatic prompt ______.", type: "fill_in", correct_answer: "optimization", explanation: "Automatic prompt optimization turns prompt engineering into a measurable search." }
+          ]
+        }
+      ],
+      starter_code: `# Pick the best candidate prompt by its total evaluation score.
+candidates = [
+    ("promptA", [5, 5, 5]),
+    ("promptB", [9, 9, 1]),
+    ("promptC", [6, 6, 7]),
+]
+# TODO: choose the candidate whose scores sum to the most.
+print(candidates)
+`,
+      solution_code: `candidates = [
+    ("promptA", [5, 5, 5]),
+    ("promptB", [9, 9, 1]),
+    ("promptC", [6, 6, 7]),
+]
+
+best = max(candidates, key=lambda c: sum(c[1]))
+
+print("candidates:", [(name, sum(scores)) for name, scores in candidates])
+print("winner:", best[0], "total:", sum(best[1]))
+`,
+      expected_output: `candidates: [('promptA', 15), ('promptB', 19), ('promptC', 19)]
+winner: promptB total: 19`,
+      step_throughs: [
+        {
+          title: "optimizing a prompt by search",
+          steps: [
+            { label: "Describe the goal", detail: "You write a meta-prompt stating the task, the required output, and constraints, instead of the task prompt itself.", code: 'meta = "Write a prompt that classifies email as billing/technical/other, one word."' },
+            { label: "Generate candidates", detail: "The model drafts several candidate prompts, each phrased and structured differently.", code: 'candidates = [promptA, promptB, promptC]' },
+            { label: "Evaluate against examples", detail: "Run each candidate over a small labeled set and score how many it gets right.", code: 'scores = [12, 19, 19]  # correct out of 20' },
+            { label: "Select the winner", detail: "Keep the highest-scoring prompt (break ties with a secondary rule) to use on real inputs.", code: 'best = max(candidates, key=score)' }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Three candidate prompts score 12, 19, and 15 on the same labeled test set. Which one does automatic optimization keep, and why?",
+          steps: [
+            "Optimization selects the candidate with the highest evaluation score.",
+            "Compare the scores: 19 is the largest.",
+            "The prompt scoring 19 is kept and used for the real task; the others are discarded."
+          ],
+          output: "The prompt scoring 19 — optimization keeps the highest-scoring candidate."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Two candidate prompts tie at the top score, but one is far shorter. Why might you prefer the shorter one, and what does that reveal about needing an evaluator beyond raw accuracy?",
+          steps: [
+            "A shorter prompt uses fewer tokens on every single call, so it is cheaper to run at scale.",
+            "If both score equally on the examples, the shorter one delivers the same quality for less money and latency.",
+            "This means raw accuracy alone is not a complete evaluator; cost and length can be tie-breakers.",
+            "A good optimization setup encodes those secondary criteria explicitly so the search picks the truly best prompt, not just the most accurate one."
+          ],
+          output: "Prefer the shorter prompt when scores tie; a real evaluator weighs cost and length, not accuracy alone."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "hand-written prompt vs meta-prompting",
+          columns: ["Aspect", "Hand-written", "Meta-prompting"],
+          rows: [
+            { cells: ["Who writes the prompt", "You, by hand", "A model, from your goal"] },
+            { cells: ["Selecting the best wording", "Guesswork", "Measured against examples"] },
+            { cells: ["Upfront cost", "Low", "Higher (generate + evaluate)"] },
+            { cells: ["Best when", "One-off prompt", "Prompt reused many times"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "meta-prompting vs plain prompting",
+          bins: [
+            { id: "meta", label: "Meta-prompting" },
+            { id: "plain", label: "Plain prompting" }
+          ],
+          items: [
+            { id: "i1", text: "A model writes the prompt for another call", bin: "meta" },
+            { id: "i2", text: "You type the task instructions yourself", bin: "plain" },
+            { id: "i3", text: "Scores candidate prompts against examples", bin: "meta" },
+            { id: "i4", text: "One call does the task directly", bin: "plain" },
+            { id: "i5", text: "Turns prompt design into a search", bin: "meta" },
+            { id: "i6", text: "No extra generation or evaluation calls", bin: "plain" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is automatic prompt optimization described as the same propose-evaluate-select loop you saw in tree of thoughts and self-consistency?",
+          sampleAnswer: "All three are searches: you generate several candidates, score each against some standard, and keep the best. Tree of thoughts searches over reasoning branches and self-consistency searches over reasoning paths to vote on; meta-prompting searches over candidate prompts, measuring each against labeled examples and selecting the top scorer. The object being optimized changes, but the propose-evaluate-select structure is identical."
+        }
+      ],
+      hints: [
+        "max() with a key lets you compare candidates by a computed value.",
+        "Use key=lambda c: sum(c[1]) so it ranks by total evaluation score.",
+        "The winner is the tuple max() returns; print its name and total."
+      ],
+      challenge_title: "The Prompt Optimizer",
+      challenge_description: "Select the best candidate prompt from evaluation scores, breaking ties by length then by id.",
+      challenge_story: "You're building an **automatic prompt optimizer**. A meta-prompt produced several candidate prompts for the same task, and you've already run each candidate against a shared set of labeled examples, recording one score per example. Now you have to pick the winner the way a real optimizer does: highest total score wins, but when prompts tie on quality you prefer the **shorter** one (cheaper to run on every call), and if they still tie you fall back to the lexicographically smallest **id** for a deterministic choice. Build the selector that turns raw evaluation data into the single prompt your system will ship.",
+      challenge_statement: "You're given `n` candidate prompts, each scored on the same `m` evaluation examples. For each candidate you have its id, its length in tokens, and its `m` scores.\n\nSelect the best candidate using these rules in order:\n\n1. **Highest total score** (the sum of its `m` scores) wins.\n2. On a tie, prefer the **smaller length**.\n3. If still tied, prefer the **lexicographically smaller id**.\n\nPrint the winning candidate's id and its total score, space-separated.",
+      challenge_input_format: "The first line has two integers `n m`. Each of the next `n` lines describes one candidate: an id (one word, no spaces), an integer length, then `m` integer scores, all space-separated.",
+      challenge_output_format: "One line: `id total_score`, separated by a single space.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ m ≤ 100",
+        "1 ≤ length ≤ 1000000",
+        "-1000000000 ≤ each score ≤ 1000000000",
+        "ids are distinct non-empty strings with no spaces",
+      ],
+      challenge_examples: [
+        { input: "3 3\npA 20 5 5 5\npB 10 9 9 1\npC 15 6 6 7", output: "pB 19", explanation: "Totals: pA=15, pB=19, pC=19. pB and pC tie at 19, so length breaks it: pB (10) is shorter than pC (15). pB wins with total 19." },
+        { input: "2 1\nzeta 10 8\nalpha 10 8", output: "alpha 8", explanation: "Both total 8 and both length 10, so the lexicographically smaller id 'alpha' wins." },
+      ],
+      challenge_notes: "This is automatic prompt optimization in miniature: propose candidates, evaluate each against the same examples, and select the best by an explicit objective. The tie-breakers matter because raw accuracy is rarely the only thing you care about — a shorter prompt costs less on every call, so it's the better pick when quality is equal.",
+      challenge_hints: [
+        "For each candidate compute the total as the sum of its m scores.",
+        "Build a comparison key of (-total, length, id) so the smallest key under normal tuple ordering is the winner.",
+        "Track the best candidate as you read; replace it whenever a strictly smaller key appears.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, m = map(int, data[0].split())
+    # TODO: for each candidate read id, length, and m scores; compute the total.
+    # Pick the best by (highest total, then smaller length, then smaller id).
+    # Print "id total_score".
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, m = map(int, data[0].split())
+    best_key = None
+    best_id = None
+    best_total = None
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        cid = parts[0]
+        length = int(parts[1])
+        scores = list(map(int, parts[2:2 + m]))
+        total = sum(scores)
+        key = (-total, length, cid)
+        if best_key is None or key < best_key:
+            best_key = key
+            best_id = cid
+            best_total = total
+    print(f"{best_id} {best_total}")
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 3\npA 20 5 5 5\npB 10 9 9 1\npC 15 6 6 7", expected_output: "pB 19", description: "Tie on total resolved by the shorter prompt length." },
+        { input: "2 1\nzeta 10 8\nalpha 10 8", expected_output: "alpha 8", description: "Tie on total and length resolved by lexicographic id." },
+        { input: "3 2\npX 30 5 5\npY 12 4 6\npZ 50 1 1", expected_output: "pY 10", description: "pX and pY tie at 10; pY is shorter, so it wins over the higher-length pX." }
       ]
     }
   ]

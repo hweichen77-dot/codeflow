@@ -5,8 +5,8 @@ export default {
     description: "Turn words into numbers, measure how close they are, and build a movie recommender that actually gets your taste.",
     difficulty: "intermediate",
     category: "rag_search",
-    estimated_time: 150,
-    lessons_count: 5,
+    estimated_time: 240,
+    lessons_count: 8,
     tags: ["embeddings", "vectors", "cosine-similarity", "semantic-search", "recommender"],
     order: 6,
     cover_image: ""
@@ -1581,6 +1581,825 @@ main()`,
         { input: "4 3 3\nlogin_help 0.9 0.1 0.0\nreset_password 0.85 0.15 0.0\nbilling_faq 0.0 0.1 0.9\nsearch_tips 0.1 0.8 0.1\n0.9 0.1 0.0", expected_output: "login_help 1.0000\nreset_password 0.9980\nsearch_tips 0.2311", description: "Example 1: top 3 of 4 support docs, best first." },
         { input: "3 2 2\nx 1 0\ny 0 1\nz 0.8 0.2\n1 0", expected_output: "x 1.0000\nz 0.9701", description: "Example 2: perpendicular doc excluded from top 2." },
         { input: "4 2 2\nbeta 2 0\nalpha 4 0\ngamma 0 1\ndelta 0 3\n1 0", expected_output: "alpha 1.0000\nbeta 1.0000", description: "Edge: alpha and beta tie at 1.0; lexicographic tie-break puts alpha first." }
+      ]
+    },
+    {
+      id: "ai-06-l6",
+      project_id: "ai-06",
+      order: 6,
+      title: "Embedding Dimensions: What They Capture",
+      concept: "Dimensions",
+      xp_reward: 10,
+      explanation: `All module long the vectors were tiny: two or three numbers. Real embeddings are monsters. A common text model returns **1,536 floats per string**, and the big ones push past 3,000. Why on earth do you need three thousand numbers to represent the word "dog"? Because each number is a separate **axis of meaning**, and meaning has far more than two or three sides.
+
+## What it is
+
+Every slot in an embedding is a **dimension** — one independent direction the model can use to place a word. In the toy \`[action, romance]\` movie space you had exactly two axes, so every movie was pinned by just two facts. Real text has thousands of facts that matter at once: tense, formality, topic, sentiment, is-it-a-question, is-it-code, language, and many the model invented that have no human name. Each gets its own dimension.
+
+The headline idea: **more dimensions means more room to keep different meanings apart.** With two axes, "bank" the riverbank and "bank" the money place are forced near each other. With a thousand axes, the model has space to separate them along the dimensions that actually distinguish them.
+
+## How it works
+
+A trained model does not assign axes by hand. It learns them, and remarkable structure falls out. Some directions end up encoding clean concepts — a "royalty" direction, a "plural" direction, a "past tense" direction. The famous demo: take the vector for "king," subtract a "male" direction, add a "female" direction, and you land near "queen." Meaning becomes arithmetic on axes.
+
+\`\`\`python
+# Each axis is one semantic direction. Find a word's dominant one.
+king = [0.9, 0.1, 0.8, -0.2]   # axes: [royalty, gender, power, edible]
+dominant_axis = max(range(len(king)), key=lambda i: abs(king[i]))
+print(dominant_axis)  # 0 -> 'royalty' is this word's strongest signal
+\`\`\`
+
+You almost never read individual axes in production — most are uninterpretable blends. But the principle holds: each dimension is a knob, and a word's vector is the full setting of every knob at once.
+
+## Why it matters
+
+Dimension count is a real engineering trade-off, not a "bigger is better" knob:
+
+- **Too few dimensions** crowd unrelated meanings together, so the model confuses words it should keep apart. Quality drops.
+- **More dimensions** buy room to separate fine distinctions, but every extra axis costs memory and makes each cosine comparison slower. A million 3,072-float vectors is a lot of RAM.
+- That is why models offer a few sizes, and some let you **truncate** a long embedding to a shorter one when you would rather have speed than the last drop of accuracy.
+
+## The mental model to keep
+
+A dimension is one axis of meaning, and an embedding is a word's position along every axis at once. More axes give the model more room to keep different meanings apart — at a cost in memory and compute you pay on every single comparison.`,
+      key_terms: [
+        { term: "Dimension", definition: "One axis of an embedding vector, an independent direction the model uses to encode some aspect of meaning." },
+        { term: "Semantic direction", definition: "A direction in vector space that lines up with a human concept, like 'plural' or 'past tense'." },
+        { term: "Dimensionality", definition: "The number of axes in an embedding. More axes give more room to separate meanings, at higher memory and compute cost." },
+        { term: "Truncation", definition: "Cutting a long embedding down to fewer dimensions to trade a little accuracy for speed and smaller storage." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Knobs on a sound board", content: "Picture a mixing desk: each slider is one dimension. A word's embedding is the full position of every slider at once. Two sliders can only describe so much; a thousand sliders can capture nuance.", position: "before" },
+        { type: "insight", title: "king - man + woman ~ queen", content: "Because some axes encode clean concepts like gender and royalty, you can do arithmetic on meaning. Subtract a 'male' direction and add a 'female' one, and you slide from 'king' toward 'queen'.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "From few axes to many",
+        steps: [
+          { label: "2 axes", desc: "Toy space: only action and romance. Meanings get crowded." },
+          { label: "Add axes", desc: "Each new dimension captures another aspect of meaning." },
+          { label: "Separate meanings", desc: "More room means river-bank and money-bank can move apart." },
+          { label: "Pay the cost", desc: "Every axis adds memory and slows each comparison." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What does each dimension of an embedding represent?",
+          options: ["One independent axis of meaning the model can use", "One letter of the word", "One document in the database"],
+          correct_index: 0,
+          explanation: "Each dimension is a separate direction in space; together they pin down a word's meaning."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why do real embedding models use hundreds or thousands of dimensions instead of just two or three?",
+          options: [
+            "More axes give the model room to keep different meanings apart",
+            "It makes the vectors print more neatly",
+            "Python requires vectors to be that long",
+            "Fewer dimensions are impossible to store"
+          ],
+          correct_index: 0,
+          explanation: "Real meaning has many independent aspects at once, so the model needs many axes to separate words that differ in subtle ways."
+        },
+        {
+          question: "What is the main cost of adding more dimensions to an embedding?",
+          options: [
+            "More memory to store vectors and slower comparisons",
+            "The vectors stop representing meaning",
+            "Cosine similarity stops working",
+            "The model can no longer be trained"
+          ],
+          correct_index: 0,
+          explanation: "Every extra axis is another number per vector, costing RAM and adding work to every dot product or cosine call."
+        },
+        {
+          question: "The 'king - man + woman ~ queen' result shows that embeddings can do what?",
+          options: [
+            "Arithmetic along semantic directions in the vector space",
+            "Spell-check the input word",
+            "Translate any word into any language for free",
+            "Store the word's definition as plain text"
+          ],
+          correct_index: 0,
+          explanation: "Some axes encode clean concepts like gender, so moving along those directions shifts meaning in a predictable way."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Dimension sense-check",
+          questions: [
+            { question: "Adding more dimensions to an embedding always makes search faster.", type: "true_false", correct_answer: "false", explanation: "More dimensions add memory and slow every comparison; they buy accuracy, not speed." },
+            { question: "Each slot in an embedding vector is called a ____.", type: "fill_in", correct_answer: "dimension", explanation: "A dimension is one axis of meaning in the vector." }
+          ]
+        }
+      ],
+      step_throughs: [
+        {
+          title: "few axes crowd meanings, many axes separate them",
+          steps: [
+            { label: "Two axes only", detail: "With just [animal, finance], the two senses of 'bank' have nowhere to go but close together.", code: "bank_river = [0.1, 0.9]   bank_money = [0.0, 0.95]" },
+            { label: "Meanings collide", detail: "Cosine between them is high, so the model would treat the two senses as nearly the same.", code: "cosine(bank_river, bank_money) ~ 0.99  # bad" },
+            { label: "Add more axes", detail: "Give the model axes for water, geography, deposits, interest. Now the senses can spread out.", code: "bank_river = [.1,.0,.9,.8,.0,.0]   bank_money=[.0,.9,.0,.0,.9,.8]" },
+            { label: "Meanings separate", detail: "With room along new directions, the two vectors point different ways and stop colliding.", code: "cosine(bank_river, bank_money) ~ 0.05  # separated" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Axes are [royalty, gender, power]. The word 'queen' is [0.9, 0.8, 0.7]. Which axis is its single strongest signal?",
+          steps: [
+            "Compare the absolute value of each component: 0.9, 0.8, 0.7.",
+            "The largest is 0.9, at index 0.",
+            "Index 0 is the 'royalty' axis."
+          ],
+          output: "axis 0 (royalty)"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Your search confuses 'apple' the fruit with 'Apple' the company. You currently use a 4-dimension embedding. Why might raising the dimension count help, and what does it cost?",
+          steps: [
+            "With only 4 axes there is little room, so a food-ish word and a tech-ish word can be forced close together.",
+            "Adding axes (say, a 'technology' direction and a 'food' direction) gives the model room to pull the two senses apart.",
+            "After separation, cosine between fruit-apple and company-Apple drops, so search stops confusing them.",
+            "The cost: each vector now holds more numbers, using more memory and making every cosine comparison slower."
+          ],
+          output: "More axes separate the senses but cost memory and per-query compute."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "few dimensions vs many dimensions",
+          columns: ["Property", "Few dimensions (2-3)", "Many dimensions (768-3072)"],
+          rows: [
+            { cells: ["Room to separate meanings", "Cramped", "Spacious"] },
+            { cells: ["Memory per vector", "Tiny", "Large"] },
+            { cells: ["Cost per comparison", "Cheap", "Higher"] },
+            { cells: ["Use in real systems", "Teaching only", "Production embeddings"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "more dimensions: helps or hurts?",
+          bins: [
+            { id: "help", label: "What more dimensions buy you" },
+            { id: "hurt", label: "What more dimensions cost you" }
+          ],
+          items: [
+            { id: "i1", text: "Room to keep similar-but-distinct meanings apart", bin: "help" },
+            { id: "i2", text: "More RAM used per stored vector", bin: "hurt" },
+            { id: "i3", text: "Finer distinctions between nuanced words", bin: "help" },
+            { id: "i4", text: "Slower cosine on every single comparison", bin: "hurt" },
+            { id: "i5", text: "Capturing many aspects of meaning at once", bin: "help" },
+            { id: "i6", text: "Larger index that takes longer to load", bin: "hurt" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can a 2-dimension embedding confuse two words that a 1,000-dimension embedding keeps cleanly apart?",
+          sampleAnswer: "With only two axes there are just two ways for words to differ, so meanings that share those two aspects are forced into the same neighborhood even when they are really distinct. A 1,000-dimension space offers a thousand independent directions, so the model can place the two words far apart along whatever axes actually distinguish them. More axes simply mean more room to spread meaning out."
+        }
+      ],
+      starter_code: `# Axes label what each dimension captures (toy example).
+axes = ["royalty", "gender", "power", "edible"]
+word = [0.9, 0.1, 0.8, -0.2]   # an embedding for "king"
+
+# TODO: find the index of the axis with the largest absolute value,
+# then print that axis's label.
+print(axes)`,
+      solution_code: `axes = ["royalty", "gender", "power", "edible"]
+word = [0.9, 0.1, 0.8, -0.2]
+
+dominant = max(range(len(word)), key=lambda i: abs(word[i]))
+print("dominant axis index:", dominant)
+print("dominant meaning:", axes[dominant])`,
+      expected_output: `dominant axis index: 0
+dominant meaning: royalty`,
+      hints: [
+        "abs(x) ignores the sign, so a strongly negative axis still counts as a strong signal.",
+        "max(range(len(word)), key=lambda i: abs(word[i])) returns the index of the biggest absolute value.",
+        "Use that index to look up the matching label in axes."
+      ],
+      challenge_title: "Dominant Axis Finder",
+      challenge_description: "For each query word, report which embedding dimension carries its strongest signal.",
+      challenge_story: "You are debugging an embedding model and want a quick lens on what each word leans toward. Every word already has an embedding, and you have decided that the dimension with the **largest absolute value** is a rough proxy for that word's dominant semantic direction. Build the tool that, given the embedding table and a list of query words, prints the dominant axis index for each one. It is a crude probe, but it is exactly the kind of sanity check engineers run when inspecting a freshly trained model.",
+      challenge_statement: "You are given **N** words, each with a **D-dimensional** embedding, then a list of **query words**.\n\nFor each query word, find the **dimension index (0-based) whose value has the largest absolute value** — its dominant axis. If two dimensions tie on absolute value, choose the **smaller index**.\n\nPrint each query word followed by its dominant axis index.",
+      challenge_input_format: "The first line holds two integers `N` and `D`.\nEach of the next `N` lines holds a word (no spaces) followed by `D` numbers: its embedding.\nThe final line holds the space-separated query words (each guaranteed to appear in the table).",
+      challenge_output_format: "One line per query word, in input order: the word, a single space, then its dominant axis index.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "1 ≤ D ≤ 64",
+        "Coordinates are real numbers with magnitude up to 1000",
+        "Words are non-empty, contain no whitespace, and are unique",
+        "Every query word appears in the table"
+      ],
+      challenge_examples: [
+        { input: "3 4\nking 0.9 0.1 0.8 -0.2\nqueen 0.85 0.95 0.7 -0.1\napple -0.1 0.0 0.05 0.9\nking queen apple", output: "king 0\nqueen 1\napple 3", explanation: "king's largest absolute value is 0.9 at index 0. queen's is 0.95 at index 1. apple's is 0.9 at index 3." },
+        { input: "2 3\na 0.5 0.5 0.5\nb -0.9 0.2 0.1\nb a", output: "b 0\na 0", explanation: "b peaks at |-0.9| = 0.9 (index 0). a ties across all three axes, so the smallest index 0 wins." }
+      ],
+      challenge_notes: "Using abs() matters: a strongly negative coordinate is just as much a 'dominant direction' as a strongly positive one. The smaller-index tie-break keeps the output deterministic when a word is balanced across axes.",
+      challenge_hints: [
+        "Store the table as a dict word -> list of floats.",
+        "For each query, scan the vector tracking the best absolute value and its index.",
+        "On a tie in absolute value, keep the earlier (smaller) index by using strict `>` when comparing."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    pos = 0
+    n, d = map(int, data[pos].split()); pos += 1
+    # TODO: read N word vectors, read the query words, and for each query word
+    # print its dominant axis index (largest absolute value, smaller index wins).
+
+main()`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    pos = 0
+    n, d = map(int, data[pos].split()); pos += 1
+    table = {}
+    for _ in range(n):
+        parts = data[pos].split(); pos += 1
+        name = parts[0]
+        table[name] = [float(x) for x in parts[1:1 + d]]
+    queries = data[pos].split(); pos += 1
+    out = []
+    for q in queries:
+        vec = table[q]
+        best_axis = 0
+        best_abs = abs(vec[0])
+        for i in range(1, len(vec)):
+            if abs(vec[i]) > best_abs:
+                best_abs = abs(vec[i])
+                best_axis = i
+        out.append(f"{q} {best_axis}")
+    print("\\n".join(out))
+
+main()`,
+      challenge_test_cases: [
+        { input: "3 4\nking 0.9 0.1 0.8 -0.2\nqueen 0.85 0.95 0.7 -0.1\napple -0.1 0.0 0.05 0.9\nking queen apple", expected_output: "king 0\nqueen 1\napple 3", description: "Example 1: each word's strongest axis." },
+        { input: "2 3\na 0.5 0.5 0.5\nb -0.9 0.2 0.1\nb a", expected_output: "b 0\na 0", description: "Example 2: negative peak and an all-tie word." },
+        { input: "1 5\nw 0.0 -3.0 1.0 3.0 -1.0\nw", expected_output: "w 1", description: "Edge: |-3.0| at index 1 ties |3.0| at index 3; smaller index wins." },
+        { input: "2 2\nx 7 7\ny 2 9\nx y x", expected_output: "x 0\ny 1\nx 0", description: "Edge: repeated query words echo their axis each time." }
+      ]
+    },
+    {
+      id: "ai-06-l7",
+      project_id: "ai-06",
+      order: 7,
+      title: "Chunking Before Embedding",
+      concept: "Chunking",
+      xp_reward: 10,
+      explanation: `Try to embed an entire 80-page manual as one string and the result is useless. The model averages everything into one fuzzy vector that points nowhere in particular, and your search returns the whole manual for every query. The fix is the unglamorous step that quietly decides whether a RAG system works at all: **chunking**. Split the document into bite-sized pieces first, then embed each piece on its own.
+
+## What it is
+
+**Chunking** is breaking a long document into smaller passages — **chunks** — before embedding, so each vector represents one focused idea instead of a blur of many. A chunk might be a paragraph, a few sentences, or a fixed number of words. Each chunk gets its own embedding and its own row in the index. When a query comes in, you retrieve the matching chunks, not whole documents.
+
+## How it works
+
+The simplest scheme is fixed-size: pack words into a chunk until you hit a size cap, then start a new chunk. Greedy and predictable.
+
+\`\`\`python
+def chunk_words(words, max_size):
+    chunks, current = [], []
+    for w in words:
+        if len(current) + 1 > max_size:   # would overflow -> close the chunk
+            chunks.append(current)
+            current = [w]
+        else:
+            current.append(w)
+    if current:
+        chunks.append(current)
+    return chunks
+\`\`\`
+
+Two dials control quality. **Chunk size** sets how much meaning each vector carries: too big and the vector blurs many topics together; too small and a single idea gets split across chunks so neither one is complete. A few hundred tokens is a common sweet spot. **Overlap** repeats a little text between neighboring chunks so a sentence that straddles a boundary is not cut in half — the answer to a query is never stranded between two chunks. Smarter schemes split on natural seams (paragraphs, headings, sentences) instead of blindly counting words, so a chunk rarely begins mid-thought.
+
+## Why it matters
+
+Chunking is where most RAG quality is won or lost, well before any fancy model is chosen:
+
+- **Retrieval precision.** Small, focused chunks let cosine pinpoint the exact passage that answers a query, instead of dragging back an entire document.
+- **Context limits.** You feed retrieved chunks to an LLM, and its context window is finite. Tight chunks mean you can fit more *relevant* passages instead of one bloated blob.
+- **Cost.** You embed every chunk once. Sane chunk sizes keep the vector count, storage, and embedding bill reasonable rather than exploding.
+
+Get chunking wrong and no amount of model quality saves you: the right answer simply never surfaces, because it was blurred into a giant vector or sliced clean in half.
+
+## The mental model to keep
+
+Embed ideas, not documents. Chunk a long text into focused passages first, tune the size so each vector carries exactly one clear thought, and let a little overlap keep ideas from being cut at the seams.`,
+      key_terms: [
+        { term: "Chunking", definition: "Splitting a long document into smaller passages before embedding, so each vector represents one focused idea." },
+        { term: "Chunk size", definition: "How much text (words or tokens) goes into each chunk. Too big blurs meaning; too small fragments it." },
+        { term: "Overlap", definition: "Repeating a little text between neighboring chunks so an idea straddling a boundary is not cut in half." },
+        { term: "Semantic boundary", definition: "A natural seam like a paragraph or sentence break, a better place to split than an arbitrary word count." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Index cards, not the whole book", content: "Embedding a whole document is like summarizing a book on one index card: too vague to be useful. Chunking writes one card per idea, so you can pull the exact card that answers a question.", position: "before" },
+        { type: "tip", title: "Overlap saves split sentences", content: "Let neighboring chunks share a sentence or two. Otherwise an answer that lands right on a chunk boundary gets cut in half and neither chunk matches the query well.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "From document to searchable chunks",
+        steps: [
+          { label: "Long document", desc: "A full manual, article, or transcript." },
+          { label: "Split into chunks", desc: "Break it into focused passages by size or natural seams." },
+          { label: "Embed each chunk", desc: "One vector per chunk, each carrying a single clear idea." },
+          { label: "Index the chunks", desc: "Store vectors so a query retrieves matching passages, not whole docs." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "Why split a long document into chunks before embedding it?",
+          options: ["So each vector represents one focused idea instead of a blur", "To make the document shorter to read", "Because embeddings reject long strings", "To remove duplicate words"],
+          correct_index: 0,
+          explanation: "One vector per focused chunk lets cosine pinpoint the right passage, instead of one fuzzy vector for the whole document."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What goes wrong if you embed an entire long document as a single chunk?",
+          options: [
+            "The vector blurs many topics together, hurting retrieval precision",
+            "The embedding model refuses to run",
+            "Cosine similarity always returns exactly 1",
+            "The document gets permanently shortened"
+          ],
+          correct_index: 0,
+          explanation: "One vector for many ideas points nowhere specific, so the document matches everything weakly and nothing precisely."
+        },
+        {
+          question: "What is the purpose of overlap between neighboring chunks?",
+          options: [
+            "To keep an idea that straddles a boundary from being cut in half",
+            "To make chunks smaller",
+            "To remove duplicate documents",
+            "To skip embedding the second chunk"
+          ],
+          correct_index: 0,
+          explanation: "Repeating a little text across the boundary means a sentence split between two chunks still appears whole in at least one of them."
+        },
+        {
+          question: "Why is a very small chunk size often a problem?",
+          options: [
+            "A single idea gets fragmented across chunks so no chunk is complete",
+            "Small chunks cannot be embedded",
+            "It makes cosine similarity undefined",
+            "Small chunks always cost more to store than large ones"
+          ],
+          correct_index: 0,
+          explanation: "If chunks are too tiny, one coherent thought spreads over several of them, and none carries the full meaning a query needs."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Chunking facts",
+          questions: [
+            { question: "Each chunk is embedded into its own separate vector.", type: "true_false", correct_answer: "true", explanation: "Chunking produces one vector per chunk, each indexed independently." },
+            { question: "Repeating a little text between neighboring chunks is called ____.", type: "fill_in", correct_answer: "overlap", explanation: "Overlap keeps boundary-straddling ideas intact in at least one chunk." }
+          ]
+        }
+      ],
+      step_throughs: [
+        {
+          title: "long text → split → embed each → index",
+          steps: [
+            { label: "Start with a long passage", detail: "More text than belongs in a single vector.", code: 'doc = "...refund policy ... shipping ... returns ..."' },
+            { label: "Split into focused chunks", detail: "Pack words up to a size cap, optionally on sentence seams.", code: 'chunks = chunk_words(doc.split(), max_size=200)' },
+            { label: "Embed each chunk on its own", detail: "Each chunk becomes one vector carrying one clear idea.", code: "vectors = [embed(c) for c in chunks]" },
+            { label: "Index the chunk vectors", detail: "A query now retrieves the exact passage, not the whole document.", code: "store(chunk_id, vector)  # one row per chunk" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Chunk the words [a, b, c, d, e] with max_size = 2. How many chunks, and what are they?",
+          steps: [
+            "Pack words until adding one more would exceed 2: [a, b] fills the first chunk.",
+            "Start fresh: [c, d] fills the second chunk.",
+            "Only [e] is left, so it forms a final partial chunk."
+          ],
+          output: "3 chunks: [a, b], [c, d], [e]"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A FAQ answer is split exactly at a chunk boundary: 'To cancel, go to Settings' ends chunk 1 and 'and click Delete Account' begins chunk 2. A user asks 'how do I cancel my account?' Why might retrieval miss, and how does overlap fix it?",
+          steps: [
+            "Neither chunk contains the full answer, so neither vector strongly matches the complete query.",
+            "Chunk 1 lacks the 'Delete Account' step; chunk 2 lacks the 'cancel' framing — each is half an idea.",
+            "With overlap, chunk 2 also repeats the tail of chunk 1, so it now contains the whole instruction.",
+            "That overlapping chunk points squarely at the query's meaning, so cosine ranks it high and retrieval succeeds."
+          ],
+          output: "Overlap puts the whole instruction in one chunk, so it matches and ranks high."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "chunk size trade-offs",
+          columns: ["Approach", "What each vector holds", "Risk"],
+          rows: [
+            { cells: ["Whole document, no chunking", "Many topics blurred together", "Matches everything weakly"] },
+            { cells: ["Very small chunks", "Fragments of one idea", "Idea split across chunks"] },
+            { cells: ["Tiny chunks, no overlap", "Sentences cut at seams", "Answer stranded between chunks"] },
+            { cells: ["Moderate chunks with overlap", "One focused idea, intact", "Best retrieval precision"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "good chunking practice or a chunking mistake?",
+          bins: [
+            { id: "good", label: "Good practice" },
+            { id: "bad", label: "Mistake" }
+          ],
+          items: [
+            { id: "i1", text: "Split on paragraph and sentence boundaries", bin: "good" },
+            { id: "i2", text: "Embed an entire 80-page manual as one vector", bin: "bad" },
+            { id: "i3", text: "Add a little overlap between neighbors", bin: "good" },
+            { id: "i4", text: "Use chunks of one word each", bin: "bad" },
+            { id: "i5", text: "Keep each chunk to one focused idea", bin: "good" },
+            { id: "i6", text: "Cut sentences in half at hard size limits", bin: "bad" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is chunking often where a RAG system's quality is won or lost, even before the embedding model is chosen?",
+          sampleAnswer: "If the document is chopped badly, the right answer never makes it into a clean vector. Embed the whole document and the answer is blurred into a vague all-topics vector; chunk too small and the answer is fragmented across pieces; chunk with no overlap and an answer on a boundary gets sliced in half. In every case cosine cannot surface what was never represented as a focused chunk, so even a perfect embedding model retrieves the wrong thing. Good chunks are the foundation everything else stands on."
+        }
+      ],
+      starter_code: `def chunk_words(words, max_size):
+    # TODO: greedily pack words into chunks of at most max_size words each.
+    pass
+
+text = "the quick brown fox jumps over the lazy dog again"
+words = text.split()
+for c in chunk_words(words, 3):
+    print(c)`,
+      solution_code: `def chunk_words(words, max_size):
+    chunks, current = [], []
+    for w in words:
+        if len(current) + 1 > max_size:
+            chunks.append(current)
+            current = [w]
+        else:
+            current.append(w)
+    if current:
+        chunks.append(current)
+    return chunks
+
+text = "the quick brown fox jumps over the lazy dog again"
+words = text.split()
+chunks = chunk_words(words, 3)
+print("chunk count:", len(chunks))
+for c in chunks:
+    print(" ".join(c))`,
+      expected_output: `chunk count: 4
+the quick brown
+fox jumps over
+the lazy dog
+again`,
+      hints: [
+        "Keep a 'current' list. Before appending, check if it is already at max_size.",
+        "When current is full, push it onto chunks and start a new current with the incoming word.",
+        "After the loop, do not forget to append the final partial chunk if it is non-empty."
+      ],
+      challenge_title: "Fixed-Size Word Chunker",
+      challenge_description: "Split a document into greedy fixed-size word chunks, the first step of any embedding pipeline.",
+      challenge_story: "You are building the ingestion stage of a RAG knowledge base. Before any text can be embedded, it has to be cut into chunks small enough that each vector carries a single focused idea. The team picked the simplest reliable scheme to start: **greedy fixed-size chunking by word count**. Walk the words left to right, packing each chunk until adding one more word would exceed the size cap, then start the next chunk. Get this right and every later stage has clean, focused passages to work with.",
+      challenge_statement: "You are given a maximum chunk size **S** (in words), a word count **N**, and then **N** words (one per line).\n\nSplit the words into chunks using **greedy fixed-size chunking**: fill each chunk with consecutive words until it holds **S** words, then begin a new chunk. The final chunk may hold fewer than S words.\n\nPrint the number of chunks, then each chunk on its own line with its words space-separated, in order.",
+      challenge_input_format: "The first line holds two integers `S` and `N`: the max words per chunk and the number of words.\nEach of the next `N` lines holds one word (no spaces).",
+      challenge_output_format: "First line: the number of chunks.\nThen one line per chunk, in order, with the chunk's words separated by single spaces.",
+      challenge_constraints: [
+        "1 ≤ S ≤ 1000",
+        "1 ≤ N ≤ 100000",
+        "Each word is non-empty and contains no whitespace"
+      ],
+      challenge_examples: [
+        { input: "3 7\nthe\nquick\nbrown\nfox\njumps\nover\nwalls", output: "3\nthe quick brown\nfox jumps over\nwalls", explanation: "Words pack 3 at a time: [the quick brown], [fox jumps over], then the leftover [walls]." },
+        { input: "2 3\na\nb\nc", output: "2\na b\nc", explanation: "First chunk [a b] hits the cap of 2; [c] forms the final partial chunk." }
+      ],
+      challenge_notes: "Greedy fixed-size chunking is the baseline every RAG pipeline starts from. Real systems then layer on overlap and sentence-aware boundaries, but the packing loop stays the same. The final chunk being shorter than S is normal, not an error.",
+      challenge_hints: [
+        "Read S and N, then read exactly N words into a list.",
+        "Slice the list in steps of S: `words[i:i+S]` for i in range(0, N, S).",
+        "The number of chunks is `ceil(N / S)`, which the slicing produces automatically; join each chunk's words with a single space when printing."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    s, n = map(int, data[0].split())
+    words = [data[1 + i].strip() for i in range(n)]
+    # TODO: greedily pack words into chunks of at most S words, then print
+    # the chunk count followed by each chunk's words on its own line.
+
+main()`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    s, n = map(int, data[0].split())
+    words = [data[1 + i].strip() for i in range(n)]
+    chunks = [words[i:i + s] for i in range(0, n, s)]
+    out = [str(len(chunks))]
+    for c in chunks:
+        out.append(" ".join(c))
+    print("\\n".join(out))
+
+main()`,
+      challenge_test_cases: [
+        { input: "3 7\nthe\nquick\nbrown\nfox\njumps\nover\nwalls", expected_output: "3\nthe quick brown\nfox jumps over\nwalls", description: "Example 1: a leftover partial final chunk." },
+        { input: "2 3\na\nb\nc", expected_output: "2\na b\nc", description: "Example 2: cap of 2 with one trailing word." },
+        { input: "5 2\nhello\nworld", expected_output: "1\nhello world", description: "Edge: fewer words than the cap means a single chunk." },
+        { input: "1 4\nw\nx\ny\nz", expected_output: "4\nw\nx\ny\nz", description: "Edge: size 1 puts every word in its own chunk." }
+      ]
+    },
+    {
+      id: "ai-06-l8",
+      project_id: "ai-06",
+      order: 8,
+      title: "Caching and Updating Embeddings",
+      concept: "Lifecycle",
+      xp_reward: 10,
+      explanation: `Embedding is not free. Every call to the model costs money and milliseconds, and a real knowledge base has millions of chunks that mostly never change. Re-embedding all of them on every deploy would torch your budget and your latency. So production systems treat embeddings as a **cache you maintain over time**, not a thing you compute once and forget. This lesson is the unglamorous lifecycle work that keeps a vector index correct and cheap.
+
+## What it is
+
+The **embedding lifecycle** is the set of rules for storing vectors, deciding when to recompute them, and keeping the index in sync with the source text. The core principle: **a chunk's embedding is valid exactly as long as its text is unchanged.** Cache the vector keyed to the text. If the text never changes, never re-embed it.
+
+## How it works
+
+The standard trick is a **content hash**. Hash each chunk's text; store the vector alongside that hash. On the next pass, re-hash the current text and compare:
+
+\`\`\`python
+def needs_reembed(chunk_id, text, cache):
+    h = hash_text(text)                 # cheap, local, no API call
+    if cache.get(chunk_id) != h:        # missing or text changed
+        cache[chunk_id] = h
+        return True                     # re-embed: pay for the API call
+    return False                        # hash matches -> reuse stored vector
+\`\`\`
+
+If the hash matches, the text is byte-for-byte the same, so the old vector is still correct and you skip the expensive call. If it differs, the source changed and the stored vector is now **stale** — recompute it. This makes updates **incremental**: edit ten chunks out of a million and you embed ten, not a million.
+
+One more piece keeps you safe across model upgrades: the **index version**. When you switch to a new embedding model, every old vector is meaningless because vectors from different models are not comparable. Stamp the index with a model version; when it changes, re-embed everything once and bump the version. Mixing two models' vectors in one index silently corrupts every similarity score.
+
+## Why it matters
+
+This is the difference between a demo and a system that survives contact with real, changing data:
+
+- **Cost and speed.** Cache hits cost nothing. Only changed chunks hit the API, so updates stay fast and cheap at scale.
+- **Correctness.** Stale vectors silently return wrong results — the index says one thing, the document says another. Hash checks catch exactly the chunks that drifted.
+- **Safe migrations.** Versioning the index means a model upgrade never leaves you comparing apples to oranges across two embedding spaces.
+
+## The mental model to keep
+
+An embedding is a cached function of its text. Re-embed only when the text's hash changes, and version the whole index whenever the model changes. Compute once, reuse forever, recompute exactly when something actually moved.`,
+      key_terms: [
+        { term: "Embedding cache", definition: "Stored vectors keyed to their source text, reused so unchanged chunks are never re-embedded." },
+        { term: "Content hash", definition: "A fingerprint of a chunk's text; if it changes, the text changed and the stored vector is stale." },
+        { term: "Stale embedding", definition: "A stored vector whose source text has since changed, so it no longer represents the current text." },
+        { term: "Index version", definition: "A stamp recording which embedding model built the index, bumped when the model changes so old vectors are rebuilt." }
+      ],
+      callouts: [
+        { type: "insight", title: "Re-embed only what moved", content: "A content hash tells you which chunks actually changed. Edit ten of a million and you pay for ten embeddings, not a million. Updates become incremental.", position: "before" },
+        { type: "warning", title: "Never mix model versions", content: "Vectors from two different embedding models live in different spaces and are not comparable. Stamp the index with a model version and re-embed everything when it changes.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "The embedding lifecycle",
+        steps: [
+          { label: "Hash the text", desc: "Fingerprint each chunk's current text, cheaply and locally." },
+          { label: "Compare to cache", desc: "Same hash means reuse; different or missing means re-embed." },
+          { label: "Re-embed if changed", desc: "Call the model only for chunks whose text actually moved." },
+          { label: "Version on model swap", desc: "Bump the index version and rebuild all vectors when the model changes." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "When should a stored chunk embedding be recomputed?",
+          options: ["When the chunk's text has changed", "On every single search query", "Never, once stored", "Only when the database restarts"],
+          correct_index: 0,
+          explanation: "An embedding stays valid as long as its text is unchanged; recompute only when the source text moves."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What is the role of a content hash in an embedding cache?",
+          options: [
+            "It detects whether a chunk's text changed, so you re-embed only what moved",
+            "It compresses the vector to save space",
+            "It encrypts the embedding for security",
+            "It replaces cosine similarity at query time"
+          ],
+          correct_index: 0,
+          explanation: "Comparing the new hash to the stored one tells you exactly which chunks changed and need re-embedding."
+        },
+        {
+          question: "Why must you re-embed the whole index when you switch embedding models?",
+          options: [
+            "Vectors from different models live in different spaces and are not comparable",
+            "The old vectors take up too much disk space",
+            "New models always use fewer dimensions",
+            "Cosine similarity is disabled after an upgrade"
+          ],
+          correct_index: 0,
+          explanation: "Mixing two models' vectors in one index corrupts every similarity score, so a model change forces a full rebuild and a version bump."
+        },
+        {
+          question: "What is a 'stale' embedding?",
+          options: [
+            "A stored vector whose source text has since changed",
+            "A vector that is too old to store",
+            "An embedding with too few dimensions",
+            "A vector that was never normalized"
+          ],
+          correct_index: 0,
+          explanation: "When the text moves but the vector is not recomputed, the index disagrees with the document and returns wrong results."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Lifecycle facts",
+          questions: [
+            { question: "An unchanged chunk should be re-embedded on every deploy to stay fresh.", type: "true_false", correct_answer: "false", explanation: "If the text is identical, the cached vector is still correct; re-embedding it just wastes money and time." },
+            { question: "A fingerprint of a chunk's text used to detect changes is called a content ____.", type: "fill_in", correct_answer: "hash", explanation: "A content hash flags exactly which chunks changed." }
+          ]
+        }
+      ],
+      step_throughs: [
+        {
+          title: "incoming text → hash → compare → reuse or re-embed",
+          steps: [
+            { label: "Take the current chunk text", detail: "The latest version of one chunk during an ingestion pass.", code: 'text = "Refunds are processed in 5 days."' },
+            { label: "Hash it cheaply", detail: "A local fingerprint, no API call. Same text always yields the same hash.", code: "h = hash_text(text)  # e.g. 9f2a..." },
+            { label: "Compare to the cache", detail: "Look up the stored hash for this chunk id.", code: "cache.get(chunk_id) == h ?" },
+            { label: "Reuse or re-embed", detail: "Match means the stored vector is still valid; mismatch means re-embed and update the cache.", code: "match -> reuse vector   mismatch -> embed + cache[id]=h" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A chunk's stored hash is 'abc'. Its current text hashes to 'abc'. Do you call the embedding API?",
+          steps: [
+            "Compare the new hash 'abc' against the stored hash 'abc'.",
+            "They match, so the text is unchanged and the stored vector is still correct.",
+            "No API call is needed: reuse the cached vector."
+          ],
+          output: "No re-embed: cache hit."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "You process events for one chunk in order: hash 'x' (first seen), then 'x' again, then 'y', then 'y'. How many embedding API calls happen, and why?",
+          steps: [
+            "First 'x': the chunk id is not in the cache, so it is a miss -> embed (call 1), store 'x'.",
+            "Second 'x': stored hash is 'x', matches -> cache hit, no call.",
+            "Then 'y': stored 'x' differs from 'y' -> text changed, re-embed (call 2), store 'y'.",
+            "Final 'y': stored 'y' matches -> cache hit, no call. Total: 2 calls."
+          ],
+          output: "2 API calls (the first sighting and the one real change)."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "naive re-embed-everything vs hash-cached updates",
+          columns: ["Property", "Re-embed all on every deploy", "Hash-cached incremental"],
+          rows: [
+            { cells: ["API calls when 10 of 1M changed", "1,000,000", "10"] },
+            { cells: ["Cost per update", "Huge", "Tiny"] },
+            { cells: ["Detects stale vectors", "Brute force", "Exactly the changed ones"] },
+            { cells: ["Handles model upgrades", "Unaware", "Version stamp triggers rebuild"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "re-embed this chunk or reuse the cached vector?",
+          bins: [
+            { id: "re", label: "Re-embed (API call)" },
+            { id: "reuse", label: "Reuse cached vector" }
+          ],
+          items: [
+            { id: "i1", text: "Chunk text edited since last pass", bin: "re" },
+            { id: "i2", text: "Stored hash matches current hash", bin: "reuse" },
+            { id: "i3", text: "Brand-new chunk never seen before", bin: "re" },
+            { id: "i4", text: "Embedding model was just upgraded", bin: "re" },
+            { id: "i5", text: "Identical text, unchanged since indexing", bin: "reuse" },
+            { id: "i6", text: "Only a different chunk in the doc changed", bin: "reuse" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why do production systems store a content hash next to each embedding instead of just re-embedding every chunk on every update?",
+          sampleAnswer: "Re-embedding everything means paying the model for millions of chunks even though almost none changed, which is slow and expensive. Storing a hash of each chunk's text lets the system re-hash on the next pass and compare: if the hash matches, the text is identical and the cached vector is still correct, so it is reused for free. Only the chunks whose hash changed get re-embedded. The hash turns a full rebuild into a cheap incremental update that touches exactly what moved."
+        }
+      ],
+      starter_code: `def hash_text(text):
+    # A toy 'hash': in production use hashlib. Here, the text itself is fine.
+    return text
+
+cache = {}   # chunk_id -> stored hash
+
+def needs_reembed(chunk_id, text, cache):
+    # TODO: return True (and update the cache) if this chunk is new or changed,
+    # otherwise return False to reuse the stored vector.
+    pass
+
+events = [("c1", "hello"), ("c1", "hello"), ("c1", "world")]
+for cid, text in events:
+    print(cid, needs_reembed(cid, text, cache))`,
+      solution_code: `def hash_text(text):
+    return text
+
+cache = {}
+
+def needs_reembed(chunk_id, text, cache):
+    h = hash_text(text)
+    if cache.get(chunk_id) != h:
+        cache[chunk_id] = h
+        return True
+    return False
+
+events = [("c1", "hello"), ("c1", "hello"), ("c1", "world")]
+calls = 0
+for cid, text in events:
+    if needs_reembed(cid, text, cache):
+        calls += 1
+        print(cid, "REEMBED")
+    else:
+        print(cid, "CACHED")
+print("api calls:", calls)`,
+      expected_output: `c1 REEMBED
+c1 CACHED
+c1 REEMBED
+api calls: 2`,
+      hints: [
+        "Use cache.get(chunk_id) so a missing chunk returns None, which never equals a real hash.",
+        "If the stored hash differs from the new one, update the cache and return True.",
+        "A match means the text is unchanged: return False without touching the cache."
+      ],
+      challenge_title: "Incremental Re-Embed Counter",
+      challenge_description: "Process a stream of chunk updates and count how many actually trigger an embedding API call.",
+      challenge_story: "Your RAG pipeline re-runs every time the source docs change, and finance is watching the embedding bill. The rule is simple: a chunk only needs a fresh embedding when its **content hash** differs from what is cached — a brand-new chunk, or one whose text was edited. An unchanged chunk reuses its stored vector for free. You are given the ordered stream of (chunk id, content hash) events from one ingestion run. Report, per event, whether it re-embeds or hits the cache, then the total number of API calls so the team can sanity-check the bill.",
+      challenge_statement: "You are given **N** events in order. Each event is a **chunk id** and the **content hash** of that chunk's current text.\n\nMaintain a cache mapping chunk id to its last-seen hash. For each event:\n\n- If the chunk id is **not yet cached**, or its **cached hash differs** from the event's hash, it is a **re-embed**: print `id REEMBED`, count an API call, and update the cache to the new hash.\n- Otherwise (cached hash matches) it is a cache hit: print `id CACHED`.\n\nAfter all events, print the total number of re-embeds (API calls).",
+      challenge_input_format: "The first line holds a single integer `N`: the number of events.\nEach of the next `N` lines holds a chunk id and a content hash, space-separated (neither contains spaces).",
+      challenge_output_format: "Output `N` lines, one per event in order: the chunk id, a space, then `REEMBED` or `CACHED`.\nThen one final line: the total number of re-embeds.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "Chunk ids and hashes are non-empty strings with no whitespace"
+      ],
+      challenge_examples: [
+        { input: "5\ndoc1 aaa\ndoc2 bbb\ndoc1 aaa\ndoc1 ccc\ndoc2 bbb", output: "doc1 REEMBED\ndoc2 REEMBED\ndoc1 CACHED\ndoc1 REEMBED\ndoc2 CACHED\n3", explanation: "doc1 and doc2 are new (2 calls). doc1 aaa repeats -> cached. doc1 changes to ccc -> re-embed (call 3). doc2 bbb repeats -> cached. Total 3." },
+        { input: "3\na x\na x\na x", output: "a REEMBED\na CACHED\na CACHED\n1", explanation: "The first sighting of a embeds once; the two identical repeats are cache hits. Total 1." }
+      ],
+      challenge_notes: "This is exactly how an incremental indexer avoids re-embedding an entire knowledge base on every deploy: only chunks whose content hash moved hit the API. Use `dict.get(id)` so a never-seen id compares as not-equal to any real hash, folding the 'new chunk' and 'changed chunk' cases into one check.",
+      challenge_hints: [
+        "Keep a dict mapping chunk id to its last-seen hash.",
+        "An event re-embeds when `cache.get(cid) != h` (covers both new and changed); update `cache[cid] = h` and increment the counter.",
+        "Collect output lines and print them, then print the final count."
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0].strip())
+    # TODO: process the N (chunk_id, hash) events, printing REEMBED or CACHED
+    # per event, then the total number of re-embeds.
+
+main()`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0].strip())
+    cache = {}
+    reembeds = 0
+    out = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        cid, h = parts[0], parts[1]
+        if cache.get(cid) != h:
+            cache[cid] = h
+            reembeds += 1
+            out.append(cid + " REEMBED")
+        else:
+            out.append(cid + " CACHED")
+    out.append(str(reembeds))
+    print("\\n".join(out))
+
+main()`,
+      challenge_test_cases: [
+        { input: "5\ndoc1 aaa\ndoc2 bbb\ndoc1 aaa\ndoc1 ccc\ndoc2 bbb", expected_output: "doc1 REEMBED\ndoc2 REEMBED\ndoc1 CACHED\ndoc1 REEMBED\ndoc2 CACHED\n3", description: "Example 1: new chunks, a repeat, and a real edit." },
+        { input: "3\na x\na x\na x", expected_output: "a REEMBED\na CACHED\na CACHED\n1", description: "Example 2: one embed, then cache hits." },
+        { input: "4\nk 1\nk 2\nk 1\nk 1", expected_output: "k REEMBED\nk REEMBED\nk REEMBED\nk CACHED\n3", description: "Edge: reverting to an old hash still counts as a change from the current cached value." },
+        { input: "2\np q\nr s", expected_output: "p REEMBED\nr REEMBED\n2", description: "Edge: two distinct new chunks both embed." }
       ]
     }
   ]

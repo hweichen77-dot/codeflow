@@ -6,7 +6,7 @@ export default {
     difficulty: "intermediate",
     category: "vision_multimodal",
     estimated_time: 120,
-    lessons_count: 4,
+    lessons_count: 8,
     tags: ["computer-vision", "cnn", "image-classification", "multimodal", "claude-api"],
     order: 5,
     cover_image: ""
@@ -1358,6 +1358,1291 @@ main()
           input: "3\n{\"category\": \"travel\", \"total\": \"not-a-number\"}\n{\"category\": \"travel\", \"total\": 100}\n{\"category\": \"food\", \"total\": 9.5}",
           expected_output: "2\n1\nfood 9.50\ntravel 100.00",
           description: "Edge: a non-numeric total is skipped; valid ones still aggregate and sort alphabetically."
+        }
+      ]
+    },
+
+    {
+      id: "ai-05-l5",
+      project_id: "ai-05",
+      order: 5,
+      title: "Pixels, Channels, and Resolution",
+      concept: "Pixels",
+      xp_reward: 10,
+      explanation: `A 12-megapixel phone photo is roughly 36 million numbers. Send that straight to a vision API and two things happen: the model quietly **shrinks it** before looking, and your bill goes up for pixels the model never really used. Lesson 1 told you an image is a grid of numbers. This lesson is about *how many* numbers — and why resolution is the single biggest lever on both what a model can see and what it costs you.
+
+## What it is
+
+**Resolution** is just the image's pixel dimensions: width times height. A photo that is \`1920 × 1080\` holds about two million pixels per channel, and three channels of color, so roughly **six million numbers**. Double the width and height and you don't double the count — you *quadruple* it, because area grows with the square of the side. That quadratic scaling is the whole story of why big images are expensive.
+
+The numbers themselves are unchanged from lesson 1: each pixel is **0–255 per channel**, three channels for RGB. What changes here is the *count*, and the count is what drives memory, speed, and money.
+
+## How it works
+
+Most vision systems don't accept your image at full size. They **resize** it to a fixed input — a CNN might want exactly \`224 × 224\`; a multimodal API caps the longest side and downscales anything larger. Resizing throws pixels away. Shrink a photo of a page of text too far and the letters blur into gray mush the model can no longer read. Keep it too large and you pay for detail that adds nothing.
+
+Token-style cost for a vision model scales with **pixel area**, not with how interesting the picture is. Here is the resize-and-cost calculation in miniature:
+
+\`\`\`python
+def resize_to_cap(w, h, cap):
+    longest = max(w, h)
+    if longest <= cap:
+        return w, h            # already small enough
+    scale = longest / cap     # how much we must shrink
+    return int(w / scale), int(h / scale)
+
+w, h = resize_to_cap(4000, 3000, 1000)
+print(w, h)                   # 1000 750  -> long side capped at 1000
+print(w * h, "pixels per channel")  # 750000, down from 12,000,000
+\`\`\`
+
+That one resize cut the pixel count by **16x** — a 4x reduction on each side — before the model saw a thing.
+
+## Why it matters
+
+Resolution is a tradeoff you control, not a setting to ignore:
+
+- **Too low** and small details vanish. Reading a serial number, counting items, or spotting a thin crack all fail when the relevant feature is smaller than a few pixels after downscaling.
+- **Too high** and you waste money and latency. Past the point where the model can resolve the detail you need, extra pixels are pure cost.
+- **The sweet spot** is the smallest resolution at which the feature you care about is still clearly visible. For reading text, that's higher than for "is this a beach or a forest."
+
+This is why "just send the original" is rarely the right answer. Match the resolution to the task.
+
+## The mental model to keep
+
+**More pixels means more numbers, and area grows with the square of the side.** Resolution is a dial: turn it up for fine detail, down to save money, and find the lowest setting where the thing you need to see is still sharp.`,
+      key_terms: [
+        { term: "Resolution", definition: "The pixel dimensions of an image (width times height). More resolution means more numbers to process." },
+        { term: "Resize / downscale", definition: "Changing an image's dimensions, usually shrinking it to a fixed input size — which discards pixels and detail." },
+        { term: "Pixel area", definition: "Width times height. It grows quadratically: doubling each side quadruples the pixel count and the cost." },
+        { term: "Aspect ratio", definition: "The ratio of width to height. Preserving it during resize keeps shapes from being stretched or squashed." }
+      ],
+      callouts: [
+        {
+          type: "insight",
+          title: "Doubling the size quadruples the cost",
+          content: "Pixel count is width times height, so making an image twice as wide and twice as tall gives you four times the pixels — and roughly four times the processing cost. Resolution is a quadratic dial, not a linear one.",
+          position: "before"
+        },
+        {
+          type: "tip",
+          title: "Pick the smallest resolution that still works",
+          content: "Resize down until the feature you actually need (a face, a serial number, a crack) starts to get fuzzy, then go one notch back up. That's the cheapest resolution that still does the job.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "How resolution drives cost",
+        steps: [
+          { label: "Original image", desc: "A large photo, e.g. 4000 x 3000 = 12 million pixels." },
+          { label: "Resize to cap", desc: "The model shrinks the longest side to its input limit." },
+          { label: "New pixel area", desc: "Width times height of the smaller image — far fewer numbers." },
+          { label: "Cost scales with area", desc: "Tokens or compute grow with pixel count, not image content." },
+          { label: "Detail tradeoff", desc: "Too small loses features; too large wastes money." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "You double both the width and the height of an image. How does its pixel count change?",
+          options: ["It doubles", "It quadruples", "It stays the same"],
+          correct_index: 1,
+          explanation: "Pixel count is width times height, so doubling each side multiplies the area by four."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why does a 1920x1080 color image hold roughly 6 million numbers?",
+          options: [
+            "1920 + 1080, rounded up",
+            "1920 x 1080 x 3 channels",
+            "1920 x 1080, ignoring channels",
+            "It actually holds only about 2 million"
+          ],
+          correct_index: 1,
+          explanation: "Width times height gives ~2 million pixels per channel, and three RGB channels triples that to roughly 6 million values."
+        },
+        {
+          question: "What is the main risk of downscaling an image too aggressively before sending it to a model?",
+          options: [
+            "The colors invert",
+            "Small but important details blur away and become unreadable",
+            "It always increases the cost",
+            "The aspect ratio is preserved automatically"
+          ],
+          correct_index: 1,
+          explanation: "Resizing discards pixels. If the feature you need is small, shrinking too far turns it into a blur the model can no longer resolve."
+        },
+        {
+          question: "For a vision API, cost typically scales with what?",
+          options: [
+            "How visually interesting the image is",
+            "The number of colors in the image",
+            "The pixel area (width times height) after resizing",
+            "The file's name length"
+          ],
+          correct_index: 2,
+          explanation: "Cost tracks the number of pixels the model processes, which is the area after any resize — not the content of the picture."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Resolution sanity check",
+          questions: [
+            {
+              question: "Tripling an image's width and height makes it about nine times as many pixels.",
+              type: "true_false",
+              correct_answer: "true",
+              explanation: "Area scales with the square of the side, and 3 squared is 9."
+            },
+            {
+              question: "Shrinking an image to a fixed input size is called ___.",
+              type: "fill_in",
+              correct_answer: "resizing",
+              explanation: "Resizing (downscaling) changes the dimensions and discards pixels to fit a model's expected input."
+            }
+          ]
+        }
+      ],
+      starter_code: `# A photo is width x height pixels, with 3 channels for color.
+w, h = 4000, 3000
+cap = 1000  # the model shrinks the longest side to at most this
+
+# TODO: if the longest side is over the cap, scale both sides down by the
+# same factor, then print the new width, height, and pixels-per-channel.
+print("original pixels per channel:", w * h)
+`,
+      solution_code: `w, h = 4000, 3000
+cap = 1000
+
+longest = max(w, h)
+if longest > cap:
+    scale = longest / cap
+    w = int(w / scale)
+    h = int(h / scale)
+
+print("new size:", w, "x", h)
+print("pixels per channel:", w * h)
+`,
+      expected_output: `new size: 1000 x 750
+pixels per channel: 750000`,
+      hints: [
+        "The longest side is max(w, h); only resize if it is above the cap.",
+        "scale = longest / cap tells you how much to shrink; divide BOTH sides by it to keep the aspect ratio.",
+        "int(w / scale) truncates to a whole number of pixels."
+      ],
+      step_throughs: [
+        {
+          title: "big photo -> cap the long side -> count the pixels",
+          steps: [
+            { label: "Start with the original", detail: "A large photo straight from a camera. That is a lot of numbers per channel.", code: "w, h = 4000, 3000   # 12,000,000 pixels/channel" },
+            { label: "Find the longest side", detail: "Resizing caps the longest side; here the width, 4000, is the side that exceeds the limit.", code: "longest = max(4000, 3000) = 4000" },
+            { label: "Compute the shrink factor", detail: "Divide the longest side by the cap to learn how much to shrink everything.", code: "scale = 4000 / 1000 = 4.0" },
+            { label: "Scale both sides equally", detail: "Divide width and height by the same factor so the aspect ratio is preserved.", code: "w,h = 1000, 750  ->  750,000 pixels/channel (16x fewer)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "How many pixels per channel does a 200 x 100 image have?",
+          steps: [
+            "Pixel count per channel is width times height.",
+            "200 x 100.",
+            "That is 20,000 pixels per channel."
+          ],
+          output: "20,000"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "An image is 3000 x 1500. A model caps the longest side at 1500. What is the resized image, and how many fewer pixels does it have?",
+          steps: [
+            "The longest side is 3000, which is over the 1500 cap, so it must shrink.",
+            "scale = 3000 / 1500 = 2.0; divide both sides by 2 to keep the aspect ratio: 1500 x 750.",
+            "Original pixels = 3000 x 1500 = 4,500,000; resized = 1500 x 750 = 1,125,000.",
+            "That is a 4x reduction (2x on each side), so it has 3,375,000 fewer pixels."
+          ],
+          output: "1500 x 750, which is 4x fewer pixels (3,375,000 fewer)"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "low resolution vs high resolution",
+          columns: ["Property", "Low resolution", "High resolution"],
+          rows: [
+            { cells: ["Number count", "Few pixels", "Many pixels"] },
+            { cells: ["Cost and latency", "Cheap, fast", "Expensive, slow"] },
+            { cells: ["Fine detail", "May be lost", "Preserved"] },
+            { cells: ["Best for", "Scene-level questions", "Reading text, tiny features"], highlight: true },
+            { cells: ["Risk", "Detail blurs away", "Paying for unused detail"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "lower the resolution vs keep it high",
+          bins: [
+            { id: "low", label: "Downscale is fine" },
+            { id: "high", label: "Keep resolution high" }
+          ],
+          items: [
+            { id: "i1", text: "Is this photo a beach or a forest?", bin: "low" },
+            { id: "i2", text: "Read the serial number on this chip", bin: "high" },
+            { id: "i3", text: "Roughly how many people are in this crowd shot?", bin: "low" },
+            { id: "i4", text: "Detect a hairline crack in a weld", bin: "high" },
+            { id: "i5", text: "Is the room mostly dark or bright?", bin: "low" },
+            { id: "i6", text: "Transcribe the fine print on a contract", bin: "high" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why does doubling an image's width and height quadruple its processing cost rather than just doubling it?",
+          sampleAnswer: "An image's pixel count is its width times its height, so the cost depends on the area, not the length of a side. Doubling the width doubles the count once, and doubling the height doubles it again, so the total is multiplied by four. Because area grows with the square of the side, resolution is a quadratic dial: small increases in dimensions cause large increases in the number of pixels the model must process."
+        }
+      ],
+      challenge_title: "The Resize Budget",
+      challenge_description: "Simulate a vision API's preprocessing: cap each image's longest side, convert its resized pixel area into tokens, and total the bill for a whole batch.",
+      challenge_story: "Your team uploads thousands of images a day to a multimodal vision API, and finance wants the token cost predicted before the upload, not after the invoice. The API resizes every image so its **longest side** is at most a fixed cap (preserving aspect ratio), then bills by **pixel area**: every 750 pixels (or fraction thereof) of the resized image costs one token. Build the estimator that takes a batch of image dimensions and reports the total token bill and how many images had to be shrunk.",
+      challenge_statement: "You are given `n` images and a longest-side cap `cap`. For each image with width `w` and height `h`:\n\n1. Let `longest = max(w, h)`. If `longest > cap`, compute `scale = longest / cap` and resize to `int(w / scale) x int(h / scale)` (integer truncation, aspect ratio preserved). Otherwise leave it unchanged. An image that is resized counts as **shrunk**.\n2. The resized pixel area is `new_w * new_h`. Its token cost is that area divided by 750, **rounded up** to the next whole token (i.e. `ceil(area / 750)`).\n\nPrint two lines:\n1. The **total tokens** summed across all images.\n2. The **count** of images that were shrunk.",
+      challenge_input_format: "The first line has two integers `n` and `cap`. Each of the next `n` lines has two integers `w h` — one image's width and height.",
+      challenge_output_format: "Line 1: the total token cost across all images (an integer).\nLine 2: the number of images that were resized (an integer).",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ w, h ≤ 20000",
+        "1 ≤ cap ≤ 20000",
+      ],
+      challenge_examples: [
+        { input: "3 1000\n2000 1000\n500 400\n4000 4000", output: "2268\n2", explanation: "Image 1: longest 2000 > 1000, scale 2.0 -> 1000x500 = 500000 px -> ceil(500000/750)=667 tokens (shrunk). Image 2: longest 500 <= 1000, unchanged, 200000 px -> 267 tokens. Image 3: scale 4.0 -> 1000x1000 = 1000000 px -> 1334 tokens (shrunk). Total 667+267+1334=2268; 2 shrunk." },
+        { input: "1 512\n512 512", output: "350\n0", explanation: "Longest side 512 is not over the 512 cap, so no resize. 512x512 = 262144 px -> ceil(262144/750) = 350 tokens; 0 shrunk." },
+      ],
+      challenge_notes: "Use integer truncation (`int(w / scale)`), exactly as the API does, so your estimate matches the real bill. The token rounding is ceiling, not floor: `(area + 749) // 750` rounds up without importing math. Only count an image as shrunk when its longest side strictly exceeds the cap.",
+      challenge_hints: [
+        "Read `n` and `cap`, then loop `n` times reading `w h` per line.",
+        "Resize only when `max(w, h) > cap`; compute `scale = max(w, h) / cap` and divide both sides with `int(...)`.",
+        "Ceil-divide the area with `(w * h + 749) // 750`, add to a running total, and count the resized images separately.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    cap = int(data[idx]); idx += 1
+    # TODO: for each image, cap the longest side, compute the resized pixel
+    # area, convert to tokens with ceil(area / 750), and total it up.
+    # Also count how many images were shrunk. Print total tokens, then count.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    cap = int(data[idx]); idx += 1
+    total_tokens = 0
+    shrunk = 0
+    for _ in range(n):
+        w = int(data[idx]); h = int(data[idx + 1])
+        idx += 2
+        longest = w if w > h else h
+        if longest > cap:
+            scale = longest / cap
+            w = int(w / scale)
+            h = int(h / scale)
+            shrunk += 1
+        area = w * h
+        tokens = (area + 749) // 750
+        total_tokens += tokens
+    print(total_tokens)
+    print(shrunk)
+
+main()
+`,
+      challenge_test_cases: [
+        {
+          input: "3 1000\n2000 1000\n500 400\n4000 4000",
+          expected_output: "2268\n2",
+          description: "Two oversized images are shrunk; the small one passes through untouched."
+        },
+        {
+          input: "1 512\n512 512",
+          expected_output: "350\n0",
+          description: "Edge: an image exactly at the cap is not resized (cap is inclusive)."
+        },
+        {
+          input: "2 100\n100 100\n50 50",
+          expected_output: "18\n0",
+          description: "Both images are within the cap; tokens round up (14 + 4)."
+        }
+      ]
+    },
+
+    {
+      id: "ai-05-l6",
+      project_id: "ai-05",
+      order: 6,
+      title: "Classification, Detection, Segmentation",
+      concept: "Tasks",
+      xp_reward: 10,
+      explanation: `"Is there a cat in this photo?" "Where is the cat?" "Which exact pixels are cat?" Those are three different questions, and in computer vision they are three different *tasks* with three different outputs. Pick the wrong one and you either get less than you need or pay for far more than you use. This lesson is the map of what vision systems can be asked to produce.
+
+## What it is
+
+There is a clean ladder of vision tasks, each one finer-grained than the last:
+
+- **Classification** answers "*what is this image?*" with **one label** for the whole picture. Input: an image. Output: a class like \`cat\` (often with a confidence). It does not say *where* anything is.
+- **Detection** answers "*what objects are here and where?*" with a **bounding box** around each object plus its label. Input: an image. Output: a list of \`(label, box)\` pairs. The box is four numbers — \`x1, y1, x2, y2\`.
+- **Segmentation** answers "*which pixels belong to what?*" with a **per-pixel mask**. Input: an image. Output: a label for every single pixel. It traces the exact outline, not just a rectangle.
+
+Each step up gives more spatial precision and costs more to produce.
+
+## How it works
+
+The same backbone (the CNN or vision layers from earlier lessons) feeds all three; what differs is the **output head** bolted on top. Classification ends in one set of class scores. Detection adds machinery that proposes boxes and scores each. Segmentation produces a full-resolution grid of labels. A bounding box is cheap to represent — just four numbers — while a mask is as big as the image itself.
+
+\`\`\`python
+# Three tasks, three output shapes for the same cat photo
+classification = "cat"                                  # one label
+detection      = [("cat", 30, 40, 120, 200)]            # label + box (x1,y1,x2,y2)
+segmentation   = mask                                   # a label per pixel, image-sized
+
+box = detection[0]
+box_area = (box[3] - box[1]) * (box[4] - box[2])        # (200-40) * (120-30)
+print("box covers", box_area, "pixels")                 # 14400
+\`\`\`
+
+A box tells you the object's rough rectangle; a mask tells you its precise silhouette. The further down the ladder, the more you know about *where* — and the more expensive the answer.
+
+## Why it matters
+
+Choosing the task is a real engineering decision:
+
+- **Use classification** when one label per image is enough: "is this product defective?", "spam screenshot or not?". Cheapest and fastest.
+- **Use detection** when you need to locate and count things: "how many cars in this frame?", "draw a box around every face." A self-driving car needs boxes, not just "there are cars somewhere."
+- **Use segmentation** when exact shape matters: medical imaging outlining a tumor, photo apps replacing a background, robotics gripping an oddly shaped part. Most precise, most expensive, most labeling effort to train.
+
+Asking for segmentation when a label would do wastes money and compute; asking for classification when you actually need locations leaves you unable to do the job.
+
+## The mental model to keep
+
+**Classification labels the whole picture, detection draws boxes around things, segmentation colors in every pixel.** One label, then boxes, then masks — each rung up the ladder is more precise and more expensive.`,
+      key_terms: [
+        { term: "Classification", definition: "Assigning a single label to an entire image (e.g. 'cat'), with no information about location." },
+        { term: "Object detection", definition: "Finding each object and drawing a bounding box around it, with a label per box." },
+        { term: "Bounding box", definition: "A rectangle around an object, given as four numbers (x1, y1, x2, y2)." },
+        { term: "Segmentation", definition: "Labeling every individual pixel, tracing each object's exact outline rather than a rough rectangle." }
+      ],
+      callouts: [
+        {
+          type: "analogy",
+          title: "Label, box, then color-in",
+          content: "Classification slaps one sticky note on the whole photo. Detection draws rectangles around each thing and labels them. Segmentation hands you a coloring book where every pixel is filled in by object. Each step is more precise and more work.",
+          position: "before"
+        },
+        {
+          type: "tip",
+          title: "Match the task to the question",
+          content: "If you only need a yes/no per image, classification is cheapest. If you need to count or locate, you need detection. Only reach for segmentation when the exact shape of an object truly matters.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "The vision task ladder",
+        steps: [
+          { label: "Classification", desc: "One label for the whole image: 'cat'." },
+          { label: "Detection", desc: "A labeled bounding box around each object." },
+          { label: "Segmentation", desc: "A label for every pixel — exact outlines." },
+          { label: "More precision", desc: "Each rung knows more about WHERE things are." },
+          { label: "More cost", desc: "And each rung costs more compute and labeling." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "You need to know how many cars are in a traffic camera frame and where each one is. Which task fits?",
+          options: ["Classification", "Object detection", "Segmentation"],
+          correct_index: 1,
+          explanation: "Counting and locating distinct objects calls for detection, which returns a labeled bounding box per object."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does image classification output?",
+          options: [
+            "A bounding box around each object",
+            "A single label for the whole image",
+            "A label for every pixel",
+            "The image at a higher resolution"
+          ],
+          correct_index: 1,
+          explanation: "Classification answers 'what is this image?' with one label for the entire picture and no location information."
+        },
+        {
+          question: "How is a bounding box from object detection represented?",
+          options: [
+            "A single class name",
+            "Four numbers marking a rectangle (x1, y1, x2, y2)",
+            "A full-image grid of pixel labels",
+            "A confidence score only"
+          ],
+          correct_index: 1,
+          explanation: "A bounding box is a rectangle described by four coordinates, paired with the object's label."
+        },
+        {
+          question: "When is segmentation the right choice over detection?",
+          options: [
+            "When you only need a yes/no for the whole image",
+            "When a rough rectangle is good enough",
+            "When the exact pixel-level shape of an object matters",
+            "When you want the cheapest possible task"
+          ],
+          correct_index: 2,
+          explanation: "Segmentation traces exact outlines pixel by pixel, which matters for things like outlining a tumor or replacing a background — at higher cost."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Task taxonomy check",
+          questions: [
+            {
+              question: "Object detection tells you the exact pixel-by-pixel outline of each object.",
+              type: "true_false",
+              correct_answer: "false",
+              explanation: "Detection gives a rough rectangle (bounding box). Pixel-perfect outlines come from segmentation."
+            },
+            {
+              question: "Assigning one label to an entire image, with no location, is called ___.",
+              type: "fill_in",
+              correct_answer: "classification",
+              explanation: "Classification produces a single whole-image label."
+            }
+          ]
+        }
+      ],
+      starter_code: `# A detection result: a label and a bounding box (x1, y1, x2, y2).
+detection = ("cat", 30, 40, 120, 200)
+
+label, x1, y1, x2, y2 = detection
+# TODO: compute the box's area in pixels (width times height) and print it.
+print("label:", label)
+`,
+      solution_code: `detection = ("cat", 30, 40, 120, 200)
+
+label, x1, y1, x2, y2 = detection
+width = x2 - x1
+height = y2 - y1
+area = width * height
+
+print("label:", label)
+print("box area:", area)
+`,
+      expected_output: `label: cat
+box area: 14400`,
+      hints: [
+        "Box width is x2 - x1 and height is y2 - y1.",
+        "Area is width times height.",
+        "(120 - 30) * (200 - 40) = 90 * 160 = 14400."
+      ],
+      step_throughs: [
+        {
+          title: "same photo, three task outputs",
+          steps: [
+            { label: "Ask: what is this?", detail: "Classification returns a single whole-image label, no location.", code: "classify(img) -> 'cat'" },
+            { label: "Ask: what and where?", detail: "Detection returns a labeled bounding box per object: four numbers plus a label.", code: "detect(img) -> [('cat', 30,40,120,200)]" },
+            { label: "Ask: which pixels?", detail: "Segmentation returns a label for every pixel, tracing the exact outline.", code: "segment(img) -> mask, shape (H, W)" },
+            { label: "More precision, more cost", detail: "Going down the ladder buys spatial detail and pays in compute and labeling effort.", code: "label  <  box  <  per-pixel mask" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "An app only needs to know whether an uploaded photo contains a dog at all, anywhere. Which task is the cheapest fit?",
+          steps: [
+            "The question is a single yes/no about the whole image, with no need for location.",
+            "Classification returns one label for the entire image.",
+            "That is the cheapest and fastest task, so it fits."
+          ],
+          output: "Classification"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A bounding box is (x1=10, y1=20, x2=60, y2=120) in a 200x200 image. What fraction of the image does the box cover?",
+          steps: [
+            "Box width = x2 - x1 = 60 - 10 = 50; box height = y2 - y1 = 120 - 20 = 100.",
+            "Box area = 50 x 100 = 5000 pixels.",
+            "Image area = 200 x 200 = 40000 pixels.",
+            "Fraction = 5000 / 40000 = 0.125, or 12.5%."
+          ],
+          output: "12.5% of the image"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "classification vs detection vs segmentation",
+          columns: ["Property", "Classification", "Detection", "Segmentation"],
+          rows: [
+            { cells: ["Question", "What is it?", "What and where?", "Which pixels?"] },
+            { cells: ["Output", "One label", "Boxes + labels", "Per-pixel mask"] },
+            { cells: ["Locates objects?", "No", "Roughly (box)", "Exactly (outline)"] },
+            { cells: ["Cost", "Lowest", "Medium", "Highest"], highlight: true },
+            { cells: ["Example use", "Defect: yes/no", "Count the cars", "Outline a tumor"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which task does each job need?",
+          bins: [
+            { id: "classify", label: "Classification" },
+            { id: "detect", label: "Detection" }
+          ],
+          items: [
+            { id: "i1", text: "Is this X-ray normal or abnormal?", bin: "classify" },
+            { id: "i2", text: "Box every pedestrian in the frame", bin: "detect" },
+            { id: "i3", text: "Tag a photo as 'beach' or 'mountain'", bin: "classify" },
+            { id: "i4", text: "Count how many apples are on the table", bin: "detect" },
+            { id: "i5", text: "Flag a screenshot as spam or not", bin: "classify" },
+            { id: "i6", text: "Locate each license plate in a photo", bin: "detect" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why might choosing segmentation when classification would do be a costly mistake?",
+          sampleAnswer: "Segmentation produces a label for every pixel, which is far more expensive to compute and requires much more labeling effort to train than classification's single whole-image label. If the task only needs a yes/no answer about the whole image, paying for a pixel-perfect mask wastes money, compute, and time without giving any useful extra information. Matching the task to the actual question keeps the system cheap and fast."
+        }
+      ],
+      challenge_title: "The Detection Report",
+      challenge_description: "Aggregate a frame's object-detection output into a report: the most common object class and the share of the image covered by boxes.",
+      challenge_story: "You run the analytics layer behind a smart camera. The detection model hands you a list of bounding boxes per frame, each with a class label and four corner coordinates. The dashboard wants two summary numbers per frame: which object class appears most often (so it can headline 'mostly cars' or 'mostly people'), and how much of the frame is taken up by detected objects (so it can flag busy scenes). Turn the raw box list into that report.",
+      challenge_statement: "A frame is `w x h` pixels and contains `n` detected boxes. Each box has a `label` and corners `x1 y1 x2 y2` (with `x1 < x2`, `y1 < y2`). Its area is `(x2 - x1) * (y2 - y1)`.\n\nProduce two results:\n\n1. The label with the **most boxes**. If two labels tie on count, choose the one that is **alphabetically first**.\n2. The percentage of the frame covered by all boxes combined: `100 * (sum of all box areas) / (w * h)`, formatted to exactly **2 decimal places**. (Boxes may overlap; just sum their areas — do not deduplicate overlap.)\n\nPrint two lines:\n1. The top label and its count, separated by a space: `label count`.\n2. The coverage percentage to 2 decimals.",
+      challenge_input_format: "The first line has three integers `n w h`. Each of the next `n` lines has a label (a token with no spaces) followed by four integers `x1 y1 x2 y2`.",
+      challenge_output_format: "Line 1: the most common label and its count, space-separated.\nLine 2: the coverage percentage to exactly 2 decimal places.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ w, h ≤ 10000",
+        "0 ≤ x1 < x2 ≤ w and 0 ≤ y1 < y2 ≤ h",
+      ],
+      challenge_examples: [
+        { input: "3 100 100\ncat 10 10 30 30\ndog 0 0 50 50\ncat 60 60 90 90", output: "cat 2\n38.00", explanation: "cat appears twice (areas 20x20=400 and 30x30=900) and dog once (50x50=2500). Total covered = 400+900+2500 = 3800 of 10000 pixels = 38.00%. cat wins the count." },
+        { input: "1 10 10\nperson 0 0 10 10", output: "person 1\n100.00", explanation: "A single box covering the whole 10x10 frame: count 1, coverage 100.00%." },
+      ],
+      challenge_notes: "Because boxes can overlap, summing areas can exceed 100% — that is intended; the metric is a busyness signal, not a true coverage fraction. Resolve count ties by iterating labels in sorted order and keeping the first to reach the max, so alphabetical order wins.",
+      challenge_hints: [
+        "Read `n w h`, then loop `n` times reading a label and four ints per line.",
+        "Tally counts in a dict and accumulate `(x2-x1)*(y2-y1)` into a running area sum.",
+        "For the top label, iterate `sorted(counts)` and keep the first whose count is the maximum; format coverage with `f\"{pct:.2f}\"`.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n, w, h = map(int, data[idx].split()); idx += 1
+    # TODO: tally how many boxes per label and sum every box's area.
+    # Print the most common label (alphabetical on ties) with its count,
+    # then 100 * total_area / (w*h) to 2 decimals.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n, w, h = map(int, data[idx].split()); idx += 1
+    counts = {}
+    total_area = 0
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        label = parts[0]
+        x1, y1, x2, y2 = map(int, parts[1:5])
+        counts[label] = counts.get(label, 0) + 1
+        total_area += (x2 - x1) * (y2 - y1)
+
+    best_label = None
+    best_count = -1
+    for label in sorted(counts):
+        if counts[label] > best_count:
+            best_count = counts[label]
+            best_label = label
+
+    pct = 100.0 * total_area / (w * h)
+    print(best_label, best_count)
+    print(f"{pct:.2f}")
+
+main()
+`,
+      challenge_test_cases: [
+        {
+          input: "3 100 100\ncat 10 10 30 30\ndog 0 0 50 50\ncat 60 60 90 90",
+          expected_output: "cat 2\n38.00",
+          description: "cat is the most common label; total box area is 38% of the frame."
+        },
+        {
+          input: "1 10 10\nperson 0 0 10 10",
+          expected_output: "person 1\n100.00",
+          description: "Edge: one box covering the whole frame is 100.00% coverage."
+        },
+        {
+          input: "4 200 100\ncar 0 0 50 50\ncar 50 0 100 50\nbus 0 50 100 100\ncar 100 0 150 50",
+          expected_output: "car 3\n62.50",
+          description: "car wins 3 to 1; combined box area is 62.50% of the 200x100 frame."
+        }
+      ]
+    },
+
+    {
+      id: "ai-05-l7",
+      project_id: "ai-05",
+      order: 7,
+      title: "Confidence Scores and Thresholds",
+      concept: "Confidence",
+      xp_reward: 10,
+      explanation: `A vision model rarely says "cat." It says "cat, 0.93." That number is a **confidence score**, and the cutoff you pick for it quietly decides whether your system cries wolf or sleeps through a fire. Tune it one way and you flood operators with false alarms; tune it the other and you miss the thing you built the system to catch. Confidence and thresholds are where a vision model meets the real world.
+
+## What it is
+
+A **confidence score** is the model's estimated probability for a prediction, a number between **0 and 1**. "Helmet detected, 0.97" means the model is very sure; "0.51" means it is barely past a coin flip. To turn that continuous score into a yes/no decision, you pick a **threshold** \`t\`: predictions at or above \`t\` are accepted as positive, everything below is treated as negative.
+
+The threshold is *your* dial, not the model's. The same model becomes trigger-happy at \`t = 0.3\` and cautious at \`t = 0.9\`. Nothing about the model changes — only where you draw the line.
+
+## How it works
+
+Every prediction, once you apply a threshold and compare it to the truth, lands in one of four buckets:
+
+- **True positive (TP):** predicted yes, actually yes. A real catch.
+- **False positive (FP):** predicted yes, actually no. A false alarm.
+- **False negative (FN):** predicted no, actually yes. A miss.
+- **True negative (TN):** predicted no, actually no. Correctly ignored.
+
+Two metrics summarize the tradeoff. **Precision** = TP / (TP + FP): of everything you flagged, how much was real? **Recall** = TP / (TP + FN): of everything that was real, how much did you catch?
+
+\`\`\`python
+def precision_recall(predictions, t):
+    tp = fp = fn = 0
+    for confidence, truth in predictions:
+        predicted = confidence >= t
+        if predicted and truth:   tp += 1
+        elif predicted:           fp += 1   # said yes, was no
+        elif truth:               fn += 1   # said no, was yes
+    precision = tp / (tp + fp) if tp + fp else 0.0
+    recall    = tp / (tp + fn) if tp + fn else 0.0
+    return precision, recall
+\`\`\`
+
+Here's the tension: **raise the threshold** and you only accept confident predictions, so false positives drop and precision rises — but you also reject borderline real ones, so recall falls. **Lower the threshold** and you catch more (recall up) at the cost of more false alarms (precision down). You cannot maximize both; you choose where to sit.
+
+## Why it matters
+
+The right threshold depends entirely on the cost of each kind of mistake:
+
+- **Cancer screening:** a miss (FN) is deadly, a false alarm (FP) just means another test. Favor **recall** — low threshold, catch everything, tolerate false alarms.
+- **Spam filter for important mail:** a false positive (real mail in spam) is awful, a miss (one spam in the inbox) is minor. Favor **precision** — high threshold.
+- **A confidence score is not a guarantee of truth.** As the hallucination lesson warned, a confident model can be confidently wrong. Confidence calibrates *the model's own certainty*, not reality.
+
+## The mental model to keep
+
+**The threshold is a slider between crying wolf and missing the wolf.** Slide it up for fewer false alarms but more misses; slide it down to catch everything but drown in noise. Set it by which mistake hurts more.`,
+      key_terms: [
+        { term: "Confidence score", definition: "The model's estimated probability for a prediction, between 0 and 1 — how sure it is, not whether it is right." },
+        { term: "Threshold", definition: "The cutoff you choose: predictions at or above it count as positive, below it as negative." },
+        { term: "Precision", definition: "Of everything the model flagged as positive, the fraction that was actually correct: TP / (TP + FP)." },
+        { term: "Recall", definition: "Of everything that was actually positive, the fraction the model caught: TP / (TP + FN)." }
+      ],
+      callouts: [
+        {
+          type: "analogy",
+          title: "A cry-wolf slider",
+          content: "The threshold is a slider. Slide it low and the system shouts at every shadow (high recall, many false alarms). Slide it high and it only shouts when certain (high precision, but it may miss the real wolf). You pick where to sit.",
+          position: "before"
+        },
+        {
+          type: "warning",
+          title: "High confidence is not proof",
+          content: "A 0.97 score means the model is sure, not that it is right. Models can be confidently wrong. Treat confidence as the model's self-assessment, and verify when the stakes are high.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "From scores to a precision/recall tradeoff",
+        steps: [
+          { label: "Model scores", desc: "Each prediction gets a confidence in 0-1." },
+          { label: "Apply threshold", desc: "Accept scores >= t as positive, reject the rest." },
+          { label: "Compare to truth", desc: "Each lands in TP, FP, FN, or TN." },
+          { label: "Compute metrics", desc: "Precision = TP/(TP+FP); recall = TP/(TP+FN)." },
+          { label: "Tune the cutoff", desc: "Raise t for precision, lower it for recall." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "You raise the confidence threshold from 0.5 to 0.9. What generally happens?",
+          options: [
+            "Both precision and recall rise",
+            "Precision rises (fewer false alarms) but recall falls (more misses)",
+            "Recall rises but precision falls"
+          ],
+          correct_index: 1,
+          explanation: "A higher cutoff accepts only confident predictions, cutting false positives (precision up) but rejecting borderline real ones (recall down)."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What does a confidence score of 0.95 actually tell you?",
+          options: [
+            "The prediction is definitely correct",
+            "The model is 95% sure of this prediction — its own certainty, not a guarantee of truth",
+            "95% of the image was used",
+            "The threshold is set to 0.95"
+          ],
+          correct_index: 1,
+          explanation: "Confidence is the model's estimated probability for its prediction. A high score means high certainty, but a model can be confidently wrong."
+        },
+        {
+          question: "Precision is defined as:",
+          options: [
+            "TP / (TP + FN)",
+            "TP / (TP + FP)",
+            "FP / (FP + TN)",
+            "(TP + TN) / total"
+          ],
+          correct_index: 1,
+          explanation: "Precision = TP / (TP + FP): of everything flagged positive, the share that was truly positive. Recall is the one with FN in the denominator."
+        },
+        {
+          question: "For a cancer screening tool, which mistake should you most avoid, and how do you tune the threshold?",
+          options: [
+            "Avoid false positives; raise the threshold",
+            "Avoid false negatives (misses); lower the threshold to favor recall",
+            "Avoid true negatives; remove the threshold",
+            "It does not matter where the threshold sits"
+          ],
+          correct_index: 1,
+          explanation: "A missed cancer is far costlier than a false alarm, so you favor recall by lowering the threshold to catch as many true cases as possible."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Threshold tradeoff check",
+          questions: [
+            {
+              question: "Lowering the threshold tends to increase recall and decrease precision.",
+              type: "true_false",
+              correct_answer: "true",
+              explanation: "A lower cutoff accepts more predictions, catching more true positives (recall up) but also more false positives (precision down)."
+            },
+            {
+              question: "A prediction that was flagged positive but is actually negative is called a false ___.",
+              type: "fill_in",
+              correct_answer: "positive",
+              explanation: "Predicted yes, actually no, is a false positive — a false alarm."
+            }
+          ]
+        }
+      ],
+      starter_code: `# Predictions: (confidence, truth) where truth is 1 (positive) or 0 (negative).
+predictions = [(0.90, 1), (0.60, 0), (0.40, 1), (0.80, 1), (0.30, 0)]
+t = 0.50
+
+# TODO: count true positives and false positives at threshold t,
+# then print precision = TP / (TP + FP).
+`,
+      solution_code: `predictions = [(0.90, 1), (0.60, 0), (0.40, 1), (0.80, 1), (0.30, 0)]
+t = 0.50
+
+tp = fp = 0
+for confidence, truth in predictions:
+    if confidence >= t:
+        if truth == 1:
+            tp += 1
+        else:
+            fp += 1
+
+precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+print(f"precision: {precision:.4f}")
+`,
+      expected_output: `precision: 0.6667`,
+      hints: [
+        "A prediction is positive when its confidence is >= t.",
+        "If predicted positive and truth is 1 it is a TP; if predicted positive and truth is 0 it is an FP.",
+        "Precision = TP / (TP + FP); guard against dividing by zero."
+      ],
+      step_throughs: [
+        {
+          title: "score -> threshold -> bucket -> metric",
+          steps: [
+            { label: "Start with a score", detail: "The model outputs a confidence for one prediction, between 0 and 1.", code: "confidence = 0.80, truth = 1" },
+            { label: "Apply the threshold", detail: "Compare to t. 0.80 >= 0.50, so this is predicted positive.", code: "predicted = 0.80 >= 0.50  ->  True" },
+            { label: "Drop it in a bucket", detail: "Predicted positive and actually positive: a true positive.", code: "predicted yes + truth yes  ->  TP" },
+            { label: "Roll up to precision/recall", detail: "After bucketing every prediction, compute the two metrics from the counts.", code: "precision = TP/(TP+FP);  recall = TP/(TP+FN)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "At threshold 0.5, a model flags 4 items as positive; 3 of them are truly positive. What is its precision?",
+          steps: [
+            "Precision = TP / (TP + FP).",
+            "Of the 4 flagged, 3 are true positives and 1 is a false positive.",
+            "Precision = 3 / 4 = 0.75."
+          ],
+          output: "0.75"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "There are 10 truly positive items. At t=0.8 the model catches 6 of them; at t=0.5 it catches 9 but also adds 4 false positives it did not have before. How does recall change, and why does precision usually drop?",
+          steps: [
+            "Recall = TP / (TP + FN) = caught / total real positives.",
+            "At t=0.8: recall = 6/10 = 0.60. At t=0.5: recall = 9/10 = 0.90 — lowering the threshold raised recall.",
+            "But lowering t also accepted borderline predictions, adding 4 false positives.",
+            "More FP with the same-or-similar TP lowers precision = TP/(TP+FP), which is the classic tradeoff."
+          ],
+          output: "Recall rises from 0.60 to 0.90, but the extra false positives push precision down"
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "high threshold vs low threshold",
+          columns: ["Effect", "High threshold (e.g. 0.9)", "Low threshold (e.g. 0.3)"],
+          rows: [
+            { cells: ["Predictions accepted", "Only very confident ones", "Many, including borderline"] },
+            { cells: ["False positives", "Few", "Many"] },
+            { cells: ["Misses (false negatives)", "More", "Fewer"] },
+            { cells: ["Precision", "Higher", "Lower"] },
+            { cells: ["Recall", "Lower", "Higher"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "favor precision vs favor recall",
+          bins: [
+            { id: "precision", label: "Favor precision (raise threshold)" },
+            { id: "recall", label: "Favor recall (lower threshold)" }
+          ],
+          items: [
+            { id: "i1", text: "Cancer screening — never miss a real case", bin: "recall" },
+            { id: "i2", text: "Auto-deleting suspected spam permanently", bin: "precision" },
+            { id: "i3", text: "Security alert for a possible intruder", bin: "recall" },
+            { id: "i4", text: "Flagging legit email as spam is unacceptable", bin: "precision" },
+            { id: "i5", text: "Finding every tumor candidate to review later", bin: "recall" },
+            { id: "i6", text: "Only auto-charge a card on a very sure match", bin: "precision" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why can't you simply set a threshold that gives you both perfect precision and perfect recall?",
+          sampleAnswer: "Precision and recall pull in opposite directions as you move the threshold. Raising it accepts only confident predictions, which cuts false positives and raises precision, but it also rejects borderline true cases, lowering recall. Lowering it catches more true cases (higher recall) but lets in more false alarms (lower precision). Unless the model is perfect, there is no single cutoff that maximizes both, so you choose the balance based on which kind of mistake is more costly."
+        }
+      ],
+      challenge_title: "Tune the Threshold",
+      challenge_description: "Apply a confidence threshold to a batch of scored predictions, bucket each into TP/FP/FN/TN against ground truth, and report precision and recall.",
+      challenge_story: "Your defect-detection model scores every part on a production line with a confidence that it is defective. The plant manager wants to A/B test thresholds: for a given cutoff, how good is the system right now? You're building the evaluation harness. Given the model's confidence for each part and the ground-truth label from manual inspection, apply the threshold, sort every part into the four outcome buckets, and report the two numbers that matter — precision and recall — so the team can decide whether to slide the cutoff up or down.",
+      challenge_statement: "You are given `n` predictions and a threshold `t`. Each prediction has a confidence in `[0, 1]` and a ground-truth label (`1` = positive, `0` = negative).\n\nA prediction is **predicted positive** if its confidence is **greater than or equal to** `t`. Classify each:\n\n- predicted positive AND truth 1 -> **TP**\n- predicted positive AND truth 0 -> **FP**\n- predicted negative AND truth 1 -> **FN**\n- predicted negative AND truth 0 -> **TN**\n\nCompute `precision = TP / (TP + FP)` and `recall = TP / (TP + FN)`. If a denominator is `0`, report that metric as `0.0000`.\n\nPrint two lines:\n1. Precision to exactly **4 decimal places**.\n2. Recall to exactly **4 decimal places**.",
+      challenge_input_format: "The first line has an integer `n` and a float `t`. Each of the next `n` lines has a float confidence and an integer truth label (`0` or `1`), separated by a space.",
+      challenge_output_format: "Line 1: precision to 4 decimal places.\nLine 2: recall to 4 decimal places.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0.0 ≤ confidence ≤ 1.0",
+        "0.0 ≤ t ≤ 1.0",
+        "truth is 0 or 1",
+      ],
+      challenge_examples: [
+        { input: "5 0.50\n0.90 1\n0.60 0\n0.40 1\n0.80 1\n0.30 0", output: "0.6667\n0.6667", explanation: "At t=0.50 the positives are 0.90(T), 0.60(F), 0.80(T): TP=2, FP=1. The 0.40 positive is missed (FN=1). Precision = 2/3 = 0.6667; recall = 2/(2+1) = 0.6667." },
+        { input: "2 0.99\n0.50 1\n0.50 0", output: "0.0000\n0.0000", explanation: "Both confidences are below 0.99, so nothing is predicted positive: TP=0, FP=0, FN=1. Precision denominator is 0 -> 0.0000; recall = 0/1 = 0.0000." },
+      ],
+      challenge_notes: "The threshold uses `>=`, so a confidence exactly equal to `t` counts as positive. Guard both divisions: with no positive predictions precision is reported as 0.0000, and with no real positives recall is 0.0000. Raising `t` typically trades recall away for precision — run a few thresholds to see the curve.",
+      challenge_hints: [
+        "Read `n` and `t`; loop the next `n` lines, parsing a float confidence and an int truth.",
+        "Predicted positive when `confidence >= t`; increment one of tp/fp/fn/tn for each prediction.",
+        "Compute precision and recall with a zero-denominator guard, then print each with `f\"{value:.4f}\"`.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    t = float(first[1])
+    # TODO: bucket each prediction into TP/FP/FN/TN using threshold t,
+    # then print precision and recall to 4 decimals (0.0000 if denom is 0).
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    t = float(first[1])
+    tp = fp = fn = tn = 0
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        conf = float(parts[0])
+        truth = int(parts[1])
+        predicted = conf >= t
+        if predicted and truth == 1:
+            tp += 1
+        elif predicted and truth == 0:
+            fp += 1
+        elif not predicted and truth == 1:
+            fn += 1
+        else:
+            tn += 1
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    print(f"{precision:.4f}")
+    print(f"{recall:.4f}")
+
+main()
+`,
+      challenge_test_cases: [
+        {
+          input: "5 0.50\n0.90 1\n0.60 0\n0.40 1\n0.80 1\n0.30 0",
+          expected_output: "0.6667\n0.6667",
+          description: "Two true positives, one false positive, one miss at threshold 0.50."
+        },
+        {
+          input: "2 0.99\n0.50 1\n0.50 0",
+          expected_output: "0.0000\n0.0000",
+          description: "Edge: no positive predictions, so both metrics guard to 0.0000."
+        },
+        {
+          input: "4 0.70\n0.95 1\n0.85 1\n0.75 0\n0.20 1",
+          expected_output: "0.6667\n0.6667",
+          description: "Three predicted positive (2 TP, 1 FP), one real positive missed below the cutoff."
+        }
+      ]
+    },
+
+    {
+      id: "ai-05-l8",
+      project_id: "ai-05",
+      order: 8,
+      title: "Where Vision Fails",
+      concept: "Pitfalls",
+      xp_reward: 10,
+      explanation: `Researchers once stuck a small, carefully designed sticker on a stop sign. To a human it still plainly said STOP. To a vision model, it now read "Speed Limit 45." Nothing about the sign's meaning changed — a few crafted pixels broke the model completely. Vision systems are powerful and genuinely useful, but they fail in specific, knowable ways. Knowing where they break is what separates a demo from a product you can trust.
+
+## What it is
+
+A **vision failure** is any case where the model's output is confidently wrong because the input falls outside what it handles well. These are not random glitches; they cluster into recognizable categories. The deeper danger is that the model usually **fails confidently** — it returns a clean, high-confidence answer with no built-in signal that it is out of its depth.
+
+## How it works — the common failure modes
+
+- **Lighting and occlusion.** Too dark, too bright, heavy shadow, or the object half-hidden behind something. The pixels the model relies on simply aren't there or are distorted.
+- **Edge and out-of-distribution cases.** The model only learned from its training data. A species, object, or scene it never saw, or one photographed from a weird angle, gets shoehorned into the closest thing it *did* see.
+- **Adversarial inputs.** Tiny, deliberate pixel changes — invisible or meaningless to you — that flip the prediction. The stop-sign sticker is the classic example.
+- **Bias.** If the training data underrepresented some group, lighting, or context, accuracy drops there. A model tuned on one population can perform far worse on another.
+- **OCR limits.** Reading text from images stumbles on handwriting, low resolution, unusual fonts, skew, and glare. It will often *guess* a plausible character rather than admit it cannot read one.
+
+A practical defense is to combine the model's confidence with **known risk signals** before trusting an answer:
+
+\`\`\`python
+RISKY = {"dark", "blurry", "occluded", "glare"}
+
+def decide(confidence, flags, t=0.6):
+    if confidence < t:
+        return "reject"          # model isn't sure enough
+    if any(f in RISKY for f in flags):
+        return "review"          # confident, but conditions are unreliable
+    return "trust"
+\`\`\`
+
+Notice the structure: even a *confident* answer is routed to a human when the conditions are known to break vision.
+
+## Why it matters
+
+The cost of a silent failure scales with the stakes. A mislabeled vacation photo is harmless; a misread medical scan or a misclassified self-driving frame is not. So:
+
+- **Never let a vision model be the sole authority on a high-stakes decision.** Put a human or a second check in the loop.
+- **Watch the known-hard cases:** bad lighting, occlusion, handwriting, rare inputs, anything that could be adversarial.
+- **Remember confidence isn't honesty.** As earlier lessons stressed, the model can be sure and wrong at the same time.
+
+## The mental model to keep
+
+**A vision model is a sharp tool with blind spots, not an all-seeing eye.** It excels on inputs like its training data and fails — often confidently — on the edges. Trust it inside its competence, and put guards around everything else.`,
+      key_terms: [
+        { term: "Adversarial input", definition: "A deliberately crafted, often tiny change to an image that flips the model's prediction while looking normal to a human." },
+        { term: "Out-of-distribution", definition: "An input unlike anything in the training data; the model has no good basis for it and forces a wrong guess." },
+        { term: "Occlusion", definition: "When part of the object of interest is hidden behind something else, removing the pixels the model needs." },
+        { term: "Bias", definition: "Systematically worse accuracy on groups or conditions that were underrepresented in the training data." }
+      ],
+      callouts: [
+        {
+          type: "warning",
+          title: "Vision fails confidently",
+          content: "The scariest failures come with a high confidence score and no warning. A model handed a dark, occluded, or out-of-distribution image will still return a clean, sure-sounding answer that is simply wrong.",
+          position: "before"
+        },
+        {
+          type: "insight",
+          title: "Pair confidence with risk signals",
+          content: "Confidence alone is not enough. Combine it with known-hard conditions — poor lighting, occlusion, possible tampering — and route confident-but-risky cases to a human instead of trusting them blindly.",
+          position: "after"
+        }
+      ],
+      concept_diagram: {
+        title: "Why a vision model gives a wrong answer",
+        steps: [
+          { label: "Hard input arrives", desc: "Dark, occluded, adversarial, rare, or hard-to-read text." },
+          { label: "Outside competence", desc: "The input is unlike the training data the model learned from." },
+          { label: "Forced prediction", desc: "The model still outputs its closest match — it can't say 'I can't see this.'" },
+          { label: "Confident error", desc: "A clean, high-confidence answer that happens to be wrong." },
+          { label: "Guard it", desc: "Use risk signals and a human check before trusting high-stakes output." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "A sticker on a stop sign makes a model read it as a speed-limit sign, though humans see no change. What kind of failure is this?",
+          options: ["A bias failure", "An adversarial input", "An OCR limit"],
+          correct_index: 1,
+          explanation: "Deliberately crafted pixels that flip the prediction while looking normal to a human is the definition of an adversarial input."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why is a confident vision-model answer especially dangerous on a hard input?",
+          options: [
+            "The model refuses to answer hard inputs",
+            "It returns a clean, high-confidence answer with no built-in signal that it is out of its depth",
+            "Hard inputs always crash the model",
+            "Confidence drops to exactly zero on hard inputs"
+          ],
+          correct_index: 1,
+          explanation: "Vision models tend to fail confidently: they produce a sure-sounding answer even when the input is dark, occluded, rare, or adversarial."
+        },
+        {
+          question: "Which scenario is a classic OCR failure mode?",
+          options: [
+            "Clear printed text at high resolution",
+            "Handwriting, glare, skew, or low-resolution text",
+            "A solid-color background",
+            "A perfectly lit studio photo"
+          ],
+          correct_index: 1,
+          explanation: "OCR stumbles on handwriting, unusual fonts, skew, glare, and low resolution, often guessing a plausible character instead of admitting it cannot read it."
+        },
+        {
+          question: "What causes a vision model to be systematically less accurate for an underrepresented group?",
+          options: [
+            "The model's resolution is too high",
+            "Bias from training data that underrepresented that group or its conditions",
+            "Using JSON output",
+            "Too low a confidence threshold"
+          ],
+          correct_index: 1,
+          explanation: "When training data underrepresents a group, lighting, or context, the model performs worse there — that gap is bias."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Failure-mode check",
+          questions: [
+            {
+              question: "A high confidence score guarantees the vision model's answer is correct.",
+              type: "true_false",
+              correct_answer: "false",
+              explanation: "Models can be confidently wrong, especially on dark, occluded, rare, or adversarial inputs. Confidence is self-assessed certainty, not truth."
+            },
+            {
+              question: "A deliberately crafted image change that flips a model's prediction while looking normal to a human is an ___ input.",
+              type: "fill_in",
+              correct_answer: "adversarial",
+              explanation: "Adversarial inputs exploit the model's pixel-level sensitivity to force a wrong prediction."
+            }
+          ]
+        }
+      ],
+      starter_code: `# Route each reading by confidence AND known risk conditions.
+RISKY = {"dark", "blurry", "occluded", "glare"}
+
+confidence = 0.90
+flags = ["dark"]
+t = 0.60
+
+# TODO: if confidence < t -> "reject"; elif any flag is risky -> "review";
+# else -> "trust". Print the decision.
+`,
+      solution_code: `RISKY = {"dark", "blurry", "occluded", "glare"}
+
+confidence = 0.90
+flags = ["dark"]
+t = 0.60
+
+if confidence < t:
+    decision = "reject"
+elif any(f in RISKY for f in flags):
+    decision = "review"
+else:
+    decision = "trust"
+
+print(decision)
+`,
+      expected_output: `review`,
+      hints: [
+        "Check the confidence gate first: below t means reject before you even look at flags.",
+        "any(f in RISKY for f in flags) is True if at least one flag is a risky condition.",
+        "Only a confident reading with no risky flags should be trusted outright."
+      ],
+      step_throughs: [
+        {
+          title: "reading -> confidence gate -> risk gate -> decision",
+          steps: [
+            { label: "A reading arrives", detail: "The model returns an answer, a confidence, and any condition flags from the capture.", code: "confidence = 0.90, flags = ['dark']" },
+            { label: "Confidence gate", detail: "If the model isn't sure enough, reject before anything else. 0.90 >= 0.60, so it passes.", code: "0.90 < 0.60 ?  No  ->  keep going" },
+            { label: "Risk gate", detail: "Confident, but a known-hard condition (dark) is flagged, so don't trust it blindly.", code: "'dark' in RISKY ?  Yes  ->  review" },
+            { label: "Final decision", detail: "Confident-but-risky routes to a human. Only confident AND clean would be trusted.", code: "decision = 'review'" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "A reading has confidence 0.40 with threshold 0.60 and no risky flags. What is the decision?",
+          steps: [
+            "Check the confidence gate first: 0.40 is below the 0.60 threshold.",
+            "When confidence is below the threshold, the reading is rejected regardless of flags.",
+            "So the decision is reject."
+          ],
+          output: "reject"
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "An OCR system reads a meter at confidence 0.95, but the capture is flagged 'glare'. Threshold is 0.60. Should you auto-bill the customer from this reading, and what decision does the policy give?",
+          steps: [
+            "Confidence 0.95 clears the 0.60 gate, so it is not rejected.",
+            "But 'glare' is a known OCR-breaking condition in the risky set, so the answer may be a confident misread.",
+            "The policy routes confident-but-risky readings to review, not trust.",
+            "So do not auto-bill: send it to a human to confirm before charging."
+          ],
+          output: "Decision: review. Do not auto-bill — glare is a known OCR risk despite high confidence."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "where vision works well vs where it fails",
+          columns: ["Condition", "Works well", "Fails (often confidently)"],
+          rows: [
+            { cells: ["Lighting", "Even, well-lit", "Dark, harsh shadow, glare"] },
+            { cells: ["Visibility", "Object fully in view", "Occluded or cut off"] },
+            { cells: ["Input familiarity", "Like the training data", "Rare / out-of-distribution"] },
+            { cells: ["Integrity", "Untampered photo", "Adversarial pixels"], highlight: true },
+            { cells: ["Text", "Clear printed, high-res", "Handwriting, skew, low-res"] }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "trust the output vs treat it as high-risk",
+          bins: [
+            { id: "trust", label: "Lower risk — likely reliable" },
+            { id: "risk", label: "High risk — verify it" }
+          ],
+          items: [
+            { id: "i1", text: "A well-lit photo of a common object", bin: "trust" },
+            { id: "i2", text: "OCR on blurry handwriting", bin: "risk" },
+            { id: "i3", text: "A clear, high-res printed label", bin: "trust" },
+            { id: "i4", text: "A scene the model was never trained on", bin: "risk" },
+            { id: "i5", text: "An object half-hidden behind another", bin: "risk" },
+            { id: "i6", text: "A standard daytime street photo", bin: "trust" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is 'the model returned a high confidence score' not a sufficient reason to trust a vision output on a high-stakes decision?",
+          sampleAnswer: "Confidence is the model's own estimate of certainty, not a measure of truth, and vision models tend to fail confidently. On a dark, occluded, out-of-distribution, or adversarial input, the model still produces a clean, high-confidence answer even though it is out of its depth. Because the score gives no warning that the input is hard, a high number can mask a confident error. On high-stakes decisions you need risk signals and a human or second check, not confidence alone."
+        }
+      ],
+      challenge_title: "The Vision Trust Gate",
+      challenge_description: "Combine each reading's confidence with its capture-condition flags to decide whether to trust it, send it for review, or reject it outright.",
+      challenge_story: "You're deploying an OCR system that reads utility meters from phone photos and auto-bills customers. You learned the hard way that a confident reading is not a correct one: glare, darkness, and occlusion produce confident misreads that overcharge people. So you add a **trust gate** before any reading reaches billing. The rule the team agreed on: if the model isn't confident enough, reject the reading; if it is confident but the capture is flagged with a known-risky condition, send it to a human; only a confident reading taken under clean conditions is trusted automatically. Implement the gate over a batch of readings.",
+      challenge_statement: "There is a fixed set of risky conditions: `dark`, `blurry`, `occluded`, `glare`. You are given `n` readings and a confidence threshold `t`. Each reading has a confidence in `[0, 1]` followed by zero or more condition flags (single words).\n\nApply this policy to each reading, **in this order**:\n\n1. If confidence is **less than** `t` -> **reject** (the model isn't sure enough).\n2. Otherwise, if **any** of its flags is in the risky set -> **review** (confident, but conditions are unreliable).\n3. Otherwise -> **trust**.\n\nPrint three lines:\n1. The number **trusted**.\n2. The number sent to **review**.\n3. The number **rejected**.",
+      challenge_input_format: "The first line has an integer `n` and a float `t`. Each of the next `n` lines starts with a float confidence, followed by zero or more space-separated flag words.",
+      challenge_output_format: "Three lines: the trusted count, the review count, and the rejected count — each an integer on its own line.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0.0 ≤ confidence ≤ 1.0",
+        "0.0 ≤ t ≤ 1.0",
+        "Each flag is a single lowercase word; the risky set is exactly {dark, blurry, occluded, glare}.",
+      ],
+      challenge_examples: [
+        { input: "4 0.60\n0.95 clean\n0.90 dark\n0.40 clean\n0.99 occluded glare", output: "1\n2\n1", explanation: "0.95 clean -> confident, no risky flag -> trust. 0.90 dark -> confident but 'dark' is risky -> review. 0.40 -> below 0.60 -> reject. 0.99 occluded glare -> confident but risky -> review. Trusted 1, review 2, rejected 1." },
+        { input: "2 0.50\n0.50 clean\n0.49 clean", output: "1\n0\n1", explanation: "0.50 >= 0.50 and 'clean' is not risky -> trust. 0.49 < 0.50 -> reject. The threshold is inclusive, so exactly 0.50 passes the confidence gate." },
+      ],
+      challenge_notes: "Check the confidence gate **before** the flags: an uncertain reading is rejected no matter how clean the capture is. The threshold is inclusive (`>=`), so a confidence exactly equal to `t` clears the gate. A reading with no flags at all can never be 'review' — only confidence below `t` (reject) or a clean confident pass (trust).",
+      challenge_hints: [
+        "Define `RISKY = {\"dark\", \"blurry\", \"occluded\", \"glare\"}` as a set for fast membership tests.",
+        "Split each reading line: the first token is the float confidence, the rest are flags.",
+        "Branch in order — confidence < t -> reject; else any(flag in RISKY) -> review; else trust — and keep three counters.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    t = float(first[1])
+    RISKY = {"dark", "blurry", "occluded", "glare"}
+    # TODO: for each reading, apply the gate (confidence then risk flags)
+    # and count trusted / review / rejected. Print the three counts.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    t = float(first[1])
+    RISKY = {"dark", "blurry", "occluded", "glare"}
+
+    trusted = 0
+    review = 0
+    rejected = 0
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        confidence = float(parts[0])
+        flags = parts[1:]
+        if confidence < t:
+            rejected += 1
+        elif any(f in RISKY for f in flags):
+            review += 1
+        else:
+            trusted += 1
+
+    print(trusted)
+    print(review)
+    print(rejected)
+
+main()
+`,
+      challenge_test_cases: [
+        {
+          input: "4 0.60\n0.95 clean\n0.90 dark\n0.40 clean\n0.99 occluded glare",
+          expected_output: "1\n2\n1",
+          description: "One clean confident trust, two confident-but-risky reviews, one low-confidence reject."
+        },
+        {
+          input: "2 0.50\n0.50 clean\n0.49 clean",
+          expected_output: "1\n0\n1",
+          description: "Edge: the threshold is inclusive, so exactly 0.50 is trusted while 0.49 is rejected."
+        },
+        {
+          input: "3 0.80\n0.85 blurry\n0.85 clean\n0.70 clean",
+          expected_output: "1\n1\n1",
+          description: "A risky-but-confident review, a clean confident trust, and a below-threshold reject."
         }
       ]
     }

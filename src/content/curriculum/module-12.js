@@ -6,7 +6,7 @@ export default {
     difficulty: "advanced",
     category: "rag_search",
     estimated_time: 55,
-    lessons_count: 5,
+    lessons_count: 8,
     tags: ["vector-db", "ann", "retrieval", "hybrid-search", "reranking", "search"],
     order: 12,
     cover_image: ""
@@ -1465,6 +1465,876 @@ main()
         { input: "5\np 0.99 0.10\nq 0.95 0.90\nr 0.90 0.85\ns 0.85 0.99\nt 0.50 0.99\n4 3", expected_output: "s q r", description: "Stage 2 reorders the survivors by rerank score; the top retrieve doc p sinks." },
         { input: "3\nx 0.5 0.9\ny 0.4 0.8\nz 0.3 0.7\n2 5", expected_output: "x y", description: "final_k exceeds the survivor count, so all survivors are returned in reranked order." },
         { input: "3\nm 0.5 0.5\nn 0.5 0.5\no 0.4 0.9\n2 2", expected_output: "m n", description: "Retrieve keeps m and n (o has lower retrieve_score); their rerank tie breaks by id." }
+      ]
+    },
+    {
+      id: "ai-12-l6",
+      project_id: "ai-12",
+      order: 6,
+      title: "Choosing a Vector DB",
+      concept: "Selection",
+      xp_reward: 10,
+      explanation: `Two teams build the same RAG feature. One drops their embeddings into a \`pgvector\` column next to data they already have in Postgres and ships in a day. The other reaches for a managed service, wires up a new SDK, a new bill, and a new on-call rotation. Neither is wrong. The mistake is picking before you know your constraints. Choosing a **vector database** is an engineering trade-off, not a leaderboard.
+
+## What it is
+
+A **vector store** is anything that can hold embeddings and answer nearest-neighbor queries. They fall into three rough families. A **library** like **FAISS** is raw, in-process index code: blazing fast, free, but you own persistence, scaling, and filtering yourself. An **extension** like **pgvector** bolts vector search onto a database you already run, so similarity lives next to your relational rows. A **managed service** like **Pinecone** runs the whole index for you behind an API: you pay money to not think about sharding, replication, or uptime.
+
+## How it works
+
+There is no universal winner, so you score candidates against *your* requirements and pick the cheapest one that clears every bar:
+
+\`\`\`python
+def choose(candidates, min_recall, max_latency_ms):
+    eligible = [c for c in candidates
+                if c["recall"] >= min_recall and c["latency"] <= max_latency_ms]
+    if not eligible:
+        return "NONE"            # no option meets the requirements
+    eligible.sort(key=lambda c: (c["cost"], c["name"]))  # cheapest that qualifies
+    return eligible[0]["name"]
+\`\`\`
+
+The decisive axes are usually: **scale** (thousands vs billions of vectors), **operational burden** (do you want to run it?), **filtering needs** (rich metadata predicates vs none), **latency budget**, and **cost**. pgvector wins when your data and team already live in Postgres and scale is modest. FAISS wins when you need maximum control and speed and have engineers to operate it. Pinecone and friends win when you want to outsource the hard parts and scale is large or spiky.
+
+## Why it matters
+
+- **Premature scale is a tax.** A managed cluster for 50,000 vectors burns money and complexity you do not need. pgvector would have been free and one migration away.
+- **Outgrowing your choice is real.** FAISS in a single process has no replication; the day you need high availability you are rebuilding the operational layer a service gives you out of the box.
+- **Filtering is a silent dealbreaker.** If you need strict metadata pre-filtering (from the earlier lesson), confirm the candidate supports it well before you commit, not after.
+
+## The mental model to keep
+
+Match the **tool to the constraint, not to the hype**: pick the cheapest, simplest store that clears your recall, latency, scale, and operational bars, and re-evaluate only when a real limit is hit.`,
+      key_terms: [
+        { term: "FAISS", definition: "A fast in-process similarity-search library: powerful and free, but you handle persistence, scaling, and serving yourself." },
+        { term: "pgvector", definition: "A Postgres extension that adds vector columns and ANN search, keeping embeddings next to your relational data." },
+        { term: "Managed vector service", definition: "A hosted vector database (e.g. Pinecone) that runs the index, scaling, and uptime for you behind an API, for a fee." },
+        { term: "Operational burden", definition: "The ongoing work of running a system: scaling, backups, replication, monitoring, and on-call." }
+      ],
+      callouts: [
+        { type: "insight", title: "Constraints pick the tool", content: "There is no best vector DB, only the best fit for your scale, latency budget, filtering needs, and how much you want to operate yourself. Write the requirements down before you shortlist.", position: "before" },
+        { type: "tip", title: "Start where your data already lives", content: "If you already run Postgres and have well under a few million vectors, pgvector is often the fastest path to production. Reach for a managed service when scale, availability, or spiky traffic demand it.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Picking a vector store",
+        steps: [
+          { label: "List requirements", desc: "Scale, latency budget, recall target, filtering, cost, and how much ops you'll own." },
+          { label: "Shortlist by family", desc: "Library (FAISS), extension (pgvector), or managed service (Pinecone)." },
+          { label: "Filter to the eligible", desc: "Drop any candidate that misses a hard bar like recall or latency." },
+          { label: "Pick the cheapest fit", desc: "Among survivors, choose the lowest cost and simplest to operate." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What mainly decides which vector store you should choose?",
+          options: ["Whichever has the highest benchmark score", "Your own constraints: scale, latency, filtering, cost, and ops burden", "Always the newest managed service"],
+          correct_index: 1,
+          explanation: "There is no universal winner; the right choice is the cheapest, simplest option that meets your specific requirements."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "When is pgvector typically the strongest choice?",
+          options: [
+            "When you have billions of vectors and spiky global traffic",
+            "When your data and team already live in Postgres and scale is modest",
+            "When you need a fully managed service with zero ops",
+            "When you cannot tolerate any operational work at all"
+          ],
+          correct_index: 1,
+          explanation: "pgvector keeps embeddings beside your relational data and avoids a new system, which shines at modest scale on an existing Postgres stack."
+        },
+        {
+          question: "What is the main downside of using FAISS as a raw library in production?",
+          options: [
+            "It cannot compute similarity accurately",
+            "You own persistence, scaling, replication, and serving yourself",
+            "It is always slower than a managed service",
+            "It does not support high-dimensional vectors"
+          ],
+          correct_index: 1,
+          explanation: "FAISS is fast and free index code, but the operational layer (durability, HA, serving) is entirely your responsibility."
+        },
+        {
+          question: "Why can choosing a large managed cluster too early be a mistake?",
+          options: [
+            "Managed services never support metadata filtering",
+            "It adds cost and complexity you do not yet need at small scale",
+            "Managed services cannot scale up later",
+            "It permanently locks your embeddings"
+          ],
+          correct_index: 1,
+          explanation: "Premature scale is a tax: a managed cluster for tens of thousands of vectors burns money and complexity a simpler store would have avoided."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Vector DB selection check",
+          questions: [
+            { question: "There is a single best vector database that is the right choice for every project.", type: "true_false", correct_answer: "false", explanation: "The right store depends on scale, latency, filtering needs, cost, and operational burden." },
+            { question: "The Postgres extension that adds vector search next to your relational data is called ______.", type: "fill_in", correct_answer: "pgvector", explanation: "pgvector keeps embeddings in the database you already run." }
+          ]
+        }
+      ],
+      starter_code: `# Pick the cheapest vector store that meets a recall and latency bar.
+candidates = [
+    {"name": "pgvector", "recall": 0.96, "latency": 40, "cost": 100},
+    {"name": "pinecone", "recall": 0.99, "latency": 20, "cost": 800},
+    {"name": "faiss",    "recall": 0.97, "latency": 10, "cost": 0},
+]
+min_recall = 0.95
+max_latency = 50
+
+# TODO: keep only candidates meeting both bars, then print the cheapest one's name.
+print("evaluating", len(candidates), "stores")
+`,
+      solution_code: `candidates = [
+    {"name": "pgvector", "recall": 0.96, "latency": 40, "cost": 100},
+    {"name": "pinecone", "recall": 0.99, "latency": 20, "cost": 800},
+    {"name": "faiss",    "recall": 0.97, "latency": 10, "cost": 0},
+]
+min_recall = 0.95
+max_latency = 50
+
+eligible = [c for c in candidates
+            if c["recall"] >= min_recall and c["latency"] <= max_latency]
+eligible.sort(key=lambda c: (c["cost"], c["name"]))
+
+print("evaluating", len(candidates), "stores")
+print("choice:", eligible[0]["name"] if eligible else "NONE")
+`,
+      expected_output: `evaluating 3 stores
+choice: faiss`,
+      step_throughs: [
+        {
+          title: "from requirements to a chosen store",
+          steps: [
+            { label: "Write the bars down", detail: "Turn vague goals into hard numbers: minimum recall, maximum latency, a cost ceiling, and the scale you expect.", code: "req = {'recall': 0.95, 'latency_ms': 50, 'scale': 200_000}" },
+            { label: "Drop the disqualified", detail: "Any candidate that misses a hard bar is out, no matter how cheap or trendy it is.", code: "eligible = [c for c in stores if c.recall >= 0.95 and c.latency <= 50]" },
+            { label: "Sort the survivors by cost", detail: "Among the options that clear every bar, prefer the cheapest and simplest to operate.", code: "eligible.sort(key=lambda c: (c.cost, c.name))" },
+            { label: "Pick and revisit later", detail: "Choose the top survivor now, and only re-evaluate when a real limit (scale, availability) is actually hit.", code: "choice = eligible[0] if eligible else None" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "You have 30,000 embeddings, already run Postgres, need basic metadata filters, and have no platform team. Which family fits best?",
+          steps: [
+            "Scale is small (tens of thousands), so you do not need a distributed managed cluster.",
+            "You already run Postgres, so adding the pgvector extension avoids standing up a brand-new system.",
+            "pgvector supports metadata filtering via SQL WHERE clauses, which covers the basic filter requirement.",
+            "With no platform team, keeping everything in one database minimizes operational burden."
+          ],
+          output: "pgvector - it reuses your existing Postgres, handles the scale, and adds no new system to operate."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "A team must choose between faiss (recall 0.97, latency 10ms, cost $0, but self-operated) and pinecone (recall 0.99, latency 20ms, cost $800/mo, fully managed). Their bar is recall >= 0.95 and latency <= 50ms, and they have no engineers to run infrastructure. What should they pick?",
+          steps: [
+            "Both candidates clear the recall bar (0.97 and 0.99 are both >= 0.95) and the latency bar (10ms and 20ms are both <= 50ms).",
+            "On raw cost, faiss is free and pinecone is $800/mo, so a pure cost sort would pick faiss.",
+            "But faiss is a library: the team would own persistence, scaling, replication, and on-call - and they have no engineers to do that.",
+            "Operational burden is a hard constraint here, so faiss is effectively disqualified; pinecone's $800/mo buys away the work they cannot staff."
+          ],
+          output: "Pinecone - cost favors faiss, but the no-ops constraint disqualifies it, so the managed service is the right fit."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "library vs extension vs managed service",
+          columns: ["Dimension", "FAISS (library)", "pgvector (extension)", "Pinecone (managed)"],
+          rows: [
+            { cells: ["You operate it", "Fully", "As part of Postgres", "Not at all"] },
+            { cells: ["Best scale", "Single-node, fast", "Modest (Postgres-bound)", "Large / spiky"] },
+            { cells: ["Cost shape", "Free code, your hardware", "Reuses existing DB", "Recurring service fee"] },
+            { cells: ["Choose when", "Max control + engineers", "Data already in Postgres", "Want to outsource ops"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "favors a managed service vs favors pgvector",
+          bins: [
+            { id: "managed", label: "Favors a managed service" },
+            { id: "pg", label: "Favors pgvector" }
+          ],
+          items: [
+            { id: "i1", text: "Billions of vectors with spiky global traffic", bin: "managed" },
+            { id: "i2", text: "30,000 vectors and you already run Postgres", bin: "pg" },
+            { id: "i3", text: "No platform team and a need for zero ops", bin: "managed" },
+            { id: "i4", text: "Want embeddings beside existing relational rows", bin: "pg" },
+            { id: "i5", text: "Strict uptime SLA with replication required", bin: "managed" },
+            { id: "i6", text: "Small project, tight budget, modest scale", bin: "pg" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why is there no single 'best' vector database, and how should you actually choose one?",
+          sampleAnswer: "Different stores trade off scale, latency, filtering, cost, and operational burden in different ways, so the best option depends entirely on a project's constraints. You choose by writing those constraints down as hard bars, dropping any candidate that misses one, and then picking the cheapest and simplest survivor to operate - reaching for a bigger or managed option only when a real limit forces it."
+        }
+      ],
+      hints: [
+        "Filter candidates with a comprehension that checks both recall >= min_recall and latency <= max_latency.",
+        "Sort the eligible list by a key of (cost, name) so the cheapest, then lexicographically smallest, wins.",
+        "Guard against an empty eligible list before indexing element 0."
+      ],
+      challenge_title: "Vector DB Selector",
+      challenge_description: "Given several vector store options and a set of hard requirements, pick the cheapest one that satisfies every bar.",
+      challenge_story: "Your team is about to commit to a **vector database**, and the wrong call means months of rework. You've collected each candidate's measured **recall**, **p95 latency**, and **monthly cost**. The product has non-negotiable bars: recall must be at least \`min_recall\` and p95 latency at most \`max_latency\`. Among the stores that clear *both* bars, finance wants the **cheapest**. Build the selector that turns this spec sheet into a single defensible decision - because picking by hype instead of constraints is exactly how teams end up paying for scale they don't have or running infrastructure they can't staff.",
+      challenge_statement: "You are given \`n\` candidate vector stores. Each has a string **name**, a float **recall**, a float **latency** (p95 in ms), and a float **cost** (monthly dollars).\n\nYou are also given a \`min_recall\` and a \`max_latency\`. A candidate is **eligible** only if:\n\n- \`recall >= min_recall\`, and\n- \`latency <= max_latency\`.\n\nAmong eligible candidates, choose the one with the **lowest cost**. If two eligible candidates tie on cost, choose the **lexicographically smaller name**. Print the chosen name. If no candidate is eligible, print \`NONE\`.",
+      challenge_input_format: "The first line has three space-separated values: `n min_recall max_latency`, where `n` is an integer and the other two are floats.\n\nEach of the next `n` lines describes one store: `name recall latency cost`, space-separated. `name` has no spaces; the other three are floats.",
+      challenge_output_format: "One line: the name of the chosen store, or `NONE` if none qualifies.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0.0 ≤ recall, min_recall ≤ 1.0",
+        "0.0 ≤ latency, max_latency ≤ 100000.0",
+        "0.0 ≤ cost ≤ 1000000.0",
+      ],
+      challenge_examples: [
+        { input: "3 0.95 50\npgvector 0.96 40 100\npinecone 0.99 20 800\nfaiss 0.97 10 0", output: "faiss", explanation: "All three clear recall >= 0.95 and latency <= 50. Among them faiss is cheapest at $0, so it wins." },
+        { input: "3 0.98 15\npgvector 0.96 40 100\npinecone 0.99 20 800\nfaiss 0.97 10 0", output: "NONE", explanation: "pgvector and faiss miss the 0.98 recall bar; pinecone meets recall but its 20ms latency exceeds the 15ms cap. Nothing qualifies." },
+      ],
+      challenge_notes: "This is the real decision process compressed into one function: define hard bars, drop whatever misses them, then optimize for cost among survivors. The cost tie-break by name keeps the choice deterministic. In practice you'd add scale and operational-burden bars too, but the shape - filter then minimize - is identical.",
+      challenge_hints: [
+        "Parse the first line carefully: `n` is an int, but `min_recall` and `max_latency` are floats.",
+        "Keep only candidates where recall is at least min_recall and latency is at most max_latency.",
+        "Sort the eligible list by `(cost, name)` and take the first, or print NONE if the list is empty.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    n = int(first[0])
+    min_recall = float(first[1])
+    max_latency = float(first[2])
+    # TODO: read the n candidates, keep those meeting both bars, and print the
+    #       cheapest eligible name (ties by smaller name) or NONE.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    min_recall = float(first[1])
+    max_latency = float(first[2])
+    candidates = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        recall = float(parts[1])
+        latency = float(parts[2])
+        cost = float(parts[3])
+        candidates.append((name, recall, latency, cost))
+    eligible = [c for c in candidates if c[1] >= min_recall and c[2] <= max_latency]
+    if not eligible:
+        print("NONE")
+        return
+    eligible.sort(key=lambda c: (c[3], c[0]))
+    print(eligible[0][0])
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 0.95 50\npgvector 0.96 40 100\npinecone 0.99 20 800\nfaiss 0.97 10 0", expected_output: "faiss", description: "All clear the bars; cheapest (faiss at $0) wins." },
+        { input: "3 0.98 15\npgvector 0.96 40 100\npinecone 0.99 20 800\nfaiss 0.97 10 0", expected_output: "NONE", description: "Recall or latency bars eliminate every candidate." },
+        { input: "2 0.90 30\na 0.91 25 50\nb 0.95 25 50", expected_output: "a", description: "Both eligible and tied on cost; lexicographically smaller name wins." },
+        { input: "2 0.90 30\na 0.85 10 5\nb 0.88 20 5", expected_output: "NONE", description: "Neither meets the recall bar despite low latency and cost." }
+      ]
+    },
+    {
+      id: "ai-12-l7",
+      project_id: "ai-12",
+      order: 7,
+      title: "Sharding and Multi-Tenant",
+      concept: "Scaling",
+      xp_reward: 10,
+      explanation: `Your index grows past what one machine's RAM can hold, and your single happy customer becomes five hundred companies who must never see each other's data. Both problems have the same shape: one giant pile of vectors needs to be split into many smaller, addressable pieces. The two tools for that are **sharding** (split for scale) and **namespaces** (split for isolation), and getting them right is the difference between a search that scales and a data-leak incident.
+
+## What it is
+
+**Sharding** splits your vectors across multiple machines (**shards**) so the dataset no longer has to fit on one. A query either fans out to all shards and merges results, or, when you can, routes to just the shard that holds the relevant data. A **namespace** (or partition) is a logical boundary inside the store that isolates one **tenant's** vectors from another's, so a query for tenant A can *never* return tenant B's documents. Sharding is about *capacity*; namespaces are about *isolation*. They often combine.
+
+## How it works
+
+For multi-tenant routing, you assign each tenant's data to a partition and place inserts where they fit, respecting per-shard capacity:
+
+\`\`\`python
+def place(shards, capacity, size):
+    # pick the shard with the most remaining room that can still fit this batch
+    best, best_room = None, -1
+    for i, load in enumerate(shards):
+        room = capacity - load
+        if room >= size and room > best_room:
+            best, best_room = i, room
+    return best          # None means every shard is full -> rejected
+\`\`\`
+
+A query then carries its **tenant id**, the router maps it to the right partition, and the search runs only there. This keeps each tenant's search fast (it scans only its own slice) and isolated (it can only ever see its own slice). For pure scale-out, the same data is spread across shards by a hash so load is balanced and a single query touches many machines in parallel.
+
+## Why it matters
+
+- **Capacity beyond one box.** Billions of vectors will not fit on a single machine. Sharding is the only way past that ceiling, and it makes each query parallel across machines.
+- **Isolation is a security boundary.** In multi-tenant SaaS, a missing namespace filter is a cross-customer data leak. Routing by tenant must be enforced, not assumed.
+- **Hot shards hurt.** If one tenant or hash bucket gets far more data or traffic than the rest, that shard becomes a bottleneck. Balancing load across shards keeps latency even.
+
+## The mental model to keep
+
+Think of one warehouse split into locked aisles: **sharding adds aisles so everything fits, namespaces lock each aisle to one tenant.** Route every query to the right aisle and it stays both fast and private.`,
+      key_terms: [
+        { term: "Sharding", definition: "Splitting vectors across multiple machines (shards) so the dataset exceeds the capacity of any single one." },
+        { term: "Namespace", definition: "A logical partition inside the store that isolates one tenant's vectors so queries cannot cross the boundary." },
+        { term: "Multi-tenant", definition: "A system serving many independent customers whose data must stay separated." },
+        { term: "Hot shard", definition: "A shard holding disproportionately more data or traffic than the others, becoming a latency bottleneck." }
+      ],
+      callouts: [
+        { type: "analogy", title: "Locked aisles in one warehouse", content: "Sharding adds more aisles so all the boxes fit. Namespaces lock each aisle to one tenant. A query is handed a key to exactly one aisle, so it's both fast to walk and impossible to wander into someone else's.", position: "before" },
+        { type: "warning", title: "A missing namespace is a data leak", content: "In multi-tenant search, forgetting to scope a query to its tenant's namespace can return another customer's documents. Treat tenant routing as a hard security boundary, not a convenience.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "Routing a multi-tenant query",
+        steps: [
+          { label: "Tag data by tenant", desc: "Each vector is written into its tenant's namespace or shard." },
+          { label: "Query carries a tenant id", desc: "The incoming request names which tenant it belongs to." },
+          { label: "Route to the partition", desc: "The router maps the tenant to its shard and searches only there." },
+          { label: "Return scoped results", desc: "Only that tenant's vectors are eligible, keeping it fast and isolated." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "What is the primary purpose of a namespace in a multi-tenant vector store?",
+          options: ["To compress vectors and save memory", "To isolate one tenant's vectors so queries cannot cross tenants", "To speed up the embedding model"],
+          correct_index: 1,
+          explanation: "Namespaces enforce isolation: a query scoped to one tenant can never return another tenant's documents."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "What problem does sharding primarily solve?",
+          options: [
+            "Keeping tenants isolated from each other",
+            "Letting the dataset exceed the capacity of a single machine and run queries in parallel",
+            "Improving embedding quality",
+            "Removing the need for an ANN index"
+          ],
+          correct_index: 1,
+          explanation: "Sharding splits vectors across machines so the dataset scales beyond one box and queries can fan out in parallel."
+        },
+        {
+          question: "Why is correct tenant routing a security concern, not just a performance one?",
+          options: [
+            "Because routing changes the vector dimensions",
+            "Because a missing namespace scope can return another customer's documents",
+            "Because routing disables metadata filtering",
+            "Because it doubles storage cost"
+          ],
+          correct_index: 1,
+          explanation: "If a query is not scoped to its tenant's namespace, it can leak another tenant's data, which is a cross-customer breach."
+        },
+        {
+          question: "What is a 'hot shard'?",
+          options: [
+            "A shard running on faster hardware",
+            "A shard with disproportionately more data or traffic that becomes a bottleneck",
+            "A shard that has been quantized",
+            "A shard reserved for re-ranking"
+          ],
+          correct_index: 1,
+          explanation: "An unbalanced shard carrying far more load than the others throttles overall latency until load is rebalanced."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Sharding and tenancy check",
+          questions: [
+            { question: "Sharding's main purpose is to keep different tenants' data isolated from each other.", type: "true_false", correct_answer: "false", explanation: "Sharding is about capacity and parallelism; namespaces provide tenant isolation." },
+            { question: "A logical partition that isolates one tenant's vectors from another's is called a ______.", type: "fill_in", correct_answer: "namespace", explanation: "Namespaces (or partitions) enforce tenant boundaries." }
+          ]
+        }
+      ],
+      starter_code: `# Place a batch of vectors on the shard with the most remaining room.
+capacity = 100
+shards = [40, 10]   # current load per shard
+
+def place(shards, capacity, size):
+    best, best_room = None, -1
+    for i, load in enumerate(shards):
+        room = capacity - load
+        if room >= size and room > best_room:
+            best, best_room = i, room
+    return best
+
+# TODO: place a batch of size 30 and print which shard index it lands on.
+print("shard loads before:", shards)
+`,
+      solution_code: `capacity = 100
+shards = [40, 10]   # current load per shard
+
+def place(shards, capacity, size):
+    best, best_room = None, -1
+    for i, load in enumerate(shards):
+        room = capacity - load
+        if room >= size and room > best_room:
+            best, best_room = i, room
+    return best
+
+target = place(shards, capacity, 30)
+print("shard loads before:", shards)
+if target is None:
+    print("rejected: no shard has room")
+else:
+    shards[target] += 30
+    print("placed on shard:", target)
+    print("shard loads after:", shards)
+`,
+      expected_output: `shard loads before: [40, 10]
+placed on shard: 1
+shard loads after: [40, 40]`,
+      step_throughs: [
+        {
+          title: "scaling out while keeping tenants isolated",
+          steps: [
+            { label: "Outgrow one machine", detail: "The vector set no longer fits in a single node's memory, so the data must be split.", code: "total_vectors = 2_000_000_000  # won't fit on one box" },
+            { label: "Shard for capacity", detail: "Spread vectors across N shards so each holds a manageable slice and queries run in parallel.", code: "shard = hash(doc_id) % num_shards" },
+            { label: "Namespace for isolation", detail: "Within the store, scope each tenant's vectors to its own namespace so searches can't cross tenants.", code: "store.upsert(vec, namespace=tenant_id)" },
+            { label: "Route every query", detail: "A query carries its tenant id; the router restricts the search to that tenant's partition only.", code: "results = store.query(q, namespace=tenant_id)" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Two shards each hold up to 100 vectors. Shard 0 has 40, shard 1 has 10. A new 30-vector batch arrives. Where should it go, and why?",
+          steps: [
+            "Shard 0 has 100 - 40 = 60 room; shard 1 has 100 - 10 = 90 room.",
+            "Both can fit the 30-vector batch, so either is valid on capacity alone.",
+            "Placing on the shard with the most remaining room (shard 1) keeps the load balanced and avoids creating a hot shard."
+          ],
+          output: "Shard 1 - it has the most remaining room, so placing there keeps the shards balanced."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Tenant A and tenant B share a store with no namespace scoping on queries. Tenant A searches for 'salary report' and the top result is tenant B's confidential document, which happens to be the most similar vector. What went wrong and how is it fixed?",
+          steps: [
+            "Similarity search ranked tenant B's document highest because it was the closest in meaning - similarity has no concept of ownership.",
+            "Without a namespace scope, the query searched across all tenants, so tenant B's vector was eligible to be returned to tenant A.",
+            "That is a cross-tenant data leak, a security breach, not just a relevance bug.",
+            "The fix is to write each tenant's data into its own namespace and scope every query to the caller's tenant id, so tenant A's search can only ever see tenant A's vectors."
+          ],
+          output: "Missing tenant isolation leaked B's data to A; scope every query to the caller's namespace to fix it."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "sharding vs namespaces",
+          columns: ["Dimension", "Sharding", "Namespaces"],
+          rows: [
+            { cells: ["Solves", "Capacity and scale", "Tenant isolation"] },
+            { cells: ["Split across", "Multiple machines", "Logical partitions in the store"] },
+            { cells: ["A query touches", "Many shards (fan-out) or one", "Exactly one tenant's partition"] },
+            { cells: ["Failure if wrong", "Hot shard / bottleneck", "Cross-tenant data leak"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "solved by sharding vs solved by namespaces",
+          bins: [
+            { id: "shard", label: "Solved by sharding" },
+            { id: "ns", label: "Solved by namespaces" }
+          ],
+          items: [
+            { id: "i1", text: "Vectors no longer fit on one machine", bin: "shard" },
+            { id: "i2", text: "Tenant A must never see tenant B's docs", bin: "ns" },
+            { id: "i3", text: "Run one query in parallel across nodes", bin: "shard" },
+            { id: "i4", text: "Scope a search to a single customer", bin: "ns" },
+            { id: "i5", text: "Spread load so no node is overloaded", bin: "shard" },
+            { id: "i6", text: "Enforce a per-customer data boundary", bin: "ns" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: how do sharding and namespaces solve different problems, and why must multi-tenant search enforce namespace routing strictly?",
+          sampleAnswer: "Sharding splits vectors across machines so the dataset can exceed one box's capacity and queries run in parallel, while namespaces are logical partitions that isolate each tenant's data so a query for one customer can never return another's. They are orthogonal: one is about scale, the other about isolation. Namespace routing must be strict because similarity search has no notion of ownership, so an unscoped query could surface another tenant's most-similar document - a cross-customer data leak rather than just a bad result."
+        }
+      ],
+      hints: [
+        "Loop over the shards, computing remaining room as capacity minus current load.",
+        "Track the shard index with the most room that can still fit the batch size.",
+        "If no shard has room for the batch, the placement is rejected (return None)."
+      ],
+      challenge_title: "Multi-Tenant Shard Router",
+      challenge_description: "Route a stream of tenant insert batches onto capacity-limited shards using a most-remaining-room policy, rejecting what no longer fits.",
+      challenge_story: "Your vector store has outgrown one machine, so you've split it into several **shards**, each with a fixed **capacity**. A stream of insert requests arrives, each from a tenant who wants to add a batch of vectors. Your router must place each batch on a shard that can still hold it, and to keep any single shard from becoming a **hot shard**, it always picks the shard with the **most remaining room**. If no shard can fit the batch, the request is **rejected** - better to refuse cleanly than to overflow a node. Build the router that decides, request by request, where each batch lands.",
+      challenge_statement: "You manage \`s\` shards, each with the same integer \`capacity\`. Each shard starts with a current load. Then \`q\` insert requests arrive in order; each names a **tenant** and a batch **size**.\n\nFor each request, place the batch on a shard using this policy:\n\n1. Consider only shards whose **remaining room** (\`capacity - current_load\`) is **at least** the batch size.\n2. Among those, pick the one with the **most remaining room**. If two shards tie on remaining room, pick the one that appears **earlier** in the input (smaller index).\n3. If a shard is chosen, add the batch size to its load and output the placement. If no shard can fit the batch, output a rejection. The batch is not placed on rejection.\n\nFor each request, print one line: \`tenant shard_id\` if placed, or \`tenant REJECTED\` if not.",
+      challenge_input_format: "The first line has two integers `s capacity`: the number of shards and the per-shard capacity.\n\nEach of the next `s` lines describes one shard: `shard_id current_load` (a string id with no spaces and an integer load), in order.\n\nThe next line is an integer `q`, the number of requests. Each of the following `q` lines is `tenant size`: a tenant id with no spaces and an integer batch size.",
+      challenge_output_format: "Print `q` lines, one per request in order: `tenant shard_id` when placed, or `tenant REJECTED` when no shard can fit it.",
+      challenge_constraints: [
+        "1 ≤ s ≤ 1000",
+        "1 ≤ capacity ≤ 1000000000",
+        "0 ≤ current_load ≤ capacity",
+        "1 ≤ q ≤ 100000; 1 ≤ size ≤ capacity",
+      ],
+      challenge_examples: [
+        { input: "2 100\nshardA 0\nshardB 0\n3\nacme 30\nbeta 80\nacme 50", output: "acme shardA\nbeta shardB\nacme shardA", explanation: "Both shards start empty (room 100). acme's 30 ties on room, so it goes to the earlier shardA (now 30). beta's 80: shardA has 70 room, shardB has 100, so it picks shardB (now 80). acme's 50: shardA has 70 room (fits), shardB has 20 (no), so shardA (now 80)." },
+        { input: "2 50\nshardA 40\nshardB 10\n2\nt1 30\nt2 30", output: "t1 shardB\nt2 REJECTED", explanation: "t1's 30: shardA has 10 room (no fit), shardB has 40 (fits), so shardB (now 40). t2's 30: shardA still 10, shardB now 10 - neither fits, so REJECTED." },
+      ],
+      challenge_notes: "The most-remaining-room policy is a simple load balancer that resists hot shards by spreading batches toward the emptiest node. Real systems also factor in tenant affinity (keeping a tenant's data together for fast scoped queries) and replication, but the core decision - find a shard that fits, prefer the emptiest - is exactly this.",
+      challenge_hints: [
+        "Store each shard's id and current load; update the load in place when you place a batch.",
+        "For each request, scan shards tracking the best (most room) one that can fit, breaking ties toward the earlier index.",
+        "If no shard fits the batch, print `tenant REJECTED` and leave all loads unchanged.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    s = int(first[0])
+    capacity = int(first[1])
+    # TODO: read the s shard loads, then for each of the q requests place the
+    #       batch on the shard with the most remaining room (ties -> earlier
+    #       shard), updating loads, and print the placement or REJECTED.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    s = int(first[0])
+    capacity = int(first[1])
+    shards = []
+    for _ in range(s):
+        parts = data[idx].split(); idx += 1
+        shards.append([parts[0], int(parts[1])])
+    q = int(data[idx]); idx += 1
+    out = []
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        tenant = parts[0]
+        size = int(parts[1])
+        best = None
+        for i, sh in enumerate(shards):
+            room = capacity - sh[1]
+            if room >= size:
+                key = (-room, i)
+                if best is None or key < best[0]:
+                    best = (key, i)
+        if best is None:
+            out.append(tenant + " REJECTED")
+        else:
+            i = best[1]
+            shards[i][1] += size
+            out.append(tenant + " " + shards[i][0])
+    print("\\n".join(out))
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "2 100\nshardA 0\nshardB 0\n3\nacme 30\nbeta 80\nacme 50", expected_output: "acme shardA\nbeta shardB\nacme shardA", description: "Ties on room break to the earlier shard; later batches route to whoever has room." },
+        { input: "2 50\nshardA 40\nshardB 10\n2\nt1 30\nt2 30", expected_output: "t1 shardB\nt2 REJECTED", description: "A batch that fits nowhere is rejected without changing any load." },
+        { input: "3 100\ns0 90\ns1 50\ns2 95\n2\na 40\nb 60", expected_output: "a s1\nb REJECTED", description: "The emptiest shard wins; the next batch fits no remaining shard." },
+        { input: "1 10\nonly 0\n3\nx 4\ny 4\nz 4", expected_output: "x only\ny only\nz REJECTED", description: "A single shard fills until the third batch no longer fits." }
+      ]
+    },
+    {
+      id: "ai-12-l8",
+      project_id: "ai-12",
+      order: 8,
+      title: "Monitoring Search Quality",
+      concept: "Monitoring",
+      xp_reward: 10,
+      explanation: `Search quality does not fail with an error. It rots quietly: a new embedding model ships, the corpus drifts, an index is rebuilt with a lower setting, and one Tuesday users start getting subtly worse answers while every dashboard stays green. Nothing crashed. Recall just slid from 0.95 to 0.82, and no one noticed for three weeks. **Monitoring search quality** is how you catch the silent rot before your users do.
+
+## What it is
+
+**Monitoring search quality** means continuously measuring whether retrieval is still good, instead of assuming it. The three signals that matter most are **recall drift** (is the index still finding the right documents?), **latency** (especially p95/p99 tail latency, not just the average), and **index freshness** (how stale is the indexed data versus the source?). You compare each against a baseline and **alert** when it crosses a threshold.
+
+## How it works
+
+Track each metric per time window and fire an alert when it breaches a bar. Recall drift is usually expressed as a percentage drop below a baseline:
+
+\`\`\`python
+def check(recall, p95_ms, baseline, drop_pct, p95_max):
+    threshold = baseline * (1 - drop_pct / 100)   # e.g. 0.95 * 0.95 = 0.9025
+    reasons = []
+    if recall < threshold:
+        reasons.append("RECALL")
+    if p95_ms > p95_max:
+        reasons.append("LATENCY")
+    return reasons          # empty means healthy
+\`\`\`
+
+You measure **recall** by running a fixed set of labeled queries (a golden set) against the live index and comparing the returned neighbors to known-good answers - the same recall@k from earlier, now run continuously. **Latency** is sampled from real traffic at the tail percentiles. **Freshness** tracks the lag between when a document changes and when its updated vector is searchable. Each gets a baseline and a threshold, and a breach pages a human.
+
+## Why it matters
+
+- **Silent degradation is the default failure mode.** Vector search rarely throws; it just gets quietly worse. Without a golden set you have no way to know recall dropped.
+- **Tail latency is the real user experience.** An average of 30ms hides a p99 of 800ms that a fraction of users feel on every query. Watch the tail, not the mean.
+- **Stale indexes lie confidently.** If freshness lags, the system returns outdated documents with full confidence - the retrieval version of a hallucination.
+
+## The mental model to keep
+
+Treat retrieval like a **patient with vital signs**: recall, latency, and freshness are the pulse, and you watch them against a baseline so you catch the decline early - **silence is not health, it is the absence of a monitor.**`,
+      key_terms: [
+        { term: "Recall drift", definition: "A gradual drop in retrieval recall over time, often from model, index, or corpus changes." },
+        { term: "Golden set", definition: "A fixed set of labeled queries with known-good answers, run continuously to measure live recall." },
+        { term: "Tail latency", definition: "High percentiles like p95/p99 that capture the slow requests real users feel, which the average hides." },
+        { term: "Index freshness", definition: "How up-to-date the indexed vectors are relative to the source data; staleness returns outdated results." }
+      ],
+      callouts: [
+        { type: "insight", title: "Search rots, it doesn't crash", content: "Bad retrieval almost never throws an error. Recall slides, the dashboard stays green, and users quietly get worse answers. Only a continuous golden-set measurement reveals it.", position: "before" },
+        { type: "warning", title: "The average hides the pain", content: "A 30ms mean latency can hide an 800ms p99 that a slice of users hits on every search. Always alert on tail percentiles, not just the average.", position: "after" }
+      ],
+      concept_diagram: {
+        title: "A search-quality monitor",
+        steps: [
+          { label: "Set a baseline", desc: "Record healthy recall, latency, and freshness numbers to compare against." },
+          { label: "Measure each window", desc: "Run the golden set and sample real traffic per time window." },
+          { label: "Compare to thresholds", desc: "Flag any metric that drifts past its allowed bar." },
+          { label: "Alert a human", desc: "A breach pages on-call before users feel the degradation." }
+        ]
+      },
+      inline_quizzes: [
+        {
+          question: "How do you measure live recall to detect drift?",
+          options: ["Read the model's confidence scores", "Run a fixed golden set of labeled queries against the live index and compare to known-good answers", "Count how many queries arrive per second"],
+          correct_index: 1,
+          explanation: "A golden set of labeled queries gives a continuous, objective recall@k measurement against the live index."
+        }
+      ],
+      quiz_questions: [
+        {
+          question: "Why is search-quality degradation especially dangerous?",
+          options: [
+            "It always crashes the service loudly",
+            "It is usually silent: recall slides while dashboards stay green and no error fires",
+            "It only affects the embedding model, not retrieval",
+            "It can be fixed without any monitoring"
+          ],
+          correct_index: 1,
+          explanation: "Retrieval rarely throws errors; it quietly gets worse, so without a golden set measuring recall you may not notice for weeks."
+        },
+        {
+          question: "Why should you alert on p95/p99 latency rather than the average?",
+          options: [
+            "The average is impossible to compute",
+            "Tail percentiles capture the slow requests real users feel, which a low average hides",
+            "p99 is always equal to the average",
+            "Averages change the recall metric"
+          ],
+          correct_index: 1,
+          explanation: "A good average can mask a painful tail; the high percentiles reflect the experience of the unlucky slice of users."
+        },
+        {
+          question: "What does poor index freshness cause?",
+          options: [
+            "Faster queries with no downside",
+            "The system returns outdated documents confidently, like a retrieval hallucination",
+            "The embedding dimensions to shrink",
+            "Recall to automatically improve"
+          ],
+          correct_index: 1,
+          explanation: "If the index lags the source, searches surface stale documents with full confidence, even though the data has changed."
+        }
+      ],
+      participation_activities: [
+        {
+          activity_title: "Monitoring check",
+          questions: [
+            { question: "If search throws no errors and the latency average looks fine, retrieval quality must be healthy.", type: "true_false", correct_answer: "false", explanation: "Recall can drift silently and the tail latency can be bad even when no error fires and the average looks fine." },
+            { question: "A fixed set of labeled queries with known-good answers, run continuously to measure recall, is called a ______ set.", type: "fill_in", correct_answer: "golden", explanation: "The golden set gives an objective, repeatable recall measurement over time." }
+          ]
+        }
+      ],
+      starter_code: `# Flag a day's search metrics if recall drifts too far or p95 latency is too high.
+baseline = 0.95
+drop_pct = 5      # alert if recall is more than 5% below baseline
+p95_max = 200     # alert if p95 latency (ms) exceeds this
+
+recall = 0.88
+p95_ms = 180
+
+threshold = baseline * (1 - drop_pct / 100)
+# TODO: print the threshold, then print any breach reasons (RECALL and/or LATENCY).
+print("threshold:", round(threshold, 4))
+`,
+      solution_code: `baseline = 0.95
+drop_pct = 5      # alert if recall is more than 5% below baseline
+p95_max = 200     # alert if p95 latency (ms) exceeds this
+
+recall = 0.88
+p95_ms = 180
+
+threshold = baseline * (1 - drop_pct / 100)
+reasons = []
+if recall < threshold:
+    reasons.append("RECALL")
+if p95_ms > p95_max:
+    reasons.append("LATENCY")
+
+print("threshold:", round(threshold, 4))
+print("breach:", ",".join(reasons) if reasons else "OK")
+`,
+      expected_output: `threshold: 0.9025
+breach: RECALL`,
+      step_throughs: [
+        {
+          title: "catching silent recall drift",
+          steps: [
+            { label: "Set the baseline", detail: "Record the healthy recall when the system was known good. This is what every later window is judged against.", code: "baseline = 0.95  # measured at launch" },
+            { label: "Define the threshold", detail: "Allow a small tolerance, then alert below it. A 5% drop floor turns 0.95 into a 0.9025 bar.", code: "threshold = 0.95 * (1 - 0.05)  # 0.9025" },
+            { label: "Measure the live window", detail: "Run the golden set against today's index to get the current recall number.", code: "recall_today = run_golden_set(index)  # e.g. 0.88" },
+            { label: "Alert on breach", detail: "Today's 0.88 is below the 0.9025 threshold, so the monitor fires and pages on-call before users suffer.", code: "if recall_today < threshold: page_oncall()" }
+          ]
+        }
+      ],
+      worked_examples: [
+        {
+          number: 1, difficulty: "easy",
+          prompt: "Baseline recall is 0.90 and you alert when recall drops more than 10% below it. Today's measured recall is 0.83. Does the monitor fire?",
+          steps: [
+            "A 10% drop floor sets the threshold at 0.90 * (1 - 0.10) = 0.81.",
+            "The alert fires only when recall falls below the 0.81 threshold.",
+            "Today's recall is 0.83, which is above 0.81, so it is within tolerance."
+          ],
+          output: "No - 0.83 is above the 0.81 threshold, so recall is still within the allowed drop."
+        },
+        {
+          number: 2, difficulty: "medium",
+          prompt: "Your p95 latency alert is set at 200ms. The dashboard shows a 35ms average and everyone says search is fast, yet support tickets complain about slowness. The measured p95 is 480ms. What is happening and should the monitor fire?",
+          steps: [
+            "The average of 35ms is dominated by the many fast queries, so it looks healthy.",
+            "But the p95 of 480ms means roughly one in twenty queries takes at least 480ms - the slow tail the average hides.",
+            "Those slow requests are exactly what the complaining users experience, which the average masked.",
+            "The p95 of 480ms exceeds the 200ms bar, so the latency monitor should fire even though the average looks fine."
+          ],
+          output: "The tail is slow even though the average looks fast; p95 480ms exceeds the 200ms bar, so the monitor fires."
+        }
+      ],
+      comparison_tables: [
+        {
+          title: "three search-quality signals to monitor",
+          columns: ["Signal", "What it catches", "How you measure it", "Failure if ignored"],
+          rows: [
+            { cells: ["Recall drift", "Index finding worse docs", "Golden set recall@k", "Silently worse answers"] },
+            { cells: ["Tail latency", "Slow requests users feel", "p95 / p99 from traffic", "Bad UX hidden by the average"] },
+            { cells: ["Index freshness", "Stale indexed data", "Source-to-index lag", "Confident outdated results"] },
+            { cells: ["All three vs a baseline", "Overall health", "Compare to thresholds, alert", "Degradation goes unnoticed"], highlight: true }
+          ]
+        }
+      ],
+      drag_to_bins: [
+        {
+          title: "which signal does this belong to",
+          bins: [
+            { id: "recall", label: "Recall drift" },
+            { id: "latency", label: "Latency / freshness" }
+          ],
+          items: [
+            { id: "i1", text: "Golden-set recall@k slid from 0.95 to 0.82", bin: "recall" },
+            { id: "i2", text: "p99 response time spiked to 800ms", bin: "latency" },
+            { id: "i3", text: "A new embedding model degraded top-k matches", bin: "recall" },
+            { id: "i4", text: "Updated documents take hours to become searchable", bin: "latency" },
+            { id: "i5", text: "Re-indexing with lower efSearch missed neighbors", bin: "recall" },
+            { id: "i6", text: "The slow tail of requests grew under load", bin: "latency" }
+          ]
+        }
+      ],
+      reflections: [
+        {
+          prompt: "In your own words: why must production search be monitored against a baseline, and which signals would you watch?",
+          sampleAnswer: "Search quality degrades silently rather than crashing: a model change, corpus drift, or a lower index setting can quietly drop recall while no error fires and the dashboards stay green. Comparing live metrics against a known-good baseline is the only way to catch that decline early. The key signals are recall drift (measured with a golden set of labeled queries), tail latency at p95/p99 (which the average hides), and index freshness (the lag between source updates and searchable vectors), each with a threshold that pages a human on a breach."
+        }
+      ],
+      hints: [
+        "Compute the threshold as baseline * (1 - drop_pct / 100).",
+        "Append 'RECALL' to the reasons list when recall is strictly below the threshold.",
+        "Append 'LATENCY' when p95 is strictly above the p95 maximum; an empty list means OK."
+      ],
+      challenge_title: "Search Quality Alerter",
+      challenge_description: "Process a stream of daily search metrics and raise alerts whenever recall drifts too far below baseline or p95 latency breaches its cap.",
+      challenge_story: "Your retrieval system never throws an error when it gets worse - it just quietly returns weaker results while the dashboards stay green. To catch the silent rot, you run a **golden set** of labeled queries every day and sample **p95 latency** from real traffic. You set a **baseline** recall from launch, allow recall to dip by at most \`drop_pct\` percent before it counts as drift, and cap p95 latency at \`p95_max\`. Each day that breaches either bar must raise an alert naming exactly what went wrong, so on-call can act before users feel it. Build the alerter that turns a stream of daily metrics into a clean breach report.",
+      challenge_statement: "You are given a baseline recall, a \`drop_pct\` (the maximum allowed percentage drop below baseline), and a \`p95_max\` latency cap, followed by \`n\` daily readings.\n\nFirst compute the recall threshold:\n\n\`\`\`\nthreshold = baseline * (1 - drop_pct / 100)\n\`\`\`\n\nFor each day with recall \`r\` and p95 latency \`p\`:\n\n- A **RECALL** breach occurs when \`r < threshold\` (strictly below).\n- A **LATENCY** breach occurs when \`p > p95_max\` (strictly above).\n- A day with at least one breach is an alert day; if both occur on the same day, report them as \`RECALL,LATENCY\` in that order.\n\nPrint the threshold (4 decimals), then the total number of alert days, then one line per alert day naming the day and its breach reasons, in input order.",
+      challenge_input_format: "The first line has four space-separated values: `n baseline drop_pct p95_max`. `n` is an integer; the other three are floats.\n\nEach of the next `n` lines is one daily reading: `day recall p95`, where `day` is a label with no spaces, and `recall` and `p95` are floats.",
+      challenge_output_format: "First line: `threshold X.XXXX` (the recall threshold to exactly 4 decimal places). Second line: `alerts C` (the count of alert days). Then one line per alert day in input order: `day REASONS`, where REASONS is `RECALL`, `LATENCY`, or `RECALL,LATENCY`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0.0 ≤ baseline, recall ≤ 1.0",
+        "0.0 ≤ drop_pct ≤ 100.0",
+        "0.0 ≤ p95, p95_max ≤ 1000000.0",
+      ],
+      challenge_examples: [
+        { input: "3 0.95 5 200\nmon 0.94 150\ntue 0.88 180\nwed 0.93 260", output: "threshold 0.9025\nalerts 2\ntue RECALL\nwed LATENCY", explanation: "Threshold = 0.95 * 0.95 = 0.9025. mon (0.94, 150) is healthy. tue's recall 0.88 < 0.9025 is a RECALL breach. wed's p95 260 > 200 is a LATENCY breach. Two alert days." },
+        { input: "2 0.90 10 100\nd1 0.90 100\nd2 0.81 99", output: "threshold 0.8100\nalerts 0", explanation: "Threshold = 0.90 * 0.90 = 0.81. d1 recall 0.90 is above 0.81 and p95 100 is not above 100. d2 recall 0.81 is not strictly below 0.81 and p95 99 is fine. No alerts." },
+      ],
+      challenge_notes: "Both comparisons are strict, which matters at the boundary: a recall exactly equal to the threshold or a p95 exactly equal to the cap is not a breach. The drop-percentage framing (rather than an absolute recall floor) lets one alert rule travel across systems with different healthy baselines. In production you'd also watch index freshness lag the same way.",
+      challenge_hints: [
+        "Parse the header carefully: `n` is an int, while baseline, drop_pct, and p95_max are floats.",
+        "Compute the threshold once, then for each day build a reasons list, appending RECALL then LATENCY so the order is fixed.",
+        "Collect alert lines while counting them, then print the threshold, the count, and the lines in order.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    n = int(first[0])
+    baseline = float(first[1])
+    drop_pct = float(first[2])
+    p95_max = float(first[3])
+    # TODO: compute threshold = baseline * (1 - drop_pct/100); for each of the n
+    #       days flag RECALL (recall < threshold) and/or LATENCY (p95 > p95_max);
+    #       print the threshold (4 dp), the alert count, then each alert line.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    first = data[idx].split(); idx += 1
+    n = int(first[0])
+    baseline = float(first[1])
+    drop_pct = float(first[2])
+    p95_max = float(first[3])
+    threshold = baseline * (1 - drop_pct / 100.0)
+    alerts = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        day = parts[0]
+        recall = float(parts[1])
+        p95 = float(parts[2])
+        reasons = []
+        if recall < threshold:
+            reasons.append("RECALL")
+        if p95 > p95_max:
+            reasons.append("LATENCY")
+        if reasons:
+            alerts.append(day + " " + ",".join(reasons))
+    print("threshold " + format(threshold, ".4f"))
+    print("alerts " + str(len(alerts)))
+    for line in alerts:
+        print(line)
+
+main()
+`,
+      challenge_test_cases: [
+        { input: "3 0.95 5 200\nmon 0.94 150\ntue 0.88 180\nwed 0.93 260", expected_output: "threshold 0.9025\nalerts 2\ntue RECALL\nwed LATENCY", description: "One recall breach and one latency breach on different days." },
+        { input: "2 0.90 10 100\nd1 0.90 100\nd2 0.81 99", expected_output: "threshold 0.8100\nalerts 0", description: "Boundary values are not breaches because both comparisons are strict." },
+        { input: "1 0.95 5 200\nbad 0.80 500", expected_output: "threshold 0.9025\nalerts 1\nbad RECALL,LATENCY", description: "A single day breaching both metrics reports RECALL,LATENCY in order." },
+        { input: "2 1.0 0 50\na 0.99 40\nb 1.0 60", expected_output: "threshold 1.0000\nalerts 2\na RECALL\nb LATENCY", description: "A zero drop tolerance means any recall below baseline alerts; the latency cap catches day b." }
       ]
     }
   ]
