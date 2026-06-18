@@ -222,17 +222,71 @@ A shop has 3 boxes of 12 apples and sells 17. How many are left? Let's think ste
         "Append the string ' Let's think step by step.' to the question.",
         "Print both prompts so you can compare what changed."
       ],
-      challenge_title: "Add a CoT trigger",
-      challenge_description: "Write a function make_cot(question) that returns the question with ' Let's think step by step.' appended. Test it on one question and print the result.",
-      challenge_starter_code: `# TODO: define make_cot(question) that appends the trigger phrase, then test it.
-`,
-      challenge_solution_code: `def make_cot(question):
-    return question + " Let's think step by step."
+      challenge_title: "Audit the Scratchpad",
+      challenge_description: "Verify a model's chain-of-thought arithmetic and flag the first step where its reasoning breaks.",
+      challenge_story: "Your eval harness logs the **scratchpad** a model writes when it reasons step by step. Each line is one reasoning step: it takes the running value from the line above, applies one operation, and claims a result. When the final answer is wrong, you don't just want to know *that* it failed — you want the **exact step** where the reasoning first went off the rails, because that's the line a human reviewer should read. Build the auditor that walks the chain and pinpoints the first broken link.",
+      challenge_statement: "A chain of thought starts from a value and applies `n` steps in order. Each step takes the **accumulator** (the result of the previous step, or the start value for step 1), applies one operation against an operand, and *claims* a result.\n\nWalk the chain top to bottom. For each step, recompute the true result from the current accumulator and compare it to the claimed result. If they differ, the chain breaks at that step.\n\n- If every step checks out, print `VALID` followed by the final accumulator.\n- Otherwise print `WRONG` followed by the **1-based index** of the first step whose claimed result is incorrect, and stop.\n\nOperators are `+`, `-`, `*`, and `/`. Division is **integer floor division** (`//`).",
+      challenge_input_format: "The first line has two integers `n start`. Each of the next `n` lines is a step in the form `op operand = claimed`, where `op` is one of `+ - * /`.",
+      challenge_output_format: "Either `VALID v` where `v` is the final accumulator, or `WRONG i` where `i` is the 1-based index of the first incorrect step.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "-1000000000 ≤ start, operand, claimed ≤ 1000000000",
+        "A `/` step never divides by zero",
+      ],
+      challenge_examples: [
+        { input: "3 7\n* 6 = 42\n- 2 = 40\n+ 8 = 48", output: "VALID 48", explanation: "7*6=42 ✓, 42-2=40 ✓, 40+8=48 ✓. Every step holds, final value 48." },
+        { input: "2 100\n/ 4 = 25\n+ 5 = 31", output: "WRONG 2", explanation: "100//4=25 ✓, but 25+5=30, not the claimed 31, so the chain first breaks at step 2." },
+      ],
+      challenge_notes: "This is exactly why chain of thought helps: each step is a small, checkable computation. A direct answer gives you nothing to audit; an exposed chain lets you localize the error. Use `//` for floor division so results stay exact integers — no floats.",
+      challenge_hints: [
+        "Carry an `acc` variable; for step 1 it starts at `start`, then it becomes each verified claimed value.",
+        "Recompute the true result for the step's operator and compare to the claimed value before trusting it.",
+        "On the first mismatch, print `WRONG` and the 1-based index, then stop immediately.",
+      ],
+      challenge_starter_code: `import sys
 
-print(make_cot("What is 17 times 24?"))
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, start = map(int, data[0].split())
+    acc = start
+    # TODO: for each of the n steps, recompute the result from acc and
+    # compare it to the claimed value. Print WRONG i at the first mismatch,
+    # otherwise VALID acc at the end.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, start = map(int, data[0].split())
+    acc = start
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        op = parts[0]
+        b = int(parts[1])
+        claimed = int(parts[3])
+        if op == "+":
+            actual = acc + b
+        elif op == "-":
+            actual = acc - b
+        elif op == "*":
+            actual = acc * b
+        else:
+            actual = acc // b
+        if actual != claimed:
+            print(f"WRONG {i}")
+            return
+        acc = claimed
+    print(f"VALID {acc}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: '"What is 17 times 24?"', expected_output: "What is 17 times 24? Let's think step by step.", description: "Appends the zero-shot CoT trigger to the question." }
+        { input: "3 7\n* 6 = 42\n- 2 = 40\n+ 8 = 48", expected_output: "VALID 48", description: "Every step checks out; prints the final accumulator." },
+        { input: "2 100\n/ 4 = 25\n+ 5 = 31", expected_output: "WRONG 2", description: "Step 2 claims 31 but 25+5=30." },
+        { input: "1 5\n+ 0 = 5", expected_output: "VALID 5", description: "Single-step chain that holds." },
+        { input: "4 0\n+ 10 = 10\n* 3 = 30\n- 30 = 0\n+ 7 = 8", expected_output: "WRONG 4", description: "First three steps hold; step 4 claims 8 but 0+7=7." }
       ]
     },
     {
@@ -468,26 +522,71 @@ Sentiment:`,
         "Use an f-string to append 'Review: ...\\nSentiment: ...\\n\\n' for each one.",
         "After the loop, append the new review with 'Sentiment:' left open (no label)."
       ],
-      challenge_title: "Build a few-shot prompt",
-      challenge_description: "Write a function build_prompt(examples, new_input) where examples is a list of (text, label) tuples. Return a prompt with each example as 'Text: ...\\nLabel: ...\\n\\n' followed by 'Text: <new_input>\\nLabel:'. Print the result for two examples.",
-      challenge_starter_code: `examples = [("great service", "positive"), ("rude staff", "negative")]
-new_input = "amazing dessert"
-# TODO: define build_prompt(examples, new_input) and print the result.
+      challenge_title: "Few-Shot Classifier",
+      challenge_description: "Label new inputs the way a few-shot prompt would: by matching each one to the closest labeled example you were shown.",
+      challenge_story: "You're prototyping a sentiment classifier before wiring up a real model. The cheap-and-fast stand-in mimics what a **few-shot prompt** actually does: it generalizes from the handful of labeled examples you put in front of it. Each example is a numeric *feature* (say, a sentiment score the pipeline already computed) paired with a label. A new input gets whatever label its **nearest example** carries — the model has no other signal to go on. Build the classifier so you can sanity-check the label set before spending tokens.",
+      challenge_statement: "You're given `k` labeled examples, each a feature value (integer) and a label (string). Then you're given `q` query feature values.\n\nFor each query, assign the label of the example whose feature is **closest** in absolute value. If two examples are equally close, prefer the one with the **smaller feature value**.\n\nPrint one label per query, in order.",
+      challenge_input_format: "The first line is integer `k`. Each of the next `k` lines has `feature label` (an integer and a one-word label). The next line is integer `q`. Each of the next `q` lines is one integer query feature.",
+      challenge_output_format: "`q` lines, the assigned label for each query in input order.",
+      challenge_constraints: [
+        "1 ≤ k ≤ 100000",
+        "1 ≤ q ≤ 100000",
+        "-1000000000 ≤ feature, query ≤ 1000000000",
+        "Labels are non-empty strings with no spaces",
+      ],
+      challenge_examples: [
+        { input: "3\n10 positive\n50 neutral\n90 negative\n3\n12\n55\n70", output: "positive\nneutral\nneutral", explanation: "12 is closest to 10 (positive). 55 closest to 50 (neutral). 70 is distance 20 from both 50 and 90 — a tie, so the smaller feature 50 wins (neutral)." },
+        { input: "2\n0 cold\n100 hot\n1\n50", output: "cold", explanation: "50 is distance 50 from both; the tie breaks toward the smaller feature 0 (cold)." },
+      ],
+      challenge_notes: "This is nearest-neighbor classification — and it mirrors the central rule of few-shot prompting: the model can only produce a label it has actually seen demonstrated. Forget to include a label among your examples and no query will ever receive it.",
+      challenge_hints: [
+        "For each query, scan all examples and track the minimum of `(abs(query - feature), feature)`.",
+        "Comparing the tuple `(distance, feature)` handles the tie-break automatically — Python compares the second element only on ties.",
+        "Read all input at once and index through it; build the output as a list and join with newlines.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    k = int(data[idx]); idx += 1
+    examples = []
+    for _ in range(k):
+        feat, label = data[idx].split(); idx += 1
+        examples.append((int(feat), label))
+    # TODO: read q queries, and for each assign the nearest example's label
+    # (ties -> smaller feature). Print one label per line.
+
+main()
 `,
-      challenge_solution_code: `examples = [("great service", "positive"), ("rude staff", "negative")]
-new_input = "amazing dessert"
+      challenge_solution_code: `import sys
 
-def build_prompt(examples, new_input):
-    p = ""
-    for text, label in examples:
-        p += f"Text: {text}\\nLabel: {label}\\n\\n"
-    p += f"Text: {new_input}\\nLabel:"
-    return p
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    k = int(data[idx]); idx += 1
+    examples = []
+    for _ in range(k):
+        parts = data[idx].split(); idx += 1
+        examples.append((int(parts[0]), parts[1]))
+    q = int(data[idx]); idx += 1
+    out = []
+    for _ in range(q):
+        x = int(data[idx]); idx += 1
+        best = None
+        for feat, label in examples:
+            key = (abs(x - feat), feat)
+            if best is None or key < best[0]:
+                best = (key, label)
+        out.append(best[1])
+    print("\\n".join(out))
 
-print(build_prompt(examples, new_input))
+main()
 `,
       challenge_test_cases: [
-        { input: "two examples + new_input", expected_output: "Text: great service\nLabel: positive\n\nText: rude staff\nLabel: negative\n\nText: amazing dessert\nLabel:", description: "Formats each example pair then leaves the new input's label open." }
+        { input: "3\n10 positive\n50 neutral\n90 negative\n3\n12\n55\n70", expected_output: "positive\nneutral\nneutral", description: "Nearest-example labeling with a tie resolved toward the smaller feature." },
+        { input: "2\n0 cold\n100 hot\n1\n50", expected_output: "cold", description: "Exact midpoint tie breaks toward the smaller feature." },
+        { input: "1\n5 only\n2\n-100\n9999", expected_output: "only\nonly", description: "A single example means every query gets that one label." }
       ]
     },
     {
@@ -702,20 +801,64 @@ majority answer: 42`,
         "counts.most_common(1) returns a list like [(value, count)].",
         "Index [0][0] to pull out just the most common value."
       ],
-      challenge_title: "Majority vote function",
-      challenge_description: "Write a function vote(answers) that returns the most common element of the list. Test it on [3, 3, 7, 3, 7] and print the result.",
-      challenge_starter_code: `from collections import Counter
-# TODO: define vote(answers) returning the most common element, then test it.
+      challenge_title: "Confidence-Weighted Vote",
+      challenge_description: "Aggregate many independent reasoning runs into one answer using confidence-weighted self-consistency.",
+      challenge_story: "Your agent solves each hard problem by sampling several reasoning chains at non-zero temperature, then voting on the answer. Plain majority vote throws away useful signal: a run that finishes with high **confidence** should count for more than a hesitant one. So you tally each candidate answer by the **sum of confidences** of the runs that produced it, and ship whichever answer carries the most weight. Build the aggregator that turns a pile of runs into the single answer your system returns.",
+      challenge_statement: "You ran the model `n` times. Each run produced an integer answer and an integer confidence.\n\nFor every distinct answer, sum the confidences of all runs that produced it. The winning answer is the one with the **largest total confidence**. If two answers tie on total confidence, pick the **smaller answer value**.\n\nPrint the winning answer and its total confidence.",
+      challenge_input_format: "The first line is integer `n`. Each of the next `n` lines has two integers: `answer confidence`.",
+      challenge_output_format: "One line: `answer total_confidence`, separated by a single space.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "-1000000000 ≤ answer ≤ 1000000000",
+        "1 ≤ confidence ≤ 1000000000",
+      ],
+      challenge_examples: [
+        { input: "5\n42 3\n42 1\n7 5\n7 4\n42 2", output: "7 9", explanation: "Answer 42 totals 3+1+2=6; answer 7 totals 5+4=9. 7 carries more weight, so it wins with total 9." },
+        { input: "3\n1 10\n2 10\n3 5", output: "1 10", explanation: "Answers 1 and 2 both total 10 — a tie — so the smaller value 1 wins." },
+      ],
+      challenge_notes: "This is self-consistency with a twist: instead of one-run-one-vote, each run votes with its confidence. It still only cancels *random* error — if every run shares the same systematic bias, they all pile weight onto the same wrong answer and the aggregate is confidently incorrect.",
+      challenge_hints: [
+        "Accumulate totals in a dict keyed by answer value.",
+        "Iterate the answers in sorted order so the first one you accept on a tie is already the smallest.",
+        "Keep a running best; replace it only when a strictly larger total appears.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    tally = {}
+    # TODO: sum confidence per answer, then pick the answer with the largest
+    # total (ties -> smaller answer value). Print "answer total".
+
+main()
 `,
-      challenge_solution_code: `from collections import Counter
+      challenge_solution_code: `import sys
 
-def vote(answers):
-    return Counter(answers).most_common(1)[0][0]
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    tally = {}
+    for i in range(1, n + 1):
+        ans_s, conf_s = data[i].split()
+        ans = int(ans_s)
+        conf = int(conf_s)
+        tally[ans] = tally.get(ans, 0) + conf
+    best_ans = None
+    best_conf = None
+    for ans in sorted(tally.keys()):
+        c = tally[ans]
+        if best_conf is None or c > best_conf:
+            best_conf = c
+            best_ans = ans
+    print(f"{best_ans} {best_conf}")
 
-print(vote([3, 3, 7, 3, 7]))
+main()
 `,
       challenge_test_cases: [
-        { input: "[3, 3, 7, 3, 7]", expected_output: "3", description: "3 appears three times, 7 twice, so 3 is the majority." }
+        { input: "5\n42 3\n42 1\n7 5\n7 4\n42 2", expected_output: "7 9", description: "7's weight (9) beats 42's weight (6)." },
+        { input: "3\n1 10\n2 10\n3 5", expected_output: "1 10", description: "Tie on total confidence resolves to the smaller answer." },
+        { input: "1\n99 1", expected_output: "99 1", description: "A single run is its own winner." }
       ]
     },
     {
@@ -933,28 +1076,68 @@ Observation: About 14 million (2024).`,
         "action.index('\"') finds the first quote; action.rindex('\"') finds the last.",
         "Slice between them, then pass that substring to search()."
       ],
-      challenge_title: "Run one ReAct action",
-      challenge_description: "Write a function run_action(action, tool) where action looks like 'calc(\"2+2\")'. Extract the argument between the quotes and pass it to the tool function. Test it with a tool that evaluates simple sums.",
-      challenge_starter_code: `def calc(expr):
-    a, b = expr.split("+")
-    return int(a) + int(b)
+      challenge_title: "Run the ReAct Trace",
+      challenge_description: "Execute an agent's action trace step by step, dispatching each tool call against a running register.",
+      challenge_story: "Your ReAct agent emits a trace of **actions**, each a tool call like `add(\"4\")` or `set(\"3\")`. Between reasoning, your runtime has to actually *execute* these calls: parse the tool name, pull the argument out from between the quotes, dispatch to the right tool, and thread the result forward as state. To debug an agent you need to see the register **after every single action**, not just at the end — that's the trail that tells you where a run went wrong. Build the executor that runs the trace and logs the state at each step.",
+      challenge_statement: "An agent emits `n` actions in order. Each action is `tool(\"arg\")` where `arg` is an integer (possibly negative). A single integer **register** starts at `0`. Apply each tool to the register:\n\n- `set(\"x\")` — replace the register with `x`.\n- `add(\"x\")` — add `x` to the register.\n- `sub(\"x\")` — subtract `x` from the register.\n- `mul(\"x\")` — multiply the register by `x`.\n\nPrint the final register value, then on a second line print the register value **after each action**, space-separated, in order.",
+      challenge_input_format: "The first line is integer `n`. Each of the next `n` lines is an action of the form `tool(\"arg\")` with `tool` one of `set`, `add`, `sub`, `mul`.",
+      challenge_output_format: "Line 1: the final register value. Line 2: the register value after each of the `n` actions, space-separated.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "-1000000000 ≤ arg ≤ 1000000000",
+        "The register fits in a normal Python int (arbitrary precision)",
+      ],
+      challenge_examples: [
+        { input: "4\nset(\"3\")\nadd(\"4\")\nmul(\"2\")\nsub(\"5\")", output: "9\n3 7 14 9", explanation: "Register: set→3, +4→7, ×2→14, −5→9. The trail logs every intermediate state." },
+        { input: "3\nadd(\"5\")\nmul(\"3\")\nset(\"-7\")", output: "-7\n5 15 -7", explanation: "Starting at 0: +5→5, ×3→15, then set overwrites to −7." },
+      ],
+      challenge_notes: "The core skill is the same one ReAct runtimes use everywhere: find the tool name before `(`, then slice the argument out between the first and last double-quote. Threading the result forward is what turns isolated tool calls into a coherent agent run.",
+      challenge_hints: [
+        "`line[:line.index(\"(\")]` gives the tool name; the arg sits between `line.index('\"')` and `line.rindex('\"')`.",
+        "Keep one `reg` variable and update it per action, appending its new value to a log list.",
+        "Print the final `reg`, then `' '.join(...)` the log on the second line.",
+      ],
+      challenge_starter_code: `import sys
 
-action = 'calc("2+2")'
-# TODO: define run_action(action, tool) that extracts the arg and calls tool.
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    reg = 0
+    log = []
+    # TODO: for each action, parse the tool name and the quoted arg,
+    # apply it to reg, and record reg in log. Then print reg and the log.
+
+main()
 `,
-      challenge_solution_code: `def calc(expr):
-    a, b = expr.split("+")
-    return int(a) + int(b)
+      challenge_solution_code: `import sys
 
-def run_action(action, tool):
-    arg = action[action.index('"') + 1 : action.rindex('"')]
-    return tool(arg)
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    reg = 0
+    log = []
+    for i in range(1, n + 1):
+        line = data[i].rstrip()
+        name = line[:line.index("(")]
+        arg = int(line[line.index('"') + 1 : line.rindex('"')])
+        if name == "set":
+            reg = arg
+        elif name == "add":
+            reg += arg
+        elif name == "sub":
+            reg -= arg
+        elif name == "mul":
+            reg *= arg
+        log.append(reg)
+    print(reg)
+    print(" ".join(str(v) for v in log))
 
-action = 'calc("2+2")'
-print(run_action(action, calc))
+main()
 `,
       challenge_test_cases: [
-        { input: "'calc(\"2+2\")'", expected_output: "4", description: "Extracts '2+2' from the action and the calc tool returns 4." }
+        { input: "4\nset(\"3\")\nadd(\"4\")\nmul(\"2\")\nsub(\"5\")", expected_output: "9\n3 7 14 9", description: "All four tools exercised; intermediate trail logged." },
+        { input: "1\nset(\"100\")", expected_output: "100\n100", description: "Single action; final and trail agree." },
+        { input: "3\nadd(\"5\")\nmul(\"3\")\nset(\"-7\")", expected_output: "-7\n5 15 -7", description: "Negative argument and a set that overwrites prior state." }
       ]
     },
     {
@@ -1180,29 +1363,67 @@ summary: found 2 risks`,
         "Write a count step that returns len(risks), then call it on the extracted list.",
         "Print the risks and a summary line using the count."
       ],
-      challenge_title: "Chain three steps",
-      challenge_description: "Build a 3-step chain over a list of numbers: step 1 keeps only evens, step 2 doubles each, step 3 sums them. Each step takes the previous step's output. Run it on [1, 2, 3, 4] and print the final total.",
-      challenge_starter_code: `nums = [1, 2, 3, 4]
-# TODO: step 1 keep evens, step 2 double each, step 3 sum. Chain the outputs.
+      challenge_title: "The Risk Triage Pipeline",
+      challenge_description: "Run a three-stage extract-rank-summarize chain over a document of scored findings, each stage feeding the next.",
+      challenge_story: "A compliance summarizer reads a long report and surfaces the top risks for a human reviewer. Doing it in one giant prompt produces mush, so you decomposed it into a **chain**: stage 1 *extracts* findings whose severity clears a threshold, stage 2 *ranks* what survived, and stage 3 *summarizes* the top few. Each stage consumes the previous stage's output and nothing else — which is exactly why you can inspect the result of every step. Build the pipeline that turns raw findings into a tight, ranked summary.",
+      challenge_statement: "You're given `n` findings, each with an integer id and an integer severity score, plus a threshold `T` and a count `K`.\n\nRun three chained stages:\n\n1. **Extract** — keep only findings with `score >= T`.\n2. **Rank** — sort the kept findings by score **descending**; break ties by **smaller id first**.\n3. **Summarize** — take the top `K` of the ranked list.\n\nPrint three lines: how many findings survived extraction, the ids of the top `K` (space-separated, or `-` if none), and the sum of those top `K` scores.",
+      challenge_input_format: "The first line has three integers `n T K`. Each of the next `n` lines has two integers: `id score`.",
+      challenge_output_format: "Line 1: the count of findings kept after extraction. Line 2: the top-`K` ids space-separated in ranked order, or `-` if the kept set is empty. Line 3: the sum of the top-`K` scores (`0` if none).",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ K ≤ n",
+        "-1000000000 ≤ T ≤ 1000000000",
+        "-1000000000 ≤ score ≤ 1000000000",
+        "ids are distinct integers in [0, 1000000000]",
+      ],
+      challenge_examples: [
+        { input: "5 50 2\n1 80\n2 30\n3 90\n4 50\n5 90", output: "4\n3 5\n180", explanation: "Extract keeps scores ≥ 50: ids 1,3,4,5 (count 4). Rank by score desc: 3(90), 5(90) — tie broken by smaller id — then 1(80), 4(50). Top 2 are ids 3 and 5, scores 90+90=180." },
+        { input: "3 100 5\n1 10\n2 20\n3 30", output: "0\n-\n0", explanation: "No finding clears threshold 100, so extraction is empty: count 0, no ids (`-`), sum 0." },
+      ],
+      challenge_notes: "Each stage is a pure function of the stage before it — extract → rank → summarize. That decomposition is what makes the pipeline debuggable: print any line and you can see exactly where a wrong final answer was born. `K` may exceed the kept set; in that case you simply take everything that survived.",
+      challenge_hints: [
+        "Stage 1 is a list comprehension filtering `score >= T`.",
+        "Stage 2 sorts with key `(-score, id)` so higher scores come first and ties favor the smaller id.",
+        "Stage 3 slices `[:K]`; print `-` and `0` when the kept set is empty.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, T, K = map(int, data[0].split())
+    items = []
+    for i in range(1, n + 1):
+        iid, score = map(int, data[i].split())
+        items.append((iid, score))
+    # TODO: stage 1 extract (score >= T), stage 2 rank (-score, id),
+    # stage 3 take top K. Print count, ids (or '-'), and the score sum.
+
+main()
 `,
-      challenge_solution_code: `nums = [1, 2, 3, 4]
+      challenge_solution_code: `import sys
 
-def keep_evens(xs):
-    return [x for x in xs if x % 2 == 0]
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, T, K = map(int, data[0].split())
+    items = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        items.append((int(parts[0]), int(parts[1])))
+    kept = [it for it in items if it[1] >= T]
+    ranked = sorted(kept, key=lambda it: (-it[1], it[0]))
+    top = ranked[:K]
+    total = sum(s for _, s in top)
+    ids = [str(iid) for iid, _ in top]
+    print(len(kept))
+    print(" ".join(ids) if ids else "-")
+    print(total)
 
-def double(xs):
-    return [x * 2 for x in xs]
-
-def total(xs):
-    return sum(xs)
-
-step1 = keep_evens(nums)
-step2 = double(step1)
-result = total(step2)
-print(result)
+main()
 `,
       challenge_test_cases: [
-        { input: "[1, 2, 3, 4]", expected_output: "12", description: "Evens [2,4] -> doubled [4,8] -> sum 12, each step feeding the next." }
+        { input: "5 50 2\n1 80\n2 30\n3 90\n4 50\n5 90", expected_output: "4\n3 5\n180", description: "Full extract-rank-summarize chain with a score tie broken by id." },
+        { input: "3 100 5\n1 10\n2 20\n3 30", expected_output: "0\n-\n0", description: "Empty extraction propagates through the chain to `-` and 0." },
+        { input: "4 0 2\n7 5\n3 5\n9 1\n1 5", expected_output: "4\n1 3\n10", description: "All survive; equal scores rank by smaller id, so 1 and 3 lead." }
       ]
     }
   ]

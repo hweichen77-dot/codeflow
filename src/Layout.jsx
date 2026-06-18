@@ -19,6 +19,7 @@ export default function Layout({ children, currentPageName }) {
     { label: "AI Track", page: "AITrack" },
     { label: "Projects", page: "Projects" },
     { label: "Challenges", page: "Challenges" },
+    { label: "Compete", page: "Competitive" },
     { label: "Dashboard", page: "Dashboard" },
   ];
 

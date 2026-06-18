@@ -23,6 +23,14 @@ import m22 from './curriculum/module-22.js'
 
 import BRIEFS from './briefs.js'
 
+// Competitive Coding catalog (C++ problems teaching AI algorithms).
+export {
+  COMPETITIVE,
+  COMPETITIVE_TOPICS,
+  COMPETITIVE_DIFFICULTIES,
+  getCompetitive,
+} from './competitive/index.js'
+
 const MODULES = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21, m22]
 
 export const PROJECTS = MODULES.map(m => ({ ...m.project, brief: BRIEFS[m.project.id] || null }))
@@ -49,6 +57,16 @@ export const CHALLENGES = LESSONS.filter(l => l.challenge_title).map((l, i) => {
     starter_code: l.challenge_starter_code,
     solution_code: l.challenge_solution_code,
     test_cases: l.challenge_test_cases,
+    // Rich USACO/Codeforces-style problem statement (optional; falls back to
+    // `description` when absent so legacy challenges still render).
+    story: l.challenge_story || null,
+    statement: l.challenge_statement || null,
+    input_format: l.challenge_input_format || null,
+    output_format: l.challenge_output_format || null,
+    constraints: l.challenge_constraints || null,
+    examples: l.challenge_examples || null,
+    notes: l.challenge_notes || null,
+    hints: l.challenge_hints || null,
     project_id: l.project_id,
     project_title: project.title,
   }

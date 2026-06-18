@@ -17,6 +17,7 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 // App pages that require a signed-in (or guest) profile. Public: marketing Home + LessonDemo.
 const PROTECTED = new Set([
   'ChallengeDetail', 'Challenges', 'Dashboard', 'ProjectDetail', 'Projects', 'Portfolio', 'AITrack',
+  'Competitive', 'CompetitiveDetail',
 ]);
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?

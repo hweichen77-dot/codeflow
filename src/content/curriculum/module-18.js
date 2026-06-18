@@ -215,20 +215,67 @@ room for answer: 6800`,
         "Subtract the prompt tokens from the window to get the leftover room.",
         "Print the window, the prompt usage, and the remaining room on separate lines."
       ],
-      challenge_title: "Will it fit?",
-      challenge_description: "Write a function fits(window, prompt_tokens, answer_tokens) that returns True if the prompt and the answer together fit inside the window, else False. Test it on a case that fits and one that doesn't, and print both results.",
-      challenge_starter_code: `# window = 8000 total tokens for input + output
-# TODO: define fits(window, prompt_tokens, answer_tokens) and test it twice.
-`,
-      challenge_solution_code: `def fits(window, prompt_tokens, answer_tokens):
-    return prompt_tokens + answer_tokens <= window
+      challenge_title: "Context Packer",
+      challenge_description: "Build the prompt assembler that streams retrieved chunks onto the desk in priority order and stops the instant the next one won't fit under the window.",
+      challenge_story: "You're shipping the retrieval layer of a RAG assistant. A reranker hands you document chunks **already sorted by relevance** — most useful first. Your job is the **packer**: glue chunks into the prompt one at a time, but you must always leave a fixed slice of the window **reserved** for the model's answer. The moment the next chunk would push the prompt past that line, you stop cold — you never skip ahead to a smaller chunk, because the chunks are in priority order and a gap would mean injecting a *less* relevant chunk before a more relevant one. Tell the team how many chunks made it in and how much budget is left unused.",
+      challenge_statement: "You are given a window size \`W\`, a reserved answer size \`R\`, and \`n\` chunk sizes in **priority order** (most important first).\n\nThe budget available for chunks is \`W - R\`. Walk the chunks from first to last and add a chunk **only if** the running total of placed chunks would still be \`<= W - R\` after adding it. The **first** chunk that would exceed the budget halts packing immediately — do **not** consider any later chunk.\n\nPrint two numbers, each on its own line:\n\n1. How many chunks were packed.\n2. The leftover budget: \`(W - R)\` minus the total size of the packed chunks.",
+      challenge_input_format: "The first line has three integers: \`W R n\` — the window size, the reserved answer size, and the number of chunks.\n\nThe second line has \`n\` space-separated integers: the chunk sizes in priority order.",
+      challenge_output_format: "Two lines: the count of packed chunks, then the leftover budget.",
+      challenge_constraints: [
+        "1 ≤ W ≤ 2000000",
+        "0 ≤ R < W",
+        "1 ≤ n ≤ 200000",
+        "1 ≤ each chunk size ≤ W",
+      ],
+      challenge_examples: [
+        { input: "1000 200 4\n300 300 300 300", output: "2\n200", explanation: "Budget = 1000 - 200 = 800. Chunk 1 (300) → 300 ≤ 800 ✓. Chunk 2 → 600 ✓. Chunk 3 → 900 > 800, halt. 2 packed, 800 - 600 = 200 left." },
+        { input: "8000 1000 3\n2000 3000 5000", output: "2\n2000", explanation: "Budget = 7000. 2000 ✓ (2000), +3000 ✓ (5000), +5000 → 10000 > 7000 halt. 2 packed, 7000 - 5000 = 2000 left." },
+      ],
+      challenge_notes: "This is *prefix packing*: because chunks arrive in priority order, the optimal selection is always a prefix — you stop at the first overflow rather than cherry-picking smaller chunks out of order. Real prompt assemblers behave exactly this way, which is why a single oversized early chunk can starve everything behind it.",
+      challenge_hints: [
+        "The usable budget is `W - R`. Keep a running `used` total starting at 0.",
+        "For each chunk in order, check `used + size <= budget` before committing; the first failure ends the loop with `break`.",
+        "The leftover is `budget - used` after you stop.",
+      ],
+      challenge_starter_code: `import sys
 
-print(fits(8000, 1200, 500))
-print(fits(8000, 7000, 2000))
+def main():
+    data = sys.stdin.buffer.read().split()
+    W = int(data[0]); R = int(data[1]); n = int(data[2])
+    sizes = [int(x) for x in data[3:3 + n]]
+    # TODO: pack chunks in order, stopping at the first that overflows W - R.
+    #       Print the packed count, then the leftover budget.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    W = int(data[idx]); idx += 1
+    R = int(data[idx]); idx += 1
+    n = int(data[idx]); idx += 1
+    budget = W - R
+    used = 0
+    fitted = 0
+    for i in range(n):
+        c = int(data[idx]); idx += 1
+        if used + c <= budget:
+            used += c
+            fitted += 1
+        else:
+            break
+    print(fitted)
+    print(budget - used)
+
+main()
 `,
       challenge_test_cases: [
-        { input: "window=8000, prompt=1200, answer=500", expected_output: "True", description: "1200 + 500 = 1700 <= 8000, so it fits." },
-        { input: "window=8000, prompt=7000, answer=2000", expected_output: "False", description: "7000 + 2000 = 9000 > 8000, so it does not fit." }
+        { input: "1000 200 4\n300 300 300 300", expected_output: "2\n200", description: "Halts at the third chunk; 200 budget left." },
+        { input: "8000 1000 3\n2000 3000 5000", expected_output: "2\n2000", description: "Large final chunk overflows; two packed." },
+        { input: "500 500 3\n10 10 10", expected_output: "0\n0", description: "Reserve eats the whole window; budget is 0, nothing fits." },
+        { input: "100 0 1\n100", expected_output: "1\n0", description: "Single chunk exactly fills the window with no reserve." }
       ]
     },
     {
@@ -447,18 +494,72 @@ total used: 1830`,
         "used is the sum of system, history, new_msg, and reserved.",
         "Print each part and then the total on its own line."
       ],
-      challenge_title: "Request budget",
-      challenge_description: "Write a function tokens_used(system, history, new_msg, reserved) that returns the total tokens a request spends from the window. Call it with system=150, history=900, new_msg=40, reserved=400 and print the total.",
-      challenge_starter_code: `# TODO: define tokens_used(system, history, new_msg, reserved) and call it.
-`,
-      challenge_solution_code: `def tokens_used(system, history, new_msg, reserved):
-    return system + history + new_msg + reserved
+      challenge_title: "Overflow Detector",
+      challenge_description: "Replay a chat turn by turn, accounting for every hidden token, and pinpoint the exact turn where the request first blows past the window.",
+      challenge_story: "Your support bot keeps mysteriously erroring out deep into long conversations, and the on-call engineer wants to know **when** it tips over before it happens in production. Each turn, the app re-sends the whole bill: the hidden **system prompt**, the **entire history so far** (every past user message *and* every past assistant reply, because the model is stateless), the **new user message**, plus **reserved** headroom for the upcoming answer. Build the pre-flight checker that simulates the conversation and reports the first turn whose total spend exceeds the window — or confirms the whole chat stays under budget.",
+      challenge_statement: "You simulate a conversation. Constants for the session: window \`W\`, system-prompt size \`S\`, reserved answer size \`R\`. Then \`T\` turns arrive in order; turn \`t\` has a user-message size \`u_t\` and an assistant-reply size \`a_t\`.\n\nBefore turn \`t\`'s reply is generated, the request spends:\n\n\`\`\`\nused_t = S + history_before_t + u_t + R\n\`\`\`\n\nwhere \`history_before_t\` is the sum of all earlier turns' user **and** assistant tokens (turns \`1..t-1\`). After turn \`t\`, history grows by \`u_t + a_t\`.\n\nFind the **first** turn \`t\` (1-indexed) where \`used_t > W\`.\n\n- If such a turn exists, print \`OVERFLOW\` on the first line and that turn number on the second.\n- If no turn overflows, print \`OK\` on the first line and the leftover tokens after the **final** turn's request — that is \`W - (S + history_before_T + u_T + R)\` — on the second line.",
+      challenge_input_format: "The first line has four integers: \`W S R T\`.\n\nEach of the next \`T\` lines has two integers \`u_t a_t\`: the user-message and assistant-reply token sizes for that turn, oldest first.",
+      challenge_output_format: "Two lines. Either \`OVERFLOW\` then the 1-indexed overflowing turn, or \`OK\` then the leftover tokens after the final turn's request.",
+      challenge_constraints: [
+        "1 ≤ W ≤ 1000000",
+        "0 ≤ S, R",
+        "1 ≤ T ≤ 200000",
+        "0 ≤ u_t, a_t ≤ 100000",
+      ],
+      challenge_examples: [
+        { input: "1000 200 300 3\n30 100\n20 80\n40 120", output: "OK\n230", explanation: "t1: 200+0+30+300=530. t2: history=130, 200+130+20+300=650. t3: history=230, 200+230+40+300=770 ≤ 1000. No overflow; leftover after t3 = 1000-770 = 230." },
+        { input: "1000 200 300 4\n100 200\n100 200\n100 200\n100 200", output: "OVERFLOW\n3", explanation: "t1=600, t2: history=300 → 900, t3: history=600 → 200+600+100+300=1200 > 1000. First overflow at turn 3." },
+      ],
+      challenge_notes: "Notice the request size grows every turn even though your messages stay tiny — that's the re-sent history, the single biggest reason long chats get expensive and eventually fail. The reserved answer block is real budget too: it's space the model demands *before* writing a single output token.",
+      challenge_hints: [
+        "Keep a running `history` total. For each turn compute `used = S + history + u + R` BEFORE adding this turn to history.",
+        "Record the first turn where `used > W` and stop updating that record (but you can keep looping or break early).",
+        "If you never overflow, the leftover uses the final turn's `used` value: `W - used_T`.",
+      ],
+      challenge_starter_code: `import sys
 
-total = tokens_used(150, 900, 40, 400)
-print("total tokens used:", total)
+def main():
+    data = sys.stdin.buffer.read().split()
+    W = int(data[0]); S = int(data[1]); R = int(data[2]); T = int(data[3])
+    # turns start at index 4: pairs (u, a)
+    # TODO: simulate; print OVERFLOW + first bad turn, or OK + final leftover.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    W = int(data[idx]); idx += 1
+    S = int(data[idx]); idx += 1
+    R = int(data[idx]); idx += 1
+    T = int(data[idx]); idx += 1
+    history = 0
+    overflow_turn = -1
+    last_used = 0
+    for t in range(1, T + 1):
+        u = int(data[idx]); idx += 1
+        a = int(data[idx]); idx += 1
+        used = S + history + u + R
+        last_used = used
+        if used > W and overflow_turn == -1:
+            overflow_turn = t
+        history += u + a
+    if overflow_turn != -1:
+        print("OVERFLOW")
+        print(overflow_turn)
+    else:
+        print("OK")
+        print(W - last_used)
+
+main()
 `,
       challenge_test_cases: [
-        { input: "system=150, history=900, new_msg=40, reserved=400", expected_output: "total tokens used: 1490", description: "150 + 900 + 40 + 400 = 1490 tokens spent." }
+        { input: "1000 200 300 3\n30 100\n20 80\n40 120", expected_output: "OK\n230", description: "No overflow; leftover after the final turn is 1000 - 770 = 230." },
+        { input: "1000 200 300 4\n100 200\n100 200\n100 200\n100 200", expected_output: "OVERFLOW\n3", description: "Re-sent history pushes turn 3 over the window." },
+        { input: "600 150 400 1\n40 0", expected_output: "OK\n10", description: "Single turn: 150+0+40+400=590, leftover 10." },
+        { input: "500 100 100 3\n50 50\n200 200\n50 50", expected_output: "OVERFLOW\n3", description: "Fits through turn 2, then turn 3's history (500) overflows." }
       ]
     },
     {
@@ -670,21 +771,68 @@ kept: [40, 40]`,
         "Use a while loop that runs as long as the total is greater than WINDOW.",
         "turns.pop(0) removes and returns the oldest turn from the front of the list."
       ],
-      challenge_title: "Fit the conversation",
-      challenge_description: "Write a function trim(turns, window) that drops the oldest turns (from the front of the list) until the total is at most window, then returns the remaining list. Test it on trim([30, 30, 30, 30], 70) and print the result.",
-      challenge_starter_code: `# turns is a list of token counts, oldest first.
-# TODO: define trim(turns, window) that drops oldest turns until it fits.
-`,
-      challenge_solution_code: `def trim(turns, window):
-    turns = list(turns)
-    while sum(turns) > window:
-        turns.pop(0)
-    return turns
+      challenge_title: "Sliding-Window Truncator",
+      challenge_description: "Implement the silent truncation a chat app performs in real time: as each new turn streams in, evict the oldest turns until the conversation fits again.",
+      challenge_story: "You inherited a chat product that silently drops history when it gets too big, and users complain the bot 'forgets' things mid-conversation. Before you fix the UX, you need to reproduce the engine exactly. Turns arrive one at a time, oldest first. After **each** arrival you append it, then evict turns from the **front** (the oldest) until the running total fits the history budget again — but you can **never drop the most recent turn**, even if it alone exceeds the budget (the model still tries, it just risks erroring). At the end, report how many turns got silently dropped, how many survive, and the final token total.",
+      challenge_statement: "You are given a history budget \`W\` and \`T\` turns arriving in order (oldest first), each with a token size. Maintain a queue of kept turns and a running total.\n\nFor each arriving turn:\n\n1. Append it to the back of the queue and add its size to the total.\n2. While the total is \`> W\` **and** more than one turn remains in the queue, remove the **oldest** turn from the front (this counts as one dropped turn) and subtract its size.\n\nThe guard \`more than one turn remains\` means a single turn larger than \`W\` is kept anyway — it is the newest and cannot be dropped.\n\nAfter processing all turns, print three numbers, each on its own line:\n\n1. The total number of dropped turns.\n2. The number of surviving turns in the queue.\n3. The final token total of the surviving turns.",
+      challenge_input_format: "The first line has two integers: \`W T\` — the history budget and the number of turns.\n\nThe second line has \`T\` space-separated integers: the turn sizes in arrival order, oldest first.",
+      challenge_output_format: "Three lines: dropped count, surviving count, final token total.",
+      challenge_constraints: [
+        "1 ≤ W ≤ 1000000",
+        "1 ≤ T ≤ 200000",
+        "1 ≤ each turn size ≤ 1000000",
+      ],
+      challenge_examples: [
+        { input: "70 4\n30 30 30 30", output: "2\n2\n60", explanation: "After turn 3 the total is 90 > 70, drop one (60). After turn 4, total 90 again, drop one more (60). Two dropped, two kept, total 60." },
+        { input: "50 3\n60 10 10", output: "1\n2\n20", explanation: "Turn 1 alone (60) exceeds 50 but it's the only turn, so it stays. Turn 2 → total 70 > 50, drop the 60. Turn 3 → total 20 ≤ 50. One dropped, two kept, 20 total." },
+      ],
+      challenge_notes: "This is a FIFO sliding window — a deque makes both the append and the front-eviction O(1), so the whole simulation is O(T) even for huge chats. The 'never drop the newest turn' rule is exactly why a single giant pasted document can still blow past the window and trigger a hard error instead of being silently trimmed.",
+      challenge_hints: [
+        "Use collections.deque so popleft() is O(1); a plain list with pop(0) would be O(n) per drop.",
+        "Track a running `total` so you never re-sum the whole queue.",
+        "The eviction loop condition is `total > W and len(queue) > 1` — the second clause protects the newest turn.",
+      ],
+      challenge_starter_code: `import sys
+from collections import deque
 
-print(trim([30, 30, 30, 30], 70))
+def main():
+    data = sys.stdin.buffer.read().split()
+    W = int(data[0]); T = int(data[1])
+    sizes = [int(x) for x in data[2:2 + T]]
+    # TODO: stream turns through a deque, evicting oldest while over budget
+    #       (but never the newest). Print dropped, surviving, final total.
+
+main()
+`,
+      challenge_solution_code: `import sys
+from collections import deque
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    W = int(data[idx]); idx += 1
+    T = int(data[idx]); idx += 1
+    dq = deque()
+    total = 0
+    dropped = 0
+    for _ in range(T):
+        c = int(data[idx]); idx += 1
+        dq.append(c)
+        total += c
+        while total > W and len(dq) > 1:
+            total -= dq.popleft()
+            dropped += 1
+    print(dropped)
+    print(len(dq))
+    print(total)
+
+main()
 `,
       challenge_test_cases: [
-        { input: "turns=[30, 30, 30, 30], window=70", expected_output: "[30, 30]", description: "120 over 70: drop two oldest (60 left) until 60 <= 70." }
+        { input: "70 4\n30 30 30 30", expected_output: "2\n2\n60", description: "Steady eviction keeps the two newest turns." },
+        { input: "50 3\n60 10 10", expected_output: "1\n2\n20", description: "Oversized first turn survives until a newer turn forces its eviction." },
+        { input: "100 3\n40 40 40", expected_output: "1\n2\n80", description: "Third turn pushes total to 120; drop one to reach 80." },
+        { input: "1000000 1\n1000000", expected_output: "0\n1\n1000000", description: "A single turn exactly at budget is never dropped." }
       ]
     },
     {
@@ -893,18 +1041,80 @@ chars after: 49`,
         "sum(len(t) for t in old_turns) totals the characters across all turns.",
         "len(summary) gives the size of the summary; print both totals."
       ],
-      challenge_title: "Budget for history",
-      challenge_description: "Write a function history_budget(window, system, message, reserved) that returns how many tokens are left for chat history after accounting for the system prompt, the message, and reserved answer space. Call it with window=4000, system=300, message=100, reserved=800 and print the result.",
-      challenge_starter_code: `# TODO: define history_budget(window, system, message, reserved) and call it.
-`,
-      challenge_solution_code: `def history_budget(window, system, message, reserved):
-    return window - system - message - reserved
+      challenge_title: "Summarize-or-Truncate",
+      challenge_description: "Decide the minimum amount of history to collapse into a summary so the conversation fits the window — preserving as many recent turns verbatim as possible.",
+      challenge_story: "You're building the context manager for a long-running agent. When history gets too big, you have two tools: **drop** old turns or **summarize** them. Summarizing wins because one short recap replaces many turns while keeping the gist — so your policy is: keep the most recent turns word-for-word, and collapse the **oldest prefix** of turns into a single summary of fixed cost \`C\`. You want to summarize as **few** turns as possible (summarizing destroys detail), while still fitting history into its budget. Find that minimal prefix, and report the resulting history size and the leftover room.",
+      challenge_statement: "Session constants: window \`W\`, system prompt \`S\`, new message \`M\`, reserved answer \`R\`, and summary cost \`C\`. The tokens available for history are \`budget = W - S - M - R\`.\n\nYou have \`T\` history turns, oldest first, with sizes \`turns[0..T-1]\`. For a chosen \`k\` (0 ≤ k ≤ T): summarize the oldest \`k\` turns into one summary costing \`C\` (if \`k = 0\`, there is no summary and no cost), and keep turns \`k..T-1\` verbatim. The resulting history size is:\n\n\`\`\`\nsize(k) = (C if k > 0 else 0) + sum(turns[k..T-1])\n\`\`\`\n\nFind the **smallest** \`k\` such that \`size(k) <= budget\`.\n\n- If such a \`k\` exists, print three lines: \`k\`, then \`size(k)\`, then \`budget - size(k)\`.\n- If even summarizing all \`T\` turns (\`k = T\`) does not fit, print \`IMPOSSIBLE\` on a single line.",
+      challenge_input_format: "The first line has six integers: \`W S M R C T\`.\n\nThe second line has \`T\` space-separated integers: the history turn sizes, oldest first.",
+      challenge_output_format: "Either three lines (\`k\`, the history size, the leftover room) or a single line \`IMPOSSIBLE\`.",
+      challenge_constraints: [
+        "1 ≤ W ≤ 2000000",
+        "0 ≤ S, M, R, C",
+        "S + M + R ≤ W",
+        "1 ≤ T ≤ 200000",
+        "1 ≤ each turn size ≤ 100000",
+      ],
+      challenge_examples: [
+        { input: "4000 300 100 800 50 4\n900 800 700 600", output: "1\n2150\n650", explanation: "budget = 4000-300-100-800 = 2800. k=0 keeps all → 3000 > 2800. k=1 summarizes the oldest turn: 50 + (800+700+600) = 2150 ≤ 2800. Smallest k is 1; leftover 650." },
+        { input: "2000 200 100 500 30 5\n400 400 400 400 400", output: "3\n830\n370", explanation: "budget = 1200. k=0:2000, k=1:30+1600=1630, k=2:30+1200=1230, k=3:30+800=830 ≤ 1200. Smallest fitting k is 3." },
+      ],
+      challenge_notes: "Increasing \`k\` always shrinks (or holds) the history once you've paid the summary cost, so a single forward scan with a suffix-sum finds the answer in O(T). This 'summarize the oldest, keep the newest verbatim' policy is the workhorse of production agents — it trades old detail for room without losing the recent thread.",
+      challenge_hints: [
+        "Precompute suffix sums so `sum(turns[k:])` is O(1) per k.",
+        "The head cost is `C` when `k > 0` and `0` when `k == 0` — don't charge a summary for summarizing nothing.",
+        "Scan k from 0 upward and take the first k whose size fits; if none through k = T fit, it's IMPOSSIBLE.",
+      ],
+      challenge_starter_code: `import sys
 
-room = history_budget(4000, 300, 100, 800)
-print("room for history:", room)
+def main():
+    data = sys.stdin.buffer.read().split()
+    W = int(data[0]); S = int(data[1]); M = int(data[2])
+    R = int(data[3]); C = int(data[4]); T = int(data[5])
+    turns = [int(x) for x in data[6:6 + T]]
+    budget = W - S - M - R
+    # TODO: find the smallest k whose summarized history fits the budget,
+    #       or print IMPOSSIBLE.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    idx = 0
+    W = int(data[idx]); idx += 1
+    S = int(data[idx]); idx += 1
+    M = int(data[idx]); idx += 1
+    R = int(data[idx]); idx += 1
+    C = int(data[idx]); idx += 1
+    T = int(data[idx]); idx += 1
+    turns = [int(data[idx + i]) for i in range(T)]; idx += T
+    budget = W - S - M - R
+    suffix = [0] * (T + 1)
+    for i in range(T - 1, -1, -1):
+        suffix[i] = suffix[i + 1] + turns[i]
+    best_k = -1
+    for k in range(0, T + 1):
+        head = 0 if k == 0 else C
+        if head + suffix[k] <= budget:
+            best_k = k
+            break
+    if best_k == -1:
+        print("IMPOSSIBLE")
+        return
+    head = 0 if best_k == 0 else C
+    size = head + suffix[best_k]
+    print(best_k)
+    print(size)
+    print(budget - size)
+
+main()
 `,
       challenge_test_cases: [
-        { input: "window=4000, system=300, message=100, reserved=800", expected_output: "room for history: 2800", description: "4000 - 300 - 100 - 800 = 2800 tokens left for history." }
+        { input: "4000 300 100 800 50 4\n900 800 700 600", expected_output: "1\n2150\n650", description: "Summarizing only the oldest turn is enough to fit." },
+        { input: "2000 200 100 500 30 5\n400 400 400 400 400", expected_output: "3\n830\n370", description: "Three oldest turns must collapse into the summary." },
+        { input: "1000 100 50 200 999 2\n900 900", expected_output: "IMPOSSIBLE", description: "Even summarizing everything (cost 999) exceeds the 650 budget." },
+        { input: "5000 100 100 100 40 3\n200 200 200", expected_output: "0\n600\n4100", description: "Everything already fits verbatim, so k=0 and no summary is needed." }
       ]
     }
   ]

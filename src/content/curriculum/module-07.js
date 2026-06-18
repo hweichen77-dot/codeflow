@@ -238,25 +238,93 @@ With context: Based on the document, Q3 revenue was $4.2 million.`,
         "grounded_answer should look inside the context string before answering, and fall back to 'I don't have that information.' if the fact isn't there.",
         "Pass docs['doc1'] (the relevant doc) as the context to grounded_answer."
       ],
-      challenge_title: "Build a grounding checker",
-      challenge_description: "Write is_grounded(answer, source_text) that returns True only if every number mentioned in the answer also appears in the source text. This is a simple way to catch hallucinated figures.",
-      challenge_starter_code: `def is_grounded(answer, source_text):
-    # TODO: pull out every word in 'answer' that contains a digit.
-    # Strip trailing punctuation/symbols, then confirm each appears in source_text.
-    # Return True only if all numbers are found.
-    pass
+      challenge_title: "The Hallucination Auditor",
+      challenge_description: "Audit a batch of model answers and flag every one whose numbers don't appear anywhere in the retrieved source.",
+      challenge_story: "You run trust-and-safety for a financial-research assistant. The LLM drafts answers from retrieved filings, but legal won't sign off until you can prove no answer invents a figure that isn't in its source. A made-up revenue number reads exactly as confidently as a real one, so a human can't eyeball thousands of them. Tonight you're building the nightly **grounding auditor**: it scans every answer, extracts the numeric tokens, and flags any answer that cites a number the source never mentioned.",
+      challenge_statement: "You are given a set of **source lines** (the retrieved context) followed by a batch of **answers**. A *numeric token* is any whitespace-separated token that contains at least one digit, after stripping the surrounding punctuation characters `.,!?$%:;()\"'` from both ends.\n\nAn answer is **grounded** if every numeric token it contains also appears as a numeric token somewhere in the source. An answer with no numeric tokens is trivially grounded.\n\nReport how many answers are grounded, then list the 1-based indices of the answers that are **not** grounded (in increasing order).",
+      challenge_input_format: "The first line contains an integer `S` — the number of source lines.\nThe next `S` lines are the source text.\nThe next line contains an integer `Q` — the number of answers.\nThe next `Q` lines are the answers, one per line.",
+      challenge_output_format: "Line 1: the number of grounded answers.\nLine 2: the 1-based indices of the ungrounded answers, space-separated, in increasing order — or the word `NONE` if every answer is grounded.",
+      challenge_constraints: [
+        "1 ≤ S ≤ 1000",
+        "1 ≤ Q ≤ 1000",
+        "Each line has at most 500 characters.",
+        "Tokens are compared as exact strings after stripping; `4.2` and `4.20` are different.",
+      ],
+      challenge_examples: [
+        { input: "2\nQ3 revenue of 4.2 million was reported in 2023.\nProfit reached 1.1 million dollars.\n3\nRevenue was 4.2 million.\nRevenue was 9.9 million.\nProfit hit 1.1 million in 2023.", output: "2\n2", explanation: "Answer 1 cites 4.2 (in source) → grounded. Answer 2 cites 9.9 (not in source) → flagged. Answer 3 cites 1.1 and 2023, both in source → grounded. Two grounded; answer 2 is flagged." },
+        { input: "1\nThe sky is blue.\n2\nThe sky is blue.\nThe value is 7.", output: "1\n2", explanation: "Answer 1 has no numbers → grounded. Answer 2 cites 7, absent from the source → flagged." },
+      ],
+      challenge_notes: "This is the real first line of defense in production RAG: cheap, deterministic checks that run on every answer before a human ever sees it. Strip punctuation with `token.strip(\".,!?$%:;()\\\"'\")` so `4.2.` and `4.2` compare equal. Build the set of source numeric tokens once, then test each answer against it.",
+      challenge_hints: [
+        "Read all source lines first and collect every numeric token into a set for O(1) lookups.",
+        "A token is numeric if `any(c.isdigit() for c in token)` after stripping punctuation.",
+        "An answer is flagged the moment one of its numeric tokens is missing from the source set.",
+        "If the flagged list is empty, print `NONE` on the second line.",
+      ],
+      challenge_starter_code: `import sys
+
+PUNCT = ".,!?$%:;()\\"'"
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    s = int(data[idx].strip()); idx += 1
+    source_tokens = set()
+    # TODO: read S source lines, collect numeric tokens into source_tokens.
+
+    q = int(data[idx].strip()); idx += 1
+    grounded = 0
+    flagged = []
+    # TODO: for each answer, flag it if any numeric token is missing from source_tokens.
+
+    print(grounded)
+    print(" ".join(map(str, flagged)) if flagged else "NONE")
+
+main()
 `,
-      challenge_solution_code: `def is_grounded(answer, source_text):
-    numbers = [w for w in answer.split() if any(c.isdigit() for c in w)]
-    for n in numbers:
-        cleaned = n.strip(".,!?$%")
-        if cleaned and cleaned not in source_text:
-            return False
-    return True
+      challenge_solution_code: `import sys
+
+PUNCT = ".,!?$%:;()\\"'"
+
+def numeric_tokens(line):
+    out = []
+    for w in line.split():
+        cleaned = w.strip(PUNCT)
+        if cleaned and any(c.isdigit() for c in cleaned):
+            out.append(cleaned)
+    return out
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    s = int(data[idx].strip()); idx += 1
+    source_tokens = set()
+    for _ in range(s):
+        line = data[idx]; idx += 1
+        for t in numeric_tokens(line):
+            source_tokens.add(t)
+
+    q = int(data[idx].strip()); idx += 1
+    grounded = 0
+    flagged = []
+    for i in range(1, q + 1):
+        line = data[idx]; idx += 1
+        ok = all(t in source_tokens for t in numeric_tokens(line))
+        if ok:
+            grounded += 1
+        else:
+            flagged.append(i)
+
+    print(grounded)
+    print(" ".join(map(str, flagged)) if flagged else "NONE")
+
+main()
 `,
       challenge_test_cases: [
-        { input: 'is_grounded("Revenue was 4.2 million.", "Q3 revenue of 4.2 million reported")', expected_output: "True", description: "The number 4.2 appears in the source, so the answer is grounded." },
-        { input: 'is_grounded("Revenue was 9.9 million.", "Q3 revenue of 4.2 million reported")', expected_output: "False", description: "9.9 is not in the source — likely hallucinated." }
+        { input: "2\nQ3 revenue of 4.2 million was reported in 2023.\nProfit reached 1.1 million dollars.\n3\nRevenue was 4.2 million.\nRevenue was 9.9 million.\nProfit hit 1.1 million in 2023.", expected_output: "2\n2", description: "Example 1: answer 2 hallucinates 9.9; the rest are grounded." },
+        { input: "1\nThe sky is blue.\n2\nThe sky is blue.\nThe value is 7.", expected_output: "1\n2", description: "Example 2: no-number answer is grounded; the 7 answer is flagged." },
+        { input: "1\nWe sold 500 units at 9 dollars each in 2024.\n1\nWe sold 500 units.", expected_output: "1\nNONE", description: "Edge case: every cited number appears in the source, so NONE are flagged." },
+        { input: "1\nTotal was 4.2 million.\n2\nIt was 4.2 million.\nIt was 4.20 million.", expected_output: "1\n2", description: "Edge case: 4.20 is a different string token than 4.2, so it is flagged." }
       ]
     },
     {
@@ -492,32 +560,76 @@ Chunks created: 4
         "step = size - overlap. Loop start over range(0, len(words), step) and slice words[start:start+size].",
         "Break out of the loop once start + size reaches or passes the end, so you don't emit empty trailing chunks."
       ],
-      challenge_title: "Chunk on sentence boundaries",
-      challenge_description: "Write chunk_by_sentences(text, max_chars) that splits text into sentences (on '.') and greedily packs them into chunks, never exceeding max_chars. This keeps whole sentences together instead of slicing mid-thought.",
-      challenge_starter_code: `def chunk_by_sentences(text, max_chars):
-    # TODO: split text on '.' into sentences (drop empties, re-add the period).
-    # Greedily add sentences to the current chunk until adding one more would
-    # exceed max_chars, then start a new chunk. Return the list of chunks.
-    pass
+      challenge_title: "The Sentence-Safe Chunker",
+      challenge_description: "Pack a document into the fewest chunks possible without ever splitting a sentence across a chunk boundary.",
+      challenge_story: "Your RAG ingestion pipeline keeps retrieving garbage. The culprit: a naive fixed-width chunker that guillotines sentences mid-thought, so half a fact lands in one chunk and half in another — and neither matches the query. You're rewriting the chunker to respect **sentence boundaries**. It splits the document on periods, then greedily packs whole sentences into each chunk up to a character budget, so every chunk is a clean set of complete sentences. Fewer, cleaner chunks mean sharper retrieval.",
+      challenge_statement: "You are given a character budget `max_chars` and a single line of `text`. Split the text into sentences by splitting on `.`, dropping empty pieces, trimming surrounding whitespace, and re-attaching a single `.` to each sentence.\n\nGreedily build chunks: start a new chunk with the first sentence; for each following sentence, append it to the current chunk (joined by a single space) **only if** the resulting chunk length would be `≤ max_chars`; otherwise close the current chunk and start a new one with that sentence.\n\nA single sentence longer than `max_chars` becomes its own chunk on its own (it cannot be split further).\n\nReport the number of chunks, then each chunk prefixed by its character length.",
+      challenge_input_format: "Line 1: an integer `max_chars`.\nLine 2: the document text on a single line.",
+      challenge_output_format: "Line 1: the number of chunks `C`.\nThe next `C` lines each describe one chunk in order, formatted as `LEN|CHUNK` where `LEN` is the chunk's character length and `CHUNK` is the chunk text.",
+      challenge_constraints: [
+        "1 ≤ max_chars ≤ 2000",
+        "The text line has at most 5000 characters.",
+        "Sentences are separated by `.`; there is no other terminator.",
+        "Chunk length is measured after joining sentences with single spaces.",
+      ],
+      challenge_examples: [
+        { input: "40\nFirst fact here. Second fact here. Third fact here. Fourth fact.", output: "2\n34|First fact here. Second fact here.\n29|Third fact here. Fourth fact.", explanation: "\"First... Second...\" is 34 chars (≤40). Adding \"Third fact here.\" would exceed 40, so a new chunk starts. The last two sentences fit in 29 chars." },
+        { input: "10\nThis one sentence is quite long indeed.", output: "1\n39|This one sentence is quite long indeed.", explanation: "The single sentence is 39 chars, longer than the 10-char budget, so it stands alone as its own chunk." },
+      ],
+      challenge_notes: "Real chunkers add 10–20% overlap between chunks as insurance against facts split across boundaries; here we keep it boundary-aligned for a clean, deterministic result. Watch the join math: a chunk of length `len(current)` plus a space plus the next sentence costs `len(current) + 1 + len(s)` characters.",
+      challenge_hints: [
+        "Build sentences with `[p.strip() + '.' for p in text.split('.') if p.strip()]`.",
+        "Track `current` as a string; when empty, the first sentence always starts it (even if oversized).",
+        "Only append when `len(current) + 1 + len(s) <= max_chars`; otherwise flush `current` and reset.",
+        "Don't forget to flush the final non-empty `current` after the loop.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    max_chars = int(data[0].strip())
+    text = data[1] if len(data) > 1 else ""
+    sentences = [p.strip() + "." for p in text.split(".") if p.strip()]
+    chunks = []
+    current = ""
+    # TODO: greedily pack whole sentences into chunks of length <= max_chars.
+
+    print(len(chunks))
+    for c in chunks:
+        print(f"{len(c)}|{c}")
+
+main()
 `,
-      challenge_solution_code: `def chunk_by_sentences(text, max_chars):
-    sentences = [s.strip() for s in text.split(".") if s.strip()]
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    max_chars = int(data[0].strip())
+    text = data[1] if len(data) > 1 else ""
+    sentences = [p.strip() + "." for p in text.split(".") if p.strip()]
     chunks = []
     current = ""
     for s in sentences:
-        s = s + "."
-        if len(current) + len(s) + 1 <= max_chars:
-            current = (current + " " + s).strip()
+        if current == "":
+            current = s
+        elif len(current) + 1 + len(s) <= max_chars:
+            current = current + " " + s
         else:
-            if current:
-                chunks.append(current)
+            chunks.append(current)
             current = s
     if current:
         chunks.append(current)
-    return chunks
+
+    print(len(chunks))
+    for c in chunks:
+        print(f"{len(c)}|{c}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: 'chunk_by_sentences("First fact here. Second fact here. Third fact here. Fourth fact.", 40)', expected_output: "['First fact here. Second fact here.', 'Third fact here. Fourth fact.']", description: "Sentences pack into chunks under 40 chars without splitting any sentence." }
+        { input: "40\nFirst fact here. Second fact here. Third fact here. Fourth fact.", expected_output: "2\n34|First fact here. Second fact here.\n29|Third fact here. Fourth fact.", description: "Example 1: four sentences pack into two 40-char-bounded chunks." },
+        { input: "10\nThis one sentence is quite long indeed.", expected_output: "1\n39|This one sentence is quite long indeed.", description: "Example 2: an oversized single sentence becomes its own chunk." },
+        { input: "50\nOnly one.", expected_output: "1\n9|Only one.", description: "Edge case: a single short sentence produces exactly one chunk." }
       ]
     },
     {
@@ -773,40 +885,85 @@ Best match: doc1`,
         "Build a vectors dict once by embedding every doc, then embed the query separately.",
         "Sort scores.items() by the score with key=lambda x: x[1] and reverse=True to rank highest first."
       ],
-      challenge_title: "Return the top-k matches",
-      challenge_description: "Write top_k(query_vec, vectors, k) that returns the IDs of the k most similar vectors, highest similarity first. Reuse cosine_similarity. This is the core retrieval call your RAG system makes.",
-      challenge_starter_code: `import math
+      challenge_title: "The Vector-Store Retriever",
+      challenge_description: "Embed a query and pull the k nearest document vectors by cosine similarity — the core retrieval call of every RAG system.",
+      challenge_story: "You're building the retrieval engine at the heart of your RAG stack. Every document chunk has already been turned into an embedding vector and stored in a vector store. When a question arrives, you embed it too, then find the chunks whose vectors point in the most similar *direction* — because in embedding space, direction means meaning. Cosine similarity is your ruler. Ship the function that, given the query vector and the store, returns the top-k chunk IDs to stuff into the prompt.",
+      challenge_statement: "You are given `N` document vectors (each a `D`-dimensional list of floats with a string ID) and a single `D`-dimensional query vector. Score each document against the query with **cosine similarity**:\n\n`cos(a, b) = (a · b) / (||a|| · ||b||)`, where a vector with zero magnitude scores `0.0`.\n\nReturn the top `k` documents ranked by similarity, **highest first**. Break ties between equal scores by ID in ascending lexicographic order.",
+      challenge_input_format: "Line 1: three integers `N D k`.\nThe next `N` lines each contain a document: an ID token followed by `D` floats.\nThe final line contains `D` floats — the query vector.",
+      challenge_output_format: "`k` lines (or fewer if `N < k`). Each line is `ID SCORE`, where `SCORE` is the cosine similarity formatted to exactly 4 decimal places. Lines are ordered by descending score, ties broken by ascending ID.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 5000",
+        "1 ≤ D ≤ 256",
+        "1 ≤ k ≤ N",
+        "Vector components are floats in the range [-1000, 1000].",
+        "IDs are non-empty tokens with no spaces.",
+      ],
+      challenge_examples: [
+        { input: "3 2 2\na 1.0 0.0\nb 0.0 1.0\nc 1.0 1.0\n1.0 0.0", output: "a 1.0000\nc 0.7071", explanation: "`a` is identical to the query (cos = 1.0). `c` sits at 45° (cos ≈ 0.7071). `b` is perpendicular (0.0) and falls outside the top 2." },
+        { input: "3 2 2\nz 1.0 0.0\na 1.0 0.0\nb 0.0 1.0\n1.0 0.0", output: "a 1.0000\nz 1.0000", explanation: "Both `a` and `z` tie at cos = 1.0; the tie is broken by ascending ID, so `a` comes before `z`." },
+      ],
+      challenge_notes: "Cosine compares the *angle* between vectors, not their length — which is why a one-line query can perfectly match a long paragraph. Guard against zero-magnitude vectors (return 0.0) so you never divide by zero. Deterministic tie-breaking by ID keeps the output reproducible across runs.",
+      challenge_hints: [
+        "Compute dot product with `sum(x*y for x, y in zip(a, b))` and magnitude with `math.sqrt(sum(x*x for x in a))`.",
+        "If either magnitude is 0, the similarity is 0.0.",
+        "Sort with key `lambda t: (-t[1], t[0])` to get descending score then ascending ID.",
+        "Format each score with `f\"{score:.4f}\"`.",
+      ],
+      challenge_starter_code: `import sys, math
 
-def cosine_similarity(a, b):
+def cosine(a, b):
     dot = sum(x * y for x, y in zip(a, b))
-    mag_a = math.sqrt(sum(x * x for x in a))
-    mag_b = math.sqrt(sum(y * y for y in b))
-    if mag_a == 0 or mag_b == 0:
+    ma = math.sqrt(sum(x * x for x in a))
+    mb = math.sqrt(sum(y * y for y in b))
+    if ma == 0 or mb == 0:
         return 0.0
-    return dot / (mag_a * mag_b)
+    return dot / (ma * mb)
 
-def top_k(query_vec, vectors, k):
-    # TODO: score every (doc_id, vector) in 'vectors' against query_vec,
-    # sort by score descending, and return the first k doc_ids.
-    pass
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, d, k = map(int, data[idx].split()); idx += 1
+    docs = []
+    # TODO: read N documents (ID + D floats) and the query vector,
+    # score each doc, sort by (-score, ID), and print the top k as "ID SCORE".
+
+    print("")  # replace with your output loop
+
+main()
 `,
-      challenge_solution_code: `import math
+      challenge_solution_code: `import sys, math
 
-def cosine_similarity(a, b):
+def cosine(a, b):
     dot = sum(x * y for x, y in zip(a, b))
-    mag_a = math.sqrt(sum(x * x for x in a))
-    mag_b = math.sqrt(sum(y * y for y in b))
-    if mag_a == 0 or mag_b == 0:
+    ma = math.sqrt(sum(x * x for x in a))
+    mb = math.sqrt(sum(y * y for y in b))
+    if ma == 0 or mb == 0:
         return 0.0
-    return dot / (mag_a * mag_b)
+    return dot / (ma * mb)
 
-def top_k(query_vec, vectors, k):
-    scored = [(doc_id, cosine_similarity(query_vec, v)) for doc_id, v in vectors.items()]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return [doc_id for doc_id, _ in scored[:k]]
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, d, k = map(int, data[idx].split()); idx += 1
+    docs = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        doc_id = parts[0]
+        vec = list(map(float, parts[1:1 + d]))
+        docs.append((doc_id, vec))
+    query = list(map(float, data[idx].split()[:d])); idx += 1
+
+    scored = [(doc_id, cosine(query, v)) for doc_id, v in docs]
+    scored.sort(key=lambda t: (-t[1], t[0]))
+    for doc_id, score in scored[:k]:
+        print(f"{doc_id} {score:.4f}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: 'top_k([1.0, 0.0], {"a": [1.0, 0.0], "b": [0.0, 1.0], "c": [1.0, 1.0]}, 2)', expected_output: "['a', 'c']", description: "'a' is identical to the query (score 1.0); 'c' is at 45 degrees (~0.71); 'b' is perpendicular (0.0)." }
+        { input: "3 2 2\na 1.0 0.0\nb 0.0 1.0\nc 1.0 1.0\n1.0 0.0", expected_output: "a 1.0000\nc 0.7071", description: "Example 1: identical vector ranks first, 45° vector second." },
+        { input: "3 2 2\nz 1.0 0.0\na 1.0 0.0\nb 0.0 1.0\n1.0 0.0", expected_output: "a 1.0000\nz 1.0000", description: "Example 2: tied scores broken by ascending ID." },
+        { input: "2 2 1\na 1.0 0.0\nb 0.0 1.0\n0.0 0.0", expected_output: "a 0.0000", description: "Edge case: a zero-magnitude query scores every doc 0.0; tie broken by ID picks 'a'." }
       ]
     },
     {
@@ -1080,25 +1237,94 @@ Question: How long do I have to return something for a refund?`,
         "build_prompt joins the chunk texts into a labeled 'Context:' block, then appends 'Question:' on its own line.",
         "Include both the 'use ONLY the context' constraint and the 'say you don't know' fallback in the prompt string."
       ],
-      challenge_title: "Build the messages array",
-      challenge_description: "Write build_messages(query, context_chunks) that returns a messages list (the Anthropic Messages API shape) with a single user message embedding the context and question. This is what you'll pass straight into the API next lesson.",
-      challenge_starter_code: `def build_messages(query, context_chunks):
-    # TODO: join context_chunks with blank lines, then build a user message that
-    # contains a 'Context:' block, the 'Question:' line, and an instruction to
-    # answer only from the context. Return [{"role": "user", "content": ...}].
-    pass
+      challenge_title: "Assemble the RAG Pipeline",
+      challenge_description: "Wire retrieval to prompt: embed the query, pull the top-k chunks, and stuff them into a grounded user message ready for the model.",
+      challenge_story: "Retrieval and chunking are done; now you connect them. You're the engineer who owns the **pipeline glue** — the step that turns a raw question into a model-ready prompt. The query gets embedded, the vector store returns its closest chunks, and you stitch those chunks into a single grounded message: context up top, the question below, and a firm instruction to answer *only* from what's provided. Get this assembly exactly right and the model stops hallucinating; get it sloppy and even perfect retrieval is wasted.",
+      challenge_statement: "Build the full retrieve-then-prompt step. You are given `N` chunks — each with an ID, a `D`-dimensional embedding, and its text — plus a question and its query embedding.\n\n1. Rank the chunks by **cosine similarity** to the query (zero magnitude → 0.0), highest first, ties broken by ascending ID.\n2. Take the top `k` chunk IDs **in ranked order**.\n3. Join those chunks' texts (in ranked order) with a blank line between them to form the context block.\n4. Build a single user message with this exact body:\n\n```\nContext:\n<context>\n\nQuestion: <query>\n\nAnswer using only the context above. If the answer is not in the context, say \"I don't know.\"\n```",
+      challenge_input_format: "Line 1: three integers `N D k`.\nThen `N` chunk blocks, each spanning 3 lines: the ID, then `D` floats, then the chunk text.\nNext line: the question text.\nFinal line: `D` floats — the query embedding.",
+      challenge_output_format: "Line 1: the number of chunks selected `C` (= min(k, N)).\nLine 2: the selected chunk IDs in ranked order, space-separated.\nLine 3: `CHARS ` followed by the integer character length of the assembled user-message content.\nLine 4: a literal `---` separator.\nThe remaining lines: the full assembled user-message content.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "1 ≤ D ≤ 256",
+        "1 ≤ k ≤ N",
+        "Chunk texts and the question are single lines up to 1000 characters.",
+        "The context joins selected chunks with a single blank line (`\\n\\n`).",
+      ],
+      challenge_examples: [
+        { input: "3 2 2\nc1\n1.0 0.0\nParis is the capital of France.\nc2\n0.0 1.0\nThe Eiffel Tower is in Paris.\nc3\n0.9 0.1\nFrance is in Europe.\nWhat is the capital of France?\n1.0 0.0", output: "2\nc1 c3\nCHARS 199\n---\nContext:\nParis is the capital of France.\n\nFrance is in Europe.\n\nQuestion: What is the capital of France?\n\nAnswer using only the context above. If the answer is not in the context, say \"I don't know.\"", explanation: "c1 (cos 1.0) and c3 (cos ≈ 0.995) rank above c2 (cos 0.0). Their texts are joined with a blank line; the final message is 199 characters." },
+      ],
+      challenge_notes: "The 'answer only from the context, else say I don't know' instruction is the safety valve of RAG — without an explicit out, the model invents an answer whenever retrieval misses. Reuse your cosine-similarity ranking from the previous lesson; the only new work is assembling the prompt string exactly.",
+      challenge_hints: [
+        "Parse each chunk block as three consecutive lines: ID, vector, text.",
+        "Rank with key `lambda t: (-score, id)` and slice the first k.",
+        "Join the selected texts in ranked order with `\"\\n\\n\".join(...)`.",
+        "Build the content with an f-string, then print its `len(...)` after the `CHARS ` prefix.",
+      ],
+      challenge_starter_code: `import sys, math
+
+def cosine(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    ma = math.sqrt(sum(x * x for x in a))
+    mb = math.sqrt(sum(y * y for y in b))
+    if ma == 0 or mb == 0:
+        return 0.0
+    return dot / (ma * mb)
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, d, k = map(int, data[idx].split()); idx += 1
+    vecs, texts = {}, {}
+    # TODO: read N chunk blocks (ID, vector, text), then the question and query vector.
+    # Rank by cosine, take top-k IDs in order, join their texts, build the user message.
+
+main()
 `,
-      challenge_solution_code: `def build_messages(query, context_chunks):
-    context = "\\n\\n".join(context_chunks)
-    user_content = (
+      challenge_solution_code: `import sys, math
+
+def cosine(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    ma = math.sqrt(sum(x * x for x in a))
+    mb = math.sqrt(sum(y * y for y in b))
+    if ma == 0 or mb == 0:
+        return 0.0
+    return dot / (ma * mb)
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, d, k = map(int, data[idx].split()); idx += 1
+    vecs, texts = {}, {}
+    for _ in range(n):
+        cid = data[idx].strip(); idx += 1
+        vecs[cid] = list(map(float, data[idx].split()[:d])); idx += 1
+        texts[cid] = data[idx]; idx += 1
+    query = data[idx]; idx += 1
+    qvec = list(map(float, data[idx].split()[:d])); idx += 1
+
+    scored = [(cid, cosine(qvec, vecs[cid])) for cid in vecs]
+    scored.sort(key=lambda t: (-t[1], t[0]))
+    top = [cid for cid, _ in scored[:k]]
+
+    context = "\\n\\n".join(texts[cid] for cid in top)
+    content = (
         f"Context:\\n{context}\\n\\n"
         f"Question: {query}\\n\\n"
-        "Answer using only the context above."
+        "Answer using only the context above. "
+        "If the answer is not in the context, say \\"I don't know.\\""
     )
-    return [{"role": "user", "content": user_content}]
+
+    print(len(top))
+    print(" ".join(top))
+    print(f"CHARS {len(content)}")
+    print("---")
+    print(content)
+
+main()
 `,
       challenge_test_cases: [
-        { input: 'build_messages("What is the capital?", ["France\'s capital is Paris."])[0]["role"]', expected_output: "user", description: "The single message uses the 'user' role expected by the Messages API." }
+        { input: "3 2 2\nc1\n1.0 0.0\nParis is the capital of France.\nc2\n0.0 1.0\nThe Eiffel Tower is in Paris.\nc3\n0.9 0.1\nFrance is in Europe.\nWhat is the capital of France?\n1.0 0.0", expected_output: "2\nc1 c3\nCHARS 199\n---\nContext:\nParis is the capital of France.\n\nFrance is in Europe.\n\nQuestion: What is the capital of France?\n\nAnswer using only the context above. If the answer is not in the context, say \"I don't know.\"", description: "Example 1: top-2 chunks assembled into the grounded user message." },
+        { input: "1 1 1\nonly\n5.0\nThe Moon orbits the Earth.\nWhat orbits the Earth?\n2.0", expected_output: "1\nonly\nCHARS 164\n---\nContext:\nThe Moon orbits the Earth.\n\nQuestion: What orbits the Earth?\n\nAnswer using only the context above. If the answer is not in the context, say \"I don't know.\"", description: "Edge case: a single chunk store still assembles a complete grounded message." }
       ]
     },
     {
@@ -1396,33 +1622,83 @@ Answer from the context only.`,
         "Build the request as a dict with model, max_tokens, and messages so you can either return it or splat it into client.messages.create(**request).",
         "When client is None, return the request dict; otherwise read msg.content[0].text after the API call."
       ],
-      challenge_title: "Add a grounded system prompt",
-      challenge_description: "Write make_rag_request(query, chunks, model='claude-sonnet-4-6') that returns a Messages API request dict using a system prompt for the grounding rules and a user message for the context + question.",
-      challenge_starter_code: `def make_rag_request(query, chunks, model="claude-sonnet-4-6"):
-    # TODO: join chunks into a context block.
-    # Put the grounding rules ('answer only from context; else say I don't know')
-    # in a 'system' field. Put the context + question in a single user message.
-    # Return a dict with model, max_tokens=512, system, and messages.
-    pass
+      challenge_title: "Wire the Grounded Claude Request",
+      challenge_description: "Build the exact Messages API request your RAG service sends to Claude: grounding rules in the system prompt, context and question in the user message.",
+      challenge_story: "Your RAG service is one function away from production. Retrieval works; chunking works; now you have to hand the model a request it can't go off the rails with. The trick the team learned the hard way: put the *unchanging rules* (\"answer only from context; if it's not there, say so\") in the **system** prompt, and the *changing part* (these chunks, this question) in the **user** message. Keep them apart and Claude follows the rules far more reliably. Assemble that request — model, token cap, system, messages — and emit a deterministic fingerprint of it for your request-logging audit.",
+      challenge_statement: "Construct an Anthropic Messages API request dict for one grounded RAG call.\n\nGiven `N` context chunks, a `max_tokens` budget, a `model` name, and a question, build:\n\n- `model`: the given model name.\n- `max_tokens`: the given integer.\n- `system`: exactly `You are a Q&A assistant. Answer only from the provided context. If the context lacks the answer, reply exactly: I don't know.`\n- `messages`: a single-element list `[{\"role\": \"user\", \"content\": <user>}]` where `<user>` is `Context:\\n<context>\\n\\nQuestion: <query>` and `<context>` is the chunks joined by single newlines.\n\nThen print a fingerprint of the request so it can be logged deterministically.",
+      challenge_input_format: "Line 1: two integers `N max_tokens`.\nLine 2: the `model` name.\nThe next `N` lines: the context chunks, one per line.\nThe final line: the question.",
+      challenge_output_format: "Print exactly five lines describing the request:\nLine 1: the model name.\nLine 2: max_tokens.\nLine 3: the character length of the system prompt.\nLine 4: the role of the only message (always `user`).\nLine 5: the character length of that message's content.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 1000",
+        "1 ≤ max_tokens ≤ 100000",
+        "The model name is a non-empty token without spaces.",
+        "Chunks and the question are single lines up to 1000 characters.",
+        "The system prompt text is fixed and must match exactly.",
+      ],
+      challenge_examples: [
+        { input: "2 512\nclaude-sonnet-4-6\nAcme was founded by Dale in 1999.\nAcme makes rockets.\nWho founded Acme?", output: "claude-sonnet-4-6\n512\n125\nuser\n91", explanation: "model and max_tokens echo the input. The fixed system prompt is 125 chars. The single user message (Context + both chunks + Question) is 91 chars." },
+        { input: "1 256\nclaude-opus-4-1\nThe Moon orbits Earth.\nWhat orbits Earth?", output: "claude-opus-4-1\n256\n125\nuser\n61", explanation: "A different model and token cap pass through; the system length stays 125; the shorter context yields a 61-char user message." },
+      ],
+      challenge_notes: "The system prompt is the contract; the user message is the payload. Hardcoding the rules in `system` (not in the user turn) is what makes the model reliably refuse to speculate. In real code you'd read `os.environ['ANTHROPIC_API_KEY']` and never hardcode it — but this exercise stays offline and just builds the request, so no key or network is involved.",
+      challenge_hints: [
+        "Join the chunks with `\"\\n\".join(chunks)` to form the context.",
+        "The system prompt is a fixed string — copy it exactly, including the period after `I don't know`.",
+        "The user content is `f\"Context:\\n{context}\\n\\nQuestion: {query}\"`.",
+        "Print `len(system)` and `len(content)` to fingerprint the request deterministically.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, max_tokens = map(int, data[idx].split()); idx += 1
+    model = data[idx].strip(); idx += 1
+    chunks = []
+    for _ in range(n):
+        chunks.append(data[idx]); idx += 1
+    query = data[idx]; idx += 1
+    # TODO: build the request dict (model, max_tokens, system, messages)
+    # and print the five-line fingerprint.
+
+main()
 `,
-      challenge_solution_code: `def make_rag_request(query, chunks, model="claude-sonnet-4-6"):
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, max_tokens = map(int, data[idx].split()); idx += 1
+    model = data[idx].strip(); idx += 1
+    chunks = []
+    for _ in range(n):
+        chunks.append(data[idx]); idx += 1
+    query = data[idx]; idx += 1
+
     context = "\\n".join(chunks)
     system = (
         "You are a Q&A assistant. Answer only from the provided context. "
         "If the context lacks the answer, reply exactly: I don't know."
     )
-    return {
+    request = {
         "model": model,
-        "max_tokens": 512,
+        "max_tokens": max_tokens,
         "system": system,
         "messages": [
             {"role": "user", "content": f"Context:\\n{context}\\n\\nQuestion: {query}"}
         ],
     }
+
+    print(request["model"])
+    print(request["max_tokens"])
+    print(len(request["system"]))
+    print(request["messages"][0]["role"])
+    print(len(request["messages"][0]["content"]))
+
+main()
 `,
       challenge_test_cases: [
-        { input: 'make_rag_request("Who founded it?", ["Acme was founded by Dale in 1999."])["model"]', expected_output: "claude-sonnet-4-6", description: "The request defaults to the claude-sonnet-4-6 model." },
-        { input: 'make_rag_request("Who founded it?", ["Acme was founded by Dale in 1999."])["max_tokens"]', expected_output: "512", description: "max_tokens is set to 512 for these scoped Q&A answers." }
+        { input: "2 512\nclaude-sonnet-4-6\nAcme was founded by Dale in 1999.\nAcme makes rockets.\nWho founded Acme?", expected_output: "claude-sonnet-4-6\n512\n125\nuser\n91", description: "Example 1: a two-chunk grounded request fingerprint." },
+        { input: "1 256\nclaude-opus-4-1\nThe Moon orbits Earth.\nWhat orbits Earth?", expected_output: "claude-opus-4-1\n256\n125\nuser\n61", description: "Example 2: a different model and token cap pass through; system length is constant." }
       ]
     }
   ]

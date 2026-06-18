@@ -244,43 +244,80 @@ score: 0.9988`,
         "Sort the list by the score in descending order so the most similar is first.",
         "The first element after sorting is the closest; print its index and rounded score."
       ],
-      challenge_title: "Top-k search",
-      challenge_description: "Write a function top_k(query, vectors, k) that returns a list of (index, score) pairs for the k most similar vectors, sorted by descending cosine similarity. Use the provided cosine function and print the result for k=2.",
-      challenge_starter_code: `import numpy as np
+      challenge_title: "Top-k Semantic Search",
+      challenge_description: "Build the brute-force nearest-neighbor core of a vector database: embed everything, score by cosine similarity, return the closest k.",
+      challenge_story: "You're shipping the retrieval layer for an AI documentation assistant. Every help article has already been turned into an **embedding** — a vector of floats that captures its meaning. When a user types a question, your embedding model turns it into a **query vector**, and your job is to find the \`k\` stored vectors whose meaning is closest. The industry-standard distance for normalized text embeddings is **cosine similarity**: the cosine of the angle between two vectors, where 1.0 means identical direction. Before you reach for a fancy ANN index, you ship the honest baseline — score the query against every vector and keep the best.",
+      challenge_statement: "You are given a query vector and \`n\` document vectors, all of dimension \`d\`. Return the **top \`k\`** documents by **cosine similarity** to the query.\n\nCosine similarity between vectors \`a\` and \`b\` is:\n\n\`\`\`\ncos(a, b) = dot(a, b) / (||a|| * ||b||)\n\`\`\`\n\nwhere \`||v||\` is the Euclidean norm. If either vector has zero norm, treat its similarity as \`0.0000\`.\n\nRank documents by similarity **descending**. If two documents tie on similarity (rounded to 4 decimals), the one with the **smaller index** comes first. Print the top \`k\`.",
+      challenge_input_format: "The first line has three integers `n d k`: the number of document vectors, the dimension, and how many results to return.\n\nThe second line has `d` space-separated floats: the query vector.\n\nEach of the next `n` lines has `d` space-separated floats: one document vector. Documents are indexed `0` to `n-1` in the order given.",
+      challenge_output_format: "Print `k` lines. Each line is the document index and its cosine similarity, space-separated, with the similarity formatted to exactly 4 decimal places (e.g. `0 0.9939`).",
+      challenge_constraints: [
+        "1 ≤ k ≤ n ≤ 5000",
+        "1 ≤ d ≤ 256",
+        "Each coordinate is a float with magnitude ≤ 1000.",
+        "Compare on similarity rounded to 4 decimals; break ties by smaller index.",
+      ],
+      challenge_examples: [
+        { input: "3 2 2\n0.9 0.1\n1.0 0.0\n0.0 1.0\n0.8 0.2", output: "0 0.9939\n2 0.9910", explanation: "The query points mostly along the first axis. Document 0 ([1,0]) is closest (cos 0.9939), then document 2 ([0.8,0.2]) at 0.9910. Document 1 ([0,1]) is nearly orthogonal and drops out." },
+        { input: "4 3 3\n1 2 3\n2 4 6\n1 0 0\n3 2 1\n0 0 5", output: "0 1.0000\n3 0.8018\n2 0.7143", explanation: "Document 0 is an exact scalar multiple of the query, so cosine is 1.0000. The others rank by angle." },
+      ],
+      challenge_notes: "This is the *exact* search a vector DB approximates. It is O(n·d) per query — perfect for thousands of vectors, hopeless at billions, which is exactly why ANN indexes (the next lesson) exist. Cosine ignores magnitude and only compares direction, which is why a vector and its scalar multiple score 1.0.",
+      challenge_hints: [
+        "Compute the query norm once, then loop over documents computing each dot product and norm.",
+        "Guard against a zero norm before dividing — return 0.0 for that document instead of crashing.",
+        "Sort by a key of `(-similarity, index)` so highest similarity wins and ties fall back to the smaller index.",
+      ],
+      challenge_starter_code: `import sys
 
-vectors = [
-    np.array([1.0, 0.0]),
-    np.array([0.0, 1.0]),
-    np.array([0.8, 0.2]),
-]
-query = np.array([0.9, 0.1])
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, d, k = map(int, data[0].split())
+    query = list(map(float, data[1].split()))
+    # TODO: read the n document vectors, score each by cosine similarity
+    #       to the query, then print the top k as "index score" (4 decimals).
 
-def cosine(a, b):
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-# TODO: define top_k(query, vectors, k) and print top_k(query, vectors, 2).
+main()
 `,
-      challenge_solution_code: `import numpy as np
+      challenge_solution_code: `import sys
 
-vectors = [
-    np.array([1.0, 0.0]),
-    np.array([0.0, 1.0]),
-    np.array([0.8, 0.2]),
-]
-query = np.array([0.9, 0.1])
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, d, k = map(int, data[idx].split())
+    idx += 1
+    query = list(map(float, data[idx].split()))
+    idx += 1
+    vectors = []
+    for _ in range(n):
+        vectors.append(list(map(float, data[idx].split())))
+        idx += 1
 
-def cosine(a, b):
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+    def dot(a, b):
+        return sum(x * y for x, y in zip(a, b))
 
-def top_k(query, vectors, k):
-    scored = [(i, round(float(cosine(query, v)), 4)) for i, v in enumerate(vectors)]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return scored[:k]
+    def norm(a):
+        return sum(x * x for x in a) ** 0.5
 
-print(top_k(query, vectors, 2))
+    qn = norm(query)
+    scored = []
+    for i, v in enumerate(vectors):
+        vn = norm(v)
+        if qn == 0 or vn == 0:
+            sim = 0.0
+        else:
+            sim = dot(query, v) / (qn * vn)
+        scored.append((i, sim))
+
+    scored.sort(key=lambda x: (-round(x[1], 4), x[0]))
+    for i, sim in scored[:k]:
+        print(f"{i} {sim:.4f}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "query=[0.9,0.1], k=2", expected_output: "[(0, 0.9939), (2, 0.991)]", description: "Returns the two most similar vector indices with rounded cosine scores, most similar first." }
+        { input: "3 2 2\n0.9 0.1\n1.0 0.0\n0.0 1.0\n0.8 0.2", expected_output: "0 0.9939\n2 0.9910", description: "Two closest vectors to a query along the first axis, most similar first." },
+        { input: "4 3 3\n1 2 3\n2 4 6\n1 0 0\n3 2 1\n0 0 5", expected_output: "0 1.0000\n3 0.8018\n2 0.7143", description: "A scalar multiple of the query scores exactly 1.0000." },
+        { input: "2 2 2\n1.0 0.0\n1.0 0.0\n2.0 0.0", expected_output: "0 1.0000\n1 1.0000", description: "Tie on similarity is broken by the smaller index." },
+        { input: "2 2 1\n0.0 0.0\n1.0 1.0\n2.0 2.0", expected_output: "0 0.0000", description: "A zero-norm query yields similarity 0.0000 for every document." }
       ]
     },
     {
@@ -511,23 +548,69 @@ exact best score: 0.974`,
         "Unpack the tuple into best_index and best_score.",
         "Round the score to 4 decimal places when you print it."
       ],
-      challenge_title: "Measure recall@k",
-      challenge_description: "Write a function recall_at_k(exact, approx) that returns the fraction of items in the exact list that also appear in the approx list. Both are lists of ids of equal length. Print recall for exact=[3,7,9,2,5] and approx=[3,7,9,2,8].",
-      challenge_starter_code: `exact = [3, 7, 9, 2, 5]
-approx = [3, 7, 9, 2, 8]
-# TODO: define recall_at_k(exact, approx) returning the overlap fraction, and print it.
+      challenge_title: "Recall@k Benchmark",
+      challenge_description: "Your ANN index is fast but lossy. Measure how many true neighbors it still finds by computing recall@k across a whole query benchmark.",
+      challenge_story: "You swapped your slow brute-force search for a blazing-fast **approximate nearest neighbor (ANN)** index. It is 50x faster — but approximate, so it sometimes misses a true neighbor. Before you ship it, the eval harness must answer one question: *how much accuracy did we trade away?* The standard metric is **recall@k**: for each query, what fraction of the ground-truth top-k neighbors did the index actually return? You run a benchmark of many queries and report both the per-query recall and the **mean recall@k** across the whole set — the single number that decides whether the speedup is worth it.",
+      challenge_statement: "You run \`q\` benchmark queries with parameter \`k\`. For each query you have:\n\n- the **exact** top-k neighbor ids (ground truth, from brute-force search), and\n- the **approx** top-k neighbor ids returned by the ANN index.\n\nFor each query, **recall@k** is:\n\n\`\`\`\n(number of exact ids that also appear in approx) / k\n\`\`\`\n\nUse only the **first k** ids of each list if extras are present. Treat the ids as a set (ignore order and duplicates).\n\nPrint each query's recall@k in order, then print the **mean** recall@k over all \`q\` queries. Every value is formatted to exactly 4 decimal places.",
+      challenge_input_format: "The first line has two integers `q k`: the number of queries and the cutoff k.\n\nThen each query takes two lines: the first line is the exact top-k neighbor ids (space-separated), the second is the approx top-k neighbor ids (space-separated).",
+      challenge_output_format: "Print `q + 1` lines. The first `q` lines are the per-query recall@k values in input order, each to 4 decimal places. The final line is the mean recall@k over all queries, also to 4 decimal places.",
+      challenge_constraints: [
+        "1 ≤ q ≤ 10000",
+        "1 ≤ k ≤ 1000",
+        "Neighbor ids are integers; within one list they are distinct.",
+        "Each list contains at least k ids.",
+      ],
+      challenge_examples: [
+        { input: "1 5\n3 7 9 2 5\n3 7 9 2 8", output: "0.8000\n0.8000", explanation: "Four of the five true neighbors (3, 7, 9, 2) appear in the approximate result; id 5 was missed and 8 is a false hit. Recall is 4/5 = 0.8000, and with one query the mean equals it." },
+        { input: "2 3\n10 11 12\n10 11 99\n5 6 7\n6 5 7", output: "0.6667\n1.0000\n0.8333", explanation: "Query 1 finds 2 of 3 (0.6667); query 2 finds all 3 regardless of order (1.0000). The mean is (0.6667 + 1.0000) / 2 = 0.8333." },
+      ],
+      challenge_notes: "Recall is set-based: order does not matter, only whether each true neighbor was retrieved. This is precisely the knob you tune when you raise \`efSearch\` in an HNSW index — more candidates explored means higher recall but slower queries. A mean recall@10 of 0.95 is a common production target.",
+      challenge_hints: [
+        "Convert each list's first k ids to a `set`, then intersect with `&` and take the length.",
+        "Accumulate a running total of recalls so you can divide by q at the end for the mean.",
+        "Format every number with an f-string like `f\"{value:.4f}\"` so 0.8 prints as 0.8000.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    q, k = map(int, data[0].split())
+    # TODO: for each of the q queries, read the exact ids then the approx ids,
+    #       compute recall@k = |exact & approx| / k, print each, then the mean.
+
+main()
 `,
-      challenge_solution_code: `exact = [3, 7, 9, 2, 5]
-approx = [3, 7, 9, 2, 8]
+      challenge_solution_code: `import sys
 
-def recall_at_k(exact, approx):
-    found = len(set(exact) & set(approx))
-    return found / len(exact)
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    q, k = map(int, data[idx].split())
+    idx += 1
+    total = 0.0
+    per_query = []
+    for _ in range(q):
+        exact = data[idx].split()
+        idx += 1
+        approx = data[idx].split()
+        idx += 1
+        exact_set = set(exact[:k])
+        approx_set = set(approx[:k])
+        found = len(exact_set & approx_set)
+        recall = found / k
+        per_query.append(recall)
+        total += recall
+    for r in per_query:
+        print(f"{r:.4f}")
+    print(f"{total / q:.4f}")
 
-print(recall_at_k(exact, approx))
+main()
 `,
       challenge_test_cases: [
-        { input: "exact=[3,7,9,2,5], approx=[3,7,9,2,8]", expected_output: "0.8", description: "Four of five true neighbors are found, so recall@5 is 0.8." }
+        { input: "1 5\n3 7 9 2 5\n3 7 9 2 8", expected_output: "0.8000\n0.8000", description: "Single query: 4 of 5 true neighbors found, mean equals the per-query recall." },
+        { input: "2 3\n10 11 12\n10 11 99\n5 6 7\n6 5 7", expected_output: "0.6667\n1.0000\n0.8333", description: "Two queries; order does not affect recall; mean is averaged." },
+        { input: "1 4\n1 2 3 4\n4 3 2 1", expected_output: "1.0000\n1.0000", description: "Perfect recall even though the approximate order is reversed." },
+        { input: "1 3\n1 2 3\n4 5 6", expected_output: "0.0000\n0.0000", description: "No overlap at all gives recall 0.0000." }
       ]
     },
     {
@@ -751,34 +834,85 @@ for d in eligible:
         "Build the eligible list with a comprehension that keeps only matching docs.",
         "Sort the eligible docs by their score in descending order before printing."
       ],
-      challenge_title: "Filter with a date floor",
-      challenge_description: "Write a function filtered_search(docs, flt, min_year) that keeps docs matching every key in flt AND whose year >= min_year, then returns them sorted by score descending. Print the ids for flt={'lang':'de'} and min_year=2023.",
-      challenge_starter_code: `docs = [
-    {"id": 1, "score": 0.90, "lang": "de", "year": 2021},
-    {"id": 2, "score": 0.86, "lang": "de", "year": 2024},
-    {"id": 3, "score": 0.93, "lang": "en", "year": 2024},
-    {"id": 4, "score": 0.80, "lang": "de", "year": 2023},
-]
-# TODO: define filtered_search(docs, flt, min_year) and print the matching ids in rank order.
+      challenge_title: "Metadata-Filtered Retrieval",
+      challenge_description: "Pure similarity isn't enough — a doc must also pass hard business rules. Apply equality filters and a recency floor before ranking.",
+      challenge_story: "Your RAG assistant serves a regulated enterprise. Similarity decides *which docs are relevant*, but **metadata** decides *which docs the user is even allowed to see*: the right language, the right product tier, recent enough to be accurate. A pre-filter that the index respects is non-negotiable — surfacing a stale or out-of-scope passage isn't just a bad answer, it's a compliance incident. So your retriever first discards anything that fails the metadata predicates, **then** ranks whatever survives by its semantic score.",
+      challenge_statement: "You are given \`n\` candidate documents. Each has an integer **id**, a float similarity **score**, an integer **year**, and zero or more string **metadata** key/value pairs.\n\nApply two filters:\n\n1. **Recency floor:** keep only documents with \`year >= min_year\`.\n2. **Equality filters:** for each given \`(key, value)\` filter, the document's metadata for that key must equal that value. A document missing the key fails.\n\nAmong the survivors, rank by **score descending**. If two survivors tie on score, the one with the **smaller id** comes first. Print the surviving ids in rank order. If nothing survives, print \`NONE\`.",
+      challenge_input_format: "The first line is an integer `n`. Each of the next `n` lines describes a document: `id score year` followed by zero or more `key value` metadata pairs, all space-separated (e.g. `2 0.86 2024 lang de`).\n\nThe next line is an integer `min_year`.\n\nThe next line is an integer `f`, the number of equality filters. Each of the following `f` lines is one `key value` pair.",
+      challenge_output_format: "One line: the surviving document ids in rank order, space-separated. If no document survives, print `NONE`.",
+      challenge_constraints: [
+        "0 ≤ n ≤ 100000",
+        "0 ≤ f ≤ 20",
+        "Scores are floats in [0, 1]; years and ids are integers.",
+        "Metadata keys and values contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "4\n1 0.90 2021 lang de\n2 0.86 2024 lang de\n3 0.93 2024 lang en\n4 0.80 2023 lang de\n2023\n1\nlang de", output: "2 4", explanation: "Doc 1 fails the year floor (2021 < 2023); doc 3 fails the language filter (en ≠ de). The German docs from 2023+ are 2 (0.86) and 4 (0.80), ranked by score." },
+        { input: "5\n10 0.95 2024 lang en tier pro\n11 0.91 2024 lang en tier free\n12 0.99 2022 lang en tier pro\n13 0.88 2025 lang en tier pro\n14 0.70 2024 lang de tier pro\n2023\n2\nlang en\ntier pro", output: "10 13", explanation: "Both filters must pass: doc 11 is the free tier, doc 12 is too old, doc 14 is German. Docs 10 (0.95) and 13 (0.88) survive and rank by score." },
+      ],
+      challenge_notes: "This is *pre-filtering*: cut the candidate set down before ranking. Vector DBs implement exactly this (Pinecone metadata filters, pgvector \`WHERE\` clauses). The ordering still comes from similarity — metadata only decides eligibility, never rank position.",
+      challenge_hints: [
+        "Write a predicate that returns False the moment any filter fails, so you can drop a doc early.",
+        "Use `all(meta.get(key) == value for key, value in filters)` to require every equality filter at once.",
+        "Sort survivors with key `(-score, id)` so higher score wins and ties break to the smaller id.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: parse n docs (id, score, year, then key/value metadata pairs),
+    #       read min_year and the equality filters, keep docs that pass both
+    #       the year floor and every filter, rank by score desc (ties by id),
+    #       and print the surviving ids — or NONE.
+
+main()
 `,
-      challenge_solution_code: `docs = [
-    {"id": 1, "score": 0.90, "lang": "de", "year": 2021},
-    {"id": 2, "score": 0.86, "lang": "de", "year": 2024},
-    {"id": 3, "score": 0.93, "lang": "en", "year": 2024},
-    {"id": 4, "score": 0.80, "lang": "de", "year": 2023},
-]
+      challenge_solution_code: `import sys
 
-def filtered_search(docs, flt, min_year):
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    docs = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        doc_id = int(parts[0])
+        score = float(parts[1])
+        year = int(parts[2])
+        meta = {}
+        i = 3
+        while i < len(parts):
+            meta[parts[i]] = parts[i + 1]
+            i += 2
+        docs.append({"id": doc_id, "score": score, "year": year, "meta": meta})
+
+    min_year = int(data[idx]); idx += 1
+    f = int(data[idx]); idx += 1
+    flt = {}
+    for _ in range(f):
+        kv = data[idx].split(); idx += 1
+        flt[kv[0]] = kv[1]
+
     def ok(d):
-        return all(d.get(k) == v for k, v in flt.items()) and d["year"] >= min_year
-    eligible = [d for d in docs if ok(d)]
-    eligible.sort(key=lambda d: d["score"], reverse=True)
-    return [d["id"] for d in eligible]
+        if d["year"] < min_year:
+            return False
+        return all(d["meta"].get(key) == val for key, val in flt.items())
 
-print(filtered_search(docs, {"lang": "de"}, 2023))
+    eligible = [d for d in docs if ok(d)]
+    eligible.sort(key=lambda d: (-d["score"], d["id"]))
+    if eligible:
+        print(" ".join(str(d["id"]) for d in eligible))
+    else:
+        print("NONE")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "flt={'lang':'de'}, min_year=2023", expected_output: "[2, 4]", description: "Only German docs from 2023 or later survive, ranked by score: id 2 (0.86) then id 4 (0.80)." }
+        { input: "4\n1 0.90 2021 lang de\n2 0.86 2024 lang de\n3 0.93 2024 lang en\n4 0.80 2023 lang de\n2023\n1\nlang de", expected_output: "2 4", description: "Year floor and one language filter; survivors ranked by score." },
+        { input: "5\n10 0.95 2024 lang en tier pro\n11 0.91 2024 lang en tier free\n12 0.99 2022 lang en tier pro\n13 0.88 2025 lang en tier pro\n14 0.70 2024 lang de tier pro\n2023\n2\nlang en\ntier pro", expected_output: "10 13", description: "Two equality filters plus the recency floor must all pass." },
+        { input: "2\n1 0.9 2020 lang fr\n2 0.8 2021 lang fr\n2023\n1\nlang fr", expected_output: "NONE", description: "Every candidate fails the year floor, so the result is NONE." },
+        { input: "2\n1 0.9 2024 lang fr\n2 0.95 2024 lang de\n2024\n0", expected_output: "2 1", description: "No equality filters: pure recency floor, ranked by score (0.95 before 0.90)." }
       ]
     },
     {
@@ -1000,26 +1134,66 @@ print(fused)
         "Call rrf with a list containing both rankings.",
         "Use sorted(scores, key=scores.get, reverse=True) to order ids by fused score."
       ],
-      challenge_title: "RRF with a weight",
-      challenge_description: "Extend RRF so each ranking can have a weight. Write weighted_rrf(rank_lists, weights, k=60) where the contribution of a doc at a given rank is weight * 1/(k+rank). Print the fused order for the two lists with weights [2, 1] (keyword weighted double).",
-      challenge_starter_code: `keyword_ranking = ["docB", "docA"]
-vector_ranking  = ["docA", "docC"]
-# TODO: define weighted_rrf(rank_lists, weights, k=60) and print the fused order with weights [2, 1].
+      challenge_title: "Weighted Reciprocal Rank Fusion",
+      challenge_description: "Keyword search and vector search each return a ranked list. Fuse them into one ranking with weighted Reciprocal Rank Fusion.",
+      challenge_story: "Your support search is **hybrid**: a keyword (BM25) engine that nails exact error codes and SKUs, and a vector engine that catches paraphrases and synonyms. Each returns its own ranked list, and neither alone is best. The clean way to merge them — no score normalization, no tuning headaches — is **Reciprocal Rank Fusion (RRF)**: a document's fused score is the sum over every list of \`weight / (k + rank)\`, where rank is 0-based. RRF only cares *where* a doc landed in each list, not the raw scores, which makes it robust across wildly different engines. You give keyword results extra pull by weighting that list higher.",
+      challenge_statement: "You are given \`m\` ranked lists of document ids and a constant \`k\`. Each list \`j\` has an integer **weight** \`w_j\`. A document at 0-based **rank** \`r\` in list \`j\` contributes:\n\n\`\`\`\nw_j * (1 / (k + r))\n\`\`\`\n\nto that document's fused score. Sum these contributions across all lists a document appears in.\n\nRank documents by fused score **descending**. If two documents tie on fused score (compared at 9 decimal places of precision), order them **lexicographically by id**.\n\nFirst print the fused order on one line (ids space-separated). Then print each id with its fused score to exactly 6 decimal places, in the same order.",
+      challenge_input_format: "The first line has two integers `m k`: the number of ranked lists and the RRF constant.\n\nEach of the next `m` lines is one list: an integer weight followed by the document ids in rank order, all space-separated (e.g. `2 docB docA` means weight 2, with docB at rank 0 and docA at rank 1).",
+      challenge_output_format: "The first line is the fused ranking: all ids in fused order, space-separated. Then one line per id, `id score`, with the fused score to exactly 6 decimal places, in the same fused order.",
+      challenge_constraints: [
+        "1 ≤ m ≤ 20",
+        "1 ≤ k ≤ 1000",
+        "1 ≤ weight ≤ 1000",
+        "Ids contain no spaces; within one list they are distinct.",
+      ],
+      challenge_examples: [
+        { input: "2 60\n2 docB docA\n1 docA docC", output: "docA docB docC\ndocA 0.049454\ndocB 0.033333\ndocC 0.016393", explanation: "docA scores 2/(60+1) from the keyword list plus 1/(60+0) from the vector list = 0.049454, edging out docB at 2/(60+0)=0.033333. docC only appears once at vector rank 1: 1/(60+1)=0.016393." },
+        { input: "3 10\n1 a b c\n1 c b a\n2 b", output: "b a c\nb 0.381818\na 0.183333\nc 0.183333", explanation: "b appears at rank 1, rank 1, and rank 0 (weight 2), accumulating the highest fused score. a and c tie exactly, so they order lexicographically: a before c." },
+      ],
+      challenge_notes: "The constant \`k\` (often 60) dampens the gap between top ranks so no single list can dominate. RRF needs no score calibration — it's why production hybrid search defaults to it. The lexicographic tie-break makes the output deterministic when two docs land in symmetric positions.",
+      challenge_hints: [
+        "Accumulate scores in a dict: for each list, add `weight * (1 / (k + rank))` for every id at its rank.",
+        "Use `enumerate(ids)` to get the 0-based rank of each id in a list.",
+        "Sort the ids by key `(-round(score, 9), id)` so the highest score wins and exact ties break lexicographically.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    m, k = map(int, data[0].split())
+    # TODO: read m weighted ranked lists, accumulate each doc's fused RRF score
+    #       (weight * 1/(k+rank)), then print the fused order and each score
+    #       to 6 decimals, breaking ties lexicographically by id.
+
+main()
 `,
-      challenge_solution_code: `keyword_ranking = ["docB", "docA"]
-vector_ranking  = ["docA", "docC"]
+      challenge_solution_code: `import sys
 
-def weighted_rrf(rank_lists, weights, k=60):
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    m, k = data[idx].split()
+    m = int(m); k = int(k)
+    idx += 1
     scores = {}
-    for ranked, w in zip(rank_lists, weights):
-        for rank, doc_id in enumerate(ranked):
-            scores[doc_id] = scores.get(doc_id, 0) + w * (1 / (k + rank))
-    return sorted(scores, key=scores.get, reverse=True)
+    for _ in range(m):
+        parts = data[idx].split(); idx += 1
+        w = int(parts[0])
+        docs = parts[1:]
+        for rank, doc_id in enumerate(docs):
+            scores[doc_id] = scores.get(doc_id, 0.0) + w * (1.0 / (k + rank))
 
-print(weighted_rrf([keyword_ranking, vector_ranking], [2, 1]))
+    order = sorted(scores.keys(), key=lambda d: (-round(scores[d], 9), d))
+    print(" ".join(order))
+    for d in order:
+        print(f"{d} {scores[d]:.6f}")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "weights=[2,1]", expected_output: "['docA', 'docB', 'docC']", description: "docA appears in both (vector rank 0 plus keyword rank 1 doubled) and tops the list; docB is keyword rank 0 doubled; docC is vector rank 1." }
+        { input: "2 60\n2 docB docA\n1 docA docC", expected_output: "docA docB docC\ndocA 0.049454\ndocB 0.033333\ndocC 0.016393", description: "Keyword list weighted double; docA wins by appearing in both lists." },
+        { input: "3 10\n1 a b c\n1 c b a\n2 b", expected_output: "b a c\nb 0.381818\na 0.183333\nc 0.183333", description: "A weighted third list lifts b to the top; a and c tie and break lexicographically." },
+        { input: "1 60\n1 x y z", expected_output: "x y z\nx 0.016667\ny 0.016393\nz 0.016129", description: "A single list just reflects its own rank order with RRF scores." }
       ]
     },
     {
@@ -1232,32 +1406,65 @@ print(top2)
         "Slice the first two elements of the reranked list.",
         "Build a list of just the 'id' values from those top two candidates."
       ],
-      challenge_title: "Two-stage pipeline",
-      challenge_description: "Write retrieve_then_rerank(docs, retrieve_k, final_k) that first keeps the top retrieve_k docs by retrieve_score, then reorders those by rerank_score and returns the top final_k ids. Print the result for retrieve_k=3, final_k=2.",
-      challenge_starter_code: `docs = [
-    {"id": "a", "retrieve_score": 0.80, "rerank_score": 0.30},
-    {"id": "b", "retrieve_score": 0.75, "rerank_score": 0.95},
-    {"id": "c", "retrieve_score": 0.70, "rerank_score": 0.60},
-    {"id": "d", "retrieve_score": 0.40, "rerank_score": 0.99},
-]
-# TODO: define retrieve_then_rerank(docs, retrieve_k, final_k) and print it for (3, 2).
+      challenge_title: "Retrieve-then-Rerank Pipeline",
+      challenge_description: "Cast a wide cheap net, then re-score the finalists with an expensive cross-encoder. Build the two-stage retrieval pipeline.",
+      challenge_story: "Your cross-encoder reranker is *accurate* but *slow* — far too slow to run on every document in the corpus. So production search runs in two stages. **Stage 1 (retrieve):** a fast ANN index pulls a wide candidate set, optimized for recall so no good doc is missed. **Stage 2 (rerank):** the heavyweight cross-encoder re-scores only those few candidates, optimized for precision so the very best answer lands on top. The catch: a doc the retriever drops is gone forever, no matter how well the reranker would have scored it. You implement the funnel that turns a cheap recall score and an expensive precision score into a final shortlist.",
+      challenge_statement: "You are given \`n\` documents. Each has a string **id**, a float **retrieve_score** (stage-1 ANN score), and a float **rerank_score** (stage-2 cross-encoder score).\n\nRun the two stages:\n\n1. **Retrieve:** keep the top \`retrieve_k\` documents by **retrieve_score** descending. If two tie on retrieve_score, prefer the **lexicographically smaller id**.\n2. **Rerank:** reorder *only those survivors* by **rerank_score** descending. If two tie on rerank_score, prefer the **lexicographically smaller id**. Take the top \`final_k\`.\n\nPrint the final shortlist of ids, space-separated. If \`final_k\` exceeds the number of survivors, print all survivors in reranked order.",
+      challenge_input_format: "The first line is an integer `n`. Each of the next `n` lines is `id retrieve_score rerank_score`, space-separated.\n\nThe final line has two integers `retrieve_k final_k`.",
+      challenge_output_format: "One line: the final ids after retrieve-then-rerank, space-separated, best first.",
+      challenge_constraints: [
+        "1 ≤ final_k ≤ retrieve_k ≤ n ≤ 100000",
+        "Scores are floats in [0, 1].",
+        "Ids contain no spaces and are distinct.",
+        "Ties on either score break by lexicographically smaller id.",
+      ],
+      challenge_examples: [
+        { input: "4\na 0.80 0.30\nb 0.75 0.95\nc 0.70 0.60\nd 0.40 0.99\n3 2", output: "b c", explanation: "Stage 1 keeps the top-3 by retrieve_score: a (0.80), b (0.75), c (0.70); d is dropped despite its 0.99 rerank score — the retriever never surfaced it. Stage 2 reorders the survivors by rerank_score: b (0.95), c (0.60), a (0.30). The top-2 are b and c." },
+        { input: "5\np 0.99 0.10\nq 0.95 0.90\nr 0.90 0.85\ns 0.85 0.99\nt 0.50 0.99\n4 3", output: "s q r", explanation: "Stage 1 keeps p, q, r, s (top-4 by retrieve; t is cut). Stage 2 reranks them: s (0.99), q (0.90), r (0.85), p (0.10). Top-3 are s, q, r." },
+      ],
+      challenge_notes: "This funnel is why hybrid search feels both fast and smart: the expensive model only ever sees a handful of candidates. The classic failure mode is setting \`retrieve_k\` too small — a brilliant reranker can't rank a document the retriever already threw away, exactly what happens to doc d above.",
+      challenge_hints: [
+        "Sort all docs by `(-retrieve_score, id)` and slice the first `retrieve_k` for stage 1.",
+        "Sort that survivor list by `(-rerank_score, id)` and slice the first `final_k` for stage 2.",
+        "Slicing past the end of a list is safe in Python, so a `final_k` larger than the survivor count just returns them all.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: parse n docs (id, retrieve_score, rerank_score), read retrieve_k
+    #       and final_k, keep the top retrieve_k by retrieve_score, rerank those
+    #       by rerank_score, and print the top final_k ids (ties by id).
+
+main()
 `,
-      challenge_solution_code: `docs = [
-    {"id": "a", "retrieve_score": 0.80, "rerank_score": 0.30},
-    {"id": "b", "retrieve_score": 0.75, "rerank_score": 0.95},
-    {"id": "c", "retrieve_score": 0.70, "rerank_score": 0.60},
-    {"id": "d", "retrieve_score": 0.40, "rerank_score": 0.99},
-]
+      challenge_solution_code: `import sys
 
-def retrieve_then_rerank(docs, retrieve_k, final_k):
-    retrieved = sorted(docs, key=lambda d: d["retrieve_score"], reverse=True)[:retrieve_k]
-    reranked = sorted(retrieved, key=lambda d: d["rerank_score"], reverse=True)
-    return [d["id"] for d in reranked[:final_k]]
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n = int(data[idx]); idx += 1
+    docs = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        doc_id = parts[0]
+        retrieve_score = float(parts[1])
+        rerank_score = float(parts[2])
+        docs.append({"id": doc_id, "r": retrieve_score, "rr": rerank_score})
+    retrieve_k, final_k = map(int, data[idx].split()); idx += 1
 
-print(retrieve_then_rerank(docs, 3, 2))
+    retrieved = sorted(docs, key=lambda d: (-d["r"], d["id"]))[:retrieve_k]
+    reranked = sorted(retrieved, key=lambda d: (-d["rr"], d["id"]))[:final_k]
+    print(" ".join(d["id"] for d in reranked))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "retrieve_k=3, final_k=2", expected_output: "['b', 'c']", description: "Stage 1 keeps a, b, c (top-3 by retrieve_score; d is dropped). Stage 2 reorders by rerank_score: b (0.95), c (0.60), a (0.30). Top-2 ids are b and c." }
+        { input: "4\na 0.80 0.30\nb 0.75 0.95\nc 0.70 0.60\nd 0.40 0.99\n3 2", expected_output: "b c", description: "A high-rerank doc is lost because the retriever dropped it in stage 1." },
+        { input: "5\np 0.99 0.10\nq 0.95 0.90\nr 0.90 0.85\ns 0.85 0.99\nt 0.50 0.99\n4 3", expected_output: "s q r", description: "Stage 2 reorders the survivors by rerank score; the top retrieve doc p sinks." },
+        { input: "3\nx 0.5 0.9\ny 0.4 0.8\nz 0.3 0.7\n2 5", expected_output: "x y", description: "final_k exceeds the survivor count, so all survivors are returned in reranked order." },
+        { input: "3\nm 0.5 0.5\nn 0.5 0.5\no 0.4 0.9\n2 2", expected_output: "m n", description: "Retrieve keeps m and n (o has lower retrieve_score); their rerank tie breaks by id." }
       ]
     }
   ]

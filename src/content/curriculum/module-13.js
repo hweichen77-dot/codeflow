@@ -223,23 +223,64 @@ total: 2.38`,
         "total = ttft + (num_tokens - 1) * inter_token.",
         "Use round(total, 2) so the printed number is clean."
       ],
-      challenge_title: "Compare two responses by TTFT",
-      challenge_description: "Write a function faster_first(a_ttft, b_ttft) that returns 'A' if response A has the lower TTFT, 'B' if B is lower, and 'tie' if they are equal. Test it on (0.4, 0.9) and print the result.",
-      challenge_starter_code: `# TODO: define faster_first(a_ttft, b_ttft) returning 'A', 'B', or 'tie'.
-# Then print the result for (0.4, 0.9).
-`,
-      challenge_solution_code: `def faster_first(a_ttft, b_ttft):
-    if a_ttft < b_ttft:
-        return "A"
-    if b_ttft < a_ttft:
-        return "B"
-    return "tie"
+      challenge_title: "The TTFT Router",
+      challenge_description: "Pick the model route that shows the user a word fastest — but only among routes that can still finish the whole reply inside the latency budget.",
+      challenge_story: "You run the gateway in front of a chat product. Every incoming question can be served by several **routes** — different models or deployments — and each has its own performance profile: a fixed **time to first token (TTFT)** before anything appears, a **per-token cost** in milliseconds while it streams, and the **number of tokens** the reply will take. Users judge a chat by how fast the *first* word shows up, so you want to minimize TTFT. But product set a hard rule: a route is only allowed if its **total** generation time fits inside the latency budget — nobody wants a snappy first word followed by a thirty-second crawl.",
+      challenge_statement: "You are given `n` candidate routes and a latency `budget` (milliseconds). For each route you know its `ttft`, its per-token streaming cost `per`, and the number of output tokens `out`. A route's **total time** is `ttft + per * out`.\n\nA route is **eligible** only if its total time is **≤ budget**. Among all eligible routes, print the name of the one with the **smallest TTFT**. Break ties by smallest total time; if still tied, prefer the route that appeared **earlier** in the input. If no route is eligible, print `NONE`.",
+      challenge_input_format: "The first line has two integers `n budget`.\n\nEach of the next `n` lines describes a route: a name (no spaces) followed by three integers `ttft per out`.",
+      challenge_output_format: "One line: the chosen route's name, or `NONE` if no route fits the budget.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "0 ≤ ttft, per, out, budget ≤ 1000000000",
+        "Route names are unique and contain no spaces.",
+      ],
+      challenge_examples: [
+        { input: "3 1000\nfast 200 5 100\nslow 50 9 200\nmid 150 4 150", output: "mid", explanation: "Totals: fast=200+5·100=700 (ok), slow=50+9·200=1850 (>1000, out), mid=150+4·150=750 (ok). Among eligible {fast,mid}, mid has the lower TTFT (150 < 200)." },
+        { input: "2 100\na 200 1 50\nb 300 1 10", output: "NONE", explanation: "a's total is 250 and b's is 310, both above the 100 budget, so nothing is eligible." },
+      ],
+      challenge_notes: "Low TTFT is what makes a stream *feel* instant, but a model that streams slowly can still blow your overall latency. Real routers weigh both, exactly like this gate-then-minimize pattern.",
+      challenge_hints: [
+        "Compute total = ttft + per * out for each route and filter out anything above the budget first.",
+        "Track the best eligible route as you scan, comparing on (ttft, total); keep the first seen on a full tie.",
+        "If you never find an eligible route, print NONE.",
+      ],
+      challenge_starter_code: `import sys
 
-print(faster_first(0.4, 0.9))
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, budget = map(int, data[0].split())
+    # TODO: read n routes, keep only those with ttft + per*out <= budget,
+    #       then print the name with the smallest TTFT (tie-break: total, then input order).
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, budget = map(int, data[idx].split())
+    idx += 1
+    best = None
+    for _ in range(n):
+        parts = data[idx].split()
+        idx += 1
+        name = parts[0]
+        ttft = int(parts[1]); per = int(parts[2]); out = int(parts[3])
+        total = ttft + per * out
+        if total > budget:
+            continue
+        if best is None or ttft < best[0] or (ttft == best[0] and total < best[1]):
+            best = (ttft, total, name)
+    print(best[2] if best is not None else "NONE")
+
+main()
 `,
       challenge_test_cases: [
-        { input: "a_ttft=0.4, b_ttft=0.9", expected_output: "A", description: "A has the lower TTFT, so it feels faster." },
-        { input: "a_ttft=0.5, b_ttft=0.5", expected_output: "tie", description: "Equal TTFT returns 'tie'." }
+        { input: "3 1000\nfast 200 5 100\nslow 50 9 200\nmid 150 4 150", expected_output: "mid", description: "Slowest-total route excluded; lowest TTFT among the rest wins." },
+        { input: "2 100\na 200 1 50\nb 300 1 10", expected_output: "NONE", description: "No route fits the budget." },
+        { input: "3 5000\nx 100 2 50\ny 100 1 50\nz 100 3 50", expected_output: "y", description: "All tie on TTFT; smallest total time breaks the tie." },
+        { input: "1 700\nonly 200 5 100", expected_output: "only", description: "A single route exactly at the budget is eligible." }
       ]
     },
     {
@@ -485,39 +526,71 @@ print(message)
         "Use line.startswith('data:') and line[len('data:'):].strip() to get the payload.",
         "Break the loop when the payload equals '[DONE]'; otherwise json.loads it and append the token."
       ],
-      challenge_title: "Count tokens in an SSE stream",
-      challenge_description: "Write a function count_tokens(lines) that returns how many token events an SSE stream contains. Count only lines that start with 'data:' and are not the [DONE] sentinel. Test it on a stream with two token events plus a [DONE] line.",
-      challenge_starter_code: `lines = [
-    'data: {"token": "a"}',
-    '',
-    'data: {"token": "b"}',
-    '',
-    'data: [DONE]',
-]
+      challenge_title: "The SSE Reassembler",
+      challenge_description: "Parse a raw Server-Sent Events stream the way a real client does: skip the noise, stop at the sentinel, count the token events, and glue the pieces back into the final answer.",
+      challenge_story: "Your front-end gets a model's reply as a live **Server-Sent Events** stream over one long HTTP response. The wire format is messy on purpose: there are blank lines between events, `:` comment lines the server sends as keep-alives, and a final `data: [DONE]` sentinel that marks the end. Anything after `[DONE]` is leftover garbage you must ignore. Each real token arrives as a `data:` line whose payload looks like `{\"token\": \"...\"}`. You're writing the client-side reassembler that turns this raw stream into two things product needs: **how many tokens streamed** and **the full reconstructed text**.",
+      challenge_statement: "Read the raw SSE stream line by line and process it:\n\n1. Ignore any line that does **not** start with `data:` (blank lines, `:` comments, etc.).\n2. For a `data:` line, strip the `data:` prefix and surrounding whitespace to get the payload.\n3. If the payload is exactly `[DONE]`, **stop immediately** — ignore every line after it.\n4. Otherwise the payload is `{\"token\": \"<text>\"}`. Extract the string between the quotes after `\"token\":` and append it to the running output.\n\nPrint the **number of token events** consumed, then on the next line print the **concatenated text** of all those tokens.",
+      challenge_input_format: "The entire stdin is the raw SSE stream: a sequence of lines that may include `data:` lines, blank lines, `:` comment lines, a `data: [DONE]` sentinel, and possibly trailing lines after it.",
+      challenge_output_format: "Two lines. Line 1: the integer count of token events. Line 2: the reassembled text (which may be empty).",
+      challenge_constraints: [
+        "0 ≤ number of token events ≤ 100000",
+        "Token text contains no double-quote characters and no newlines.",
+        "Exactly one `[DONE]` sentinel may appear; lines after it must be ignored.",
+      ],
+      challenge_examples: [
+        { input: "data: {\"token\": \"Hel\"}\n\ndata: {\"token\": \"lo\"}\n\ndata: [DONE]", output: "2\nHello", explanation: "Two token events, `Hel` + `lo`, joined into `Hello`; the blank lines and the sentinel are not counted." },
+        { input: ": keep-alive\ndata: {\"token\": \"Hi\"}\n\ndata: {\"token\": \" there\"}\n\ndata: [DONE]\ndata: {\"token\": \"ignored\"}", output: "2\nHi there", explanation: "The `:` comment is skipped, and the `data:` line after `[DONE]` is dropped." },
+      ],
+      challenge_notes: "Almost every streaming LLM API speaks this exact dialect of SSE: `data:` lines, blank-line separators, and a `[DONE]` terminator. Robust clients always stop at the sentinel and never trust bytes that arrive after it.",
+      challenge_hints: [
+        "Read all of stdin and split on newlines; loop over the lines.",
+        "Only lines that start with `data:` matter — strip that prefix and `.strip()` the rest.",
+        "When the payload equals `[DONE]`, break out of the loop so trailing lines are ignored.",
+        "To pull the token text, find `\"token\":` and read the substring between the next two double quotes.",
+      ],
+      challenge_starter_code: `import sys
 
-# TODO: define count_tokens(lines) and print the count.
-`,
-      challenge_solution_code: `lines = [
-    'data: {"token": "a"}',
-    '',
-    'data: {"token": "b"}',
-    '',
-    'data: [DONE]',
-]
-
-def count_tokens(lines):
+def main():
+    lines = sys.stdin.read().split("\\n")
     count = 0
-    for line in lines:
-        if line.startswith("data:"):
-            payload = line[len("data:"):].strip()
-            if payload != "[DONE]":
-                count += 1
-    return count
+    text = ""
+    # TODO: walk the lines, keep only data: events, stop at [DONE],
+    #       extract each token's text, and accumulate count + text.
+    print(count)
+    print(text)
 
-print(count_tokens(lines))
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    lines = sys.stdin.read().split("\\n")
+    count = 0
+    text = ""
+    for line in lines:
+        if not line.startswith("data:"):
+            continue
+        payload = line[len("data:"):].strip()
+        if payload == "[DONE]":
+            break
+        key = '"token":'
+        pos = payload.find(key)
+        if pos == -1:
+            continue
+        rest = payload[pos + len(key):]
+        q1 = rest.find('"')
+        q2 = rest.find('"', q1 + 1)
+        text += rest[q1 + 1:q2]
+        count += 1
+    print(count)
+    print(text)
+
+main()
 `,
       challenge_test_cases: [
-        { input: "stream with 2 token events + [DONE]", expected_output: "2", description: "Counts the two token data lines and ignores the sentinel and blanks." }
+        { input: "data: {\"token\": \"Hel\"}\n\ndata: {\"token\": \"lo\"}\n\ndata: [DONE]", expected_output: "2\nHello", description: "Two events reassembled, blanks and sentinel ignored." },
+        { input: ": keep-alive\ndata: {\"token\": \"Hi\"}\n\ndata: {\"token\": \" there\"}\n\ndata: [DONE]\ndata: {\"token\": \"ignored\"}", expected_output: "2\nHi there", description: "Comment skipped and post-DONE data dropped." },
+        { input: "data: [DONE]", expected_output: "0\n", description: "Sentinel only: zero tokens and an empty text line." }
       ]
     },
     {
@@ -737,25 +810,66 @@ cache hits: True`,
         "The cache only hits if BOTH prompts share that exact prefix.",
         "Combine the two checks with 'and'."
       ],
-      challenge_title: "Find the shared cacheable prefix",
-      challenge_description: "Write a function shared_prefix(a, b) that returns the longest common starting substring of two prompts. This is the part a cache could reuse. Test it on 'You are helpful. Q: France?' and 'You are helpful. Q: Japan?' and print the result.",
-      challenge_starter_code: `# TODO: define shared_prefix(a, b) returning the longest common prefix string.
-a = "You are helpful. Q: France?"
-b = "You are helpful. Q: Japan?"
-`,
-      challenge_solution_code: `def shared_prefix(a, b):
-    i = 0
-    limit = min(len(a), len(b))
-    while i < limit and a[i] == b[i]:
-        i += 1
-    return a[:i]
+      challenge_title: "The Cacheable Prefix",
+      challenge_description: "Find the longest prompt prefix every request in a batch shares, then compute the money prompt caching would save by prefilling it only once.",
+      challenge_story: "Your RAG service answers questions about the same big knowledge base, so every request starts with an identical block: a long system prompt plus the retrieved document. Only the user's question at the very end changes. Right now you pay to prefill that whole shared block on **every** call. Prompt caching can store the processed **common prefix** once and let the rest of the batch reuse it — but first you have to find exactly how much of the prompt is truly shared across **all** requests, because a single differing character at position k means nothing past k can be cached.",
+      challenge_statement: "You are given `n` prompts and a `cost` (the price in micro-dollars to prefill **one token**). Do two things:\n\n1. Find the **longest common prefix** of all `n` prompts, measured in characters. Let its length be `L`.\n2. Estimate its token count as `T = ceil(L / 4)` (the usual ~4-chars-per-token rule), with `T = 0` when `L = 0`.\n\nWithout caching, every one of the `n` calls prefills those `T` tokens. With caching, the prefix is prefilled **once** and the other `n - 1` calls reuse it. So the saving is `(n - 1) * T * cost`.\n\nPrint `L` on the first line and the saving on the second line.",
+      challenge_input_format: "The first line has two integers `n cost`.\n\nEach of the next `n` lines is one prompt string (it may contain spaces; read the whole line).",
+      challenge_output_format: "Two lines. Line 1: the integer length `L` of the common prefix in characters. Line 2: the integer saving `(n - 1) * ceil(L/4) * cost`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0 ≤ cost ≤ 1000000",
+        "Each prompt has length between 0 and 100000 characters.",
+      ],
+      challenge_examples: [
+        { input: "3 50\nYou are a helpful assistant. Q: France?\nYou are a helpful assistant. Q: Japan?\nYou are a helpful assistant. Q: Spain?", output: "32\n800", explanation: "All three share `You are a helpful assistant. Q: ` (32 chars). Tokens = ceil(32/4) = 8. Saving = (3-1)·8·50 = 800." },
+        { input: "2 10\nhello\nworld", output: "0\n0", explanation: "The prompts differ at the very first character, so the common prefix is empty and nothing can be cached." },
+      ],
+      challenge_notes: "Caching only helps the **shared** front of the prompt, which is why best practice is to put the stable system prompt and documents first and the changing question last. One edit inside the prefix invalidates everything after it.",
+      challenge_hints: [
+        "Start with the first prompt as the candidate prefix and shrink it against each remaining prompt.",
+        "To shrink, compare characters position by position and cut at the first mismatch or the shorter length.",
+        "Use math.ceil(L / 4) for the token estimate, and remember the saving multiplies by (n - 1), not n.",
+      ],
+      challenge_starter_code: `import sys
+import math
 
-a = "You are helpful. Q: France?"
-b = "You are helpful. Q: Japan?"
-print(shared_prefix(a, b))
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, cost = map(int, data[0].split())
+    prompts = data[1:1 + n]
+    # TODO: compute the longest common prefix length L across all prompts,
+    #       then print L and the saving (n - 1) * ceil(L / 4) * cost.
+
+main()
+`,
+      challenge_solution_code: `import sys
+import math
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, cost = map(int, data[0].split())
+    prompts = data[1:1 + n]
+    prefix = prompts[0]
+    for p in prompts[1:]:
+        limit = min(len(prefix), len(p))
+        j = 0
+        while j < limit and prefix[j] == p[j]:
+            j += 1
+        prefix = prefix[:j]
+    L = len(prefix)
+    tokens = math.ceil(L / 4) if L > 0 else 0
+    saving = (n - 1) * tokens * cost
+    print(L)
+    print(saving)
+
+main()
 `,
       challenge_test_cases: [
-        { input: "two prompts sharing 'You are helpful. Q: '", expected_output: "You are helpful. Q: ", description: "Returns the common starting substring that a cache could reuse." }
+        { input: "3 50\nYou are a helpful assistant. Q: France?\nYou are a helpful assistant. Q: Japan?\nYou are a helpful assistant. Q: Spain?", expected_output: "32\n800", description: "Shared system prefix; saving scales with (n-1) reused calls." },
+        { input: "2 10\nhello\nworld", expected_output: "0\n0", description: "No shared prefix means no caching saving." },
+        { input: "2 100\nabcdefgh\nabcdXYZ", expected_output: "4\n100", description: "Prefix of 4 chars -> 1 token -> (2-1)*1*100 = 100." },
+        { input: "1 500\nlonely prompt", expected_output: "13\n0", description: "A single prompt: nothing to reuse, so the saving is 0 even with a long prefix." }
       ]
     },
     {
@@ -983,23 +1097,55 @@ concurrent seconds: 20.0`,
         "With a cap, work runs in waves: math.ceil(num_requests / max_concurrent).",
         "Concurrent time is the number of waves times the per-request latency."
       ],
-      challenge_title: "Estimate concurrent job time",
-      challenge_description: "Write a function job_time(num_requests, latency_each, max_concurrent) that returns the capped-concurrent wall-clock time: ceil(num_requests / max_concurrent) * latency_each. Test it on (100, 2.0, 10) and print the result.",
-      challenge_starter_code: `import math
-# TODO: define job_time(num_requests, latency_each, max_concurrent)
-# returning ceil(num_requests / max_concurrent) * latency_each.
-# Then print job_time(100, 2.0, 10).
+      challenge_title: "The Concurrency Planner",
+      challenge_description: "Estimate how long a bulk classification job takes when you cap how many requests run at once, then report the speedup concurrency buys you.",
+      challenge_story: "You have a nightly job that runs `n` documents through a classifier model. Each request takes the same `latency` to come back. Fired one at a time, the job crawls. Your provider lets you keep up to `c` requests in flight at once, so the work runs in **waves**: launch `c` requests, wait for them, launch the next `c`, and so on. The product owner wants a capacity plan: the sequential time, the concurrent wall-clock time at concurrency `c`, and the speedup factor — so they can decide whether to pay for more parallelism.",
+      challenge_statement: "You are given the number of requests `n`, the max concurrency `c`, and the per-request `latency` in milliseconds (every request takes exactly `latency`).\n\nCompute three numbers:\n\n1. **Sequential time** = `n * latency` (one after another).\n2. **Concurrent time** = `ceil(n / c) * latency` — the requests run in `ceil(n / c)` full waves, each wave taking `latency`.\n3. **Speedup** = sequential / concurrent, printed to **exactly 2 decimal places**.\n\nPrint the sequential time, the concurrent time, then the speedup.",
+      challenge_input_format: "A single line with three integers: `n c latency`.",
+      challenge_output_format: "Three lines. Line 1: sequential time (integer). Line 2: concurrent time (integer). Line 3: speedup as a string with exactly 2 decimal places (e.g. `2.33`).",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000000",
+        "1 ≤ c ≤ 1000000",
+        "1 ≤ latency ≤ 1000000",
+      ],
+      challenge_examples: [
+        { input: "1000 50 200", output: "200000\n4000\n50.00", explanation: "Sequential = 1000·200 = 200000. Waves = ceil(1000/50) = 20, so concurrent = 20·200 = 4000. Speedup = 200000/4000 = 50.00." },
+        { input: "7 3 100", output: "700\n300\n2.33", explanation: "Sequential = 700. Waves = ceil(7/3) = 3, concurrent = 300. Speedup = 700/300 = 2.33 (rounded to 2 places)." },
+      ],
+      challenge_notes: "Concurrency improves **throughput** (total work per unit time) by overlapping the waits across requests; it does not make any single request faster. The last wave can be partly empty, which is why you round the wave count up.",
+      challenge_hints: [
+        "Use math.ceil(n / c) for the number of waves — the final wave may not be full.",
+        "Sequential is just n * latency; concurrent is waves * latency.",
+        "Format the speedup with an f-string like f\"{value:.2f}\" so it always shows 2 decimals.",
+      ],
+      challenge_starter_code: `import sys
+import math
+
+def main():
+    n, c, latency = map(int, sys.stdin.read().split())
+    # TODO: print sequential time, concurrent time, and the speedup (2 decimals).
+
+main()
 `,
-      challenge_solution_code: `import math
+      challenge_solution_code: `import sys
+import math
 
-def job_time(num_requests, latency_each, max_concurrent):
-    waves = math.ceil(num_requests / max_concurrent)
-    return waves * latency_each
+def main():
+    n, c, latency = map(int, sys.stdin.read().split())
+    seq = n * latency
+    waves = math.ceil(n / c)
+    conc = waves * latency
+    speedup = seq / conc
+    print(seq)
+    print(conc)
+    print(f"{speedup:.2f}")
 
-print(job_time(100, 2.0, 10))
+main()
 `,
       challenge_test_cases: [
-        { input: "num_requests=100, latency_each=2.0, max_concurrent=10", expected_output: "20.0", description: "10 waves of 10 requests at 2.0s each equals 20.0 seconds." }
+        { input: "1000 50 200", expected_output: "200000\n4000\n50.00", description: "20 full waves; large speedup from high concurrency." },
+        { input: "7 3 100", expected_output: "700\n300\n2.33", description: "Uneven last wave; speedup rounded to 2 decimals." },
+        { input: "1 8 500", expected_output: "500\n500\n1.00", description: "Fewer requests than the concurrency cap: one wave, no speedup." }
       ]
     },
     {
@@ -1226,19 +1372,63 @@ p95: 5.0`,
         "Nearest-rank index is math.ceil(p / 100 * len(values)).",
         "Return the element at rank - 1 since lists are zero-indexed."
       ],
-      challenge_title: "Compute tokens per second",
-      challenge_description: "Write a function tokens_per_second(num_tokens, total_seconds) that returns the streaming throughput, rounded to 1 decimal place. Test it on (120, 4.0) and print the result.",
-      challenge_starter_code: `# TODO: define tokens_per_second(num_tokens, total_seconds)
-# returning num_tokens / total_seconds rounded to 1 decimal.
-# Then print tokens_per_second(120, 4.0).
-`,
-      challenge_solution_code: `def tokens_per_second(num_tokens, total_seconds):
-    return round(num_tokens / total_seconds, 1)
+      challenge_title: "The Latency SLO Checker",
+      challenge_description: "Turn a batch of TTFT measurements into the metric that actually matters — the tail percentile — and decide whether your service meets its latency promise.",
+      challenge_story: "Your AI feature has a service-level objective (SLO): the **p95 time to first token** must stay under a promised threshold. An on-call engineer keeps quoting the *average*, but the average hides the slow tail — the unlucky users who wait forever and churn. You're building the dashboard check that does it right: given a window of raw TTFT samples, it reports the mean (for context), the requested **percentile** by nearest-rank, and whether the SLO passed.",
+      challenge_statement: "You are given `n` latency samples (milliseconds), a percentile `p`, and an SLO `threshold` in milliseconds. Compute:\n\n1. **Mean** = floor of the average, i.e. `sum(samples) // n` (integer division).\n2. **Percentile value** by the **nearest-rank** method: sort ascending, let `rank = ceil(p/100 * n)` (1-indexed, and at least 1), and take the sample at that rank.\n3. **Status**: print `PASS` if the percentile value is **≤ threshold**, otherwise `FAIL`.\n\nPrint the mean, the percentile value, then the status.",
+      challenge_input_format: "The first line has three integers `n p threshold`.\n\nThe second line has `n` space-separated integer latency samples.",
+      challenge_output_format: "Three lines. Line 1: the integer mean (floor). Line 2: the integer percentile value. Line 3: `PASS` or `FAIL`.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 100000",
+        "1 ≤ p ≤ 100",
+        "0 ≤ each sample, threshold ≤ 1000000000",
+      ],
+      challenge_examples: [
+        { input: "10 95 500\n100 120 90 800 110 130 95 105 115 125", output: "179\n800\nFAIL", explanation: "Sum is 1790, mean = 1790//10 = 179. Sorted, rank = ceil(0.95·10) = 10, so p95 is the largest sample, 800. Since 800 > 500, the SLO FAILs even though the mean looks fine." },
+        { input: "20 90 300\n100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 900", output: "140\n100\nPASS", explanation: "One outlier of 900 drags the mean to 140, but rank = ceil(0.9·20) = 18 lands on a 100, so p90 = 100 ≤ 300 and the SLO PASSes." },
+      ],
+      challenge_notes: "Percentiles, not averages, are how real teams run latency SLOs: p95 and p99 expose the slow tail that the mean smooths away. Nearest-rank is the simplest correct percentile definition and needs only a sort.",
+      challenge_hints: [
+        "Sort the samples ascending before indexing.",
+        "rank = math.ceil(p / 100 * n); the value is samples[rank - 1] because ranks are 1-indexed.",
+        "Use integer division (//) for the mean so the output is an exact integer.",
+      ],
+      challenge_starter_code: `import sys
+import math
 
-print(tokens_per_second(120, 4.0))
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, p, threshold = map(int, data[0].split())
+    samples = list(map(int, data[1].split()))
+    # TODO: print the floored mean, the nearest-rank percentile value,
+    #       and PASS/FAIL against the threshold.
+
+main()
+`,
+      challenge_solution_code: `import sys
+import math
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n, p, threshold = map(int, data[0].split())
+    samples = list(map(int, data[1].split()))
+    samples.sort()
+    mean = sum(samples) // n
+    rank = math.ceil(p / 100 * n)
+    if rank < 1:
+        rank = 1
+    pval = samples[rank - 1]
+    status = "PASS" if pval <= threshold else "FAIL"
+    print(mean)
+    print(pval)
+    print(status)
+
+main()
 `,
       challenge_test_cases: [
-        { input: "num_tokens=120, total_seconds=4.0", expected_output: "30.0", description: "120 tokens over 4 seconds is 30.0 tokens per second." }
+        { input: "10 95 500\n100 120 90 800 110 130 95 105 115 125", expected_output: "179\n800\nFAIL", description: "Tail sample blows the p95 SLO while the mean looks healthy." },
+        { input: "20 90 300\n100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 900", expected_output: "140\n100\nPASS", description: "Outlier inflates the mean but p90 still passes." },
+        { input: "1 99 1000\n1500", expected_output: "1500\n1500\nFAIL", description: "Single sample: it is both the mean and the percentile, and it exceeds the SLO." }
       ]
     }
   ]

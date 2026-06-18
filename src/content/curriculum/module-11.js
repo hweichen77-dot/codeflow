@@ -225,22 +225,70 @@ image tokens: 1024`,
         "Patches across uses width; patches down uses height.",
         "Total image tokens is patches across times patches down."
       ],
-      challenge_title: "Detail levels and token cost",
-      challenge_description: "A model resizes images to a fixed side before patching. In 'low' detail it uses 256 pixels per side; in 'high' detail it uses 1024. With 16x16 patches, write a function image_tokens(detail) that returns the token count for 'low' or 'high'. Print both.",
-      challenge_starter_code: `# 'low' resizes to 256 per side, 'high' to 1024 per side. Patch is 16x16.
-# TODO: define image_tokens(detail) and print the count for both.
-`,
-      challenge_solution_code: `def image_tokens(detail):
-    side = 256 if detail == "low" else 1024
-    patches_per_side = side // 16
-    return patches_per_side * patches_per_side
+      challenge_title: "The Patch Budget",
+      challenge_description: "Compute exactly how many image tokens a multimodal model will charge for a batch of uploads, after it resizes each image and slices it into patches.",
+      challenge_story: "You run the vision pipeline for a document-AI product. Users upload photos of receipts, contracts, and whiteboards, and the model **doesn't see pixels** — it resizes each image, chops it into a grid of square **patches**, and turns every patch into one token. Finance is panicking because last month's image bill tripled, and nobody can explain why. Your job: build the **patch budgeter** that, given the model's patch size and a batch of uploads, reports the exact token count for each image *before* the request is sent — so the team can cap costs instead of discovering them on the invoice.",
+      challenge_statement: "The model processes each image in two stages:\n\n1. **Resize.** Each image has a *detail mode*: \`low\` clamps the **longest side** to **512** pixels; \`high\` clamps the longest side to **1536** pixels. If the longest side already fits within the cap, the image is **left unchanged**. Otherwise both dimensions are scaled by \`cap / longest_side\` and **floored** to whole pixels (the shorter side may round down).\n2. **Patch.** The resized image is tiled by a square patch of side \`P\`. A partial patch at the right or bottom edge still counts as a full patch, so the patch count along a dimension of size \`d\` is \`ceil(d / P)\`. The token count for the image is \`patches_wide * patches_tall\`.\n\nFor each image in the batch, print its token count.",
+      challenge_input_format: "The first line has two integers `P q`: the patch side and the number of images.\n\nEach of the next `q` lines describes one image: a detail mode (`low` or `high`), then two integers `w h` (original width and height in pixels), space-separated.",
+      challenge_output_format: "Print `q` lines. Line `i` is the integer token count for image `i`, in input order.",
+      challenge_constraints: [
+        "1 ≤ P ≤ 256",
+        "1 ≤ q ≤ 1000",
+        "1 ≤ w, h ≤ 100000",
+        "Detail mode is always the literal `low` or `high`.",
+      ],
+      challenge_examples: [
+        { input: "16 3\nlow 1024 1024\nhigh 2048 1024\nhigh 100 100", output: "1024\n4608\n49", explanation: "`low 1024 1024`: cap 512, scale to 512x512, 32x32 patches = 1024. `high 2048 1024`: cap 1536, scale to 1536x768, 96x48 = 4608. `high 100 100`: already under 1536, ceil(100/16)=7, 7x7 = 49." },
+        { input: "16 1\nlow 4000 3000", output: "768", explanation: "Cap 512, scale by 512/4000: width 512, height floor(3000*512/4000)=384, patches 32x24 = 768." },
+      ],
+      challenge_notes: "Real models charge by patches, not megabytes, which is why a tall skinny screenshot can cost more than a small square logo. The floor on resize and the ceil on patching pull in opposite directions — getting both rounding rules right is the whole problem. `low` is for 'is there a cat in this photo' questions; `high` is for reading the serial number on a chip.",
+      challenge_hints: [
+        "Find the longest side first. Only resize when it exceeds the cap; scale both dimensions by the same ratio and floor each.",
+        "Use integer math for the resize: `nw = w * cap // longest` avoids float drift entirely.",
+        "Patch count along a side of length `d` is `(d + P - 1) // P` — that is ceil division without importing math.",
+      ],
+      challenge_starter_code: `import sys
 
-print("low:", image_tokens("low"))
-print("high:", image_tokens("high"))
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    P = int(data[idx]); idx += 1
+    q = int(data[idx]); idx += 1
+    # TODO: for each image, read detail, w, h; resize per the cap; count patches.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split()
+    idx = 0
+    P = int(data[idx]); idx += 1
+    q = int(data[idx]); idx += 1
+    out = []
+    for _ in range(q):
+        detail = data[idx]; idx += 1
+        w = int(data[idx]); idx += 1
+        h = int(data[idx]); idx += 1
+        cap = 512 if detail == "low" else 1536
+        longest = max(w, h)
+        if longest > cap:
+            nw = (w * cap) // longest
+            nh = (h * cap) // longest
+        else:
+            nw, nh = w, h
+        pw = (nw + P - 1) // P
+        ph = (nh + P - 1) // P
+        out.append(str(pw * ph))
+    print("\\n".join(out))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "detail='low'", expected_output: "256", description: "256/16 = 16 per side, 16*16 = 256 tokens." },
-        { input: "detail='high'", expected_output: "4096", description: "1024/16 = 64 per side, 64*64 = 4096 tokens." }
+        { input: "16 3\nlow 1024 1024\nhigh 2048 1024\nhigh 100 100", expected_output: "1024\n4608\n49", description: "Resize + patch math across both detail modes." },
+        { input: "16 1\nlow 4000 3000", expected_output: "768", description: "Non-square image floors the shorter side after scaling." },
+        { input: "16 1\nhigh 7 7", expected_output: "1", description: "Edge case: image smaller than one patch still costs exactly one token." },
+        { input: "1 1\nlow 600 600", expected_output: "262144", description: "Patch size 1 with a clamped 512x512 image yields 512*512 tokens." }
       ]
     },
     {
@@ -472,29 +520,89 @@ text image`,
         "The text block uses type 'text'; the image block uses type 'image'.",
         "The image block's source includes media_type and the base64 data string."
       ],
-      challenge_title: "Pick the right media_type",
-      challenge_description: "Write a function media_type_for(filename) that returns the correct media_type based on the file extension: .png -> image/png, .jpg or .jpeg -> image/jpeg, .webp -> image/webp. Return 'unsupported' for anything else. Test it on three filenames.",
-      challenge_starter_code: `# Map file extensions to media types for an image request.
-# TODO: define media_type_for(filename) and test it.
-`,
-      challenge_solution_code: `def media_type_for(filename):
-    name = filename.lower()
-    if name.endswith(".png"):
-        return "image/png"
-    if name.endswith(".jpg") or name.endswith(".jpeg"):
-        return "image/jpeg"
-    if name.endswith(".webp"):
-        return "image/webp"
-    return "unsupported"
+      challenge_title: "The Attachment Gateway",
+      challenge_description: "Build the request builder that decides, per upload, the correct media_type and whether to send it as a URL or as inflated base64 — then reports the total payload it just committed to.",
+      challenge_story: "You're writing the **attachment gateway** that sits between your app and a multimodal model's API. Every image a user attaches has to be turned into a content block the model accepts. Two rules govern this. First, the block needs the right \`media_type\` derived from the file, or the API rejects it outright. Second, you choose how to *deliver* the bytes: a **public** image can be referenced by URL (cheap, the bytes never leave their host), but a **private** image must be **base64-encoded** and inlined into the request — which inflates its size. Get the routing wrong and you either leak private data or blow up your request size. Build the gateway that classifies every attachment correctly and totals the base64 weight you're about to ship.",
+      challenge_statement: "Process a batch of attachments. For each one:\n\n1. Determine its \`media_type\` from the **lowercased** filename extension: \`.png\` → \`image/png\`; \`.jpg\` or \`.jpeg\` → \`image/jpeg\`; \`.webp\` → \`image/webp\`; \`.gif\` → \`image/gif\`. Any other extension is **unsupported** and the attachment is rejected.\n\n2. If supported, choose delivery by visibility. A \`public\` attachment is sent by **url**. A \`private\` attachment is sent as **base64**; its encoded size in bytes is \`ceil(raw_bytes / 3) * 4\` (base64 turns every 3 raw bytes into 4 characters).\n\nFor each attachment, print one line:\n- rejected: \`<filename> REJECT unsupported\`\n- public + supported: \`<filename> url <media_type>\`\n- private + supported: \`<filename> base64 <media_type> <encoded_bytes>\`\n\nThen print a final summary line: \`SUMMARY <accepted> <rejected> <total_base64_bytes>\`.",
+      challenge_input_format: "The first line is an integer `n`: the number of attachments.\n\nEach of the next `n` lines has three space-separated fields: `filename visibility raw_bytes`, where `visibility` is `public` or `private` and `raw_bytes` is the original file size in bytes.",
+      challenge_output_format: "Print `n` per-attachment lines in input order, in the formats above, followed by one `SUMMARY` line.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0 ≤ raw_bytes ≤ 100000000",
+        "Filenames contain no spaces; visibility is `public` or `private`.",
+      ],
+      challenge_examples: [
+        { input: "4\nlogo.PNG public 9000\nreceipt.jpeg private 1201\nnotes.txt private 500\nicon.webp private 10", output: "logo.PNG url image/png\nreceipt.jpeg base64 image/jpeg 1604\nnotes.txt REJECT unsupported\nicon.webp base64 image/webp 16\nSUMMARY 3 1 1620", explanation: "PNG is public so it goes by url. The jpeg is private: ceil(1201/3)*4 = 401*4 = 1604 base64 bytes. notes.txt is unsupported. The webp inflates 10 bytes to ceil(10/3)*4 = 16. Two base64 attachments total 1620 bytes." },
+        { input: "1\nphoto.GIF public 100", output: "photo.GIF url image/gif\nSUMMARY 1 0 0", explanation: "Extension matching is case-insensitive, and public images never contribute base64 weight." },
+      ],
+      challenge_notes: "The 4/3 base64 inflation is exactly why inlining big private images is so costly — a 10 MB photo becomes ~13.3 MB of request body. URL delivery sidesteps that entirely but only works when the host is publicly reachable, which is the real-world trade your gateway is encoding.",
+      challenge_hints: [
+        "Lowercase the filename once, then test suffixes with `.endswith(...)`. Order doesn't matter since the extensions are distinct.",
+        "Base64 size is `((raw_bytes + 2) // 3) * 4` — that is `ceil(raw/3)*4` using only integers.",
+        "Track three running totals as you go: accepted count, rejected count, and summed base64 bytes (public images add zero).",
+      ],
+      challenge_starter_code: `import sys
 
-print(media_type_for("receipt.PNG"))
-print(media_type_for("photo.jpeg"))
-print(media_type_for("notes.txt"))
+def media_type(name):
+    n = name.lower()
+    # TODO: return the media_type for .png/.jpg/.jpeg/.webp/.gif, else None.
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: classify each attachment, print its line, and print the SUMMARY.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def media_type(name):
+    n = name.lower()
+    if n.endswith(".png"):
+        return "image/png"
+    if n.endswith(".jpg") or n.endswith(".jpeg"):
+        return "image/jpeg"
+    if n.endswith(".webp"):
+        return "image/webp"
+    if n.endswith(".gif"):
+        return "image/gif"
+    return None
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    accepted = 0
+    rejected = 0
+    base64_total = 0
+    lines = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        filename = parts[0]
+        visibility = parts[1]
+        raw = int(parts[2])
+        mt = media_type(filename)
+        if mt is None:
+            rejected += 1
+            lines.append(filename + " REJECT unsupported")
+            continue
+        accepted += 1
+        if visibility == "public":
+            lines.append(filename + " url " + mt)
+        else:
+            enc = ((raw + 2) // 3) * 4
+            base64_total += enc
+            lines.append(filename + " base64 " + mt + " " + str(enc))
+    for line in lines:
+        print(line)
+    print("SUMMARY " + str(accepted) + " " + str(rejected) + " " + str(base64_total))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "receipt.PNG", expected_output: "image/png", description: "Extension match is case-insensitive." },
-        { input: "photo.jpeg", expected_output: "image/jpeg", description: "Both .jpg and .jpeg map to image/jpeg." },
-        { input: "notes.txt", expected_output: "unsupported", description: "Unknown extensions return 'unsupported'." }
+        { input: "4\nlogo.PNG public 9000\nreceipt.jpeg private 1201\nnotes.txt private 500\nicon.webp private 10", expected_output: "logo.PNG url image/png\nreceipt.jpeg base64 image/jpeg 1604\nnotes.txt REJECT unsupported\nicon.webp base64 image/webp 16\nSUMMARY 3 1 1620", description: "Mixed batch exercising url, base64, and rejection." },
+        { input: "1\nphoto.GIF public 100", expected_output: "photo.GIF url image/gif\nSUMMARY 1 0 0", description: "Case-insensitive match; public adds no base64 weight." },
+        { input: "1\nbar.bmp private 50", expected_output: "bar.bmp REJECT unsupported\nSUMMARY 0 1 0", description: "Edge case: an unsupported extension is rejected even when private." },
+        { input: "1\nempty.png private 0", expected_output: "empty.png base64 image/png 0\nSUMMARY 1 0 0", description: "Edge case: a zero-byte file encodes to zero base64 bytes." }
       ]
     },
     {
@@ -710,26 +818,70 @@ total: 18.5`,
         "Access fields by key, like data['merchant'].",
         "The total parses as a number, so 18.50 prints as 18.5."
       ],
-      challenge_title: "Flag unreadable fields",
-      challenge_description: "Write a function clean_record(record) that takes a dict of extracted fields and replaces any value equal to '' or 'unreadable' with None, so missing fields are visible. Print the cleaned record.",
-      challenge_starter_code: `record = {"merchant": "Cafe Lux", "date": "unreadable", "total": ""}
-# TODO: define clean_record(record) that turns '' or 'unreadable' into None.
+      challenge_title: "The Extraction Auditor",
+      challenge_description: "Take the raw fields a document-understanding model pulled off a receipt, scrub the ones that are blank or unreliable, and decide whether the record can be trusted or must go to human review.",
+      challenge_story: "Your accounts-payable bot uses a vision model to read receipts and emit structured fields — merchant, date, total, tax. But the model is honest about uncertainty: it attaches a **confidence score** to each field, and sometimes it returns an empty value or the literal word \`unreadable\` when a photo is blurry. If you pipe those straight into the ledger, garbage flows downstream silently. Build the **extraction auditor**: it normalizes every field, blanks out anything untrustworthy, and routes the whole record to a human when any field falls short — turning silent corruption into a visible review queue.",
+      challenge_statement: "You are given a confidence threshold and a list of extracted fields. For each field with name, value, and integer confidence:\n\n- A field is **bad** if its value (after trimming surrounding spaces) is the empty string, equals \`unreadable\` (case-insensitive), **or** its confidence is **strictly below** the threshold.\n- A bad field's value becomes missing; a good field keeps its trimmed value.\n\nPrint each field on its own line, in input order:\n- good: \`<name>: <trimmed_value>\`\n- bad: \`<name>: MISSING\`\n\nAfter the fields, print one routing line:\n- if **any** field was bad: \`REVIEW\` followed by the names of all bad fields in input order, space-separated.\n- if **none** were bad: \`OK\`.",
+      challenge_input_format: "The first line has two integers `n threshold`: the number of fields and the confidence cutoff.\n\nEach of the next `n` lines is a field encoded as `name|value|confidence`, using `|` as the separator. The value may be empty (nothing between the bars) and never contains a `|`.",
+      challenge_output_format: "Print `n` field lines in input order, then one routing line (`REVIEW ...` or `OK`).",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0 ≤ threshold ≤ 100",
+        "0 ≤ confidence ≤ 100",
+        "Field names contain no spaces or `|`; values contain no `|`.",
+      ],
+      challenge_examples: [
+        { input: "4 70\nmerchant|Cafe Lux|95\ndate|unreadable|40\ntotal||0\ntax|3.50|72", output: "merchant: Cafe Lux\ndate: MISSING\ntotal: MISSING\ntax: 3.50\nREVIEW date total", explanation: "merchant and tax clear the bar. date is literally 'unreadable'; total is empty. Both are blanked and the record is routed to review." },
+        { input: "2 50\nmerchant|Acme|88\ntotal|42.00|60", output: "merchant: Acme\ntotal: 42.00\nOK", explanation: "Every field has a confident, readable value, so nothing needs review." },
+      ],
+      challenge_notes: "Surfacing uncertainty instead of hiding it is the whole point of confidence scores. A model that quietly guesses '0.00' for a smudged total is far more dangerous than one that says 'MISSING' and asks a human. This is the same pattern behind 'human in the loop' review queues in production document pipelines.",
+      challenge_hints: [
+        "Split each field on `|` into exactly three parts. The value may be empty, which `split('|')` handles fine.",
+        "Trim the value with `.strip()` before testing it, and compare against `unreadable` with `.lower()` for case-insensitivity.",
+        "Collect bad field names in a list as you go; if it's non-empty at the end, join it after `REVIEW`, else print `OK`.",
+      ],
+      challenge_starter_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, threshold = map(int, data[idx].split()); idx += 1
+    # TODO: clean each field, print its line, then print REVIEW <names> or OK.
+
+main()
 `,
-      challenge_solution_code: `record = {"merchant": "Cafe Lux", "date": "unreadable", "total": ""}
+      challenge_solution_code: `import sys
 
-def clean_record(record):
-    cleaned = {}
-    for key, value in record.items():
-        if value == "" or value == "unreadable":
-            cleaned[key] = None
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    n, threshold = map(int, data[idx].split()); idx += 1
+    flagged = []
+    field_lines = []
+    for _ in range(n):
+        name, value, conf = data[idx].split("|"); idx += 1
+        conf = int(conf)
+        v = value.strip()
+        bad = (v == "" or v.lower() == "unreadable" or conf < threshold)
+        if bad:
+            flagged.append(name)
+            field_lines.append(name + ": MISSING")
         else:
-            cleaned[key] = value
-    return cleaned
+            field_lines.append(name + ": " + v)
+    for line in field_lines:
+        print(line)
+    if flagged:
+        print("REVIEW " + " ".join(flagged))
+    else:
+        print("OK")
 
-print(clean_record(record))
+main()
 `,
       challenge_test_cases: [
-        { input: "{'merchant': 'Cafe Lux', 'date': 'unreadable', 'total': ''}", expected_output: "{'merchant': 'Cafe Lux', 'date': None, 'total': None}", description: "Both '' and 'unreadable' become None." }
+        { input: "4 70\nmerchant|Cafe Lux|95\ndate|unreadable|40\ntotal||0\ntax|3.50|72", expected_output: "merchant: Cafe Lux\ndate: MISSING\ntotal: MISSING\ntax: 3.50\nREVIEW date total", description: "Empty, unreadable, and low-confidence fields all flagged." },
+        { input: "2 50\nmerchant|Acme|88\ntotal|42.00|60", expected_output: "merchant: Acme\ntotal: 42.00\nOK", description: "All fields trustworthy yields OK." },
+        { input: "1 90\nname|Bob|90", expected_output: "name: Bob\nOK", description: "Edge case: confidence exactly at the threshold passes (strictly-below test)." },
+        { input: "1 0\nblank| |50", expected_output: "blank: MISSING\nREVIEW blank", description: "Edge case: a whitespace-only value trims to empty and is flagged even with threshold 0." }
       ]
     },
     {
@@ -948,23 +1100,72 @@ final noise: 7.78`,
         "noise = noise - noise * 0.4 reduces it by 40 percent.",
         "Print inside the loop to see the noise shrink each step."
       ],
-      challenge_title: "Steps versus quality",
-      challenge_description: "Write a function denoise(start, steps) that begins at the given noise level and removes 30 percent of the remaining noise each step, returning the final noise level rounded to 2 decimals. Show that more steps leaves less noise by printing denoise(100, 3) and denoise(100, 6).",
-      challenge_starter_code: `# More steps -> less remaining noise -> a cleaner image.
-# TODO: define denoise(start, steps) removing 30 percent each step.
-`,
-      challenge_solution_code: `def denoise(start, steps):
-    noise = start
-    for _ in range(steps):
-        noise = noise - noise * 0.3
-    return round(noise, 2)
+      challenge_title: "The Denoising Scheduler",
+      challenge_description: "Simulate a diffusion model's denoising loop, report the noise left after each requested step count, and find the smallest number of steps needed to hit a quality target.",
+      challenge_story: "You're tuning the **sampler** for an image-generation model. Diffusion models start from pure noise and remove a fixed fraction of the **remaining** noise on every denoising step — more steps means a cleaner image but a slower (and pricier) generation. Your design team keeps asking the same two questions: *'how clean is the image after N steps?'* and *'what's the fewest steps that gets us under our noise budget?'* Instead of eyeballing renders, build the **denoising scheduler** that answers both exactly, so the team can pick a step count on evidence instead of vibes.",
+      challenge_statement: "A render begins at noise level \`start\`. Each step multiplies the **remaining** noise by \`(100 - removal) / 100\` — i.e. it removes \`removal\` percent of what's left. Noise only ever decreases.\n\nDo two things:\n\n1. **Minimum steps.** Find the smallest number of steps after which the noise level is **less than or equal to** \`target\`. If \`start\` is already ≤ \`target\`, the answer is \`0\`.\n2. **Queries.** For each query step count \`s\`, report the noise level remaining after exactly \`s\` steps, formatted to **exactly 2 decimal places**.\n\nPrint each query result first (in order), then the minimum-steps line.",
+      challenge_input_format: "The first line has three integers `start removal target`.\n\nThe second line has an integer `q`: the number of queries.\n\nEach of the next `q` lines has one integer `s`: a step count to evaluate.",
+      challenge_output_format: "Print `q` lines, one per query: the remaining noise after `s` steps, formatted to exactly 2 decimals. Then print a final line `MIN_STEPS <k>` where `k` is the minimum steps to reach `target`.",
+      challenge_constraints: [
+        "1 ≤ start ≤ 100000",
+        "1 ≤ removal ≤ 99",
+        "0 ≤ target ≤ start",
+        "1 ≤ q ≤ 1000",
+        "0 ≤ s ≤ 100000",
+      ],
+      challenge_examples: [
+        { input: "100 30 10\n3\n3\n6\n10", output: "34.30\n11.76\n2.82\nMIN_STEPS 7", explanation: "Each step keeps 70% of the noise. After 3 steps: 100*0.7^3 = 34.30; after 6: 11.76; after 10: 2.82. The first step count whose noise ≤ 10 is 7 (0.7^6 → 11.76 is still above, 0.7^7 → 8.24 is at or below)." },
+        { input: "50 10 50\n1\n0", output: "50.00\nMIN_STEPS 0", explanation: "After 0 steps the noise is the start value, and since 50 ≤ the target 50 no steps are needed." },
+      ],
+      challenge_notes: "This geometric decay is why diffusion samplers show steep early gains and diminishing returns — the first few steps strip most of the noise, and later steps polish. Formatting to a fixed 2 decimals keeps the output unambiguous; never print a raw float whose repr can vary.",
+      challenge_hints: [
+        "Keep the noise as a float and multiply by `(100 - removal) / 100` each step. Don't try to subtract integers — the fraction matters.",
+        "For MIN_STEPS, loop multiplying until the noise is ≤ target, counting steps; handle the already-clean case (answer 0) up front.",
+        "Print each query with `\"{:.2f}\".format(value)` so 34.3 shows as `34.30` — a bare `round()` would drop the trailing zero.",
+      ],
+      challenge_starter_code: `import sys
 
-print(denoise(100, 3))
-print(denoise(100, 6))
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    start, removal, target = map(int, data[idx].split()); idx += 1
+    q = int(data[idx].strip()); idx += 1
+    keep = (100 - removal) / 100.0
+    # TODO: answer each query, then compute and print MIN_STEPS.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    start, removal, target = map(int, data[idx].split()); idx += 1
+    q = int(data[idx].strip()); idx += 1
+    keep = (100 - removal) / 100.0
+
+    noise = float(start)
+    min_steps = 0
+    while noise > target:
+        noise = noise * keep
+        min_steps += 1
+
+    out = []
+    for _ in range(q):
+        s = int(data[idx].strip()); idx += 1
+        nz = float(start)
+        for _ in range(s):
+            nz = nz * keep
+        out.append("{:.2f}".format(nz))
+    out.append("MIN_STEPS " + str(min_steps))
+    print("\\n".join(out))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "denoise(100, 3)", expected_output: "34.3", description: "100 * 0.7^3 = 34.3." },
-        { input: "denoise(100, 6)", expected_output: "11.76", description: "100 * 0.7^6 = 11.76, less noise with more steps." }
+        { input: "100 30 10\n3\n3\n6\n10", expected_output: "34.30\n11.76\n2.82\nMIN_STEPS 7", description: "Geometric decay queries plus the minimum-steps search." },
+        { input: "50 10 50\n1\n0", expected_output: "50.00\nMIN_STEPS 0", description: "Edge case: already at or below target needs zero steps." },
+        { input: "100 50 5\n2\n1\n5", expected_output: "50.00\n3.12\nMIN_STEPS 5", description: "Half-removal schedule; 0.5^5 = 3.125 is the first to dip under 5." }
       ]
     },
     {
@@ -1185,23 +1386,94 @@ total cost: $0.006222`,
         "Cost for a group is tokens / 1,000,000 * price.",
         "Add input cost and output cost, then format with :.6f."
       ],
-      challenge_title: "Compare detail levels",
-      challenge_description: "Write a function vision_cost(image_tokens, text_tokens, output_tokens) returning total cost, with input at $3 and output at $15 per 1,000,000 tokens, rounded to 6 decimals. Compare a high-detail call (image_tokens=4000) and a low-detail call (image_tokens=800), both with text_tokens=40 and output_tokens=150. Print both.",
-      challenge_starter_code: `# Input: $3 / 1,000,000 tokens. Output: $15 / 1,000,000 tokens.
-# TODO: define vision_cost(image_tokens, text_tokens, output_tokens).
-`,
-      challenge_solution_code: `def vision_cost(image_tokens, text_tokens, output_tokens):
-    input_tokens = image_tokens + text_tokens
-    input_cost = input_tokens / 1_000_000 * 3
-    output_cost = output_tokens / 1_000_000 * 15
-    return round(input_cost + output_cost, 6)
+      challenge_title: "The Detail Router",
+      challenge_description: "Route a batch of vision requests to low or high detail, bill each one exactly, and prove how much money the routing saves versus sending everything at high detail.",
+      challenge_story: "Your vision API is bleeding money. Every request was being sent at **high detail** by default — gorgeous transcriptions of serial numbers nobody needed, at full token price. You're shipping a **detail router**: a question like 'is there a dog in this photo?' goes \`low\`, while 'read the fine print on this contract' needs \`high\`. Each detail level produces a different image-token count, and the model bills input and output tokens at different rates. Build the router that prices every request at its chosen detail and reports, to the exact cent-fraction, how much you save over the old always-high policy — the number that justifies the whole project to finance.",
+      challenge_statement: "Input tokens (image + text) are billed at **$3 per 1,000,000 tokens**; output tokens at **$15 per 1,000,000 tokens**. Every cost is reported to **exactly 6 decimal places**, prefixed with \`$\`.\n\nEach request supplies the image-token count it would use at **low** detail and at **high** detail, plus its text and output token counts, and a flag for whether it **needs** high detail.\n\nFor each request, charge it at the detail it needs (\`high\` if the flag is 1, else \`low\`) and print: \`<name> <chosen_detail> <cost>\`.\n\nThen print three summary lines:\n- \`ALL_LOW <cost>\`: total cost if **every** request used low detail.\n- \`ALL_HIGH <cost>\`: total cost if **every** request used high detail.\n- \`SAVINGS <cost>\`: \`ALL_HIGH\` minus \`ALL_LOW\` — the money the router can save by routing to low wherever possible.",
+      challenge_input_format: "The first line is an integer `n`: the number of requests.\n\nEach of the next `n` lines has: `name low_img high_img text output needs`, space-separated, where `low_img`/`high_img` are image-token counts at each detail, `text`/`output` are token counts, and `needs` is 1 (must use high) or 0 (low is fine).",
+      challenge_output_format: "Print `n` per-request lines (`<name> <chosen_detail> $<cost>`), then `ALL_LOW`, `ALL_HIGH`, and `SAVINGS` lines, each cost as `$` plus exactly 6 decimals.",
+      challenge_constraints: [
+        "1 ≤ n ≤ 1000",
+        "0 ≤ low_img ≤ high_img ≤ 1000000",
+        "0 ≤ text, output ≤ 1000000",
+        "needs is 0 or 1.",
+      ],
+      challenge_examples: [
+        { input: "2\nreceipt 800 4000 40 150 1\nbanner 800 4000 40 150 0", output: "receipt high $0.014370\nbanner low $0.004770\nALL_LOW $0.009540\nALL_HIGH $0.028740\nSAVINGS $0.019200", explanation: "receipt needs high: (4000+40)*3 + 150*15 = 14370 micro-dollars = $0.014370. banner is fine at low: (800+40)*3 + 150*15 = 4770 → $0.004770. All-low totals $0.009540, all-high $0.028740, so routing saves $0.019200." },
+        { input: "1\nchip 256 4096 40 150 1", output: "chip high $0.014658\nALL_LOW $0.003138\nALL_HIGH $0.014658\nSAVINGS $0.011520", explanation: "A single high-detail OCR request: (4096+40)*3 + 150*15 = 14658 → $0.014658, and the all-low baseline shows what detail routing would have cost if low were acceptable." },
+      ],
+      challenge_notes: "Computing the cost in integer **micro-dollars** (`input_tokens*3 + output_tokens*15`, since the rate is per 1,000,000) sidesteps float rounding entirely — the value is already cost times 1,000,000. Splitting it into a whole-dollar part and a 6-digit fractional part gives an exact, unambiguous string every time.",
+      challenge_hints: [
+        "With rates of $3 and $15 per 1,000,000 tokens, `input*3 + output*15` is exactly the cost in micro-dollars (millionths). No division needed until you format.",
+        "To format micro-dollars `m`: dollars = `m // 1_000_000`, fractional 6 digits = `str(m % 1_000_000).zfill(6)`.",
+        "Accumulate ALL_LOW and ALL_HIGH totals for every request regardless of its flag; SAVINGS is just their difference.",
+      ],
+      challenge_starter_code: `import sys
 
-print("high:", vision_cost(4000, 40, 150))
-print("low:", vision_cost(800, 40, 150))
+IN_RATE = 3    # $ per 1,000,000 input tokens
+OUT_RATE = 15  # $ per 1,000,000 output tokens
+
+def cost_micro(input_tokens, output_tokens):
+    return input_tokens * IN_RATE + output_tokens * OUT_RATE
+
+def fmt(micro):
+    # TODO: turn integer micro-dollars into "$D.dddddd".
+    pass
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    # TODO: route each request, print its line, accumulate totals, print summaries.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+IN_RATE = 3    # $ per 1,000,000 input tokens
+OUT_RATE = 15  # $ per 1,000,000 output tokens
+
+def cost_micro(input_tokens, output_tokens):
+    return input_tokens * IN_RATE + output_tokens * OUT_RATE
+
+def fmt(micro):
+    dollars = micro // 1_000_000
+    frac = micro % 1_000_000
+    return "$" + str(dollars) + "." + str(frac).zfill(6)
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    n = int(data[0])
+    total_low = 0
+    total_high = 0
+    lines = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        name = parts[0]
+        low_img = int(parts[1])
+        high_img = int(parts[2])
+        text = int(parts[3])
+        out_tok = int(parts[4])
+        needs = int(parts[5])
+        low_cost = cost_micro(low_img + text, out_tok)
+        high_cost = cost_micro(high_img + text, out_tok)
+        total_low += low_cost
+        total_high += high_cost
+        if needs == 1:
+            lines.append(name + " high " + fmt(high_cost))
+        else:
+            lines.append(name + " low " + fmt(low_cost))
+    for line in lines:
+        print(line)
+    print("ALL_LOW " + fmt(total_low))
+    print("ALL_HIGH " + fmt(total_high))
+    print("SAVINGS " + fmt(total_high - total_low))
+
+main()
 `,
       challenge_test_cases: [
-        { input: "image_tokens=4000, text=40, output=150", expected_output: "0.014370", description: "(4040*3 + 150*15)/1e6 = 0.012120 + 0.002250 = 0.014370." },
-        { input: "image_tokens=800, text=40, output=150", expected_output: "0.004770", description: "(840*3 + 150*15)/1e6 = 0.002520 + 0.002250 = 0.004770." }
+        { input: "2\nreceipt 800 4000 40 150 1\nbanner 800 4000 40 150 0", expected_output: "receipt high $0.014370\nbanner low $0.004770\nALL_LOW $0.009540\nALL_HIGH $0.028740\nSAVINGS $0.019200", description: "Mixed routing with a savings calculation." },
+        { input: "1\nchip 256 4096 40 150 1", expected_output: "chip high $0.014658\nALL_LOW $0.003138\nALL_HIGH $0.014658\nSAVINGS $0.011520", description: "Single high-detail request against its low baseline." },
+        { input: "1\nidle 0 0 0 0 0", expected_output: "idle low $0.000000\nALL_LOW $0.000000\nALL_HIGH $0.000000\nSAVINGS $0.000000", description: "Edge case: a zero-token request costs exactly $0.000000 with no savings." }
       ]
     }
   ]

@@ -226,24 +226,71 @@ False`,
         "The example count needs a threshold; 300 is the floor mentioned in the lesson.",
         "Return the combined boolean expression directly, no if/else needed."
       ],
-      challenge_title: "Recommend a strategy",
-      challenge_description: "Write recommend(examples, stable, high_volume) that returns 'fine-tune' only when there are at least 300 examples AND the task is stable AND volume is high. Otherwise return 'prompt'.",
-      challenge_starter_code: `def recommend(examples, stable, high_volume):
-    # return 'fine-tune' or 'prompt'
-    pass
+      challenge_title: "The Fine-Tune Router",
+      challenge_description: "Decide fine-tune vs. prompt for a batch of AI tasks, then total the tokens fine-tuning would save.",
+      challenge_story: "You run the ML platform team at a company shipping dozens of AI features. Every product team wants to fine-tune — it sounds serious and important. Your job is to be the adult in the room. You've codified the decision rule from the playbook into a router that takes each team's task profile and returns a verdict. The CFO also wants one number: across everything you'd actually fine-tune, how many tokens per month does dropping the in-prompt examples save? Build the router that turns hype into a defensible recommendation.",
+      challenge_statement: "You are given **N** AI tasks. For each task you know how many clean training examples are available, whether the task shape is **stable**, the projected monthly call volume, and how many tokens of few-shot examples the current prompt carries.\n\nRecommend **FINE-TUNE** for a task only when **all three** hold:\n\n- `examples ≥ 300`\n- the task is stable (`stable = 1`)\n- `monthly_calls ≥ 100000`\n\nOtherwise recommend **PROMPT**.\n\nFor every task you recommend fine-tuning, that prompt can drop its few-shot examples entirely, saving `monthly_calls × example_tokens` tokens per month. Print each task's verdict in order, then a final summary line.",
+      challenge_input_format: "The first line is an integer `N`. Each of the next `N` lines describes one task with four space-separated integers: `examples stable monthly_calls example_tokens` (where `stable` is `1` for stable, `0` otherwise).",
+      challenge_output_format: "Print `N` lines, one per task in input order: `FINE-TUNE` or `PROMPT`. Then print one final line with two space-separated integers: the number of fine-tune recommendations and the total monthly tokens saved across them.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "0 ≤ examples ≤ 1000000",
+        "stable is 0 or 1",
+        "0 ≤ monthly_calls ≤ 100000000",
+        "0 ≤ example_tokens ≤ 100000"
+      ],
+      challenge_examples: [
+        { input: "3\n500 1 250000 2000\n50 1 250000 2000\n400 0 500000 1500", output: "FINE-TUNE\nPROMPT\nPROMPT\n1 500000000", explanation: "Task 1 clears all three gates → fine-tune, saving 250000×2000 = 500,000,000 tokens/month. Task 2 has only 50 examples; task 3 is not stable. Both stay on prompting." },
+        { input: "1\n300 1 100000 1000", output: "FINE-TUNE\n1 100000000", explanation: "Exactly on every threshold (300 examples, stable, 100000 calls) still qualifies. Savings: 100000×1000 = 100,000,000." }
+      ],
+      challenge_notes: "The thresholds are *floors*: 300 and 100000 both pass at equality. Token savings can exceed 32-bit range — Python ints are arbitrary precision, so no special handling is needed.",
+      challenge_hints: [
+        "Read N, then loop N times splitting each line into four ints. Treat `stable == 1` as the boolean.",
+        "Combine the three gates with `and`. Only when all pass do you add `monthly_calls * example_tokens` to a running total.",
+        "Collect the per-task verdict strings in a list, then print them, then print the summary line."
+      ],
+      challenge_starter_code: `import sys
 
-print(recommend(500, True, True))
-print(recommend(50, True, True))`,
-      challenge_solution_code: `def recommend(examples, stable, high_volume):
-    if examples >= 300 and stable and high_volume:
-        return 'fine-tune'
-    return 'prompt'
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    # TODO: for each task, decide FINE-TUNE / PROMPT and tally savings.
+    # Print each verdict, then a final line: "<ft_count> <total_saved>".
 
-print(recommend(500, True, True))
-print(recommend(50, True, True))`,
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    ft_count = 0
+    total_saved = 0
+    decisions = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        examples = int(parts[0])
+        stable = parts[1] == '1'
+        monthly_calls = int(parts[2])
+        example_tokens = int(parts[3])
+        if examples >= 300 and stable and monthly_calls >= 100000:
+            decisions.append("FINE-TUNE")
+            ft_count += 1
+            total_saved += monthly_calls * example_tokens
+        else:
+            decisions.append("PROMPT")
+    out = decisions[:]
+    out.append(f"{ft_count} {total_saved}")
+    print('\\n'.join(out))
+
+main()
+`,
       challenge_test_cases: [
-        { input: "recommend(500, True, True)", expected_output: "fine-tune", description: "All conditions met → fine-tune." },
-        { input: "recommend(50, True, True)", expected_output: "prompt", description: "Too few examples → prompt instead." }
+        { input: "3\n500 1 250000 2000\n50 1 250000 2000\n400 0 500000 1500", expected_output: "FINE-TUNE\nPROMPT\nPROMPT\n1 500000000", description: "Only the first task clears all three gates." },
+        { input: "1\n300 1 100000 1000", expected_output: "FINE-TUNE\n1 100000000", description: "Exactly on every threshold still qualifies." },
+        { input: "2\n299 1 100000 1000\n300 1 99999 1000", expected_output: "PROMPT\nPROMPT\n0 0", description: "Edge: one short on examples, one short on calls — neither qualifies." }
       ]
     },
     {
@@ -478,23 +525,70 @@ score: 0.67`,
         "sum(1 for ... if condition) is a clean way to count matches.",
         "Score is passed divided by len(dataset); format with :.2f for two decimals."
       ],
-      challenge_title: "Score an eval run",
-      challenge_description: "Write accuracy(outputs, expected) where both are lists of strings. Return the fraction that match exactly, rounded to 2 decimals.",
-      challenge_starter_code: `def accuracy(outputs, expected):
-    # return fraction matching, rounded to 2 decimals
-    pass
+      challenge_title: "The Regression Gate",
+      challenge_description: "Score a model's outputs against ground truth with forgiving normalization, then decide whether the build can ship.",
+      challenge_story: "It's release night. An engineer pushed a 'tiny' system-prompt tweak two hours ago and swears the answers feel better. You don't ship on vibes. Your eval harness has a frozen dataset of inputs with known-good answers; the candidate model has already produced an output for each. You need an exact-match scorer that isn't *brittle* — `\"  Paris \"` and `\"paris\"` are the same answer, and nobody should fail over trailing whitespace or capitalization. Then a release gate compares the pass rate against the team's agreed threshold and prints a single verdict the on-call engineer can trust.",
+      challenge_statement: "You are given **N** eval cases. Each case is a pair of lines: the model's **output** then the **expected** answer.\n\nScore a case as a pass when the output and expected match after normalization. Normalization means: strip leading/trailing whitespace, lowercase, and collapse every run of internal whitespace to a single space.\n\nGiven a pass-rate **threshold** (an integer percent), the build ships only when the pass rate is **at least** the threshold. Compare without floating-point error: the build ships when `passed × 100 ≥ threshold × N`.\n\nReport how many cases passed, the pass rate as a percentage to two decimals, and the verdict.",
+      challenge_input_format: "Line 1: integer `N`. Line 2: integer `threshold` (a percent, 0–100). Then `2N` lines: for each case, the output line followed by the expected line. Output/expected lines may contain spaces.",
+      challenge_output_format: "Three lines:\n1. `passed/N` (e.g. `2/3`).\n2. The pass rate to exactly two decimals followed by `%` (e.g. `66.67%`).\n3. `SHIP` if the pass rate meets the threshold, else `BLOCK`.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "0 ≤ threshold ≤ 100",
+        "Each output/expected line has length ≤ 500"
+      ],
+      challenge_examples: [
+        { input: "3\n80\nParis\nparis\nLondon\nParis\n  YES  \nyes", output: "2/3\n66.67%\nBLOCK", explanation: "Case 1: `Paris` vs `paris` match after lowercasing. Case 2: `London` ≠ `Paris`. Case 3: `  YES  ` normalizes to `yes`, matches. 2 of 3 = 66.67%, below the 80% gate → BLOCK." },
+        { input: "2\n100\na\nA\nb\nb", output: "2/2\n100.00%\nSHIP", explanation: "Both pass after normalization; 100% meets the 100% gate → SHIP." }
+      ],
+      challenge_notes: "Use `' '.join(s.strip().lower().split())` to normalize in one line — `.split()` with no argument both trims and collapses whitespace. Comparing `passed*100 ≥ threshold*N` keeps the gate decision in integer arithmetic, dodging float rounding bugs right where they'd hurt.",
+      challenge_hints: [
+        "Read N and threshold, then loop N times reading two lines per case.",
+        "Normalize both strings the same way before comparing; count exact normalized matches.",
+        "Format the percentage with `f\"{pct:.2f}%\"` and decide SHIP/BLOCK using integer cross-multiplication."
+      ],
+      challenge_starter_code: `import sys
 
-print(accuracy(["a", "b", "c"], ["a", "x", "c"]))
-print(accuracy(["yes", "no"], ["yes", "no"]))`,
-      challenge_solution_code: `def accuracy(outputs, expected):
-    matches = sum(1 for o, e in zip(outputs, expected) if o == e)
-    return round(matches / len(expected), 2)
+def normalize(s):
+    # strip, lowercase, collapse internal whitespace
+    return ' '.join(s.strip().lower().split())
 
-print(accuracy(["a", "b", "c"], ["a", "x", "c"]))
-print(accuracy(["yes", "no"], ["yes", "no"]))`,
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    threshold = int(data[idx]); idx += 1
+    # TODO: score each case, then print passed/N, the percentage, and SHIP/BLOCK.
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def normalize(s):
+    return ' '.join(s.strip().lower().split())
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    threshold = int(data[idx]); idx += 1
+    passed = 0
+    for _ in range(n):
+        out = data[idx]; idx += 1
+        exp = data[idx]; idx += 1
+        if normalize(out) == normalize(exp):
+            passed += 1
+    pct = passed * 100.0 / n
+    verdict = "SHIP" if passed * 100 >= threshold * n else "BLOCK"
+    print(f"{passed}/{n}")
+    print(f"{pct:.2f}%")
+    print(verdict)
+
+main()
+`,
       challenge_test_cases: [
-        { input: 'accuracy(["a","b","c"], ["a","x","c"])', expected_output: "0.67", description: "Two of three match." },
-        { input: 'accuracy(["yes","no"], ["yes","no"])', expected_output: "1.0", description: "All match → 1.0." }
+        { input: "3\n80\nParis\nparis\nLondon\nParis\n  YES  \nyes", expected_output: "2/3\n66.67%\nBLOCK", description: "Case-insensitive + whitespace-tolerant scoring; below the 80% gate." },
+        { input: "2\n100\na\nA\nb\nb", expected_output: "2/2\n100.00%\nSHIP", description: "All pass after normalization; meets a 100% gate." },
+        { input: "1\n50\nfoo\nbar", expected_output: "0/1\n0.00%\nBLOCK", description: "Edge: zero passes — must not divide-by-zero and must BLOCK." }
       ]
     },
     {
@@ -719,22 +813,85 @@ print(round(jaccard(ref, "the capital of france is lyon"), 2))`,
         "Both inputs are already lowercased and split into word sets.",
         "Divide the length of the intersection by the length of the union, then round."
       ],
-      challenge_title: "Build a contains scorer",
-      challenge_description: "Write contains_score(output, expected) that returns 1 if the lowercased expected string appears anywhere in the lowercased output, else 0.",
-      challenge_starter_code: `def contains_score(output, expected):
-    # return 1 or 0
+      challenge_title: "The Jaccard Scorer",
+      challenge_description: "Score fuzzy free-text answers by token overlap, average across the dataset, and count how many clear a quality bar.",
+      challenge_story: "Exact match keeps failing your RAG QA eval. The model answers 'The capital of France is Paris' and your reference says 'Paris France' — semantically a win, scored a zero. You're escalating to a **Jaccard** token-overlap scorer: treat each answer as a bag of words and measure how much the sets agree. It's loose enough to forgive phrasing, strict enough to catch a wrong fact. You'll run it across the whole eval set, report the average score, and count how many answers clear the quality threshold the product team set.",
+      challenge_statement: "You are given **N** eval cases, each a pair of lines: the model **output** then the **expected** reference.\n\nTokenize each string by lowercasing and extracting maximal runs of letters and digits (`a–z`, `0–9`); everything else is a separator. Build a *set* of tokens for each side (duplicates collapse).\n\nThe **Jaccard score** of a case is `|output_tokens ∩ expected_tokens| / |output_tokens ∪ expected_tokens|`. As a special case, if both token sets are empty the score is `1.0` (two empty answers agree perfectly).\n\nCompute the average Jaccard score across all `N` cases, and count how many cases score **at least** the given threshold.",
+      challenge_input_format: "Line 1: integer `N`. Line 2: integer `threshold_pct` (0–100); the pass threshold is `threshold_pct / 100`. Then `2N` lines: for each case, the output line then the expected line.",
+      challenge_output_format: "Two lines:\n1. The average Jaccard score across all cases, to exactly three decimals.\n2. The integer count of cases scoring at least the threshold.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 50000",
+        "0 ≤ threshold_pct ≤ 100",
+        "Each line has length ≤ 1000"
+      ],
+      challenge_examples: [
+        { input: "2\n50\nThe capital of France is Paris\nParis France\nIt is Lyon\nParis France", output: "0.167\n0", explanation: "Case 1 tokens {the,capital,of,france,is,paris} vs {paris,france}: intersection 2, union 6 → 0.333. Case 2 {it,is,lyon} vs {paris,france}: intersection 0 → 0.0. Average = 0.167. Threshold 0.5: neither clears it → 0." },
+        { input: "1\n100\nhello world\nhello world", output: "1.000\n1", explanation: "Identical token sets → Jaccard 1.0, which meets the 1.0 threshold." }
+      ],
+      challenge_notes: "Use `re.findall(r'[a-z0-9]+', s.lower())` to tokenize, then wrap in `set()`. Set operators `&` (intersection) and `|` (union) do the heavy lifting. Guard the both-empty case before dividing so you never hit a zero denominator.",
+      challenge_hints: [
+        "Write a `tokens(s)` helper returning a set of lowercased alphanumeric runs.",
+        "Jaccard = len(a & b) / len(a | b); handle the empty-union case as score 1.0.",
+        "Accumulate scores for the average and bump a counter when a score ≥ threshold."
+      ],
+      challenge_starter_code: `import sys
+import re
+
+def tokens(s):
+    return set(re.findall(r'[a-z0-9]+', s.lower()))
+
+def jaccard(a, b):
+    # return the Jaccard score of two token sets (both empty -> 1.0)
     pass
 
-print(contains_score("The capital is Paris.", "paris"))
-print(contains_score("It is Lyon.", "paris"))`,
-      challenge_solution_code: `def contains_score(output, expected):
-    return 1 if expected.lower() in output.lower() else 0
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    thr = int(data[idx]) / 100.0; idx += 1
+    # TODO: score each case, average them, count those >= thr.
 
-print(contains_score("The capital is Paris.", "paris"))
-print(contains_score("It is Lyon.", "paris"))`,
+main()
+`,
+      challenge_solution_code: `import sys
+import re
+
+def tokens(s):
+    return set(re.findall(r'[a-z0-9]+', s.lower()))
+
+def jaccard(a, b):
+    ta, tb = tokens(a), tokens(b)
+    if not ta and not tb:
+        return 1.0
+    union = len(ta | tb)
+    if union == 0:
+        return 0.0
+    return len(ta & tb) / union
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    thr = int(data[idx]) / 100.0; idx += 1
+    scores = []
+    passed = 0
+    for _ in range(n):
+        out = data[idx]; idx += 1
+        exp = data[idx]; idx += 1
+        j = jaccard(out, exp)
+        scores.append(j)
+        if j >= thr:
+            passed += 1
+    avg = sum(scores) / n
+    print(f"{avg:.3f}")
+    print(passed)
+
+main()
+`,
       challenge_test_cases: [
-        { input: 'contains_score("The capital is Paris.", "paris")', expected_output: "1", description: "Expected appears (case-insensitive) → 1." },
-        { input: 'contains_score("It is Lyon.", "paris")', expected_output: "0", description: "Expected absent → 0." }
+        { input: "2\n50\nThe capital of France is Paris\nParis France\nIt is Lyon\nParis France", expected_output: "0.167\n0", description: "Token-overlap scoring; neither case clears the 0.5 bar." },
+        { input: "1\n100\nhello world\nhello world", expected_output: "1.000\n1", description: "Identical answers score a perfect 1.0." },
+        { input: "1\n50\n!!!\n???", expected_output: "1.000\n1", description: "Edge: both answers tokenize to empty sets → defined as 1.0." }
       ]
     },
     {
@@ -966,27 +1123,75 @@ print(f"Empathy score: {score}")`,
         "Access the value with result['score'].",
         "Print using an f-string so the number is interpolated."
       ],
-      challenge_title: "Average judge scores",
-      challenge_description: "Write avg_score(json_list) where json_list is a list of JSON strings each containing a 'score' field. Parse each and return the average score rounded to 1 decimal.",
-      challenge_starter_code: `import json
+      challenge_title: "Parsing the Judge",
+      challenge_description: "Parse a batch of LLM-judge verdicts, discard malformed or out-of-range scores, and report the average of what survives.",
+      challenge_story: "Your LLM-as-judge runs over a thousand customer-support replies, emitting one JSON verdict per case on a 1–5 rubric. But judges are messy: sometimes the model wraps prose around the JSON and your parser already handled that, sometimes it hallucinates a score of 9, sometimes it forgets the `score` field entirely, and sometimes it returns flat garbage. A naive `json.loads(...)['score']` crashes on the first bad row and poisons your average on the rest. Build the robust aggregator: keep only verdicts that parse cleanly and fall inside the rubric, average those, and report exactly how many you trusted versus threw out.",
+      challenge_statement: "You are given **N** lines, each a candidate JSON verdict from the judge.\n\nA verdict is **valid** only when all of these hold:\n\n- the line parses as a JSON object,\n- it has a `score` key,\n- the value is a JSON integer (not a boolean, not a float, not a string),\n- the integer is in the rubric range `1 ≤ score ≤ 5`.\n\nEvery line failing any condition is **invalid** and excluded. Compute the average of the valid scores (rounded to two decimals) and report the counts of valid and invalid verdicts. If no verdict is valid, report the average as `0.00`.",
+      challenge_input_format: "Line 1: integer `N`. Each of the next `N` lines is one candidate verdict (a JSON string, or possibly malformed text).",
+      challenge_output_format: "Two lines:\n1. The average of valid scores to exactly two decimals (`0.00` if none are valid).\n2. Two space-separated integers: the count of valid verdicts then the count of invalid verdicts.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 100000",
+        "Each line has length ≤ 1000",
+        "Scores in the rubric are integers 1 through 5"
+      ],
+      challenge_examples: [
+        { input: "4\n{\"score\": 5}\n{\"score\": 3}\n{\"score\": 9}\nnot json", output: "4.00\n2 2", explanation: "Scores 5 and 3 are valid (avg 4.00). `9` is out of the 1–5 range; `not json` does not parse. Two valid, two invalid." },
+        { input: "2\n{\"score\": 4}\n{\"verdict\": \"good\"}", output: "4.00\n1 1", explanation: "The second verdict lacks a `score` key, so it is discarded. Average of the single valid score is 4.00." }
+      ],
+      challenge_notes: "Wrap the parse in `try/except (ValueError, KeyError, TypeError)`. Reject booleans explicitly — in Python `isinstance(True, int)` is `True`, so check `isinstance(score, bool)` first and skip those. A float like `4.5` should also be rejected since the rubric is integer-valued.",
+      challenge_hints: [
+        "Use `json.loads(line)` inside a try block; treat any exception as invalid.",
+        "Validate the `score` value: reject bools, require `int`, require `1 <= score <= 5`.",
+        "Track valid scores in a list and an invalid counter; guard the empty-valid case before averaging."
+      ],
+      challenge_starter_code: `import sys
+import json
 
-def avg_score(json_list):
-    # parse each, average the 'score' values, round to 1 decimal
-    pass
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    # TODO: validate each verdict, average the valid scores,
+    # and print the average plus "<valid> <invalid>".
 
-print(avg_score(['{"score": 5}', '{"score": 3}', '{"score": 4}']))
-print(avg_score(['{"score": 2}', '{"score": 2}']))`,
-      challenge_solution_code: `import json
+main()
+`,
+      challenge_solution_code: `import sys
+import json
 
-def avg_score(json_list):
-    scores = [json.loads(s)["score"] for s in json_list]
-    return round(sum(scores) / len(scores), 1)
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    valid = []
+    invalid = 0
+    for _ in range(n):
+        line = data[idx]; idx += 1
+        try:
+            obj = json.loads(line)
+            score = obj["score"]
+            if isinstance(score, bool) or not isinstance(score, int):
+                invalid += 1
+                continue
+            if 1 <= score <= 5:
+                valid.append(score)
+            else:
+                invalid += 1
+        except (ValueError, KeyError, TypeError):
+            invalid += 1
+    if valid:
+        avg = sum(valid) / len(valid)
+        print(f"{avg:.2f}")
+    else:
+        print("0.00")
+    print(f"{len(valid)} {invalid}")
 
-print(avg_score(['{"score": 5}', '{"score": 3}', '{"score": 4}']))
-print(avg_score(['{"score": 2}', '{"score": 2}']))`,
+main()
+`,
       challenge_test_cases: [
-        { input: 'avg_score([\'{"score": 5}\', \'{"score": 3}\', \'{"score": 4}\'])', expected_output: "4.0", description: "(5+3+4)/3 = 4.0." },
-        { input: 'avg_score([\'{"score": 2}\', \'{"score": 2}\'])', expected_output: "2.0", description: "Both 2 → 2.0." }
+        { input: "4\n{\"score\": 5}\n{\"score\": 3}\n{\"score\": 9}\nnot json", expected_output: "4.00\n2 2", description: "Out-of-range and unparseable rows are excluded." },
+        { input: "2\n{\"score\": 4}\n{\"verdict\": \"good\"}", expected_output: "4.00\n1 1", description: "A verdict missing the score key is discarded." },
+        { input: "1\n{\"score\": 0}", expected_output: "0.00\n0 1", description: "Edge: the only verdict is out of range → no valid scores, average defaults to 0.00." }
       ]
     },
     {
@@ -1272,22 +1477,92 @@ Pass rate: 2/3 (67%)`,
         "Call it with the model output and the expected value.",
         "Booleans add like ints in Python, so passed += ok counts True as 1."
       ],
-      challenge_title: "Compute a suite pass rate",
-      challenge_description: "Write run_suite(results) where results is a list of booleans (one per case). Return the pass rate as an integer percent (0–100).",
-      challenge_starter_code: `def run_suite(results):
-    # return integer percent of True values
+      challenge_title: "The Eval Suite Harness",
+      challenge_description: "Run a mixed-scorer eval suite, list the exact cases that failed, and gate the release against the last green baseline.",
+      challenge_statement: "You are building the harness that runs before every prompt change. Each case names a **scorer**, supplies the model **output**, and the **expected** target. Apply the right scorer:\n\n- `exact` — pass when output equals expected after trimming and lowercasing both.\n- `contains` — pass when the trimmed, lowercased expected appears anywhere in the trimmed, lowercased output.\n- `numeric` — `expected` is two space-separated numbers `target tolerance`; parse the output as a float and pass when `|value − target| ≤ tolerance`. If the output is not a number, fail.\n\nRun all `N` cases in order. Cases are numbered `1..N`. Report how many passed, the pass rate as an integer percent (standard rounding), the list of failing case numbers, and a ship verdict: **SHIP** when the number passed is at least the green **baseline**, else **BLOCK**.",
+      challenge_story: "Your safety net is one command: run the suite, read the verdict, ship or don't. Tonight the suite mixes three scorer types — exact-match for canned answers, contains for 'must mention the policy ID', and a numeric scorer for the price-extraction feature with a tolerance band. The harness has to score each case with the *right* tool, surface exactly which case numbers regressed (a single number hides the bug; a list of IDs points at it), and compare the pass count against the last known-green baseline so a 'harmless' tweak that quietly broke a case can't sneak past you.",
+      challenge_input_format: "Line 1: integer `N`. Line 2: integer `baseline` (the pass count from the last green run). Then each case is three lines: the scorer name (`exact`, `contains`, or `numeric`), the output line, and the expected line.",
+      challenge_output_format: "Four lines:\n1. `passed/N`.\n2. The pass rate as an integer percent followed by `%` (e.g. `75%`).\n3. `FAIL` followed by the failing case numbers in ascending order separated by spaces, or `FAIL none` if all passed.\n4. `SHIP` if passed ≥ baseline, else `BLOCK`.",
+      challenge_constraints: [
+        "1 ≤ N ≤ 50000",
+        "0 ≤ baseline ≤ N",
+        "scorer is one of `exact`, `contains`, `numeric`",
+        "numeric target and tolerance fit in a double; tolerance ≥ 0"
+      ],
+      challenge_examples: [
+        { input: "3\n3\nexact\nParis\nparis\ncontains\nThe answer is 42\n42\nnumeric\n3.14\n3.0 0.2", output: "3/3\n100%\nFAIL none\nSHIP", explanation: "Exact: `Paris`==`paris` after lowercasing. Contains: `42` is inside the output. Numeric: |3.14−3.0|=0.14 ≤ 0.2. All pass; 3 ≥ baseline 3 → SHIP." },
+        { input: "4\n4\nexact\nyes\nyes\nexact\nno\nyes\ncontains\nhello world\nworld\nnumeric\n9.9\n10 0.5", output: "3/4\n75%\nFAIL 2\nBLOCK", explanation: "Case 2 fails (`no` ≠ `yes`); the rest pass. 3 of 4 = 75%. Passed 3 < baseline 4 → BLOCK, and case 2 is named as the regression." }
+      ],
+      challenge_notes: "Dispatch on the scorer name with a small `if/elif` chain or a dict of functions. For `numeric`, guard the float parse with `try/except ValueError` so a non-numeric output fails cleanly instead of crashing. Percent rounding uses Python's `round`, which rounds 66.5 to the nearest even — but standard cases like 2/3 → 67 behave as expected.",
+      challenge_hints: [
+        "Read N and baseline, then loop reading three lines (scorer, output, expected) per case.",
+        "Write one `score_case(scorer, output, expected)` returning a bool; collect failing 1-based indices.",
+        "Compute `round(passed / n * 100)` for the percent and compare `passed >= baseline` for the verdict."
+      ],
+      challenge_starter_code: `import sys
+
+def score_case(scorer, output, expected):
+    # return True/False for this case
     pass
 
-print(run_suite([True, True, False]))
-print(run_suite([True, True, True, True]))`,
-      challenge_solution_code: `def run_suite(results):
-    return round(sum(results) / len(results) * 100)
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    baseline = int(data[idx]); idx += 1
+    # TODO: score each case, track failures, print the four report lines.
 
-print(run_suite([True, True, False]))
-print(run_suite([True, True, True, True]))`,
+main()
+`,
+      challenge_solution_code: `import sys
+
+def score_case(scorer, output, expected):
+    o = output.strip()
+    e = expected.strip()
+    if scorer == "exact":
+        return o.lower() == e.lower()
+    if scorer == "contains":
+        return e.lower() in o.lower()
+    if scorer == "numeric":
+        target_s, tol_s = e.split()
+        try:
+            val = float(o)
+        except ValueError:
+            return False
+        return abs(val - float(target_s)) <= float(tol_s)
+    return False
+
+def main():
+    data = sys.stdin.read().split('\\n')
+    idx = 0
+    n = int(data[idx]); idx += 1
+    baseline = int(data[idx]); idx += 1
+    passed = 0
+    failed_ids = []
+    for i in range(1, n + 1):
+        scorer = data[idx].strip(); idx += 1
+        output = data[idx]; idx += 1
+        expected = data[idx]; idx += 1
+        if score_case(scorer, output, expected):
+            passed += 1
+        else:
+            failed_ids.append(i)
+    rate = round(passed / n * 100)
+    verdict = "SHIP" if passed >= baseline else "BLOCK"
+    print(f"{passed}/{n}")
+    print(f"{rate}%")
+    if failed_ids:
+        print("FAIL " + " ".join(map(str, failed_ids)))
+    else:
+        print("FAIL none")
+    print(verdict)
+
+main()
+`,
       challenge_test_cases: [
-        { input: "run_suite([True, True, False])", expected_output: "67", description: "2 of 3 → 67%." },
-        { input: "run_suite([True, True, True, True])", expected_output: "100", description: "All pass → 100%." }
+        { input: "3\n3\nexact\nParis\nparis\ncontains\nThe answer is 42\n42\nnumeric\n3.14\n3.0 0.2", expected_output: "3/3\n100%\nFAIL none\nSHIP", description: "All three scorer types pass; meets baseline → SHIP." },
+        { input: "4\n4\nexact\nyes\nyes\nexact\nno\nyes\ncontains\nhello world\nworld\nnumeric\n9.9\n10 0.5", expected_output: "3/4\n75%\nFAIL 2\nBLOCK", description: "One regression named; passed below baseline → BLOCK." },
+        { input: "1\n1\nnumeric\nNaNvalue\n5 0.1", expected_output: "0/1\n0%\nFAIL 1\nBLOCK", description: "Edge: non-numeric output fails the numeric scorer cleanly instead of crashing." }
       ]
     }
   ]

@@ -56,6 +56,8 @@ import Projects from './pages/Projects';
 import Portfolio from './pages/Portfolio';
 import AITrack from './pages/AITrack';
 import LessonDemo from './pages/LessonDemo';
+import Competitive from './pages/Competitive';
+import CompetitiveDetail from './pages/CompetitiveDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +71,8 @@ export const PAGES = {
     "Portfolio": Portfolio,
     "AITrack": AITrack,
     "LessonDemo": LessonDemo,
+    "Competitive": Competitive,
+    "CompetitiveDetail": CompetitiveDetail,
 }
 
 export const pagesConfig = {

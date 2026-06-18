@@ -6,6 +6,7 @@ import { createPageUrl } from "../utils";
 import { motion, AnimatePresence } from "framer-motion";
 import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
+import ProblemStatement from "../components/challenge/ProblemStatement";
 import { gradePython } from "../lib/pyRunner";
 
 const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };
@@ -131,8 +132,12 @@ export default function ChallengeDetail() {
       </div>
 
       <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8">
-        {/* Test cases */}
-        {challenge.test_cases && challenge.test_cases.length > 0 && (
+        {/* Full USACO/Codeforces-style problem statement (when authored) */}
+        {challenge.statement && <ProblemStatement problem={challenge} />}
+
+        {/* Legacy sample test cases — only when there's no rich statement
+            (the rich statement already shows examples). */}
+        {!challenge.statement && challenge.test_cases && challenge.test_cases.length > 0 && (
           <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
             <div className="px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
               <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>
@@ -255,7 +260,7 @@ export default function ChallengeDetail() {
               <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
                 <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
                   <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>Solution</span>
-                  <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>JS</span>
+                  <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>PY</span>
                 </div>
                 <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#ccc" }}>
                   {challenge.solution_code}
