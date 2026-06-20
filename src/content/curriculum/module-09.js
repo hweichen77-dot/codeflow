@@ -272,6 +272,7 @@ final answer: 42`,
         "Read all N definitions before you start processing calls.",
         "For an unknown name, print `ERROR` and continue to the next call — never raise.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -279,15 +280,20 @@ def main():
     idx = 0
     n = int(data[idx].strip()); idx += 1
     tools = {}
-    # TODO: read n tool definitions into tools[name] = (op, constant)
-
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        op = parts[1]
+        const = int(parts[2])
+        tools[name] = (op, const)
     q = int(data[idx].strip()); idx += 1
     out = []
     for _ in range(q):
         parts = data[idx].split(); idx += 1
         name = parts[0]
         arg = int(parts[1])
-        # TODO: if name not registered -> "ERROR"; else apply add/mul/sub
+        # TODO: if name not registered -> append "ERROR"; otherwise look up
+        #       (op, const) and apply add/mul/sub, appending str(result).
     print("\\n".join(out))
 
 main()
@@ -582,6 +588,7 @@ tool result: {'city': 'Tokyo', 'temp': 18, 'units': 'celsius'}`,
         "Only add to `total` when the call actually succeeds.",
         "Collect output lines in a list and join with newlines at the end.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -594,8 +601,8 @@ def main():
         parts = data[idx].split(); idx += 1
         name = parts[0]
         a = int(parts[1]); b = int(parts[2])
-        # TODO: route to add/subtract/multiply/max, else UNKNOWN_TOOL
-        # add successful results to total
+        # TODO: route to add/subtract/multiply/max, else UNKNOWN_TOOL;
+        # add successful results to total and append the result line.
     out.append("TOTAL " + str(total))
     print("\\n".join(out))
 
@@ -901,6 +908,7 @@ Answer: Lyon, about 520000 people`,
         "Track visited entities in a set so you can detect a revisit (a loop).",
         "Increment your step counter only when you actually perform a lookup.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -918,7 +926,10 @@ def main():
     steps = 0
     seen = set([current])
     out.append("Thought: start at " + current)
-    # TODO: run the ReAct loop with dead-end and loop guards
+    # TODO: run the ReAct loop: while current != goal, look up the next node,
+    #       emitting Action/Observation lines, and guard against dead ends
+    #       (no outgoing link) and loops (revisiting a seen node). Finish with
+    #       the appropriate Answer line.
     print("\\n".join(out))
 
 main()
@@ -1229,6 +1240,7 @@ final: calendar event for booked: Hotel Lisboa, 120/night`,
         "Before computing a step, verify every dependency is already in `memory`.",
         "The FINAL value is just `memory[<last step's name>]`.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -1247,8 +1259,10 @@ def main():
         defs[name] = (base, deps)
     memory = {}
     out = []
-    # TODO: run steps in order, guarding against missing deps,
-    #       then print FINAL <last step result>
+    # TODO: run steps in order. For each, if any dep is missing from memory,
+    #       print "<name> MISSING_DEP" and stop; otherwise compute
+    #       base + sum(memory[dep]), store it, and append "<name> = <result>".
+    #       If all succeed, print FINAL <result of the last step>.
     print("\\n".join(out))
 
 main()
@@ -1549,6 +1563,7 @@ stopped by cap: True`,
         "`spent + cost > budget` must block the action *before* you pay for it.",
         "If the loop finishes the queue with no stop, decide between EXHAUSTED and STEP_LIMIT by whether steps reached max_steps.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -1869,6 +1884,7 @@ no such tool: get_stock`,
         "For a call, build the set of supplied params and subtract it from the required set to find what's missing.",
         "Sort the missing parameter names before printing so the output is deterministic.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -1876,15 +1892,21 @@ def main():
     idx = 0
     n = int(data[idx].strip()); idx += 1
     schemas = {}
-    # TODO: read n schemas into schemas[name] = set(required_params)
-
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        r = int(parts[1])
+        required = set(parts[2:2 + r])
+        schemas[name] = required
     q = int(data[idx].strip()); idx += 1
     out = []
     for _ in range(q):
         parts = data[idx].split(); idx += 1
         name = parts[0]
         supplied = set(parts[1:])
-        # TODO: NO_SUCH_TOOL / MISSING <sorted> / CALL <name>
+        # TODO: append NO_SUCH_TOOL if the tool is unregistered; else compute
+        #       the sorted missing required params -> "MISSING <names>",
+        #       or "CALL <name>" when all required params are supplied.
     print("\\n".join(out))
 
 main()
@@ -2176,6 +2198,7 @@ executed in order: 4 of 4`,
         "For the reactor, attempts is always N; completed is just the count of steps with ok == 1.",
         "PLAN is DONE only when the completed count equals N, otherwise ABORTED.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -2187,8 +2210,9 @@ def main():
         parts = data[idx].split(); idx += 1
         plan.append((parts[0], int(parts[1])))
 
-    # TODO: plan-then-execute completes until the first failure
-    # TODO: reactive attempts every step, completing the ok == 1 ones
+    # TODO: plan-then-execute completes until the first failure (ok == 0),
+    #       then is DONE only if all N completed, else ABORTED.
+    # TODO: reactive attempts every step (attempts == N), completing ok == 1 ones.
     print("PLAN ...")
     print("REACT ...")
 
@@ -2469,6 +2493,7 @@ RAN: delete_file`,
         "An action runs if the tool is not risky, OR it is risky and the decision is exactly 'approve'.",
         "Keep two counters and print the SUMMARY line after processing every action.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -2476,8 +2501,8 @@ def main():
     idx = 0
     m = int(data[idx].strip()); idx += 1
     risky = set()
-    # TODO: read m risky tool names into the set
-
+    for _ in range(m):
+        risky.add(data[idx].strip()); idx += 1
     q = int(data[idx].strip()); idx += 1
     executed = 0
     blocked = 0
@@ -2486,7 +2511,8 @@ def main():
         parts = data[idx].split(); idx += 1
         name = parts[0]
         decision = parts[1] if len(parts) > 1 else ""
-        # TODO: EXECUTE safe tools and approved risky tools; BLOCKED otherwise
+        # TODO: EXECUTE (and count) safe tools and approved risky tools;
+        #       BLOCKED (and count) a risky tool whose decision != "approve".
     out.append("SUMMARY " + str(executed) + " executed " + str(blocked) + " blocked")
     print("\\n".join(out))
 

@@ -254,12 +254,13 @@ note: this breaks if the model rewords the sentence`,
         "Keep the max count and its index updated as you go; only replace the max when you find a strictly larger count, so ties keep the smaller index.",
         "Remember the 'at least one digit' rule — a stray `$` in prose like 'the $ sign' must not be counted."
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    lines = data[1:1 + n]
+    lines = data[1:1 + n]  # parse done: 'lines' holds the n reply strings
     # TODO: for each line, count dollar amounts ($ + digits/.,, with >=1 digit).
     # Count risky replies (2+ amounts) and track the worst offender.
 
@@ -553,15 +554,17 @@ active: True`,
         "Even when JSON parses, confirm it is a dict — `[1, 2, 3]` is valid JSON but has no keys.",
         "Build the missing list by iterating the required-keys list (not the object's keys) so the order is deterministic."
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys, json
 
 def main():
     data = sys.stdin.read().split("\\n")
-    required = data[0].split()
+    required = data[0].split()      # parse done: list of required keys
     n = int(data[1])
-    responses = data[2:2 + n]
-    # TODO: for each response, print OK / INVALID_JSON / MISSING ...
-    # Then print how many were OK.
+    responses = data[2:2 + n]       # parse done: the n raw JSON response strings
+    # TODO: for each response, json.loads it (try/except), confirm it is a dict,
+    #       and print OK / INVALID_JSON / MISSING <missing keys in required order>.
+    #       Then print how many were OK.
 
 main()
 `,
@@ -858,13 +861,15 @@ total: 42.5`,
         "Keep two accumulators: a count of executed calls and a sum of refunded cents.",
         "Anything not matching your two known names falls through to the REJECT branch — and must not touch the accumulators."
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys, json
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    # TODO: route each call to REFUND / STATUS / REJECT,
-    # tally executed count and total cents refunded.
+    calls = [json.loads(data[i]) for i in range(1, n + 1)]  # parse done: each call is {"name":..., "arguments":...}
+    # TODO: route each call by call["name"] to REFUND / STATUS / REJECT,
+    # tally executed count and total cents refunded, then print them.
 
 main()
 `,
@@ -1151,20 +1156,24 @@ valid: False`,
         "For the total: reject if it is not an int/float, is a bool, or is <= 0.",
         "Append messages in the fixed order (total, then status) and join with '; ' only the ones that failed."
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys, json
 
 ALLOWED = ["pending", "shipped", "delivered"]
 
 def validate(order):
     errors = []
-    # TODO: rule 1 - total is a positive number (not a bool)
-    # TODO: rule 2 - status is in ALLOWED
+    # TODO: rule 1 - total must be a positive number, but NOT a bool
+    #       (in Python True == 1, so guard with isinstance(total, bool))
+    # TODO: rule 2 - status must be in ALLOWED
     return errors
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    # TODO: print ACCEPT/REJECT per order, then accepted/total.
+    orders = [json.loads(data[i]) for i in range(1, n + 1)]  # parse done: list of order dicts
+    # TODO: for each order, run validate(); print "ACCEPT i" or
+    #       "REJECT i: <messages joined by '; '>", then a final "accepted/n".
 
 main()
 `,
@@ -1474,17 +1483,22 @@ else:
         "Strip the name before the emptiness check so a whitespace-only name fails.",
         "Accumulate the total as a float but only print it once at the end with `.2f`."
       ],
+      challenge_difficulty: "advanced",
       challenge_starter_code: `import sys, json
 
 def extract(reply):
     # Return (ok, error_or_None, amount_or_None).
-    # TODO: parse JSON object; validate name, email, amount in order.
+    # TODO: json.loads(reply) in try/except; if not a dict -> (False, "bad json", None).
+    #       Then validate in order: name (non-empty str), email (str with '@'),
+    #       amount (number, not bool, > 0). Join messages with '; '.
     pass
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    # TODO: print OK/FAIL per reply, then clean count and total (.2f).
+    replies = data[1:1 + n]  # parse done: the n raw reply strings
+    # TODO: run extract() on each reply; print "OK i" or "FAIL i: <reason>".
+    #       Then print "c/n clean" and "total T" (T to exactly 2 decimals).
 
 main()
 `,
@@ -1783,20 +1797,29 @@ record accepted: True`,
         "Use a fixed key order list for both the MISSING and BAD_TYPE scans so output is deterministic.",
         "For qty, reject if it is a bool, if it is not an int, or if it is an int below 1 — all of these are the qty failure."
       ],
+      challenge_difficulty: "advanced",
       challenge_starter_code: `import sys, json
 
 ALLOWED = {"pending", "shipped", "delivered"}
+REQUIRED = ["order_id", "qty", "status"]
 
 def verdict(line):
-    # TODO: return one of OK / BAD_JSON / MISSING k / BAD_TYPE k / BAD_ENUM status
+    # TODO: parse + validate in this fixed priority, returning the FIRST failure:
+    #   1. not valid JSON / not a dict        -> "BAD_JSON"
+    #   2. a REQUIRED key missing             -> "MISSING <key>"
+    #   3. wrong type (qty must be int >= 1,  -> "BAD_TYPE <key>"
+    #      bool is NOT an int; note if present must be str)
+    #   4. status not in ALLOWED              -> "BAD_ENUM status"
+    #   else                                  -> "OK"
     return "OK"
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
+    lines = data[1:1 + n]  # parse done: the n raw record strings
     ok = 0
-    for i in range(1, n + 1):
-        v = verdict(data[i])
+    for line in lines:
+        v = verdict(line)
         print(v)
         if v == "OK":
             ok += 1
@@ -2102,13 +2125,16 @@ item count: 2`,
         "Default the items with obj.get('items', []) and sum qty * price_cents over them.",
         "Track the best total seen and its name; replace only on a strictly greater total to keep the earliest on ties."
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys, json
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    # TODO: total each invoice (sum of qty * price_cents over items),
-    # print "name total" per invoice, then GRAND and TOP lines.
+    invoices = [json.loads(data[i]) for i in range(1, n + 1)]  # parse done: list of invoice dicts
+    # TODO: for each invoice read obj["customer"]["name"] and obj.get("items", []),
+    # total = sum(qty * price_cents); print "name total" per invoice,
+    # then a GRAND total line and a TOP <name> <total> line (earliest wins ties).
 
 main()
 `,
@@ -2403,14 +2429,16 @@ final items: ['Apple', 'Pear']`,
         "Wrap json.loads in try/except ValueError; on success, record the 1-based chunk index and stop.",
         "If you finish the loop without a successful parse, the answer is INCOMPLETE with FAILS equal to n."
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys, json
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    chunks = data[1:1 + n]
-    # TODO: append each chunk to a buffer, try json.loads after each,
-    # and report the first chunk that completes plus the failures before it.
+    chunks = data[1:1 + n]  # parse done: the n streamed chunk strings, in order
+    # TODO: accumulate chunks into a buffer; after each append, try json.loads
+    # (catch ValueError as the normal "not done yet" signal). On the first parse
+    # that succeeds print "COMPLETE i" and "FAILS i-1"; otherwise "INCOMPLETE"/"FAILS n".
 
 main()
 `,
