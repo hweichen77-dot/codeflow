@@ -265,16 +265,23 @@ Normalized:
         "For each pixel, divide each channel by 255 before applying the luminance weights.",
         "Keep a running sum of luminance for the average and a separate counter for pixels passing the gate.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
-    data = sys.stdin.read().split('\\n')
-    first = data[0].split()
-    n = int(first[0])
-    t = float(first[1])
-    # TODO: for each of the n pixels, normalize, compute luminance,
-    # track the running sum and the count that pass the gate (>= t).
-    # Print the average luminance to 4 decimals, then the count.
+    data = sys.stdin.read().split()
+    idx = 0
+    n = int(data[idx]); idx += 1
+    t = float(data[idx]); idx += 1
+    total = 0.0
+    bright = 0
+    for _ in range(n):
+        r = int(data[idx]); g = int(data[idx + 1]); b = int(data[idx + 2])
+        idx += 3
+        # TODO: normalize each channel by /255, compute the Rec.601 luminance
+        # (0.299*r' + 0.587*g' + 0.114*b'), add it to total, and increment
+        # bright when luminance >= t.
+    # Print the average luminance to 4 decimals, then the bright count.
 
 main()
 `,
@@ -575,36 +582,34 @@ print("Filter response:", response)
         }
       ],
       challenge_title: "Find the Strongest Edge",
-      challenge_description: "Slide a 3×3 convolution kernel across a grayscale image and locate the single position with the strongest edge response.",
-      challenge_story: "You're implementing the very first layer of a convolutional neural network — by hand, before any framework does it for you. A CNN learns kernels (small weight grids) and **slides** each one across the image, multiplying-and-summing at every position. A large-magnitude response means that kernel just lit up on a feature it cares about. Your debugging tool needs to take one grayscale frame and one learned kernel and report *where* and *how strongly* the filter fires, so the team can see what the first layer is actually detecting.",
-      challenge_statement: "You are given a grayscale image of height `H` and width `W`, and a `3×3` kernel. Perform a **valid convolution** (no padding): the kernel can only sit at positions where it fits entirely inside the image, so there are `(H-2)·(W-2)` output positions.\n\nAt each top-left position `(i, j)` (with `0 ≤ i ≤ H-3`, `0 ≤ j ≤ W-3`), the response is the sum over the 3×3 overlap of `image[i+di][j+dj] · kernel[di][dj]`.\n\nFind the position whose response has the **largest absolute value** (the strongest edge). If several positions tie, choose the one with the smallest `i`, then the smallest `j` (row-major / reading order).\n\nPrint two lines:\n1. The largest absolute response (an integer).\n2. The position `i j` of that response.",
-      challenge_input_format: "The first line has two integers `H W`. The next `H` lines each have `W` integers — the image pixels. The final `3` lines each have `3` integers — the kernel.",
-      challenge_output_format: "Line 1: the maximum absolute response (integer).\nLine 2: two integers `i j`, the top-left position of that response.",
+      challenge_description: "Given a CNN filter's response grid, find the cell where the filter fired strongest — the location of the edge it detected.",
+      challenge_story: "A CNN's first layer has already slid its edge-detecting filter across a grayscale frame for you, and handed you the **response grid** it produced: one number per position, where a large magnitude means the filter lit up strongly on a feature there. Your job on the debugging dashboard is to point at *where the filter responded strongest* — the cell with the biggest response — so the team can see exactly which spot in the image the edge detector latched onto. Whether the transition was bright-to-dark or dark-to-bright doesn't matter; both are strong edges, so you compare by **absolute value**.",
+      challenge_statement: "You are given a filter response grid of `H` rows and `W` columns. Each cell holds the filter's response at that position (it may be negative).\n\nFind the cell whose response has the **largest absolute value** — the position where the edge detector fired strongest. If several cells tie, choose the one with the smallest row `i`, then the smallest column `j` (reading order).\n\nPrint two lines:\n1. The largest absolute response (a non-negative integer).\n2. The position `i j` of that cell.",
+      challenge_input_format: "The first line has two integers `H W`. Each of the next `H` lines has `W` integers — one row of the response grid.",
+      challenge_output_format: "Line 1: the maximum absolute response (integer).\nLine 2: two integers `i j`, the row and column of that cell.",
       challenge_constraints: [
-        "3 ≤ H, W ≤ 200",
-        "0 ≤ image[i][j] ≤ 255",
-        "-10 ≤ kernel[di][dj] ≤ 10",
+        "1 ≤ H, W ≤ 200",
+        "-1000000 ≤ response ≤ 1000000",
       ],
       challenge_examples: [
-        { input: "3 3\n100 100 100\n50 50 50\n0 0 0\n1 1 1\n0 0 0\n-1 -1 -1", output: "300\n0 0", explanation: "Only one valid position. Top row (100·3) minus bottom row (0·3) = 300 — a strong horizontal edge." },
-        { input: "4 4\n10 10 0 0\n10 10 0 0\n10 10 0 0\n10 10 0 0\n-1 0 1\n-1 0 1\n-1 0 1", output: "30\n0 0", explanation: "A vertical Sobel kernel. The strongest |response| is 30 where the bright-to-dark column boundary sits; the tie at (0,1) loses to the earlier (0,0)." },
+        { input: "2 3\n10 -40 5\n0 12 -7", output: "40\n0 1", explanation: "The responses by magnitude are 10, 40, 5, 0, 12, 7. The largest absolute value is 40 at row 0, column 1 — that's where the filter fired strongest." },
+        { input: "1 4\n-3 3 -3 3", output: "3\n0 0", explanation: "Four cells tie at absolute value 3; reading order picks the earliest, position (0, 0)." },
       ],
-      challenge_notes: "Absolute value matters because edges come in both polarities: a bright-to-dark transition and a dark-to-bright transition are equally strong edges, just with opposite signs. Track the max with `abs(response)` and update only when you find a strictly larger value, so the first position wins ties automatically.",
+      challenge_notes: "Absolute value matters because edges come in both polarities: a bright-to-dark transition and a dark-to-bright transition are equally strong edges, just with opposite signs. Track the max with `abs(value)` and update only when you find a strictly larger one, so the first cell wins ties automatically. (A real CNN computes this grid by multiply-and-summing the filter over the image — here it's given to you so you can focus on the argmax: the filter responds strongest at the edge.)",
       challenge_hints: [
-        "Read `H` and `W`, then read `H` image rows and `3` kernel rows into lists of integers.",
-        "Loop `i` from 0 to `H-3` and `j` from 0 to `W-3`; for each, sum the nine products.",
-        "Keep `best = -1`; update `best`, `best_i`, `best_j` only when `abs(response) > best` — this keeps the first position on ties.",
+        "Read `H` and `W`, then read `H` rows of `W` integers each into the grid.",
+        "Walk every cell in reading order, computing `abs(value)` for each.",
+        "Keep `best = -1`; update `best`, `best_i`, `best_j` only when `abs(value) > best` — this keeps the first cell on ties.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
     rows = [r for r in sys.stdin.read().split('\\n') if r.strip() != '']
     h, w = map(int, rows[0].split())
-    image = [list(map(int, rows[1 + i].split())) for i in range(h)]
-    kernel = [list(map(int, rows[1 + h + i].split())) for i in range(3)]
-    # TODO: slide the kernel over every valid position, compute each response,
-    # and track the position with the largest absolute response.
-    # Print the max absolute response, then the position "i j".
+    grid = [list(map(int, rows[1 + i].split())) for i in range(h)]
+    # TODO: scan every cell and track the position with the largest abs(value).
+    # Print the max absolute response, then its position "i j".
 
 main()
 `,
@@ -613,18 +618,13 @@ main()
 def main():
     rows = [r for r in sys.stdin.read().split('\\n') if r.strip() != '']
     h, w = map(int, rows[0].split())
-    image = [list(map(int, rows[1 + i].split())) for i in range(h)]
-    kernel = [list(map(int, rows[1 + h + i].split())) for i in range(3)]
+    grid = [list(map(int, rows[1 + i].split())) for i in range(h)]
 
     best = -1
     best_i = best_j = 0
-    for i in range(h - 2):
-        for j in range(w - 2):
-            s = 0
-            for di in range(3):
-                for dj in range(3):
-                    s += image[i + di][j + dj] * kernel[di][dj]
-            val = abs(s)
+    for i in range(h):
+        for j in range(w):
+            val = abs(grid[i][j])
             if val > best:
                 best = val
                 best_i = i
@@ -636,19 +636,19 @@ main()
 `,
       challenge_test_cases: [
         {
-          input: "3 3\n100 100 100\n50 50 50\n0 0 0\n1 1 1\n0 0 0\n-1 -1 -1",
-          expected_output: "300\n0 0",
-          description: "Single position; horizontal edge kernel fires at 300."
+          input: "2 3\n10 -40 5\n0 12 -7",
+          expected_output: "40\n0 1",
+          description: "Largest absolute response is the negative 40 at (0,1)."
         },
         {
-          input: "4 4\n10 10 0 0\n10 10 0 0\n10 10 0 0\n10 10 0 0\n-1 0 1\n-1 0 1\n-1 0 1",
-          expected_output: "30\n0 0",
-          description: "Vertical edge; the first tied position (0,0) wins."
+          input: "1 4\n-3 3 -3 3",
+          expected_output: "3\n0 0",
+          description: "Ties broken in reading order: the first cell wins."
         },
         {
-          input: "3 3\n5 5 5\n5 5 5\n5 5 5\n1 1 1\n0 0 0\n-1 -1 -1",
+          input: "3 3\n0 0 0\n0 0 0\n0 0 0",
           expected_output: "0\n0 0",
-          description: "Edge: a perfectly flat patch produces zero response everywhere."
+          description: "Edge: an all-zero response grid means no edge fired anywhere."
         }
       ]
     },
@@ -963,6 +963,7 @@ The receipt is from Blue Bottle Coffee.`,
         "Split each line into three parts; convert the confidence to a float and lowercase the answer.",
         "Branch in order: below threshold → review; else 'no' → flag; else → approve. Keep three counters.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -970,8 +971,16 @@ def main():
     first = rows[0].split()
     n = int(first[0])
     t = float(first[1])
-    # TODO: for each of the n verdicts, apply the policy and count
-    # flagged / human-review / auto-approved. Print the three counts.
+    flagged = 0
+    review = 0
+    approved = 0
+    for i in range(1, n + 1):
+        parts = rows[i].split()
+        answer = parts[1].lower()
+        confidence = float(parts[2])
+        # TODO: if confidence < t -> review; elif answer == "no" -> flagged;
+        # else -> approved. (Check the confidence gate first.)
+    # Print flagged, then review, then approved.
 
 main()
 `,
@@ -1307,15 +1316,24 @@ print(data["store"], "->", data["total"])
         "Inside a `try`, do `obj = json.loads(line)` then `obj[\"category\"]` and `float(obj[\"total\"])`; on any exception, count it as skipped and `continue`.",
         "Use a dict `totals[category] = totals.get(category, 0.0) + amount`, then print `f\"{cat} {totals[cat]:.2f}\"` for each `cat` in `sorted(totals)`.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 import json
 
 def main():
     data = sys.stdin.read().split('\\n')
     n = int(data[0].strip())
-    # TODO: parse data[1..n], skipping any reply that fails to parse
-    # or lacks a numeric 'category'/'total'. Sum totals per category.
-    # Print valid count, skipped count, then "category sum" lines (alphabetical).
+    totals = {}
+    valid = 0
+    skipped = 0
+    for i in range(1, n + 1):
+        line = data[i] if i < len(data) else ''
+        # TODO: in a try/except, json.loads(line), read obj["category"] and
+        # float(obj["total"]); on any failure count it skipped and continue.
+        # Otherwise count it valid and add the amount to totals[category].
+    print(valid)
+    print(skipped)
+    # Print each "category sum" line (sum to 2 decimals) in alphabetical order.
 
 main()
 `,
@@ -1626,6 +1644,7 @@ pixels per channel: 750000`,
         "Resize only when `max(w, h) > cap`; compute `scale = max(w, h) / cap` and divide both sides with `int(...)`.",
         "Ceil-divide the area with `(w * h + 749) // 750`, add to a running total, and count the resized images separately.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -1633,9 +1652,16 @@ def main():
     idx = 0
     n = int(data[idx]); idx += 1
     cap = int(data[idx]); idx += 1
-    # TODO: for each image, cap the longest side, compute the resized pixel
-    # area, convert to tokens with ceil(area / 750), and total it up.
-    # Also count how many images were shrunk. Print total tokens, then count.
+    total_tokens = 0
+    shrunk = 0
+    for _ in range(n):
+        w = int(data[idx]); h = int(data[idx + 1])
+        idx += 2
+        # TODO: if max(w, h) > cap, scale = max(w, h)/cap and resize both sides
+        # with int(.../scale), counting this image as shrunk. Then add
+        # ceil(w*h / 750) tokens (use (area + 749) // 750) to total_tokens.
+    print(total_tokens)
+    print(shrunk)
 
 main()
 `,
@@ -1940,13 +1966,21 @@ box area: 14400`,
         "Tally counts in a dict and accumulate `(x2-x1)*(y2-y1)` into a running area sum.",
         "For the top label, iterate `sorted(counts)` and keep the first whose count is the maximum; format coverage with `f\"{pct:.2f}\"`.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split('\\n')
     idx = 0
     n, w, h = map(int, data[idx].split()); idx += 1
-    # TODO: tally how many boxes per label and sum every box's area.
+    counts = {}
+    total_area = 0
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        label = parts[0]
+        x1, y1, x2, y2 = map(int, parts[1:5])
+        # TODO: increment counts[label] and add the box area
+        # (x2-x1)*(y2-y1) to total_area.
     # Print the most common label (alphabetical on ties) with its count,
     # then 100 * total_area / (w*h) to 2 decimals.
 
@@ -2266,6 +2300,7 @@ print(f"precision: {precision:.4f}")
         "Predicted positive when `confidence >= t`; increment one of tp/fp/fn/tn for each prediction.",
         "Compute precision and recall with a zero-denominator guard, then print each with `f\"{value:.4f}\"`.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -2274,8 +2309,15 @@ def main():
     first = data[idx].split(); idx += 1
     n = int(first[0])
     t = float(first[1])
-    # TODO: bucket each prediction into TP/FP/FN/TN using threshold t,
-    # then print precision and recall to 4 decimals (0.0000 if denom is 0).
+    tp = fp = fn = tn = 0
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        conf = float(parts[0])
+        truth = int(parts[1])
+        # TODO: predicted = conf >= t. Bucket into tp/fp/fn/tn from
+        # (predicted, truth).
+    # Compute precision = tp/(tp+fp) and recall = tp/(tp+fn), guarding a
+    # zero denominator as 0.0, then print each to 4 decimals.
 
 main()
 `,
@@ -2589,6 +2631,7 @@ print(decision)
         "Split each reading line: the first token is the float confidence, the rest are flags.",
         "Branch in order — confidence < t -> reject; else any(flag in RISKY) -> review; else trust — and keep three counters.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -2598,8 +2641,16 @@ def main():
     n = int(first[0])
     t = float(first[1])
     RISKY = {"dark", "blurry", "occluded", "glare"}
-    # TODO: for each reading, apply the gate (confidence then risk flags)
-    # and count trusted / review / rejected. Print the three counts.
+    trusted = 0
+    review = 0
+    rejected = 0
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        confidence = float(parts[0])
+        flags = parts[1:]
+        # TODO: if confidence < t -> rejected; elif any flag in RISKY -> review;
+        # else -> trusted. (Apply the confidence gate before the flags.)
+    # Print trusted, then review, then rejected.
 
 main()
 `,
