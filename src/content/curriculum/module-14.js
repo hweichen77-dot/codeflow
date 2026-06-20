@@ -228,6 +228,7 @@ Both the rule and the attack are plain text in one stream.`,
       ],
       challenge_title: "Injection Scanner",
       challenge_description: "Build the input-side scanner that flags prompt-injection attempts in a stream of user messages, defeating the punctuation-and-spacing tricks attackers use to slip past a naive substring check.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your team ships an AI support agent that reads whatever a user types and can call internal tools. Before any message reaches the model, it passes through your **injection scanner** — the first gate of the guardrail. Security gave you a list of known **override phrases** (\\\"ignore previous instructions\\\", \\\"reveal the system prompt\\\", and friends). Attackers know a plain substring match is brittle, so they smuggle the phrase past you with extra spaces, stray punctuation, and weird casing: \\\`IGNORE... all-previous; instructions!!!\\\`. Your scanner must see through the noise. Normalize every message the same way, match against the phrase list, and report what got flagged so the on-call engineer knows which message to inspect first.",
       challenge_statement: "You are given a list of **override phrases** and a list of **messages**. A message is **flagged** if, after normalization, it contains any override phrase as a substring.\\n\\n**Normalization** (apply to both phrases and messages): lowercase the text, replace every character that is not a letter or digit with a single space, then collapse runs of spaces and trim. For example, \\\`IGNORE... all-previous; instructions!!!\\\` normalizes to \\\`ignore all previous instructions\\\`.\\n\\nPrint two integers on separate lines: how many messages were flagged, and the **1-based index** of the first flagged message (or \\\`-1\\\` if none were flagged).",
       challenge_input_format: "The first line is an integer `p`, the number of override phrases. The next `p` lines each hold one phrase (already lowercase letters, digits, and single spaces). The next line is an integer `n`, the number of messages. The next `n` lines each hold one raw message (may contain any printable characters).",
@@ -251,15 +252,26 @@ Both the rule and the attack are plain text in one stream.`,
       challenge_starter_code: `import sys
 
 def normalize(s):
-    # TODO: lowercase, replace non-alphanumeric chars with spaces,
-    #       then collapse runs of whitespace and trim.
-    pass
+    out = []
+    for ch in s.lower():
+        out.append(ch if (ch.isalnum() or ch == " ") else " ")
+    return " ".join("".join(out).split())
 
 def main():
     data = sys.stdin.read().split("\\n")
-    # TODO: read p phrases, then n messages; flag any message whose
-    #       normalized text contains a normalized phrase. Print count
-    #       and the 1-based index of the first flagged message (or -1).
+    idx = 0
+    p = int(data[idx]); idx += 1
+    phrases = []
+    for _ in range(p):
+        phrases.append(normalize(data[idx])); idx += 1
+    n = int(data[idx]); idx += 1
+    flagged = 0
+    first = -1
+    for i in range(1, n + 1):
+        norm = normalize(data[idx]); idx += 1
+        # TODO: if norm contains any phrase, increment flagged and record
+        #       the first flagged index. Then print flagged and first.
+        pass
 
 main()
 `,
@@ -527,6 +539,7 @@ print(output_gate("Sure, the code is SWORD42."))
       ],
       challenge_title: "Allowlist Output Validator",
       challenge_description: "Build the output gate of the guardrail sandwich: take the model's chatty classification replies and coerce each into exactly one allowed label, or reject it as invalid when the model went off-script.",
+      challenge_difficulty: "intermediate",
       challenge_story: "You wired a sentiment classifier into your pipeline. The downstream code expects exactly one of three labels — \\\`positive\\\`, \\\`negative\\\`, \\\`neutral\\\` — but the model is a language model, so it cheerfully returns things like \\\`The sentiment is clearly POSITIVE.\\\` or \\\`kind of good, maybe?\\\` or even \\\`It could be positive or negative\\\`. You cannot trust the model to follow the format, so you wrap it. The **output validator** parses each reply, finds which allowed label it actually contains, and passes a clean label through — but only if there's exactly one, unambiguously. If zero allowed labels appear, or two different ones do, the reply is rejected as \\\`invalid\\\` so no garbage reaches production.",
       challenge_statement: "You are given the set of **allowed labels** and a list of model **replies**. For each reply, normalize it (lowercase, then split on any non-alphanumeric character into words) and find which allowed labels appear **as whole words**.\\n\\n- If **exactly one distinct** allowed label appears, output that label.\\n- Otherwise (zero allowed labels, or two or more **distinct** allowed labels), output \\\`invalid\\\`.\\n\\nAfter printing one cleaned result per reply, print the number of replies that produced a valid (non-\\\`invalid\\\`) label.",
       challenge_input_format: "The first line is an integer `a`, the number of allowed labels. The second line holds the `a` allowed labels, space-separated (lowercase words). The third line is an integer `n`, the number of replies. The next `n` lines each hold one raw reply.",
@@ -551,9 +564,19 @@ print(output_gate("Sure, the code is SWORD42."))
 
 def main():
     data = sys.stdin.read().split("\\n")
-    # TODO: read the allowed labels, then for each reply normalize it into
-    #       words, find which allowed labels appear, and emit the single
-    #       label or "invalid". Finally print the count of valid replies.
+    idx = 0
+    a = int(data[idx]); idx += 1
+    allowed = data[idx].split(); idx += 1
+    n = int(data[idx]); idx += 1
+    valid = 0
+    for _ in range(n):
+        raw = data[idx]; idx += 1
+        chars = [ch if ch.isalnum() else " " for ch in raw.lower()]
+        words = "".join(chars).split()
+        # TODO: find which allowed labels appear in words. If exactly one
+        #       distinct label appears, print it and count it valid; else
+        #       print "invalid". After the loop, print the valid count.
+        pass
 
 main()
 `,
@@ -809,6 +832,7 @@ print(redact(text))
       ],
       challenge_title: "Multi-Type PII Scrubber",
       challenge_description: "Build the redaction pass that runs over an AI agent's logs before they leave your servers, replacing emails, phone numbers, and card numbers with typed placeholders and reporting exactly what was scrubbed.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your AI assistant logs every conversation for debugging, and those logs sync to a vendor dashboard. Legal just reminded you that user messages contain **PII**: email addresses, phone numbers, and saved payment cards. Before any log line leaves the building, it must pass through the **scrubber**. You replace each kind of PII with a typed tag — \\\`[EMAIL]\\\`, \\\`[PHONE]\\\`, \\\`[CARD]\\\` — so engineers can still read the structure of a conversation without seeing real personal data, and you emit a per-type tally so compliance can prove the redaction ran.",
       challenge_statement: "Read the entire input text. Redact three kinds of PII, replacing each match with a typed placeholder:\\n\\n- **Email**: matches \\\`[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\.[A-Za-z]{2,}\\\` → \\\`[EMAIL]\\\`\\n- **Phone**: a token of the form \\\`ddd-ddd-dddd\\\` (digits and hyphens, on word boundaries) → \\\`[PHONE]\\\`\\n- **Card**: a token of the form \\\`dddd-dddd-dddd-dddd\\\` → \\\`[CARD]\\\`\\n\\nApply the **card** pattern before the phone pattern so a 16-digit card is never partially eaten by the phone rule. Print the fully scrubbed text, then a final summary line:\\n\\n\\\`EMAIL <e> PHONE <p> CARD <c> TOTAL <t>\\\`\\n\\nwhere the counts are how many of each were redacted and \\\`t\\\` is their sum.",
       challenge_input_format: "One or more lines of free text (the log). Read all of it from standard input. A single trailing newline, if present, is not part of the content.",
@@ -832,12 +856,18 @@ print(redact(text))
       challenge_starter_code: `import sys
 import re
 
+EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
+PHONE = re.compile(r"\\b\\d{3}-\\d{3}-\\d{4}\\b")
+CARD = re.compile(r"\\b\\d{4}-\\d{4}-\\d{4}-\\d{4}\\b")
+
 def main():
     text = sys.stdin.read()
     if text.endswith("\\n"):
         text = text[:-1]
-    # TODO: redact CARD, then PHONE, then EMAIL, counting each. Print the
-    #       scrubbed text and a summary line:
+    counts = {"EMAIL": 0, "PHONE": 0, "CARD": 0}
+    # TODO: for each pattern in order CARD, PHONE, EMAIL: count its matches
+    #       into counts and replace them with [TAG]. Then print the scrubbed
+    #       text and the summary line:
     #       EMAIL <e> PHONE <p> CARD <c> TOTAL <t>
 
 main()
@@ -1103,6 +1133,7 @@ True`,
       ],
       challenge_title: "Multi-Turn Jailbreak Defense",
       challenge_description: "Build an independent guardrail that decides ALLOW or BLOCK for each turn of a conversation, catching both single-turn jailbreaks and the slow ones attackers split across many messages.",
+      challenge_difficulty: "advanced",
       challenge_story: "Attackers learned that one obvious jailbreak gets blocked, so they spread it out: turn one establishes a persona, turn two slips in \\\`ignore safety\\\`, turn three asks for the payload, and turn four says \\\`continue from before\\\` to collect the goods. A guardrail that only looks at the current message in isolation misses this. Yours doesn't. It runs **independently of the model** (the model is the thing being attacked) and keeps a running memory of the conversation. Any turn that trips a blocklist phrase is blocked outright. And once the conversation has accumulated enough distinct trigger phrases, the guardrail considers the whole session compromised and blocks every remaining turn — even the innocent-looking \\\`continue\\\`.",
       challenge_statement: "You are given a **blocklist** of jailbreak phrases, a suspicion threshold \\\`k\\\`, and a sequence of conversation **turns**. Normalize each turn and each phrase (lowercase; replace non-alphanumeric characters with spaces; collapse and trim whitespace).\\n\\nProcess the turns in order, maintaining the **set of distinct blocklist phrases seen so far** in the conversation. For each turn:\\n\\n1. Find which blocklist phrases appear (as substrings) in the normalized turn, and add them to the seen set.\\n2. Output \\\`BLOCK\\\` if the turn contained at least one phrase **OR** the number of distinct phrases seen so far (including this turn) is **at least \\\`k\\\`**. Otherwise output \\\`ALLOW\\\`.\\n\\nAfter the per-turn decisions, print the total number of blocked turns.",
       challenge_input_format: "The first line has two integers `b k`: the number of blocklist phrases and the suspicion threshold. The next `b` lines each hold one phrase. The next line is an integer `t`, the number of turns. The next `t` lines each hold one raw turn of the conversation.",
@@ -1126,13 +1157,29 @@ True`,
       challenge_starter_code: `import sys
 
 def normalize(s):
-    # TODO: lowercase, non-alphanumeric -> space, collapse and trim.
-    pass
+    out = []
+    for ch in s.lower():
+        out.append(ch if (ch.isalnum() or ch == " ") else " ")
+    return " ".join("".join(out).split())
 
 def main():
     data = sys.stdin.read().split("\\n")
-    # TODO: read b, k, the blocklist, then t turns. Track distinct phrases
-    #       seen so far; output ALLOW/BLOCK per turn and the blocked count.
+    idx = 0
+    b, k = data[idx].split(); idx += 1
+    b = int(b); k = int(k)
+    blocklist = []
+    for _ in range(b):
+        blocklist.append(normalize(data[idx])); idx += 1
+    t = int(data[idx]); idx += 1
+    seen = set()
+    blocked = 0
+    for _ in range(t):
+        turn = normalize(data[idx]); idx += 1
+        # TODO: find which blocklist phrases appear in turn and add them to
+        #       seen. Print BLOCK (and count it) if the turn matched any
+        #       phrase OR len(seen) >= k; otherwise print ALLOW. After the
+        #       loop, print the blocked count.
+        pass
 
 main()
 `,
@@ -1390,6 +1437,7 @@ print(moderate(scores, thresholds))
       ],
       challenge_title: "Moderation Eval Harness",
       challenge_description: "Run a content-moderation classifier against per-category thresholds, then grade it against ground truth to surface the two errors that matter most: false positives and false negatives.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your moderation model scores each message across several harm categories, and you block a message if any category crosses **its own threshold** (some categories are stricter than others). But shipping a moderation policy blind is how you end up censoring song lyrics while letting real abuse through. Before you roll out new thresholds, you replay a labeled test set: each message comes with a ground-truth verdict (\\\`safe\\\` or \\\`harmful\\\`) and the classifier's category scores. Your **eval harness** applies the block rule and tallies the mistakes — **false positives** (safe content you blocked) and **false negatives** (harmful content you allowed) — so the safety team can tune thresholds with eyes open.",
       challenge_statement: "You are given \\\`c\\\` categories, each with an integer **threshold** (scores are integers scaled 0–100), and a labeled test set of \\\`n\\\` messages. Each message has a ground-truth label (\\\`safe\\\` or \\\`harmful\\\`) and a list of \\\`category score\\\` pairs.\\n\\nFor each message, **block** it if **any** category's score is **at or above** that category's threshold; otherwise **allow** it. A category not listed for a message is treated as score 0.\\n\\nClassify against ground truth:\\n- A **false positive** (FP) is a \\\`safe\\\` message you blocked.\\n- A **false negative** (FN) is a \\\`harmful\\\` message you allowed.\\n\\nPrint the total number of blocked messages, then a line \\\`FP <fp> FN <fn>\\\`.",
       challenge_input_format: "The first line is an integer `c`. The second line lists the `c` categories with their thresholds as `cat threshold` pairs, space-separated (e.g. `hate 50 violence 70`). The third line is an integer `n`. Each of the next `n` lines is one message: a label (`safe` or `harmful`) followed by zero or more `cat score` pairs.",
@@ -1414,9 +1462,34 @@ print(moderate(scores, thresholds))
 
 def main():
     data = sys.stdin.read().split("\\n")
-    # TODO: read c categories with thresholds, then n labeled messages.
-    #       Block if any category score >= its threshold. Count blocked,
-    #       false positives (safe blocked) and false negatives (harmful allowed).
+    idx = 0
+    c = int(data[idx]); idx += 1
+    parts = data[idx].split(); idx += 1
+    cats = []
+    thresholds = {}
+    i = 0
+    while i < len(parts):
+        cats.append(parts[i])
+        thresholds[parts[i]] = int(parts[i + 1])
+        i += 2
+    n = int(data[idx]); idx += 1
+    blocked = 0
+    fp = 0
+    fn = 0
+    for _ in range(n):
+        tokens = data[idx].split(); idx += 1
+        truth = tokens[0]
+        scores = {}
+        j = 1
+        while j < len(tokens):
+            scores[tokens[j]] = int(tokens[j + 1])
+            j += 2
+        # TODO: block if any(scores.get(cat, 0) >= thresholds[cat] for cat in cats).
+        #       If blocked, count it; a blocked "safe" message is a false positive.
+        #       If allowed, a "harmful" message is a false negative.
+        pass
+    print(blocked)
+    print(f"FP {fp} FN {fn}")
 
 main()
 `,
@@ -1692,6 +1765,7 @@ print(resolve(layers))
       ],
       challenge_title: "Instruction Hierarchy Resolver",
       challenge_description: "Build the resolver that turns a stack of conflicting instruction layers into one effective ruleset, so the developer's rules outrank later user and document text exactly the way a hardened system prompt intends.",
+      challenge_difficulty: "advanced",
       challenge_story: "Your AI app assembles its prompt from layers: platform safety rules, your developer system prompt, the user's message, and untrusted document content the model fetched. Each layer carries a **priority** (higher means more authority), and layers often set the **same rule key** to different values. A user message tries \\\`refuse_secrets off\\\`; your developer prompt already set \\\`refuse_secrets on\\\` at a higher priority. The **resolver** is the piece of the hardened prompt that decides who wins: for every key, the highest-priority layer's value holds, and when two layers tie on priority, the one declared **earlier** (more trusted, written first) wins. It also reports how many keys were actually contested, so you can see where attackers are pushing.",
       challenge_statement: "You are given \\\`n\\\` instruction layers. Each layer has an integer **priority**, a **key**, and a **value**, in the order they were declared (declaration order is 0-based: the first layer is the most-trusted tiebreaker).\\n\\nResolve the effective ruleset: for each key, choose the value from the layer with the **highest priority**. If two layers with the same key share the same priority, the one **declared earlier** wins.\\n\\nThen you are given \\\`q\\\` query keys. For each query, print the effective value, or \\\`UNSET\\\` if no layer ever set that key. Finally, print the number of keys that were **contested** — set by more than one layer (regardless of priority).",
       challenge_input_format: "The first line is an integer `n`. Each of the next `n` lines has `priority key value` (space-separated; priority is an integer, key and value are tokens with no spaces). The next line is an integer `q`. Each of the next `q` lines is one query key.",
@@ -1718,9 +1792,21 @@ def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     n = int(data[idx]); idx += 1
-    # TODO: read n layers (priority key value) in declaration order, resolve
-    #       the highest-priority value per key (earlier wins on ties), then
-    #       answer q queries and print the count of contested keys.
+    best = {}          # key -> (priority, order, value)
+    set_count = {}     # key -> number of layers that set it
+    for order in range(n):
+        priority_s, key, value = data[idx].split(); idx += 1
+        priority = int(priority_s)
+        set_count[key] = set_count.get(key, 0) + 1
+        # TODO: update best[key] if this layer wins: strictly higher priority,
+        #       or equal priority declared earlier (smaller order).
+        pass
+    q = int(data[idx]); idx += 1
+    for _ in range(q):
+        key = data[idx].strip(); idx += 1
+        # TODO: print best[key]'s value, or "UNSET" if the key was never set.
+        pass
+    # TODO: print the number of keys set by more than one layer (contested).
 
 main()
 `,
@@ -1984,6 +2070,7 @@ False`,
       ],
       challenge_title: "Per-User Token Rate Limiter",
       challenge_description: "Build the sliding-window, per-user token limiter that sits in front of your model, allowing or rejecting each call and naming the worst offender so on-call can see who is driving the bill.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your AI product bills by tokens, and one looping script can run up thousands of dollars overnight. You add a **sliding-window token limiter**: each user may spend at most \\\`cap\\\` tokens within any window of \\\`W\\\` seconds. Requests arrive in time order, each tagged with a timestamp, a user, and the token cost it would incur. For each request you decide \\\`ALLOW\\\` or \\\`BLOCK\\\` — a request is allowed only if the user's tokens already spent **inside the window** plus this request's cost stay at or under the cap. **Blocked requests cost nothing** (they never reach the model, so they do not count toward future windows). At the end you report the total blocks and the worst offender, so the team knows which account to throttle first.",
       challenge_statement: "You are given a window size \\\`W\\\` and a per-user token \\\`cap\\\`, then \\\`n\\\` requests in non-decreasing timestamp order. Each request is \\\`timestamp user cost\\\`.\\n\\nFor each request, consider only that user's **allowed** requests whose timestamp is greater than \\\`timestamp - W\\\` (i.e. within the window). If the sum of those tokens plus this request's \\\`cost\\\` is **at most \\\`cap\\\`**, output \\\`<user> ALLOW\\\` and count this request toward the user's usage. Otherwise output \\\`<user> BLOCK\\\`; a blocked request is **not** recorded and never counts toward any future window.\\n\\nAfter the per-request lines, print a summary: the total number of blocked requests, then the **worst offender** (the user with the most blocks; ties broken by lexicographically smallest user) and their block count, as \\\`<total> <user> <count>\\\`. If nothing was blocked, print \\\`0 none 0\\\`.",
       challenge_input_format: "The first line has two integers `W cap`. The second line has an integer `n`. Each of the next `n` lines is `timestamp user cost` (timestamp and cost are integers; user is a token with no spaces). Timestamps are non-decreasing.",
@@ -2006,14 +2093,35 @@ False`,
       ],
       challenge_starter_code: `import sys
 
+def window_usage(hist, ts, W):
+    # Drop entries older than the window (keep t > ts - W), return tokens used.
+    hist[:] = [(t, c) for (t, c) in hist if t > ts - W]
+    return sum(c for (t, c) in hist)
+
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     W, cap = map(int, data[idx].split()); idx += 1
     n = int(data[idx]); idx += 1
-    # TODO: for each request, keep only the user's allowed usage within the
-    #       window, allow if used + cost <= cap (and record it), else block.
-    #       Print ALLOW/BLOCK per request, then total blocks and worst offender.
+    history = {}
+    blocked_per = {}
+    total_blocked = 0
+    out = []
+    for _ in range(n):
+        ts_s, user, cost_s = data[idx].split(); idx += 1
+        ts = int(ts_s); cost = int(cost_s)
+        hist = history.setdefault(user, [])
+        used = window_usage(hist, ts, W)
+        # TODO: if used + cost <= cap, allow: append (ts, cost) to hist and
+        #       out.append(user + " ALLOW"). Otherwise block: increment
+        #       total_blocked and blocked_per[user], out.append(user + " BLOCK").
+        pass
+    print("\\n".join(out))
+    if blocked_per:
+        worst_user, worst_count = sorted(blocked_per.items(), key=lambda x: (-x[1], x[0]))[0]
+        print(f"{total_blocked} {worst_user} {worst_count}")
+    else:
+        print("0 none 0")
 
 main()
 `,
@@ -2279,6 +2387,7 @@ print(gaps(attacks, deployed))
       ],
       challenge_title: "Red-Team Coverage Report",
       challenge_description: "Build the gap-analysis engine for your red-team run: replay an attack catalog against your live defenses, count how many breach, rank the worst categories, and emit a single PASS or FAIL verdict.",
+      challenge_difficulty: "intermediate",
       challenge_story: "You are red-teaming your own AI app before launch. You have a set of **deployed defenses** (the guardrails actually live in production) and an **attack catalog**: each attack is tagged with its **category** (injection, jailbreak, pii, ...) and the **single defense** that is supposed to stop it. An attack **breaches** if its required defense is not currently deployed. Your coverage report counts total breaches, then ranks the categories that had at least one breach so the team fixes the leakiest area first, and ends with a blunt verdict: \\\`PASS\\\` only if nothing breached, otherwise \\\`FAIL\\\`.",
       challenge_statement: "You are given \\\`d\\\` deployed defense names, then \\\`a\\\` attacks. Each attack is \\\`category required_defense\\\`. An attack **breaches** if \\\`required_defense\\\` is not among the deployed defenses.\\n\\nPrint the total number of breaching attacks. Then, for each category that had **at least one breach**, print a line \\\`<category> <breaches>/<total>\\\` where \\\`breaches\\\` is how many attacks in that category breached and \\\`total\\\` is how many attacks that category had in the catalog. Order these lines by **breach count descending**, breaking ties by **category name ascending**. Finally print \\\`PASS\\\` if there were zero breaches, otherwise \\\`FAIL\\\`.",
       challenge_input_format: "The first line is an integer `d`. Each of the next `d` lines is one deployed defense name. The next line is an integer `a`. Each of the next `a` lines is `category required_defense` (two space-separated tokens).",
@@ -2305,9 +2414,23 @@ def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     d = int(data[idx]); idx += 1
-    # TODO: read d deployed defenses into a set, then a attacks. An attack
-    #       breaches if its required defense is not deployed. Print total
-    #       breaches, the per-category breach report, and PASS or FAIL.
+    deployed = set()
+    for _ in range(d):
+        deployed.add(data[idx].strip()); idx += 1
+    a = int(data[idx]); idx += 1
+    total = {}
+    breach = {}
+    total_breaches = 0
+    for _ in range(a):
+        category, required = data[idx].split(); idx += 1
+        total[category] = total.get(category, 0) + 1
+        # TODO: if required is not in deployed, this attack breaches: increment
+        #       total_breaches and breach[category].
+        pass
+    # TODO: print total_breaches. Then for each category with breaches > 0,
+    #       sorted by breaches desc then name asc, print
+    #       "<category> <breaches>/<total>". Finally print PASS if
+    #       total_breaches == 0 else FAIL.
 
 main()
 `,

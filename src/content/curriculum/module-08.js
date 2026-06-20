@@ -228,6 +228,7 @@ False`,
       ],
       challenge_title: "The Fine-Tune Router",
       challenge_description: "Decide fine-tune vs. prompt for a batch of AI tasks, then total the tokens fine-tuning would save.",
+      challenge_difficulty: "intermediate",
       challenge_story: "You run the ML platform team at a company shipping dozens of AI features. Every product team wants to fine-tune — it sounds serious and important. Your job is to be the adult in the room. You've codified the decision rule from the playbook into a router that takes each team's task profile and returns a verdict. The CFO also wants one number: across everything you'd actually fine-tune, how many tokens per month does dropping the in-prompt examples save? Build the router that turns hype into a defensible recommendation.",
       challenge_statement: "You are given **N** AI tasks. For each task you know how many clean training examples are available, whether the task shape is **stable**, the projected monthly call volume, and how many tokens of few-shot examples the current prompt carries.\n\nRecommend **FINE-TUNE** for a task only when **all three** hold:\n\n- `examples ≥ 300`\n- the task is stable (`stable = 1`)\n- `monthly_calls ≥ 100000`\n\nOtherwise recommend **PROMPT**.\n\nFor every task you recommend fine-tuning, that prompt can drop its few-shot examples entirely, saving `monthly_calls × example_tokens` tokens per month. Print each task's verdict in order, then a final summary line.",
       challenge_input_format: "The first line is an integer `N`. Each of the next `N` lines describes one task with four space-separated integers: `examples stable monthly_calls example_tokens` (where `stable` is `1` for stable, `0` otherwise).",
@@ -255,8 +256,23 @@ def main():
     data = sys.stdin.read().split('\\n')
     idx = 0
     n = int(data[idx]); idx += 1
-    # TODO: for each task, decide FINE-TUNE / PROMPT and tally savings.
-    # Print each verdict, then a final line: "<ft_count> <total_saved>".
+    ft_count = 0
+    total_saved = 0
+    decisions = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        examples = int(parts[0])
+        stable = parts[1] == '1'
+        monthly_calls = int(parts[2])
+        example_tokens = int(parts[3])
+        # TODO: recommend "FINE-TUNE" only when examples >= 300 and stable
+        # and monthly_calls >= 100000; otherwise "PROMPT". On a fine-tune,
+        # add monthly_calls * example_tokens to total_saved and bump ft_count.
+        # Append the verdict string to decisions.
+        decisions.append("PROMPT")
+    out = decisions[:]
+    out.append(f"{ft_count} {total_saved}")
+    print('\\n'.join(out))
 
 main()
 `,
@@ -527,6 +543,7 @@ score: 0.67`,
       ],
       challenge_title: "The Regression Gate",
       challenge_description: "Score a model's outputs against ground truth with forgiving normalization, then decide whether the build can ship.",
+      challenge_difficulty: "beginner",
       challenge_story: "It's release night. An engineer pushed a 'tiny' system-prompt tweak two hours ago and swears the answers feel better. You don't ship on vibes. Your eval harness has a frozen dataset of inputs with known-good answers; the candidate model has already produced an output for each. You need an exact-match scorer that isn't *brittle* — `\"  Paris \"` and `\"paris\"` are the same answer, and nobody should fail over trailing whitespace or capitalization. Then a release gate compares the pass rate against the team's agreed threshold and prints a single verdict the on-call engineer can trust.",
       challenge_statement: "You are given **N** eval cases. Each case is a pair of lines: the model's **output** then the **expected** answer.\n\nScore a case as a pass when the output and expected match after normalization. Normalization means: strip leading/trailing whitespace, lowercase, and collapse every run of internal whitespace to a single space.\n\nGiven a pass-rate **threshold** (an integer percent), the build ships only when the pass rate is **at least** the threshold. Compare without floating-point error: the build ships when `passed × 100 ≥ threshold × N`.\n\nReport how many cases passed, the pass rate as a percentage to two decimals, and the verdict.",
       challenge_input_format: "Line 1: integer `N`. Line 2: integer `threshold` (a percent, 0–100). Then `2N` lines: for each case, the output line followed by the expected line. Output/expected lines may contain spaces.",
@@ -557,7 +574,18 @@ def main():
     idx = 0
     n = int(data[idx]); idx += 1
     threshold = int(data[idx]); idx += 1
-    # TODO: score each case, then print passed/N, the percentage, and SHIP/BLOCK.
+    passed = 0
+    for _ in range(n):
+        out = data[idx]; idx += 1
+        exp = data[idx]; idx += 1
+        # TODO: if normalize(out) == normalize(exp), count it as passed.
+
+    pct = passed * 100.0 / n
+    # Ship when passed*100 >= threshold*n (integer compare avoids float error).
+    verdict = "SHIP" if passed * 100 >= threshold * n else "BLOCK"
+    print(f"{passed}/{n}")
+    print(f"{pct:.2f}%")
+    print(verdict)
 
 main()
 `,
@@ -815,6 +843,7 @@ print(round(jaccard(ref, "the capital of france is lyon"), 2))`,
       ],
       challenge_title: "The Jaccard Scorer",
       challenge_description: "Score fuzzy free-text answers by token overlap, average across the dataset, and count how many clear a quality bar.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Exact match keeps failing your RAG QA eval. The model answers 'The capital of France is Paris' and your reference says 'Paris France' — semantically a win, scored a zero. You're escalating to a **Jaccard** token-overlap scorer: treat each answer as a bag of words and measure how much the sets agree. It's loose enough to forgive phrasing, strict enough to catch a wrong fact. You'll run it across the whole eval set, report the average score, and count how many answers clear the quality threshold the product team set.",
       challenge_statement: "You are given **N** eval cases, each a pair of lines: the model **output** then the **expected** reference.\n\nTokenize each string by lowercasing and extracting maximal runs of letters and digits (`a–z`, `0–9`); everything else is a separator. Build a *set* of tokens for each side (duplicates collapse).\n\nThe **Jaccard score** of a case is `|output_tokens ∩ expected_tokens| / |output_tokens ∪ expected_tokens|`. As a special case, if both token sets are empty the score is `1.0` (two empty answers agree perfectly).\n\nCompute the average Jaccard score across all `N` cases, and count how many cases score **at least** the given threshold.",
       challenge_input_format: "Line 1: integer `N`. Line 2: integer `threshold_pct` (0–100); the pass threshold is `threshold_pct / 100`. Then `2N` lines: for each case, the output line then the expected line.",
@@ -841,15 +870,29 @@ def tokens(s):
     return set(re.findall(r'[a-z0-9]+', s.lower()))
 
 def jaccard(a, b):
-    # return the Jaccard score of two token sets (both empty -> 1.0)
-    pass
+    ta, tb = tokens(a), tokens(b)
+    # TODO: return the Jaccard score of the two token sets.
+    # Both empty -> 1.0. Otherwise len(ta & tb) / len(ta | tb)
+    # (guard against an empty union).
+    return 0.0
 
 def main():
     data = sys.stdin.read().split('\\n')
     idx = 0
     n = int(data[idx]); idx += 1
     thr = int(data[idx]) / 100.0; idx += 1
-    # TODO: score each case, average them, count those >= thr.
+    scores = []
+    passed = 0
+    for _ in range(n):
+        out = data[idx]; idx += 1
+        exp = data[idx]; idx += 1
+        j = jaccard(out, exp)
+        scores.append(j)
+        if j >= thr:
+            passed += 1
+    avg = sum(scores) / n
+    print(f"{avg:.3f}")
+    print(passed)
 
 main()
 `,
@@ -1125,6 +1168,7 @@ print(f"Empathy score: {score}")`,
       ],
       challenge_title: "Parsing the Judge",
       challenge_description: "Parse a batch of LLM-judge verdicts, discard malformed or out-of-range scores, and report the average of what survives.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your LLM-as-judge runs over a thousand customer-support replies, emitting one JSON verdict per case on a 1–5 rubric. But judges are messy: sometimes the model wraps prose around the JSON and your parser already handled that, sometimes it hallucinates a score of 9, sometimes it forgets the `score` field entirely, and sometimes it returns flat garbage. A naive `json.loads(...)['score']` crashes on the first bad row and poisons your average on the rest. Build the robust aggregator: keep only verdicts that parse cleanly and fall inside the rubric, average those, and report exactly how many you trusted versus threw out.",
       challenge_statement: "You are given **N** lines, each a candidate JSON verdict from the judge.\n\nA verdict is **valid** only when all of these hold:\n\n- the line parses as a JSON object,\n- it has a `score` key,\n- the value is a JSON integer (not a boolean, not a float, not a string),\n- the integer is in the rubric range `1 ≤ score ≤ 5`.\n\nEvery line failing any condition is **invalid** and excluded. Compute the average of the valid scores (rounded to two decimals) and report the counts of valid and invalid verdicts. If no verdict is valid, report the average as `0.00`.",
       challenge_input_format: "Line 1: integer `N`. Each of the next `N` lines is one candidate verdict (a JSON string, or possibly malformed text).",
@@ -1151,8 +1195,21 @@ def main():
     data = sys.stdin.read().split('\\n')
     idx = 0
     n = int(data[idx]); idx += 1
-    # TODO: validate each verdict, average the valid scores,
-    # and print the average plus "<valid> <invalid>".
+    valid = []
+    invalid = 0
+    for _ in range(n):
+        line = data[idx]; idx += 1
+        # TODO: a verdict is valid only when the line parses as a JSON object
+        # with a "score" key whose value is an int (NOT a bool/float/str) in
+        # the range 1..5. Append valid scores to valid; otherwise invalid += 1.
+        # Wrap the parse in try/except (ValueError, KeyError, TypeError).
+        pass
+    if valid:
+        avg = sum(valid) / len(valid)
+        print(f"{avg:.2f}")
+    else:
+        print("0.00")
+    print(f"{len(valid)} {invalid}")
 
 main()
 `,
@@ -1479,6 +1536,7 @@ Pass rate: 2/3 (67%)`,
       ],
       challenge_title: "The Eval Suite Harness",
       challenge_description: "Run a mixed-scorer eval suite, list the exact cases that failed, and gate the release against the last green baseline.",
+      challenge_difficulty: "intermediate",
       challenge_statement: "You are building the harness that runs before every prompt change. Each case names a **scorer**, supplies the model **output**, and the **expected** target. Apply the right scorer:\n\n- `exact` — pass when output equals expected after trimming and lowercasing both.\n- `contains` — pass when the trimmed, lowercased expected appears anywhere in the trimmed, lowercased output.\n- `numeric` — `expected` is two space-separated numbers `target tolerance`; parse the output as a float and pass when `|value − target| ≤ tolerance`. If the output is not a number, fail.\n\nRun all `N` cases in order. Cases are numbered `1..N`. Report how many passed, the pass rate as an integer percent (standard rounding), the list of failing case numbers, and a ship verdict: **SHIP** when the number passed is at least the green **baseline**, else **BLOCK**.",
       challenge_story: "Your safety net is one command: run the suite, read the verdict, ship or don't. Tonight the suite mixes three scorer types — exact-match for canned answers, contains for 'must mention the policy ID', and a numeric scorer for the price-extraction feature with a tolerance band. The harness has to score each case with the *right* tool, surface exactly which case numbers regressed (a single number hides the bug; a list of IDs points at it), and compare the pass count against the last known-green baseline so a 'harmless' tweak that quietly broke a case can't sneak past you.",
       challenge_input_format: "Line 1: integer `N`. Line 2: integer `baseline` (the pass count from the last green run). Then each case is three lines: the scorer name (`exact`, `contains`, or `numeric`), the output line, and the expected line.",
@@ -1502,15 +1560,40 @@ Pass rate: 2/3 (67%)`,
       challenge_starter_code: `import sys
 
 def score_case(scorer, output, expected):
-    # return True/False for this case
-    pass
+    o = output.strip()
+    e = expected.strip()
+    # TODO: dispatch on scorer and return True/False:
+    #   "exact"    -> o.lower() == e.lower()
+    #   "contains" -> e.lower() in o.lower()
+    #   "numeric"  -> e is "target tolerance"; parse o as float (try/except
+    #                 ValueError, fail on non-number) and pass when
+    #                 abs(val - target) <= tolerance.
+    return False
 
 def main():
     data = sys.stdin.read().split('\\n')
     idx = 0
     n = int(data[idx]); idx += 1
     baseline = int(data[idx]); idx += 1
-    # TODO: score each case, track failures, print the four report lines.
+    passed = 0
+    failed_ids = []
+    for i in range(1, n + 1):
+        scorer = data[idx].strip(); idx += 1
+        output = data[idx]; idx += 1
+        expected = data[idx]; idx += 1
+        if score_case(scorer, output, expected):
+            passed += 1
+        else:
+            failed_ids.append(i)
+    rate = round(passed / n * 100)
+    verdict = "SHIP" if passed >= baseline else "BLOCK"
+    print(f"{passed}/{n}")
+    print(f"{rate}%")
+    if failed_ids:
+        print("FAIL " + " ".join(map(str, failed_ids)))
+    else:
+        print("FAIL none")
+    print(verdict)
 
 main()
 `,
@@ -1799,6 +1882,7 @@ under-covered: ['shipping']`,
       ],
       challenge_title: "The Dataset Auditor",
       challenge_description: "Audit a raw labeled dataset: drop duplicates, count examples per class, and flag any class too starved to fine-tune on.",
+      challenge_difficulty: "intermediate",
       challenge_story: "You're about to kick off an expensive fine-tuning run for a support-ticket classifier, and the data team handed you a freshly scraped dataset of labeled examples. Before you burn GPU hours, you need to audit it. Real scraped data is dirty: the same ticket appears multiple times, and some categories barely have any examples while others are flooded. Your job is to deduplicate the rows, count clean examples per class, and flag any class that falls below the minimum the team agreed is trainable. Catch a starved class now, or watch the fine-tune fail to learn it later.",
       challenge_statement: "You are given **N** raw labeled rows. Each row is a label and an example text separated by a single tab character.\n\nTwo rows are **duplicates** when they have the same label AND the same text after normalizing the text (strip leading/trailing whitespace and lowercase it). Keep only the first occurrence of each duplicate; discard the rest.\n\nAfter deduplication, count how many clean examples each label has. A label is **weak** if its count is strictly less than `min_per_class`.\n\nReport the number of rows kept and the number of duplicates dropped, the number of distinct classes, and the weak classes.",
       challenge_input_format: "Line 1: integer `N`. Line 2: integer `min_per_class`. Each of the next `N` lines is one row: a label, a tab character, then the example text (the text may contain spaces).",
@@ -1826,8 +1910,27 @@ def main():
     idx = 0
     n = int(data[idx]); idx += 1
     min_per_class = int(data[idx]); idx += 1
-    # TODO: dedup rows, count per class, flag weak classes.
-    # Print "<kept> <dropped>", the class count, then WEAK ... or BALANCED.
+    counts = {}
+    order = []
+    seen = set()
+    kept = 0
+    dropped = 0
+    for _ in range(n):
+        parts = data[idx].split('\\t', 1); idx += 1
+        label = parts[0]
+        text = parts[1] if len(parts) > 1 else ""
+        key = (label, text.strip().lower())
+        # TODO: if key is already in seen, it's a duplicate (dropped += 1,
+        # skip it). Otherwise add the key, count it as kept, and tally the
+        # label in counts (recording first-seen labels in order).
+
+    weak = [lbl for lbl in order if counts[lbl] < min_per_class]
+    print(f"{kept} {dropped}")
+    print(len(counts))
+    if weak:
+        print("WEAK " + " ".join(weak))
+    else:
+        print("BALANCED")
 
 main()
 `,
@@ -2099,6 +2202,7 @@ underfitting`,
       ],
       challenge_title: "The Overfit Detector",
       challenge_description: "Diagnose a batch of fine-tune runs from their train/test gaps and find the run that generalizes best.",
+      challenge_difficulty: "beginner",
       challenge_story: "Your team kicked off a sweep of fine-tune experiments overnight, each with different data and training settings, and every run logged its accuracy on both the training set and the sealed held-out test set. Now you have a stack of (train, test) numbers and one decision to make: which run actually generalizes, and which ones just memorized their training data? Build the detector that flags overfitting runs by their train-minus-test gap and surfaces the single run with the best honest performance — the one you'd actually ship.",
       challenge_statement: "You are given **N** fine-tune runs. Each run reports two integer percentages: `train` accuracy and `test` accuracy. Runs are numbered `1..N` in input order.\n\nYou are also given a `gap_threshold` percentage. A run is **overfitting** when `train - test > gap_threshold`.\n\nDo two things:\n\n1. Count how many runs are overfitting.\n2. Find the run with the highest `test` accuracy (the best generalizer). If several tie on test accuracy, pick the one with the **lowest** run number.",
       challenge_input_format: "Line 1: integer `N`. Line 2: integer `gap_threshold` (a percentage). Each of the next `N` lines has two space-separated integer percentages: `train test`.",
@@ -2125,7 +2229,19 @@ def main():
     idx = 0
     n = int(data[idx]); idx += 1
     gap_threshold = int(data[idx]); idx += 1
-    # TODO: count overfitting runs and find the best generalizer.
+    overfit = 0
+    best_test = -1
+    best_id = -1
+    for i in range(1, n + 1):
+        parts = data[idx].split(); idx += 1
+        train = int(parts[0])
+        test = int(parts[1])
+        # TODO: a run overfits when train - test > gap_threshold (overfit += 1).
+        # Track the best generalizer: update best_test/best_id only when this
+        # run's test is strictly greater (so ties keep the lowest run number).
+
+    print(overfit)
+    print(f"{best_id} {best_test}")
 
 main()
 `,
@@ -2402,6 +2518,7 @@ best so far: v1.3-prompt at 0.88`,
       ],
       challenge_title: "The Regression Dashboard",
       challenge_description: "Walk a version history of eval scores: count regressions, find the worst single drop, and report the best version overall.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your eval suite has been running on every prompt and model change for months, and each run logged a version label and an integer score. Today the team wants a dashboard summary before deciding what to ship next. You need three things from the history: how many times a version scored worse than the one right before it (the regressions), which version caused the single biggest drop (the prime suspect to investigate), and which version holds the all-time best score (the baseline to beat). Build the report that turns a raw log into a decision.",
       challenge_statement: "You are given **N** eval runs in chronological order. Each run is a version label and an integer score, separated by a single space (the label may itself contain spaces, but the score is always the last whitespace-separated field).\n\nWalking the history in order, compute:\n\n1. The number of **regressions** — runs whose score is strictly less than the immediately previous run's score.\n2. The **worst drop**: among regressions, the largest `previous_score - score`, and the label of the version that caused it. If there are no regressions, report `NONE`.\n3. The **best version**: the label with the highest score. If several tie on the highest score, report the **earliest** (first in chronological order).",
       challenge_input_format: "Line 1: integer `N`. Each of the next `N` lines is a run: a version label, then the integer score as the final space-separated field.",
@@ -2428,7 +2545,28 @@ def main():
     data = sys.stdin.read().split('\\n')
     idx = 0
     n = int(data[idx]); idx += 1
-    # TODO: walk the runs, count regressions, find the worst drop and best version.
+    regressions = 0
+    worst_drop = 0
+    worst_version = ""
+    best_score = -1
+    best_version = ""
+    prev_score = None
+    for _ in range(n):
+        parts = data[idx].rsplit(' ', 1); idx += 1
+        version = parts[0]
+        score = int(parts[1])
+        # TODO: a regression is when prev_score is not None and score < prev_score
+        # (regressions += 1); track the largest prev_score - score in worst_drop
+        # and its worst_version. Also track best_score / best_version, updating
+        # only on a strictly higher score so ties keep the earliest version.
+
+        prev_score = score
+    print(f"{best_version} {best_score}")
+    print(regressions)
+    if worst_drop > 0:
+        print(f"{worst_version} -{worst_drop}")
+    else:
+        print("NONE")
 
 main()
 `,

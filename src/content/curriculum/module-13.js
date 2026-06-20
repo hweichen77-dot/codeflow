@@ -225,6 +225,7 @@ total: 2.38`,
       ],
       challenge_title: "The TTFT Router",
       challenge_description: "Pick the model route that shows the user a word fastest — but only among routes that can still finish the whole reply inside the latency budget.",
+      challenge_difficulty: "intermediate",
       challenge_story: "You run the gateway in front of a chat product. Every incoming question can be served by several **routes** — different models or deployments — and each has its own performance profile: a fixed **time to first token (TTFT)** before anything appears, a **per-token cost** in milliseconds while it streams, and the **number of tokens** the reply will take. Users judge a chat by how fast the *first* word shows up, so you want to minimize TTFT. But product set a hard rule: a route is only allowed if its **total** generation time fits inside the latency budget — nobody wants a snappy first word followed by a thirty-second crawl.",
       challenge_statement: "You are given `n` candidate routes and a latency `budget` (milliseconds). For each route you know its `ttft`, its per-token streaming cost `per`, and the number of output tokens `out`. A route's **total time** is `ttft + per * out`.\n\nA route is **eligible** only if its total time is **≤ budget**. Among all eligible routes, print the name of the one with the **smallest TTFT**. Break ties by smallest total time; if still tied, prefer the route that appeared **earlier** in the input. If no route is eligible, print `NONE`.",
       challenge_input_format: "The first line has two integers `n budget`.\n\nEach of the next `n` lines describes a route: a name (no spaces) followed by three integers `ttft per out`.",
@@ -248,9 +249,19 @@ total: 2.38`,
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n, budget = map(int, data[0].split())
-    # TODO: read n routes, keep only those with ttft + per*out <= budget,
-    #       then print the name with the smallest TTFT (tie-break: total, then input order).
+    idx = 0
+    n, budget = map(int, data[idx].split())
+    idx += 1
+    best = None
+    for _ in range(n):
+        parts = data[idx].split()
+        idx += 1
+        name = parts[0]
+        ttft = int(parts[1]); per = int(parts[2]); out = int(parts[3])
+        total = ttft + per * out
+        # TODO: skip routes whose total > budget; among the rest keep the one
+        #       with the smallest ttft (tie-break: smaller total, then earlier input).
+    print(best[2] if best is not None else "NONE")
 
 main()
 `,
@@ -528,6 +539,7 @@ print(message)
       ],
       challenge_title: "The SSE Reassembler",
       challenge_description: "Parse a raw Server-Sent Events stream the way a real client does: skip the noise, stop at the sentinel, count the token events, and glue the pieces back into the final answer.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your front-end gets a model's reply as a live **Server-Sent Events** stream over one long HTTP response. The wire format is messy on purpose: there are blank lines between events, `:` comment lines the server sends as keep-alives, and a final `data: [DONE]` sentinel that marks the end. Anything after `[DONE]` is leftover garbage you must ignore. Each real token arrives as a `data:` line whose payload looks like `{\"token\": \"...\"}`. You're writing the client-side reassembler that turns this raw stream into two things product needs: **how many tokens streamed** and **the full reconstructed text**.",
       challenge_statement: "Read the raw SSE stream line by line and process it:\n\n1. Ignore any line that does **not** start with `data:` (blank lines, `:` comments, etc.).\n2. For a `data:` line, strip the `data:` prefix and surrounding whitespace to get the payload.\n3. If the payload is exactly `[DONE]`, **stop immediately** — ignore every line after it.\n4. Otherwise the payload is `{\"token\": \"<text>\"}`. Extract the string between the quotes after `\"token\":` and append it to the running output.\n\nPrint the **number of token events** consumed, then on the next line print the **concatenated text** of all those tokens.",
       challenge_input_format: "The entire stdin is the raw SSE stream: a sequence of lines that may include `data:` lines, blank lines, `:` comment lines, a `data: [DONE]` sentinel, and possibly trailing lines after it.",
@@ -554,8 +566,22 @@ def main():
     lines = sys.stdin.read().split("\\n")
     count = 0
     text = ""
-    # TODO: walk the lines, keep only data: events, stop at [DONE],
-    #       extract each token's text, and accumulate count + text.
+    for line in lines:
+        if not line.startswith("data:"):
+            continue
+        payload = line[len("data:"):].strip()
+        if payload == "[DONE]":
+            break
+        # payload looks like {"token": "<text>"}; pull the text between the quotes.
+        key = '"token":'
+        pos = payload.find(key)
+        if pos == -1:
+            continue
+        rest = payload[pos + len(key):]
+        q1 = rest.find('"')
+        q2 = rest.find('"', q1 + 1)
+        token = rest[q1 + 1:q2]
+        # TODO: append token to text and increment count.
     print(count)
     print(text)
 
@@ -812,6 +838,7 @@ cache hits: True`,
       ],
       challenge_title: "The Cacheable Prefix",
       challenge_description: "Find the longest prompt prefix every request in a batch shares, then compute the money prompt caching would save by prefilling it only once.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your RAG service answers questions about the same big knowledge base, so every request starts with an identical block: a long system prompt plus the retrieved document. Only the user's question at the very end changes. Right now you pay to prefill that whole shared block on **every** call. Prompt caching can store the processed **common prefix** once and let the rest of the batch reuse it — but first you have to find exactly how much of the prompt is truly shared across **all** requests, because a single differing character at position k means nothing past k can be cached.",
       challenge_statement: "You are given `n` prompts and a `cost` (the price in micro-dollars to prefill **one token**). Do two things:\n\n1. Find the **longest common prefix** of all `n` prompts, measured in characters. Let its length be `L`.\n2. Estimate its token count as `T = ceil(L / 4)` (the usual ~4-chars-per-token rule), with `T = 0` when `L = 0`.\n\nWithout caching, every one of the `n` calls prefills those `T` tokens. With caching, the prefix is prefilled **once** and the other `n - 1` calls reuse it. So the saving is `(n - 1) * T * cost`.\n\nPrint `L` on the first line and the saving on the second line.",
       challenge_input_format: "The first line has two integers `n cost`.\n\nEach of the next `n` lines is one prompt string (it may contain spaces; read the whole line).",
@@ -838,8 +865,9 @@ def main():
     data = sys.stdin.read().split("\\n")
     n, cost = map(int, data[0].split())
     prompts = data[1:1 + n]
-    # TODO: compute the longest common prefix length L across all prompts,
-    #       then print L and the saving (n - 1) * ceil(L / 4) * cost.
+    prefix = prompts[0]
+    # TODO: shrink prefix against each remaining prompt to the longest common prefix,
+    #       then print its length L and the saving (n - 1) * ceil(L / 4) * cost.
 
 main()
 `,
@@ -1099,6 +1127,7 @@ concurrent seconds: 20.0`,
       ],
       challenge_title: "The Concurrency Planner",
       challenge_description: "Estimate how long a bulk classification job takes when you cap how many requests run at once, then report the speedup concurrency buys you.",
+      challenge_difficulty: "beginner",
       challenge_story: "You have a nightly job that runs `n` documents through a classifier model. Each request takes the same `latency` to come back. Fired one at a time, the job crawls. Your provider lets you keep up to `c` requests in flight at once, so the work runs in **waves**: launch `c` requests, wait for them, launch the next `c`, and so on. The product owner wants a capacity plan: the sequential time, the concurrent wall-clock time at concurrency `c`, and the speedup factor — so they can decide whether to pay for more parallelism.",
       challenge_statement: "You are given the number of requests `n`, the max concurrency `c`, and the per-request `latency` in milliseconds (every request takes exactly `latency`).\n\nCompute three numbers:\n\n1. **Sequential time** = `n * latency` (one after another).\n2. **Concurrent time** = `ceil(n / c) * latency` — the requests run in `ceil(n / c)` full waves, each wave taking `latency`.\n3. **Speedup** = sequential / concurrent, printed to **exactly 2 decimal places**.\n\nPrint the sequential time, the concurrent time, then the speedup.",
       challenge_input_format: "A single line with three integers: `n c latency`.",
@@ -1374,6 +1403,7 @@ p95: 5.0`,
       ],
       challenge_title: "The Latency SLO Checker",
       challenge_description: "Turn a batch of TTFT measurements into the metric that actually matters — the tail percentile — and decide whether your service meets its latency promise.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your AI feature has a service-level objective (SLO): the **p95 time to first token** must stay under a promised threshold. An on-call engineer keeps quoting the *average*, but the average hides the slow tail — the unlucky users who wait forever and churn. You're building the dashboard check that does it right: given a window of raw TTFT samples, it reports the mean (for context), the requested **percentile** by nearest-rank, and whether the SLO passed.",
       challenge_statement: "You are given `n` latency samples (milliseconds), a percentile `p`, and an SLO `threshold` in milliseconds. Compute:\n\n1. **Mean** = floor of the average, i.e. `sum(samples) // n` (integer division).\n2. **Percentile value** by the **nearest-rank** method: sort ascending, let `rank = ceil(p/100 * n)` (1-indexed, and at least 1), and take the sample at that rank.\n3. **Status**: print `PASS` if the percentile value is **≤ threshold**, otherwise `FAIL`.\n\nPrint the mean, the percentile value, then the status.",
       challenge_input_format: "The first line has three integers `n p threshold`.\n\nThe second line has `n` space-separated integer latency samples.",
@@ -1643,6 +1673,7 @@ total: 12.19`,
       ],
       challenge_title: "The Throughput SLO Gate",
       challenge_description: "Measure each model's real token throughput from its output size and streaming time, count how many clear a throughput target, and name the slowest streamer.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your platform team is choosing between several model deployments for a verbose feature (long summaries), where token throughput, not first-token speed, decides the experience. Each deployment reports how many **output tokens** it produced and how many **milliseconds** of streaming that took. Product set a throughput SLO in **tokens per second**: a deployment is acceptable only if it streams at least that fast. You're building the gate that computes each deployment's TPS, counts how many pass the SLO, and flags the **slowest** streamer so it can be retired.",
       challenge_statement: "You are given `n` deployments and a throughput `target` in tokens per second. Each deployment reports its output token count `out` and its streaming time `ms` in milliseconds. Compute each one's throughput as **integer** tokens per second using floor division:\n\n```\ntps = out * 1000 // ms\n```\n\nThen:\n\n1. Count how many deployments have `tps >= target` (these PASS the SLO).\n2. Find the deployment with the **smallest** tps. Break ties by the name that is **lexicographically smaller**.\n\nPrint the pass count on the first line, then the slowest deployment's name and its tps separated by a single space on the second line.",
       challenge_input_format: "The first line has two integers `n target`.\n\nEach of the next `n` lines describes a deployment: a name (no spaces) followed by two integers `out ms`.",
@@ -1669,9 +1700,18 @@ total: 12.19`,
 def main():
     data = sys.stdin.read().split("\\n")
     n, target = map(int, data[0].split())
-    # TODO: for each deployment compute tps = out * 1000 // ms,
-    #       count those >= target, and track the slowest (tie: smaller name).
-    #       Print the pass count, then "name tps" of the slowest.
+    passing = 0
+    slowest_name = None
+    slowest_tps = None
+    for i in range(n):
+        parts = data[1 + i].split()
+        name = parts[0]
+        out = int(parts[1]); ms = int(parts[2])
+        tps = out * 1000 // ms
+        # TODO: count this deployment if tps >= target, and update the slowest
+        #       (smallest tps; on a tie keep the lexicographically smaller name).
+    print(passing)
+    print(f"{slowest_name} {slowest_tps}")
 
 main()
 `,
@@ -1930,6 +1970,7 @@ HIT`,
       ],
       challenge_title: "The Semantic Cache Simulator",
       challenge_description: "Replay a stream of query embeddings through a semantic cache: serve a hit when any stored query is similar enough, otherwise miss and store the new query. Report the hit and miss counts.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your support bot gets the same handful of questions phrased a thousand different ways, so you add a **semantic cache** in front of the model. Each incoming query arrives already embedded as a vector. The cache starts empty. For each query you compute its **cosine similarity** to every embedding already stored; if the best similarity is **at or above** a threshold, it is a **hit** and you serve the cached answer with no model call. Otherwise it is a **miss**: you call the model and add this query's embedding to the cache so future paraphrases can hit it. You're building the simulator that, given the stream and the threshold, reports how many calls the cache saved.",
       challenge_statement: "You are given `n` query embeddings, each a `d`-dimensional vector, and a similarity `threshold`. Process the queries **in order** through an initially empty cache:\n\n1. For the current query, compute the **cosine similarity** to every embedding already in the cache. Cosine similarity of vectors a and b is `dot(a,b) / (norm(a) * norm(b))`.\n2. If the cache is non-empty and the **maximum** similarity found is **>= threshold**, count a **hit** and do **not** store the query.\n3. Otherwise count a **miss** and **append** the query's embedding to the cache.\n\nPrint the total number of hits, then the total number of misses.",
       challenge_input_format: "The first line has two integers and one float: `n d threshold`.\n\nEach of the next `n` lines has `d` space-separated floats: one query embedding.",
@@ -1963,7 +2004,15 @@ def main():
     data = sys.stdin.read().split("\\n")
     first = data[0].split()
     n = int(first[0]); d = int(first[1]); threshold = float(first[2])
-    # TODO: process n query vectors through an empty cache, counting hits and misses.
+    cached = []
+    hits = 0
+    misses = 0
+    for i in range(n):
+        vec = list(map(float, data[1 + i].split()))
+        # TODO: find the best cosine(vec, c) over cached; if cache is non-empty and
+        #       best >= threshold count a hit, else count a miss and append vec.
+    print(hits)
+    print(misses)
 
 main()
 `,
@@ -2224,6 +2273,7 @@ expected_cost: 1200.0`,
       ],
       challenge_title: "The Strategy Picker",
       challenge_description: "Given several serving strategies and a cache hit rate, compute each one's expected latency, drop the ones that blow the latency budget, and pick the cheapest survivor.",
+      challenge_difficulty: "advanced",
       challenge_story: "You run the router in front of an AI feature and must choose one **serving strategy** per request class. Each strategy is a bundle: a model tier (its cold-path TTFT, per-token time, and output length), wrapped in a cache. On a **cache hit** the model is skipped, so latency is just the streaming time with no TTFT and the cost drops to a tenth. On a **miss** you pay the full cold latency and full cost. Given the cache **hit rate**, you weight the two paths into an **expected** latency and an **expected** cost. Product gives you a hard latency budget; among only the strategies whose expected latency fits, you pick the one with the lowest expected cost.",
       challenge_statement: "You are given `n` strategies, a latency `budget` in milliseconds, and an integer `hit_rate` percentage (0 to 100). Each strategy has a name and four integers: cold `ttft` (ms), output tokens `out`, per-token time `per` (ms), and cold per-call `cost` (micro-dollars).\n\nFor each strategy:\n\n- `cold_latency = ttft + per * out` and `hit_latency = per * out` (a hit skips the TTFT prefill).\n- `hit_cost = cost // 10` (a hit costs a tenth) and `cold_cost = cost`.\n- `expected_latency = (hit_rate * hit_latency + (100 - hit_rate) * cold_latency) // 100`.\n- `expected_cost = (hit_rate * hit_cost + (100 - hit_rate) * cold_cost) // 100`.\n\nA strategy is **eligible** only if its `expected_latency <= budget`. Among eligible strategies print the name with the **smallest expected_cost**; break ties by smallest expected_latency, then by the lexicographically smaller name. If none are eligible, print `NONE`.",
       challenge_input_format: "The first line has three integers `n budget hit_rate`.\n\nEach of the next `n` lines describes a strategy: a name (no spaces) followed by four integers `ttft out per cost`.",
@@ -2250,8 +2300,15 @@ expected_cost: 1200.0`,
 def main():
     data = sys.stdin.read().split("\\n")
     n, budget, hit_rate = map(int, data[0].split())
-    # TODO: for each strategy compute expected latency and cost,
-    #       keep only those within budget, and print the cheapest (tie: latency, then name).
+    best = None
+    for i in range(n):
+        parts = data[1 + i].split()
+        name = parts[0]
+        ttft = int(parts[1]); out = int(parts[2]); per = int(parts[3]); cost = int(parts[4])
+        # TODO: compute cold/hit latency and cost, blend by hit_rate into expected
+        #       latency and cost, skip if expected latency > budget, and keep the
+        #       minimum (expected_cost, expected_latency, name).
+    print(best[2] if best is not None else "NONE")
 
 main()
 `,

@@ -245,6 +245,7 @@ score: 0.9988`,
         "The first element after sorting is the closest; print its index and rounded score."
       ],
       challenge_title: "Top-k Semantic Search",
+      challenge_difficulty: "intermediate",
       challenge_description: "Build the brute-force nearest-neighbor core of a vector database: embed everything, score by cosine similarity, return the closest k.",
       challenge_story: "You're shipping the retrieval layer for an AI documentation assistant. Every help article has already been turned into an **embedding** — a vector of floats that captures its meaning. When a user types a question, your embedding model turns it into a **query vector**, and your job is to find the \`k\` stored vectors whose meaning is closest. The industry-standard distance for normalized text embeddings is **cosine similarity**: the cosine of the angle between two vectors, where 1.0 means identical direction. Before you reach for a fancy ANN index, you ship the honest baseline — score the query against every vector and keep the best.",
       challenge_statement: "You are given a query vector and \`n\` document vectors, all of dimension \`d\`. Return the **top \`k\`** documents by **cosine similarity** to the query.\n\nCosine similarity between vectors \`a\` and \`b\` is:\n\n\`\`\`\ncos(a, b) = dot(a, b) / (||a|| * ||b||)\n\`\`\`\n\nwhere \`||v||\` is the Euclidean norm. If either vector has zero norm, treat its similarity as \`0.0000\`.\n\nRank documents by similarity **descending**. If two documents tie on similarity (rounded to 4 decimals), the one with the **smaller index** comes first. Print the top \`k\`.",
@@ -268,12 +269,27 @@ score: 0.9988`,
       ],
       challenge_starter_code: `import sys
 
+def dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
+
+def norm(a):
+    return sum(x * x for x in a) ** 0.5
+
 def main():
     data = sys.stdin.read().split("\\n")
-    n, d, k = map(int, data[0].split())
-    query = list(map(float, data[1].split()))
-    # TODO: read the n document vectors, score each by cosine similarity
-    #       to the query, then print the top k as "index score" (4 decimals).
+    idx = 0
+    n, d, k = map(int, data[idx].split()); idx += 1
+    query = list(map(float, data[idx].split())); idx += 1
+
+    # Parsing is done for you: read the n document vectors.
+    vectors = []
+    for _ in range(n):
+        vectors.append(list(map(float, data[idx].split()))); idx += 1
+
+    # dot() and norm() helpers are ready above.
+    # TODO: cosine(query, v) = dot / (norm(query) * norm(v)); if either norm is 0,
+    # use 0.0. Score every vector, sort by key (-round(sim, 4), index), and print
+    # the top k as "index score" with the score to 4 decimals.
 
 main()
 `,
@@ -549,6 +565,7 @@ exact best score: 0.974`,
         "Round the score to 4 decimal places when you print it."
       ],
       challenge_title: "Recall@k Benchmark",
+      challenge_difficulty: "intermediate",
       challenge_description: "Your ANN index is fast but lossy. Measure how many true neighbors it still finds by computing recall@k across a whole query benchmark.",
       challenge_story: "You swapped your slow brute-force search for a blazing-fast **approximate nearest neighbor (ANN)** index. It is 50x faster — but approximate, so it sometimes misses a true neighbor. Before you ship it, the eval harness must answer one question: *how much accuracy did we trade away?* The standard metric is **recall@k**: for each query, what fraction of the ground-truth top-k neighbors did the index actually return? You run a benchmark of many queries and report both the per-query recall and the **mean recall@k** across the whole set — the single number that decides whether the speedup is worth it.",
       challenge_statement: "You run \`q\` benchmark queries with parameter \`k\`. For each query you have:\n\n- the **exact** top-k neighbor ids (ground truth, from brute-force search), and\n- the **approx** top-k neighbor ids returned by the ANN index.\n\nFor each query, **recall@k** is:\n\n\`\`\`\n(number of exact ids that also appear in approx) / k\n\`\`\`\n\nUse only the **first k** ids of each list if extras are present. Treat the ids as a set (ignore order and duplicates).\n\nPrint each query's recall@k in order, then print the **mean** recall@k over all \`q\` queries. Every value is formatted to exactly 4 decimal places.",
@@ -574,9 +591,18 @@ exact best score: 0.974`,
 
 def main():
     data = sys.stdin.read().split("\\n")
-    q, k = map(int, data[0].split())
-    # TODO: for each of the q queries, read the exact ids then the approx ids,
-    #       compute recall@k = |exact & approx| / k, print each, then the mean.
+    idx = 0
+    q, k = map(int, data[idx].split()); idx += 1
+
+    # Parsing is done for you: each query is two lines (exact ids, approx ids).
+    queries = []
+    for _ in range(q):
+        exact = data[idx].split(); idx += 1
+        approx = data[idx].split(); idx += 1
+        queries.append((exact, approx))
+
+    # TODO: for each (exact, approx), recall = |set(exact[:k]) & set(approx[:k])| / k.
+    # Print each recall to 4 decimals, then the mean recall over all q queries (4 dp).
 
 main()
 `,
@@ -835,6 +861,7 @@ for d in eligible:
         "Sort the eligible docs by their score in descending order before printing."
       ],
       challenge_title: "Metadata-Filtered Retrieval",
+      challenge_difficulty: "advanced",
       challenge_description: "Pure similarity isn't enough — a doc must also pass hard business rules. Apply equality filters and a recency floor before ranking.",
       challenge_story: "Your RAG assistant serves a regulated enterprise. Similarity decides *which docs are relevant*, but **metadata** decides *which docs the user is even allowed to see*: the right language, the right product tier, recent enough to be accurate. A pre-filter that the index respects is non-negotiable — surfacing a stale or out-of-scope passage isn't just a bad answer, it's a compliance incident. So your retriever first discards anything that fails the metadata predicates, **then** ranks whatever survives by its semantic score.",
       challenge_statement: "You are given \`n\` candidate documents. Each has an integer **id**, a float similarity **score**, an integer **year**, and zero or more string **metadata** key/value pairs.\n\nApply two filters:\n\n1. **Recency floor:** keep only documents with \`year >= min_year\`.\n2. **Equality filters:** for each given \`(key, value)\` filter, the document's metadata for that key must equal that value. A document missing the key fails.\n\nAmong the survivors, rank by **score descending**. If two survivors tie on score, the one with the **smaller id** comes first. Print the surviving ids in rank order. If nothing survives, print \`NONE\`.",
@@ -860,11 +887,34 @@ for d in eligible:
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n = int(data[0])
-    # TODO: parse n docs (id, score, year, then key/value metadata pairs),
-    #       read min_year and the equality filters, keep docs that pass both
-    #       the year floor and every filter, rank by score desc (ties by id),
-    #       and print the surviving ids — or NONE.
+    idx = 0
+    n = int(data[idx]); idx += 1
+
+    # Parsing is done for you: each doc is id, score, year, then key/value pairs.
+    docs = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        doc_id = int(parts[0])
+        score = float(parts[1])
+        year = int(parts[2])
+        meta = {}
+        i = 3
+        while i < len(parts):
+            meta[parts[i]] = parts[i + 1]
+            i += 2
+        docs.append({"id": doc_id, "score": score, "year": year, "meta": meta})
+
+    min_year = int(data[idx]); idx += 1
+    f = int(data[idx]); idx += 1
+    flt = {}
+    for _ in range(f):
+        kv = data[idx].split(); idx += 1
+        flt[kv[0]] = kv[1]
+
+    # Everything is parsed: 'docs', 'min_year', and the equality filters 'flt'.
+    # TODO: keep docs where year >= min_year AND meta[key] == val for every
+    # (key, val) in flt (a missing key fails). Sort survivors by (-score, id)
+    # and print their ids space-separated, or "NONE" if none survive.
 
 main()
 `,
@@ -1135,6 +1185,7 @@ print(fused)
         "Use sorted(scores, key=scores.get, reverse=True) to order ids by fused score."
       ],
       challenge_title: "Weighted Reciprocal Rank Fusion",
+      challenge_difficulty: "advanced",
       challenge_description: "Keyword search and vector search each return a ranked list. Fuse them into one ranking with weighted Reciprocal Rank Fusion.",
       challenge_story: "Your support search is **hybrid**: a keyword (BM25) engine that nails exact error codes and SKUs, and a vector engine that catches paraphrases and synonyms. Each returns its own ranked list, and neither alone is best. The clean way to merge them — no score normalization, no tuning headaches — is **Reciprocal Rank Fusion (RRF)**: a document's fused score is the sum over every list of \`weight / (k + rank)\`, where rank is 0-based. RRF only cares *where* a doc landed in each list, not the raw scores, which makes it robust across wildly different engines. You give keyword results extra pull by weighting that list higher.",
       challenge_statement: "You are given \`m\` ranked lists of document ids and a constant \`k\`. Each list \`j\` has an integer **weight** \`w_j\`. A document at 0-based **rank** \`r\` in list \`j\` contributes:\n\n\`\`\`\nw_j * (1 / (k + r))\n\`\`\`\n\nto that document's fused score. Sum these contributions across all lists a document appears in.\n\nRank documents by fused score **descending**. If two documents tie on fused score (compared at 9 decimal places of precision), order them **lexicographically by id**.\n\nFirst print the fused order on one line (ids space-separated). Then print each id with its fused score to exactly 6 decimal places, in the same order.",
@@ -1160,10 +1211,28 @@ print(fused)
 
 def main():
     data = sys.stdin.read().split("\\n")
-    m, k = map(int, data[0].split())
-    # TODO: read m weighted ranked lists, accumulate each doc's fused RRF score
-    #       (weight * 1/(k+rank)), then print the fused order and each score
-    #       to 6 decimals, breaking ties lexicographically by id.
+    idx = 0
+    m, k = map(int, data[0].split()); idx += 1
+
+    # Parsing is done for you: each ranked list is a weight then doc ids in order.
+    lists = []
+    for _ in range(m):
+        parts = data[idx].split(); idx += 1
+        weight = int(parts[0])
+        docs = parts[1:]
+        lists.append((weight, docs))
+
+    # TODO: accumulate fused scores in a dict. For each (weight, docs), use
+    # enumerate(docs) to get the 0-based rank, and add weight * (1 / (k + rank))
+    # to scores[doc_id] (start missing ids at 0.0).
+    scores = {}
+
+    # The compound sort key is pre-written for you — this is the tricky part:
+    # highest fused score first, ties broken lexicographically by id.
+    order = sorted(scores.keys(), key=lambda d: (-round(scores[d], 9), d))
+
+    # TODO: print the fused order (ids space-separated) on one line, then one
+    # line per id as "id score" with the score to 6 decimals, in that order.
 
 main()
 `,
@@ -1407,6 +1476,7 @@ print(top2)
         "Build a list of just the 'id' values from those top two candidates."
       ],
       challenge_title: "Retrieve-then-Rerank Pipeline",
+      challenge_difficulty: "intermediate",
       challenge_description: "Cast a wide cheap net, then re-score the finalists with an expensive cross-encoder. Build the two-stage retrieval pipeline.",
       challenge_story: "Your cross-encoder reranker is *accurate* but *slow* — far too slow to run on every document in the corpus. So production search runs in two stages. **Stage 1 (retrieve):** a fast ANN index pulls a wide candidate set, optimized for recall so no good doc is missed. **Stage 2 (rerank):** the heavyweight cross-encoder re-scores only those few candidates, optimized for precision so the very best answer lands on top. The catch: a doc the retriever drops is gone forever, no matter how well the reranker would have scored it. You implement the funnel that turns a cheap recall score and an expensive precision score into a final shortlist.",
       challenge_statement: "You are given \`n\` documents. Each has a string **id**, a float **retrieve_score** (stage-1 ANN score), and a float **rerank_score** (stage-2 cross-encoder score).\n\nRun the two stages:\n\n1. **Retrieve:** keep the top \`retrieve_k\` documents by **retrieve_score** descending. If two tie on retrieve_score, prefer the **lexicographically smaller id**.\n2. **Rerank:** reorder *only those survivors* by **rerank_score** descending. If two tie on rerank_score, prefer the **lexicographically smaller id**. Take the top \`final_k\`.\n\nPrint the final shortlist of ids, space-separated. If \`final_k\` exceeds the number of survivors, print all survivors in reranked order.",
@@ -1432,10 +1502,19 @@ print(top2)
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n = int(data[0])
-    # TODO: parse n docs (id, retrieve_score, rerank_score), read retrieve_k
-    #       and final_k, keep the top retrieve_k by retrieve_score, rerank those
-    #       by rerank_score, and print the top final_k ids (ties by id).
+    idx = 0
+    n = int(data[idx]); idx += 1
+
+    # Parsing is done for you: each doc is id, retrieve_score, rerank_score.
+    docs = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        docs.append({"id": parts[0], "r": float(parts[1]), "rr": float(parts[2])})
+    retrieve_k, final_k = map(int, data[idx].split()); idx += 1
+
+    # TODO: stage 1 -> sort docs by (-r, id), keep the top retrieve_k.
+    # stage 2 -> sort those survivors by (-rr, id), keep the top final_k.
+    # Print the final ids space-separated, best first.
 
 main()
 `,
@@ -1681,6 +1760,7 @@ choice: faiss`,
         "Guard against an empty eligible list before indexing element 0."
       ],
       challenge_title: "Vector DB Selector",
+      challenge_difficulty: "beginner",
       challenge_description: "Given several vector store options and a set of hard requirements, pick the cheapest one that satisfies every bar.",
       challenge_story: "Your team is about to commit to a **vector database**, and the wrong call means months of rework. You've collected each candidate's measured **recall**, **p95 latency**, and **monthly cost**. The product has non-negotiable bars: recall must be at least \`min_recall\` and p95 latency at most \`max_latency\`. Among the stores that clear *both* bars, finance wants the **cheapest**. Build the selector that turns this spec sheet into a single defensible decision - because picking by hype instead of constraints is exactly how teams end up paying for scale they don't have or running infrastructure they can't staff.",
       challenge_statement: "You are given \`n\` candidate vector stores. Each has a string **name**, a float **recall**, a float **latency** (p95 in ms), and a float **cost** (monthly dollars).\n\nYou are also given a \`min_recall\` and a \`max_latency\`. A candidate is **eligible** only if:\n\n- \`recall >= min_recall\`, and\n- \`latency <= max_latency\`.\n\nAmong eligible candidates, choose the one with the **lowest cost**. If two eligible candidates tie on cost, choose the **lexicographically smaller name**. Print the chosen name. If no candidate is eligible, print \`NONE\`.",
@@ -1706,12 +1786,22 @@ choice: faiss`,
 
 def main():
     data = sys.stdin.read().split("\\n")
-    first = data[0].split()
+    idx = 0
+    first = data[idx].split(); idx += 1
     n = int(first[0])
     min_recall = float(first[1])
     max_latency = float(first[2])
-    # TODO: read the n candidates, keep those meeting both bars, and print the
-    #       cheapest eligible name (ties by smaller name) or NONE.
+
+    # Parsing is done for you: each candidate is name, recall, latency, cost.
+    candidates = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        candidates.append((parts[0], float(parts[1]), float(parts[2]), float(parts[3])))
+
+    # candidates hold (name, recall, latency, cost).
+    # TODO: keep those with recall >= min_recall AND latency <= max_latency.
+    # Among them pick the lowest cost (ties -> smaller name); print its name,
+    # or "NONE" if none are eligible.
 
 main()
 `,
@@ -1971,6 +2061,7 @@ shard loads after: [40, 40]`,
         "If no shard has room for the batch, the placement is rejected (return None)."
       ],
       challenge_title: "Multi-Tenant Shard Router",
+      challenge_difficulty: "advanced",
       challenge_description: "Route a stream of tenant insert batches onto capacity-limited shards using a most-remaining-room policy, rejecting what no longer fits.",
       challenge_story: "Your vector store has outgrown one machine, so you've split it into several **shards**, each with a fixed **capacity**. A stream of insert requests arrives, each from a tenant who wants to add a batch of vectors. Your router must place each batch on a shard that can still hold it, and to keep any single shard from becoming a **hot shard**, it always picks the shard with the **most remaining room**. If no shard can fit the batch, the request is **rejected** - better to refuse cleanly than to overflow a node. Build the router that decides, request by request, where each batch lands.",
       challenge_statement: "You manage \`s\` shards, each with the same integer \`capacity\`. Each shard starts with a current load. Then \`q\` insert requests arrive in order; each names a **tenant** and a batch **size**.\n\nFor each request, place the batch on a shard using this policy:\n\n1. Consider only shards whose **remaining room** (\`capacity - current_load\`) is **at least** the batch size.\n2. Among those, pick the one with the **most remaining room**. If two shards tie on remaining room, pick the one that appears **earlier** in the input (smaller index).\n3. If a shard is chosen, add the batch size to its load and output the placement. If no shard can fit the batch, output a rejection. The batch is not placed on rejection.\n\nFor each request, print one line: \`tenant shard_id\` if placed, or \`tenant REJECTED\` if not.",
@@ -1996,12 +2087,32 @@ shard loads after: [40, 40]`,
 
 def main():
     data = sys.stdin.read().split("\\n")
-    first = data[0].split()
+    idx = 0
+    first = data[idx].split(); idx += 1
     s = int(first[0])
     capacity = int(first[1])
-    # TODO: read the s shard loads, then for each of the q requests place the
-    #       batch on the shard with the most remaining room (ties -> earlier
-    #       shard), updating loads, and print the placement or REJECTED.
+
+    # ALL parsing is done for you, in three clean blocks.
+    # Block 1: the shards, as mutable [id, current_load] pairs.
+    shards = []
+    for _ in range(s):
+        parts = data[idx].split(); idx += 1
+        shards.append([parts[0], int(parts[1])])
+
+    # Block 2: the request count.
+    q = int(data[idx]); idx += 1
+
+    # Block 3: the requests, as (tenant, size) tuples.
+    requests = []
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        requests.append((parts[0], int(parts[1])))
+
+    # Everything is parsed. Write ONLY the routing logic below.
+    # TODO: for each (tenant, size) in requests, among shards whose remaining
+    # room (capacity - load) is >= size, pick the one with the MOST room (ties ->
+    # earlier index). If one is chosen, add size to its load and print
+    # "tenant shard_id"; if none fits, print "tenant REJECTED" and change nothing.
 
 main()
 `,
@@ -2263,6 +2374,7 @@ breach: RECALL`,
         "Append 'LATENCY' when p95 is strictly above the p95 maximum; an empty list means OK."
       ],
       challenge_title: "Search Quality Alerter",
+      challenge_difficulty: "intermediate",
       challenge_description: "Process a stream of daily search metrics and raise alerts whenever recall drifts too far below baseline or p95 latency breaches its cap.",
       challenge_story: "Your retrieval system never throws an error when it gets worse - it just quietly returns weaker results while the dashboards stay green. To catch the silent rot, you run a **golden set** of labeled queries every day and sample **p95 latency** from real traffic. You set a **baseline** recall from launch, allow recall to dip by at most \`drop_pct\` percent before it counts as drift, and cap p95 latency at \`p95_max\`. Each day that breaches either bar must raise an alert naming exactly what went wrong, so on-call can act before users feel it. Build the alerter that turns a stream of daily metrics into a clean breach report.",
       challenge_statement: "You are given a baseline recall, a \`drop_pct\` (the maximum allowed percentage drop below baseline), and a \`p95_max\` latency cap, followed by \`n\` daily readings.\n\nFirst compute the recall threshold:\n\n\`\`\`\nthreshold = baseline * (1 - drop_pct / 100)\n\`\`\`\n\nFor each day with recall \`r\` and p95 latency \`p\`:\n\n- A **RECALL** breach occurs when \`r < threshold\` (strictly below).\n- A **LATENCY** breach occurs when \`p > p95_max\` (strictly above).\n- A day with at least one breach is an alert day; if both occur on the same day, report them as \`RECALL,LATENCY\` in that order.\n\nPrint the threshold (4 decimals), then the total number of alert days, then one line per alert day naming the day and its breach reasons, in input order.",
@@ -2288,14 +2400,24 @@ breach: RECALL`,
 
 def main():
     data = sys.stdin.read().split("\\n")
-    first = data[0].split()
+    idx = 0
+    first = data[idx].split(); idx += 1
     n = int(first[0])
     baseline = float(first[1])
     drop_pct = float(first[2])
     p95_max = float(first[3])
-    # TODO: compute threshold = baseline * (1 - drop_pct/100); for each of the n
-    #       days flag RECALL (recall < threshold) and/or LATENCY (p95 > p95_max);
-    #       print the threshold (4 dp), the alert count, then each alert line.
+
+    # Parsing is done for you: each day is (label, recall, p95).
+    days = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        days.append((parts[0], float(parts[1]), float(parts[2])))
+
+    # TODO: threshold = baseline * (1 - drop_pct / 100). For each (day, recall, p95)
+    # collect reasons: append "RECALL" if recall < threshold, then "LATENCY" if
+    # p95 > p95_max (both STRICT). A day with any reason is an alert.
+    # Print "threshold X.XXXX" (4 dp), then "alerts C", then each alert as
+    # "day REASONS" (reasons joined by ",") in input order.
 
 main()
 `,

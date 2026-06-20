@@ -248,6 +248,7 @@ print(handle_request("   "))
       ],
       challenge_title: "The Production Gate",
       challenge_description: "Run a batch of incoming requests through a validation gate and report how many pass, how many are rejected, and why.",
+      challenge_difficulty: "beginner",
       challenge_story: "Your team is promoting a notebook prototype to a real \`/chat\` endpoint. Before any request reaches the model, it must clear the **validation gate** — the boring wrapper code that keeps one bad request from taking down the worker serving everyone else. Overnight, a replay of production traffic is queued against your new gate. Build the gate, run the batch, and hand ops a clean tally of accepted vs. rejected requests so they can sign off on the deploy.",
       challenge_statement: "Process \`N\` requests in order. Each request carries three integers: whether an API key is present, the prompt length, and the requested timeout in milliseconds.\n\nApply the gate's rules **in this exact priority order** and reject on the first rule that fails (a request fails for at most one reason):\n\n1. **missing_key** — the key is absent (\`key_present == 0\`).\n2. **empty_prompt** — the prompt has zero length (\`prompt_len == 0\`).\n3. **timeout_too_long** — the requested timeout exceeds **30000** ms.\n\nA request that clears all three rules is **accepted**. Report the accepted and rejected totals, then the count of rejections for each reason.",
       challenge_input_format: "The first line contains a single integer `N`, the number of requests.\nEach of the next `N` lines contains three space-separated integers: `key_present prompt_len timeout_ms` (`key_present` is 0 or 1).",
@@ -567,6 +568,7 @@ print(sorted(traced_call("hi").keys()))
       ],
       challenge_title: "The Trace Digest",
       challenge_description: "Roll up a morning of request traces into the five numbers an on-call engineer actually needs: volume, average and tail latency, token spend, and error rate.",
+      challenge_difficulty: "intermediate",
       challenge_story: "A user reports a garbage answer 'sometime this morning.' Right now your logs say \`INFO: request handled\` and nothing else — useless. You wire up real **tracing**: every request now emits a record with its latency, token count, and status. The first batch of traces just landed. Turn that raw stream into a digest the dashboard can show, including the **p95 latency** that the average always hides.",
       challenge_statement: "Given \`N\` trace records, each with a latency (ms), a token count, and a status (\`0\` = ok, \`1\` = error), compute the digest:\n\n- **requests** — the total count `N`.\n- **avg_latency_ms** — mean latency, rounded to **1 decimal place**.\n- **p95_latency_ms** — the 95th-percentile latency using the **nearest-rank** method: sort latencies ascending, take the value at rank `ceil(0.95 * N)` (1-indexed).\n- **total_tokens** — sum of all token counts.\n- **error_rate_pct** — percentage of records with status `1`, rounded to **1 decimal place**.",
       challenge_input_format: "The first line contains a single integer `N`.\nEach of the next `N` lines contains three space-separated integers: `latency_ms tokens status`.",
@@ -600,10 +602,18 @@ def main():
     total_tokens = 0
     for _ in range(n):
         latency, tokens, status = map(int, data[idx].split()); idx += 1
-        # TODO: collect latency, add tokens, count errors
-        pass
+        latencies.append(latency)
+        total_tokens += tokens
+        if status == 1:
+            errors += 1
 
-    # TODO: compute avg, p95 (nearest-rank), error_rate and print all five lines.
+    count = n
+    s = sorted(latencies)
+    rank = math.ceil(0.95 * count)   # nearest-rank: 1-indexed rank for p95
+    p95 = s[rank - 1]                # subtract 1 for 0-indexing into s
+    # TODO: compute avg (mean latency) and error_rate (percent of status==1),
+    #       then print the five lines: requests, avg_latency_ms (1 decimal),
+    #       p95_latency_ms, total_tokens, error_rate_pct (1 decimal).
 
 main()
 `,
@@ -881,6 +891,7 @@ print(run_evals(cases))
       ],
       challenge_title: "The CI Eval Gate",
       challenge_description: "Run a prompt's eval suite in CI: grade every case with a substring check, compute the pass rate, and gate the deploy against a threshold.",
+      challenge_difficulty: "beginner",
       challenge_story: "You changed one line of a prompt to fix a formatting bug. With normal code a unit test would catch any regression — with prompts, most teams ship on vibes. Not yours. You've built an **eval suite**: a frozen set of cases, each with an expected answer fragment, run automatically in **CI** on every change. A run just kicked off. Grade each case, compute the pass rate, and decide whether this build is allowed to merge.",
       challenge_statement: "An eval run has \`N\` cases and a pass-rate \`threshold\` (an integer percent). Each case provides an **expected** fragment and the model's **actual** output, separated by the literal delimiter \`|||\`.\n\nGrade each case with a **case-insensitive substring** check: the case **passes** if the expected fragment appears anywhere in the actual output, ignoring letter case. Then:\n\n- count how many cases passed,\n- compute the pass rate as a percentage, rounded to **1 decimal place**,\n- output \`PASS\` if the pass rate is **at least** the threshold, otherwise \`FAIL\`.",
       challenge_input_format: "The first line contains two space-separated integers: `N threshold`.\nEach of the next `N` lines is one case formatted as `expected|||actual` (the delimiter is three literal pipe characters). Either side may contain spaces; neither side contains `|||`.",
@@ -1170,6 +1181,7 @@ print(round(call_cost("big", 1000, 500), 6))
       ],
       challenge_title: "The Budget Throttle",
       challenge_description: "Meter a live stream of model calls against a hard spend cap: serve each request only if it keeps you under budget, and report the final ledger.",
+      challenge_difficulty: "intermediate",
       challenge_story: "A free AI feature went viral over a weekend and a retry loop quietly rang up a five-figure bill — because nobody was watching the meter. Never again. You add a **budget throttle** in front of the model: every request's cost is computed up front, and a request is only served if it keeps cumulative spend at or under the day's cap. The throttle never blocks the whole stream — a request that would bust the budget is skipped, but a cheaper one later can still slip through. Run today's traffic and produce the ledger.",
       challenge_statement: "You are given \`N\` requests, a \`budget\`, and two prices — all amounts in **micro-dollars** (millionths of a dollar) to keep the math exact. The prices are **per 1000 tokens**:\n\n- \`in_price\` — micro-dollars per 1000 input tokens.\n- \`out_price\` — micro-dollars per 1000 output tokens.\n\nFor each request with \`in_tok\` input tokens and \`out_tok\` output tokens, its cost in micro-dollars is:\n\n\`cost = in_tok * in_price // 1000 + out_tok * out_price // 1000\`  (integer floor division per term).\n\nProcess requests in order. Serve a request only if **cumulative spent + cost ≤ budget**; otherwise reject it (do not add its cost) and keep going. Report the totals and the spend converted to dollars.",
       challenge_input_format: "The first line contains four space-separated integers: `N budget in_price out_price` (budget and prices in micro-dollars).\nEach of the next `N` lines contains two space-separated integers: `in_tok out_tok`.",
@@ -1468,6 +1480,7 @@ False`,
       ],
       challenge_title: "The Resilient Caller",
       challenge_description: "Drive a batch of requests through a retry-then-fallback policy and report how many recovered, how many fell back, and how many total attempts the provider absorbed.",
+      challenge_difficulty: "beginner",
       challenge_story: "A 40-minute provider outage once took your whole product down because every request hit one API with no plan B. You fix that with a **retry-then-fallback** policy: each request gets up to \`max_attempts\` tries against the flaky primary; if one succeeds you're done, and if all of them fail you serve a degraded **fallback** instead of an error page. A queue of requests is replayed against the policy. Each request is described by which attempt (if any) would have succeeded. Run the policy and report the outcome.",
       challenge_statement: "You are given \`N\` requests and a retry limit \`max_attempts\`. Each request provides \`succeed_on\`: the **1-indexed** attempt number on which the primary would succeed, or \`0\` if the primary never succeeds.\n\nFor each request, make attempts \`1, 2, ..., max_attempts\` in order, counting **every attempt made**. Stop and mark the request \`succeeded\` the moment attempt number `succeed_on` is reached (when `succeed_on` is between 1 and `max_attempts`). If you exhaust all `max_attempts` without hitting `succeed_on` (including when `succeed_on` is 0 or larger than `max_attempts`), the request **falls back**.\n\nReport how many requests succeeded, how many fell back, and the total number of attempts made across all requests.",
       challenge_input_format: "The first line contains two space-separated integers: `N max_attempts`.\nEach of the next `N` lines contains one integer `succeed_on` (0 means the primary never succeeds).",
@@ -1767,78 +1780,92 @@ False`,
         "Use .hexdigest() to get a hex string, then slice [:8] for a short, stable version.",
         "The same input text always produces the same hash, so two calls with identical text compare equal."
       ],
-      challenge_title: "The Release Ledger",
-      challenge_description: "Answer 'what shipped at time T' from a deploy history: index every prompt-and-model release by timestamp and resolve which version was live at each query time.",
-      challenge_story: "Quality dropped overnight and nobody admits to a change, because the prompt was edited live and the model alias silently repointed. You fix the blindness with a **release ledger**: every deploy records its timestamp, the prompt version that shipped, and the pinned model snapshot. Now support can ask 'which prompt and model were live when this bad answer was generated?' and get an exact answer. Build the resolver that turns a deploy history plus a list of incident timestamps into the version that was live at each moment.",
-      challenge_statement: "You are given \`N\` deploys and \`Q\` queries. Each deploy has an integer \`timestamp\`, a \`prompt_version\` token, and a \`model\` token; a deploy becomes live at its timestamp and stays live until the next deploy.\n\nFor each query timestamp \`t\`, report the deploy that was **live at or before** \`t\` (the latest deploy whose timestamp is \`<= t\`). If no deploy had happened yet at time \`t\`, output \`none\`.\n\nDeploys may be given in any order and all timestamps are distinct.",
-      challenge_input_format: "The first line contains two space-separated integers: `N Q`.\nEach of the next `N` lines describes one deploy: `timestamp prompt_version model` (space-separated; tokens contain no spaces).\nEach of the next `Q` lines contains one integer query timestamp `t`.",
-      challenge_output_format: "Q lines. For each query, output `prompt_version model` of the live deploy, or `none` if no deploy was live yet.",
+      challenge_title: "Release Fingerprints",
+      challenge_description: "Fingerprint every release by content-hashing its prompt and model, then detect which deploys are unchanged redeploys (duplicates) versus genuinely new versions.",
+      challenge_difficulty: "beginner",
+      challenge_story: "Quality dropped overnight and nobody admits to a change, because the prompt was edited live and there was no record of what actually shipped. You fix the blindness with **release fingerprints**: every deploy is reduced to a short content hash of its prompt template and pinned model. Identical text and model produce the identical fingerprint, so an unchanged redeploy is obvious — and any edit, even one character, produces a brand-new fingerprint. Run today's deploy log through the fingerprinter and tell ops which releases were real changes and which were just the same thing shipped again.",
+      challenge_statement: "You are given \`N\` releases, processed in order. Each release is one line: a \`model\` token (no spaces), then a single space, then the prompt \`template\` (the rest of the line, which may itself contain spaces).\n\nFor each release, compute its **version fingerprint** as the first 8 hex characters of the SHA-256 hash of the canonical string \`model + \"|\" + template\` (the model, a literal pipe, then the template).\n\nA release is a **duplicate** (an unchanged redeploy) if its fingerprint has already appeared in an earlier release; otherwise it is **new**. For each release in order, print \`NEW <hash>\` or \`DUP <hash>\`. Then print one summary line with the count of distinct versions and the count of duplicate redeploys.",
+      challenge_input_format: "The first line contains a single integer `N`, the number of releases.\nEach of the next `N` lines is one release: `model template`, where `model` is the first space-separated token and `template` is everything after the first space (it may contain spaces).",
+      challenge_output_format: "N + 1 lines:\n- For each release in order: `NEW <hash>` if its fingerprint is seen for the first time, otherwise `DUP <hash>` (`<hash>` is the 8-char hex fingerprint).\n- A final summary line: `distinct <d> duplicates <r>`, where `d` is the number of distinct fingerprints and `r` is the number of duplicate redeploys.",
       challenge_constraints: [
         "1 ≤ N ≤ 100000",
-        "1 ≤ Q ≤ 100000",
-        "0 ≤ timestamp, t ≤ 1000000000",
-        "All deploy timestamps are distinct.",
-        "A deploy is live at or before t means the latest deploy with timestamp ≤ t."
+        "The fingerprint is the first 8 hex chars of sha256 of the string `model + \"|\" + template`.",
+        "Identical (model, template) pairs always produce the identical fingerprint; any edit produces a new one.",
+        "A release is a duplicate when its fingerprint already appeared in an earlier release.",
+        "distinct + duplicates equals N."
       ],
       challenge_examples: [
-        { input: "3 4\n100 p1 m1\n200 p2 m1\n350 p2 m2\n150\n250\n400\n50", output: "p1 m1\np2 m1\np2 m2\nnone", explanation: "At t=150 the latest deploy at or before is the 100 one (p1 m1). At t=250 it is the 200 deploy (p2 m1). At t=400 it is the 350 deploy (p2 m2). At t=50 nothing had deployed yet, so 'none'." },
-        { input: "2 3\n500 v3 gpt-4o-2024-08-06\n300 v2 gpt-4o-2024-05-13\n300\n499\n600", output: "v2 gpt-4o-2024-05-13\nv2 gpt-4o-2024-05-13\nv3 gpt-4o-2024-08-06", explanation: "Deploys given out of order are sorted by timestamp. At t=300 and t=499 the 300 deploy is live; at t=600 the 500 deploy (the newer pinned model) is live." }
+        { input: "3\ngpt-4o-2024-08-06 You are a support agent. Answer in one sentence.\ngpt-4o-2024-08-06 You are a support agent. Answer in one sentence.\ngpt-4o-2024-08-06 You are a support agent. Answer in two sentences.", output: "NEW 928cbea1\nDUP 928cbea1\nNEW e5a72c01\ndistinct 2 duplicates 1", explanation: "Releases 1 and 2 have the identical model and template, so they share fingerprint 928cbea1; release 2 is an unchanged redeploy (DUP). Release 3 changes 'one' to 'two', producing a different fingerprint (NEW). Two distinct versions, one duplicate." },
+        { input: "4\nsmall-v1 Summarize the text.\nbig-v2 Summarize the text.\nsmall-v1 Summarize the text.\nsmall-v1 Translate to French.", output: "NEW a14cef42\nNEW d7541545\nDUP a14cef42\nNEW 44e0bcec\ndistinct 3 duplicates 1", explanation: "Release 1 and 3 share the same model AND template, so release 3 is a DUP of a14cef42. Release 2 uses a different model (big-v2) so it hashes differently even with the same template. Release 4 changes the template. Three distinct fingerprints, one duplicate." }
       ],
-      challenge_notes: "Sorting the deploys once by timestamp lets you binary-search each query in log time, which matters at 100000 deploys and queries. The 'live at or before t' rule mirrors how a real release ledger works: a version stays in effect until the next deploy supersedes it.",
+      challenge_notes: "Because the fingerprint is a content hash, the same text and model always map to the same 8 hex characters, while any edit — even one character — flips it to a new value. That is exactly what makes an unchanged redeploy detectable: same bytes in, same fingerprint out. Including the model in the canonical string means swapping the pinned snapshot counts as a new version even if the prompt text is unchanged.",
       challenge_hints: [
-        "Read all N deploys into a list of (timestamp, prompt_version, model) and sort it by timestamp.",
-        "Build a separate sorted list of just the timestamps and use bisect_right(t) - 1 to find the live deploy index.",
-        "If the index is -1, no deploy was live yet, so print 'none'."
+        "Split each line once with `line.split(' ', 1)`: the first part is the model, the second is the template.",
+        "Build the canonical string `model + '|' + template`, then `hashlib.sha256(canonical.encode()).hexdigest()[:8]`.",
+        "Keep a `set` of fingerprints seen so far: if the new fingerprint is already in it, print DUP and count a duplicate, else add it, print NEW, and count a distinct version."
       ],
       challenge_starter_code: `import sys
-import bisect
+import hashlib
 
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    n, q = map(int, data[idx].split()); idx += 1
-    deploys = []
+    n = int(data[idx].strip()); idx += 1
+    seen = set()
+    distinct = 0
+    duplicates = 0
+    out = []
     for _ in range(n):
-        ts, pv, model = data[idx].split(); idx += 1
-        deploys.append((int(ts), pv, model))
-    # TODO: sort deploys by timestamp, then for each query find the live deploy.
-    for _ in range(q):
-        t = int(data[idx].strip()); idx += 1
+        line = data[idx]; idx += 1
+        parts = line.split(" ", 1)
+        model = parts[0]
+        template = parts[1] if len(parts) > 1 else ""
+        canonical = model + "|" + template
+        # TODO: compute the 8-char sha256 fingerprint of canonical, then
+        #       if it was seen before -> append "DUP <hash>" and count a duplicate,
+        #       else -> add it to seen, append "NEW <hash>", and count a distinct version.
         pass
+
+    out.append(f"distinct {distinct} duplicates {duplicates}")
+    print("\\n".join(out))
 
 main()
 `,
       challenge_solution_code: `import sys
-import bisect
+import hashlib
 
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    n, q = map(int, data[idx].split()); idx += 1
-    deploys = []
-    for _ in range(n):
-        ts, pv, model = data[idx].split(); idx += 1
-        deploys.append((int(ts), pv, model))
-    deploys.sort(key=lambda d: d[0])
-    times = [d[0] for d in deploys]
-
+    n = int(data[idx].strip()); idx += 1
+    seen = set()
+    distinct = 0
+    duplicates = 0
     out = []
-    for _ in range(q):
-        t = int(data[idx].strip()); idx += 1
-        pos = bisect.bisect_right(times, t) - 1
-        if pos < 0:
-            out.append("none")
+    for _ in range(n):
+        line = data[idx]; idx += 1
+        parts = line.split(" ", 1)
+        model = parts[0]
+        template = parts[1] if len(parts) > 1 else ""
+        canonical = model + "|" + template
+        version = hashlib.sha256(canonical.encode()).hexdigest()[:8]
+        if version in seen:
+            duplicates += 1
+            out.append("DUP " + version)
         else:
-            _, pv, model = deploys[pos]
-            out.append(f"{pv} {model}")
+            seen.add(version)
+            distinct += 1
+            out.append("NEW " + version)
+
+    out.append(f"distinct {distinct} duplicates {duplicates}")
     print("\\n".join(out))
 
 main()
 `,
       challenge_test_cases: [
-        { input: "3 4\n100 p1 m1\n200 p2 m1\n350 p2 m2\n150\n250\n400\n50", expected_output: "p1 m1\np2 m1\np2 m2\nnone", description: "Resolves the live version at four times, including before any deploy." },
-        { input: "2 3\n500 v3 gpt-4o-2024-08-06\n300 v2 gpt-4o-2024-05-13\n300\n499\n600", expected_output: "v2 gpt-4o-2024-05-13\nv2 gpt-4o-2024-05-13\nv3 gpt-4o-2024-08-06", description: "Out-of-order deploys are sorted; exact-timestamp query resolves to that deploy." },
-        { input: "1 2\n10 onlyprompt onlymodel\n5\n10", expected_output: "none\nonlyprompt onlymodel", description: "Edge case: before the single deploy is 'none'; exactly at its timestamp is live." }
+        { input: "3\ngpt-4o-2024-08-06 You are a support agent. Answer in one sentence.\ngpt-4o-2024-08-06 You are a support agent. Answer in one sentence.\ngpt-4o-2024-08-06 You are a support agent. Answer in two sentences.", expected_output: "NEW 928cbea1\nDUP 928cbea1\nNEW e5a72c01\ndistinct 2 duplicates 1", description: "An identical redeploy is flagged DUP; a one-word edit produces a NEW fingerprint." },
+        { input: "4\nsmall-v1 Summarize the text.\nbig-v2 Summarize the text.\nsmall-v1 Summarize the text.\nsmall-v1 Translate to French.", expected_output: "NEW a14cef42\nNEW d7541545\nDUP a14cef42\nNEW 44e0bcec\ndistinct 3 duplicates 1", description: "Same template but a different model hashes differently; only the exact (model, template) repeat is a DUP." },
+        { input: "5\nm1 Be brief.\nm1 Be brief.\nm1 Be brief.\nm2 Be brief.\nm1 Be concise.", expected_output: "NEW 36303ce0\nDUP 36303ce0\nDUP 36303ce0\nNEW 4c87eaca\nNEW af7a43e8\ndistinct 3 duplicates 2", description: "Edge case: one fingerprint redeployed twice gives two duplicates; a model swap and a template edit are each new." }
       ]
     },
     {
@@ -2070,6 +2097,7 @@ B 100.0`,
       ],
       challenge_title: "The Experiment Readout",
       challenge_description: "Roll up a stream of A/B outcomes into a readout: each arm's success rate, and a verdict that respects minimum sample size and a decision margin.",
+      challenge_difficulty: "intermediate",
       challenge_story: "Your team was sure the new prompt was better — the demo sparkled, the offline eval agreed — so they shipped it to everyone, and a week later real engagement had quietly slipped. Never decide on vibes again. You stand up an **A/B test**: live traffic is split between control A and variant B, and each request logs whether it succeeded. The experiment just closed. Compute each arm's success rate and produce an honest verdict that refuses to crown a winner on too little data or too thin a margin.",
       challenge_statement: "You are given \`N\` outcome events and a \`min_samples\` requirement. Each event names a variant (\`A\` or \`B\`) and an outcome (\`1\` = success, \`0\` = failure).\n\nFor each variant compute its success rate as a percentage, rounded to **1 decimal place** (a variant with zero events has a rate of \`0.0\`). Then decide the verdict:\n\n- If **either** arm has fewer than \`min_samples\` events, output \`INCONCLUSIVE\`.\n- Otherwise, if the absolute difference between the two rates is **less than 1.0** percentage points, output \`INCONCLUSIVE\`.\n- Otherwise output \`WINNER A\` or \`WINNER B\` for whichever arm has the higher rate.",
       challenge_input_format: "The first line contains two space-separated integers: `N min_samples`.\nEach of the next `N` lines contains a variant token (`A` or `B`) and an outcome (`0` or `1`), space-separated.",
@@ -2100,10 +2128,20 @@ def main():
     counts = {"A": [0, 0], "B": [0, 0]}  # [successes, total]
     for _ in range(n):
         variant, outcome = data[idx].split(); idx += 1
-        # TODO: increment total and add the outcome to successes for this variant.
-        pass
+        counts[variant][1] += 1
+        if outcome == "1":
+            counts[variant][0] += 1
 
-    # TODO: compute rates, print the two arm lines, then decide the verdict.
+    rates = {}
+    for v in ("A", "B"):
+        s, t = counts[v]
+        rates[v] = (s / t * 100) if t > 0 else 0.0
+        print(f"{v} {s}/{t} {rates[v]:.1f}")
+
+    # TODO: decide the verdict and print it on the third line:
+    #   - INCONCLUSIVE if either arm has fewer than min_samples events,
+    #   - else INCONCLUSIVE if abs(rates["A"] - rates["B"]) < 1.0,
+    #   - else WINNER A or WINNER B for the higher rate.
 
 main()
 `,
@@ -2356,6 +2394,7 @@ ok`,
       ],
       challenge_title: "The Incident Timeline",
       challenge_description: "Replay a minute-by-minute error stream through an alert-and-rollback policy: detect when the error rate crosses the threshold, then measure how long the incident lasted before recovery.",
+      challenge_difficulty: "intermediate",
       challenge_story: "A bad deploy once poisoned a third of answers overnight, and the on-call engineer burned forty minutes guessing before someone said 'just roll back.' Now you have a plan. Your monitoring reports the error rate every minute, and an alert fires the moment it crosses the threshold, triggering a rollback. You want to measure the incident the way a postmortem does: when did it start, how many minutes did the degradation last, and did it recover. Replay the minute stream through the policy and produce that timeline.",
       challenge_statement: "You are given \`N\` minutes of monitoring and an integer error-rate \`threshold\` (a percent). Each minute reports \`errors\` and \`total\` requests; that minute's error rate is \`errors / total * 100\` (a minute with zero total requests has a rate of \`0.0\`).\n\nFind the **first** minute (0-indexed) whose error rate is **at or above** the threshold — that is when the incident is detected. From that minute onward, count the **consecutive** minutes that stay at or above the threshold; that is the downtime. The incident **recovers** if a later minute drops below the threshold.\n\nIf no minute ever reaches the threshold, report no incident.",
       challenge_input_format: "The first line contains two space-separated integers: `N threshold`.\nEach of the next `N` lines contains two space-separated integers: `errors total`.",

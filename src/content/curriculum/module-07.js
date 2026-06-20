@@ -239,6 +239,7 @@ With context: Based on the document, Q3 revenue was $4.2 million.`,
         "Pass docs['doc1'] (the relevant doc) as the context to grounded_answer."
       ],
       challenge_title: "The Hallucination Auditor",
+      challenge_difficulty: "intermediate",
       challenge_description: "Audit a batch of model answers and flag every one whose numbers don't appear anywhere in the retrieved source.",
       challenge_story: "You run trust-and-safety for a financial-research assistant. The LLM drafts answers from retrieved filings, but legal won't sign off until you can prove no answer invents a figure that isn't in its source. A made-up revenue number reads exactly as confidently as a real one, so a human can't eyeball thousands of them. Tonight you're building the nightly **grounding auditor**: it scans every answer, extracts the numeric tokens, and flags any answer that cites a number the source never mentioned.",
       challenge_statement: "You are given a set of **source lines** (the retrieved context) followed by a batch of **answers**. A *numeric token* is any whitespace-separated token that contains at least one digit, after stripping the surrounding punctuation characters `.,!?$%:;()\"'` from both ends.\n\nAn answer is **grounded** if every numeric token it contains also appears as a numeric token somewhere in the source. An answer with no numeric tokens is trivially grounded.\n\nReport how many answers are grounded, then list the 1-based indices of the answers that are **not** grounded (in increasing order).",
@@ -265,17 +266,35 @@ With context: Based on the document, Q3 revenue was $4.2 million.`,
 
 PUNCT = ".,!?$%:;()\\"'"
 
+def numeric_tokens(line):
+    # returns the cleaned tokens on this line that contain at least one digit
+    out = []
+    for w in line.split():
+        cleaned = w.strip(PUNCT)
+        if cleaned and any(c.isdigit() for c in cleaned):
+            out.append(cleaned)
+    return out
+
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    s = int(data[idx].strip()); idx += 1
-    source_tokens = set()
-    # TODO: read S source lines, collect numeric tokens into source_tokens.
 
+    # Parsing is done for you: read S source lines and the Q answer lines.
+    s = int(data[idx].strip()); idx += 1
+    source_lines = []
+    for _ in range(s):
+        source_lines.append(data[idx]); idx += 1
     q = int(data[idx].strip()); idx += 1
+    answers = []
+    for _ in range(q):
+        answers.append(data[idx]); idx += 1
+
+    # The numeric_tokens() helper is ready above.
+    # TODO: build a set of every numeric token across source_lines. An answer is
+    # grounded when every numeric token it has is in that set. Count grounded
+    # answers and collect the 1-based indices of the ungrounded ones.
     grounded = 0
     flagged = []
-    # TODO: for each answer, flag it if any numeric token is missing from source_tokens.
 
     print(grounded)
     print(" ".join(map(str, flagged)) if flagged else "NONE")
@@ -561,6 +580,7 @@ Chunks created: 4
         "Break out of the loop once start + size reaches or passes the end, so you don't emit empty trailing chunks."
       ],
       challenge_title: "The Sentence-Safe Chunker",
+      challenge_difficulty: "intermediate",
       challenge_description: "Pack a document into the fewest chunks possible without ever splitting a sentence across a chunk boundary.",
       challenge_story: "Your RAG ingestion pipeline keeps retrieving garbage. The culprit: a naive fixed-width chunker that guillotines sentences mid-thought, so half a fact lands in one chunk and half in another — and neither matches the query. You're rewriting the chunker to respect **sentence boundaries**. It splits the document on periods, then greedily packs whole sentences into each chunk up to a character budget, so every chunk is a clean set of complete sentences. Fewer, cleaner chunks mean sharper retrieval.",
       challenge_statement: "You are given a character budget `max_chars` and a single line of `text`. Split the text into sentences by splitting on `.`, dropping empty pieces, trimming surrounding whitespace, and re-attaching a single `.` to each sentence.\n\nGreedily build chunks: start a new chunk with the first sentence; for each following sentence, append it to the current chunk (joined by a single space) **only if** the resulting chunk length would be `≤ max_chars`; otherwise close the current chunk and start a new one with that sentence.\n\nA single sentence longer than `max_chars` becomes its own chunk on its own (it cannot be split further).\n\nReport the number of chunks, then each chunk prefixed by its character length.",
@@ -589,10 +609,14 @@ def main():
     data = sys.stdin.read().split("\\n")
     max_chars = int(data[0].strip())
     text = data[1] if len(data) > 1 else ""
+    # Parsing + sentence splitting are done for you.
     sentences = [p.strip() + "." for p in text.split(".") if p.strip()]
     chunks = []
     current = ""
-    # TODO: greedily pack whole sentences into chunks of length <= max_chars.
+    # TODO: greedily pack whole sentences from 'sentences' into 'chunks'.
+    # Start a chunk with the first sentence. Append the next sentence only if
+    # len(current) + 1 + len(s) <= max_chars; otherwise flush current and start
+    # a new chunk. Remember to flush the final non-empty current after the loop.
 
     print(len(chunks))
     for c in chunks:
@@ -886,6 +910,7 @@ Best match: doc1`,
         "Sort scores.items() by the score with key=lambda x: x[1] and reverse=True to rank highest first."
       ],
       challenge_title: "The Vector-Store Retriever",
+      challenge_difficulty: "intermediate",
       challenge_description: "Embed a query and pull the k nearest document vectors by cosine similarity — the core retrieval call of every RAG system.",
       challenge_story: "You're building the retrieval engine at the heart of your RAG stack. Every document chunk has already been turned into an embedding vector and stored in a vector store. When a question arrives, you embed it too, then find the chunks whose vectors point in the most similar *direction* — because in embedding space, direction means meaning. Cosine similarity is your ruler. Ship the function that, given the query vector and the store, returns the top-k chunk IDs to stuff into the prompt.",
       challenge_statement: "You are given `N` document vectors (each a `D`-dimensional list of floats with a string ID) and a single `D`-dimensional query vector. Score each document against the query with **cosine similarity**:\n\n`cos(a, b) = (a · b) / (||a|| · ||b||)`, where a vector with zero magnitude scores `0.0`.\n\nReturn the top `k` documents ranked by similarity, **highest first**. Break ties between equal scores by ID in ascending lexicographic order.",
@@ -923,11 +948,19 @@ def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     n, d, k = map(int, data[idx].split()); idx += 1
-    docs = []
-    # TODO: read N documents (ID + D floats) and the query vector,
-    # score each doc, sort by (-score, ID), and print the top k as "ID SCORE".
 
-    print("")  # replace with your output loop
+    # Parsing is done for you: the N documents, then the query vector.
+    docs = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        doc_id = parts[0]
+        vec = list(map(float, parts[1:1 + d]))
+        docs.append((doc_id, vec))
+    query = list(map(float, data[idx].split()[:d])); idx += 1
+
+    # cosine() helper is ready above; the data is parsed.
+    # TODO: score each doc with cosine(query, vec), sort by (-score, ID),
+    # and print the top k as "ID SCORE" with the score to 4 decimals.
 
 main()
 `,
@@ -1238,6 +1271,7 @@ Question: How long do I have to return something for a refund?`,
         "Include both the 'use ONLY the context' constraint and the 'say you don't know' fallback in the prompt string."
       ],
       challenge_title: "Assemble the RAG Pipeline",
+      challenge_difficulty: "advanced",
       challenge_description: "Wire retrieval to prompt: embed the query, pull the top-k chunks, and stuff them into a grounded user message ready for the model.",
       challenge_story: "Retrieval and chunking are done; now you connect them. You're the engineer who owns the **pipeline glue** — the step that turns a raw question into a model-ready prompt. The query gets embedded, the vector store returns its closest chunks, and you stitch those chunks into a single grounded message: context up top, the question below, and a firm instruction to answer *only* from what's provided. Get this assembly exactly right and the model stops hallucinating; get it sloppy and even perfect retrieval is wasted.",
       challenge_statement: "Build the full retrieve-then-prompt step. You are given `N` chunks — each with an ID, a `D`-dimensional embedding, and its text — plus a question and its query embedding.\n\n1. Rank the chunks by **cosine similarity** to the query (zero magnitude → 0.0), highest first, ties broken by ascending ID.\n2. Take the top `k` chunk IDs **in ranked order**.\n3. Join those chunks' texts (in ranked order) with a blank line between them to form the context block.\n4. Build a single user message with this exact body:\n\n```\nContext:\n<context>\n\nQuestion: <query>\n\nAnswer using only the context above. If the answer is not in the context, say \"I don't know.\"\n```",
@@ -1274,9 +1308,24 @@ def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     n, d, k = map(int, data[idx].split()); idx += 1
+
+    # Parsing is done for you. Each chunk is 3 lines: ID, vector, text.
     vecs, texts = {}, {}
-    # TODO: read N chunk blocks (ID, vector, text), then the question and query vector.
-    # Rank by cosine, take top-k IDs in order, join their texts, build the user message.
+    for _ in range(n):
+        cid = data[idx].strip(); idx += 1
+        vecs[cid] = list(map(float, data[idx].split()[:d])); idx += 1
+        texts[cid] = data[idx]; idx += 1
+    query = data[idx]; idx += 1
+    qvec = list(map(float, data[idx].split()[:d])); idx += 1
+
+    # cosine() helper is ready above; everything is parsed.
+    # TODO: rank chunk IDs by cosine(qvec, vecs[id]) with key (-score, id) and take
+    # the top k IN ranked order. Join their texts (ranked order) with "\\n\\n" to
+    # form <context>. Build the user message content exactly as:
+    #   "Context:\\n" + context + "\\n\\nQuestion: " + query +
+    #   "\\n\\nAnswer using only the context above. "
+    #   "If the answer is not in the context, say \\"I don't know.\\""
+    # Then print: count of selected, the selected IDs, "CHARS <len>", "---", content.
 
 main()
 `,
@@ -1623,6 +1672,7 @@ Answer from the context only.`,
         "When client is None, return the request dict; otherwise read msg.content[0].text after the API call."
       ],
       challenge_title: "Wire the Grounded Claude Request",
+      challenge_difficulty: "intermediate",
       challenge_description: "Build the exact Messages API request your RAG service sends to Claude: grounding rules in the system prompt, context and question in the user message.",
       challenge_story: "Your RAG service is one function away from production. Retrieval works; chunking works; now you have to hand the model a request it can't go off the rails with. The trick the team learned the hard way: put the *unchanging rules* (\"answer only from context; if it's not there, say so\") in the **system** prompt, and the *changing part* (these chunks, this question) in the **user** message. Keep them apart and Claude follows the rules far more reliably. Assemble that request — model, token cap, system, messages — and emit a deterministic fingerprint of it for your request-logging audit.",
       challenge_statement: "Construct an Anthropic Messages API request dict for one grounded RAG call.\n\nGiven `N` context chunks, a `max_tokens` budget, a `model` name, and a question, build:\n\n- `model`: the given model name.\n- `max_tokens`: the given integer.\n- `system`: exactly `You are a Q&A assistant. Answer only from the provided context. If the context lacks the answer, reply exactly: I don't know.`\n- `messages`: a single-element list `[{\"role\": \"user\", \"content\": <user>}]` where `<user>` is `Context:\\n<context>\\n\\nQuestion: <query>` and `<context>` is the chunks joined by single newlines.\n\nThen print a fingerprint of the request so it can be logged deterministically.",
@@ -1657,8 +1707,15 @@ def main():
     for _ in range(n):
         chunks.append(data[idx]); idx += 1
     query = data[idx]; idx += 1
-    # TODO: build the request dict (model, max_tokens, system, messages)
-    # and print the five-line fingerprint.
+
+    # Parsing is done for you: model, max_tokens, the chunks list, and query.
+    # TODO:
+    #   context = "\\n".join(chunks)
+    #   system  = the FIXED string (copy exactly):
+    #     "You are a Q&A assistant. Answer only from the provided context. "
+    #     "If the context lacks the answer, reply exactly: I don't know."
+    #   user content = "Context:\\n" + context + "\\n\\nQuestion: " + query
+    # Then print 5 lines: model, max_tokens, len(system), "user", len(content).
 
 main()
 `,
@@ -1929,6 +1986,7 @@ invented: []`,
         "Split the cited IDs into two lists: those in valid_ids (grounded) and those not (invented)."
       ],
       challenge_title: "The Citation Validator",
+      challenge_difficulty: "intermediate",
       challenge_description: "Parse the citation tags out of a model's answer and decide whether the answer is properly grounded, ungrounded, or citing invented sources.",
       challenge_story: "Your RAG assistant now appends a source tag like \`[c2]\` to each sentence it writes, pointing back to the chunk it used. Legal will not ship until every answer is auditable: each citation must resolve to a chunk that was actually retrieved, and a factual answer with no citations at all is treated as unverified. You're building the **citation validator** that runs on every response before it reaches a user — it pulls the tags, checks them against the retrieved chunk IDs, and routes the answer to GROUNDED, UNGROUNDED, or INVALID.",
       challenge_statement: "You are given the IDs of the `N` chunks that were retrieved for this question, followed by a single answer line. A *citation* is any text enclosed in square brackets, e.g. `[c1]`. Extract citations left to right.\n\nClassify the answer:\n\n- If any citation refers to an ID **not** among the retrieved chunks, the answer is **INVALID**. List the invented IDs in the order they first appear (deduplicated).\n- Otherwise, if the answer contains **no** citations at all, it is **UNGROUNDED**.\n- Otherwise, the answer is **GROUNDED**. List the cited IDs in first-appearance order, deduplicated.",
@@ -1958,11 +2016,19 @@ def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     n = int(data[idx].strip()); idx += 1
-    valid = set()
-    # TODO: read N chunk IDs into valid.
 
+    # Parsing is done for you: the retrieved chunk IDs and the answer line.
+    valid = set()
+    for _ in range(n):
+        valid.add(data[idx].strip()); idx += 1
     answer = data[idx] if idx < len(data) else ""
-    # TODO: extract citations, classify as GROUNDED / UNGROUNDED / INVALID, print two lines.
+    cited = re.findall(r"\\[([^\\[\\]]+)\\]", answer)  # citations in order
+
+    # TODO: walk 'cited', separating IDs into grounded (in 'valid') and invented
+    # (not in 'valid'), each deduplicated by first appearance. Then decide:
+    #   any invented -> print INVALID and the invented IDs
+    #   else no citations at all -> print UNGROUNDED then NONE
+    #   else -> print GROUNDED and the grounded IDs
 
 main()
 `,
@@ -2237,6 +2303,7 @@ else:
         "When answering, keep every chunk whose score is >= threshold, in best-first order."
       ],
       challenge_title: "The Refusal Gate",
+      challenge_difficulty: "beginner",
       challenge_description: "Implement the retrieval guard that decides whether your RAG system answers from the passing chunks or refuses with 'I don't know.'",
       challenge_story: "Your document Q&A tool keeps embarrassing the team: when someone asks about a topic that isn't in the docs, top-k retrieval hands back its three least-irrelevant chunks and the model cheerfully summarizes nonsense. The fix is a **refusal gate** that sits between retrieval and the prompt. It looks at the best similarity score: if even the closest chunk is below the relevance threshold, the system refuses outright; otherwise it passes along every chunk that clears the bar, ranked best-first, ready to be stuffed into the prompt.",
       challenge_statement: "You are given a relevance `threshold` and `N` scored chunks (each an ID and a cosine-similarity score). Decide whether to answer or refuse:\n\n1. Find the **best** (highest) score. On a tie, the lexicographically smaller ID is the best.\n2. If the best score is **strictly less than** `threshold`, the system **refuses**.\n3. Otherwise, the system **answers** using every chunk whose score is **greater than or equal to** `threshold`, ranked by descending score (ties broken by ascending ID).",
@@ -2267,10 +2334,16 @@ def main():
     first = data[idx].split(); idx += 1
     n = int(first[0])
     threshold = float(first[1])
-    chunks = []
-    # TODO: read N (id, score) pairs.
 
-    # TODO: sort best-first, then refuse if best < threshold else answer with passing chunks.
+    # Parsing is done for you: read the N (id, score) pairs.
+    chunks = []
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        chunks.append((parts[0], float(parts[1])))
+
+    # TODO: sort chunks best-first with key=lambda t: (-t[1], t[0]).
+    # If the best score < threshold -> print "REFUSE" then "I don't know.".
+    # Else -> print "ANSWER" then the IDs with score >= threshold, in sorted order.
 
 main()
 `,
@@ -2528,6 +2601,7 @@ faithfulness: 0.7500`,
         "faithfulness = sum of the supported flags / number of claims; format each metric with f-string :.4f."
       ],
       challenge_title: "The RAG Scorecard",
+      challenge_difficulty: "intermediate",
       challenge_description: "Compute the three core RAG quality metrics for one test question and decide whether the answer passes your quality bar.",
       challenge_story: "Your RAG system is going to production, and 'it seems to work' won't satisfy the review board. You're building the **evaluation harness** that scores the pipeline on a labeled test set. For each question you know the gold chunks (the ones that truly answer it), the chunks your system actually retrieved, and which of the answer's claims a grader marked as supported by the context. Turn that into the three numbers everyone trusts — precision, recall, faithfulness — and a single PASS/FAIL verdict against the quality bar.",
       challenge_statement: "You are given, for one test question:\n\n- `R` retrieved chunk IDs,\n- `G` gold (truly relevant) chunk IDs,\n- `A` claim flags, each `1` (supported by context) or `0` (unsupported).\n\nA *hit* is a retrieved chunk that is also gold. Compute:\n\n- **precision** = hits / R (or 0.0 if R is 0),\n- **recall** = hits / G (or 0.0 if G is 0),\n- **faithfulness** = (number of 1 flags) / A.\n\nPrint each metric rounded to exactly 4 decimal places, then print `PASS` if precision >= 0.5 AND recall >= 0.5 AND faithfulness == 1.0, otherwise `FAIL`.",
@@ -2555,11 +2629,16 @@ faithfulness: 0.7500`,
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
+    # Parsing is done for you: counts, retrieved IDs, gold IDs, and claim flags.
     r, g, a = map(int, data[idx].split()); idx += 1
     retrieved = data[idx].split(); idx += 1
     gold = data[idx].split(); idx += 1
     flags = list(map(int, data[idx].split())); idx += 1
-    # TODO: compute hits, precision, recall, faithfulness, and the PASS/FAIL verdict.
+
+    # TODO: hits = |set(retrieved) & set(gold)|.
+    # precision = hits / r, recall = hits / g, faithfulness = sum(flags) / a.
+    # Print each to 4 decimals, then "PASS" if precision >= 0.5 and recall >= 0.5
+    # and faithfulness == 1.0, else "FAIL".
 
 main()
 `,

@@ -50,7 +50,7 @@ That \`zip\` pattern shows up constantly across this whole module. Lock it in no
 
 Representing words as coordinates is what makes meaning *computable*. Search, recommendations, spam filters, and retrieval for chatbots all start by turning text into vectors so a CPU can rank "closeness" billions of times a second. You could instead store raw spelling, but spelling tells you nothing: "cat" and "car" differ by one letter yet mean unrelated things, while "cat" and "feline" share zero letters yet mean almost the same thing. Numbers placed by meaning fix that.
 
-There is a subtlety, though. You could measure plain straight-line distance between two dots, and sometimes that is fine. But for text, **direction usually matters more than length**. A long document about cats and a one-line tweet about cats should count as similar even though one vector is much "longer." That tension is exactly what the next lesson resolves with the angle between vectors.
+There is a subtlety, though. You could measure plain straight-line (**Euclidean**) distance between two dots — the same Pythagorean idea as magnitude, but applied to the *gap* between two vectors: \`distance(a, b) = sqrt(sum((a_i - b_i)²))\`. For example, the distance from \`[0,0]\` to \`[3,4]\` is \`sqrt(3² + 4²) = sqrt(25) = 5\`. Sometimes that is fine. But for text, **direction usually matters more than length**. A long document about cats and a one-line tweet about cats should count as similar even though one vector is much "longer." That tension is exactly what the next lesson resolves with the angle between vectors.
 
 ## The mental model to keep
 
@@ -224,6 +224,7 @@ cat . car = 9`,
         "Round only for display: round(value, 3) keeps three decimals."
       ],
       challenge_title: "Nearest Neighbor in Embedding Space",
+      challenge_difficulty: "intermediate",
       challenge_description: "Given a query embedding and a catalog of named embeddings, print the one closest by Euclidean distance.",
       challenge_story: "You are building the retrieval layer of an AI photo-tagging service. Every image has already been turned into an embedding vector by an upstream model, and so has the user's query image. The whole product hinges on one operation: *which stored image sits closest to this query in embedding space?* Closest dot on the map wins. You measure closeness the most literal way there is — straight-line (Euclidean) distance — and return the winning tag so the rest of the pipeline can act on it.",
       challenge_statement: "You are given a **query vector** and a catalog of **N named vectors**, all of dimension **D**. Find the catalog entry whose vector has the **smallest Euclidean distance** to the query.\n\nThe Euclidean distance between vectors `a` and `b` is `sqrt(sum((a_i - b_i)^2))`.\n\nIf two or more entries tie for the smallest distance, choose the one whose **name is lexicographically smallest**. Print that name and its distance.",
@@ -241,12 +242,17 @@ cat . car = 9`,
       ],
       challenge_notes: "Compare squared distances while searching to avoid needless `sqrt` calls, then take the square root only once for the final print. The lexicographic tie-break makes the answer deterministic when two vectors are equally close.",
       challenge_hints: [
-        "Read all tokens at once with `sys.stdin.read().split()` and walk an index, since vectors span the line in fixed-size chunks of D.",
-        "Track the best distance as a squared value; only the relative order matters during the search.",
-        "On a tie (equal squared distance), keep the entry whose name compares smaller with `<`.",
+        "Euclidean distance is sqrt of the sum of squared differences. Example: between (0,0) and (3,4) it is sqrt(3^2 + 4^2) = sqrt(25) = 5. The starter's euclidean(a, b) helper already does this.",
+        "The parse is done for you in the starter: loop over the prebuilt 'catalog' list of (name, vec) pairs.",
+        "Track the best distance as you scan; only the relative order matters during the search.",
+        "On a tie (equal distance), keep the entry whose name compares smaller with `<`.",
         "Format the final distance with an f-string: `f\"{dist:.4f}\"`."
       ],
       challenge_starter_code: `import sys, math
+
+def euclidean(a, b):
+    # straight-line distance: sqrt of the sum of squared differences
+    return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
 
 def main():
     data = sys.stdin.read().split()
@@ -254,7 +260,15 @@ def main():
     n = int(data[idx]); idx += 1
     d = int(data[idx]); idx += 1
     query = [int(data[idx + i]) for i in range(d)]; idx += d
-    # TODO: scan the N catalog entries, find the nearest by Euclidean distance,
+
+    # Parsing is done for you. Each catalog entry is one name + d ints.
+    catalog = []
+    for _ in range(n):
+        name = data[idx]; idx += 1
+        vec = [int(data[idx + i]) for i in range(d)]; idx += d
+        catalog.append((name, vec))
+
+    # TODO: scan 'catalog', find the entry with the smallest euclidean(query, vec),
     # break ties by smallest name, then print "name distance" (4 decimals).
 
 main()`,
@@ -527,6 +541,7 @@ The Notebook: 0.256`,
         "Sort descending with scores.sort(key=lambda x: -x[1]) so the closest match prints first."
       ],
       challenge_title: "Closest by Angle",
+      challenge_difficulty: "intermediate",
       challenge_description: "Pick the catalog vector most aligned with a query by cosine similarity, ignoring length entirely.",
       challenge_story: "Your semantic search backend keeps surfacing long documents over short ones simply because longer text produces longer vectors, and raw dot product rewards length. Product is furious: a three-word support ticket that perfectly answers the query keeps losing to a rambling, half-relevant FAQ. The fix is to rank by **direction, not length** — cosine similarity. Re-rank the candidates so the one pointing most truly at the query wins, no matter how long or short its vector is.",
       challenge_statement: "You are given **N** named candidate vectors and one **query** vector, all of dimension **D**. Print the candidate with the **highest cosine similarity** to the query.\n\nCosine similarity is `dot(a, b) / (magnitude(a) * magnitude(b))`, the cosine of the angle between the two vectors.\n\nIf two candidates tie for the highest similarity, choose the one whose **name is lexicographically smallest**. Print that name and its cosine similarity.",
@@ -563,8 +578,20 @@ def cosine(a, b):
 
 def main():
     lines = sys.stdin.read().split("\\n")
-    n, d = map(int, lines[0].split())
-    # TODO: parse N candidates, then the query line, rank by cosine,
+    pos = 0
+    n, d = map(int, lines[pos].split()); pos += 1
+
+    # Parsing is done for you: N candidates, then the query line.
+    items = []
+    for _ in range(n):
+        parts = lines[pos].split(); pos += 1
+        name = parts[0]
+        vec = [float(x) for x in parts[1:1 + d]]
+        items.append((name, vec))
+    query = [float(x) for x in lines[pos].split()[:d]]; pos += 1
+
+    # dot/magnitude/cosine helpers are ready above. The numbers are parsed.
+    # TODO: scan 'items', pick the highest cosine(query, vec),
     # break ties by smallest name, print "name score" (4 decimals).
 
 main()`,
@@ -846,6 +873,7 @@ cosine(a,b) = 0.96`,
         "The last two prints should match: that's the proof that normalized dot equals cosine."
       ],
       challenge_title: "Pre-Normalize the Index",
+      challenge_difficulty: "beginner",
       challenge_description: "Convert a batch of embeddings into unit vectors so query time can skip the square roots.",
       challenge_story: "Your vector database is about to serve millions of queries a second, and every query currently pays for two magnitude computations (two square roots) per comparison. A senior engineer points out the classic trick: **normalize every vector once at index time**, store the unit vectors, and cosine similarity collapses into a plain dot product at query time. Your job is the offline batch step — take the raw embeddings being ingested and emit their normalized forms. A zero vector (rare, but it happens with corrupt rows) has no direction, so it stays all zeros.",
       challenge_statement: "You are given **N** vectors of dimension **D**. For each one, output its **normalized (unit) vector**: divide every component by the vector's magnitude `sqrt(sum(x_i^2))`.\n\nIf a vector is **all zeros**, its magnitude is 0 and it has no direction — output it unchanged as a vector of zeros.",
@@ -869,13 +897,25 @@ cosine(a,b) = 0.96`,
       ],
       challenge_starter_code: `import sys, math
 
+def magnitude(v):
+    return math.sqrt(sum(x * x for x in v))
+
 def main():
     data = sys.stdin.read().split()
     idx = 0
     n = int(data[idx]); idx += 1
     d = int(data[idx]); idx += 1
-    # TODO: for each of the N vectors, print its unit vector (4 decimals),
-    # leaving an all-zero vector unchanged.
+
+    # Parsing is done for you: read the N vectors into a list.
+    vectors = []
+    for _ in range(n):
+        vec = [float(data[idx + i]) for i in range(d)]; idx += d
+        vectors.append(vec)
+
+    # The magnitude() helper is ready above.
+    # TODO: for each vector, print its unit vector (each component / magnitude,
+    # to 4 decimals). If the magnitude is 0, print the all-zero vector unchanged.
+    # Build each line with: " ".join(f"{u:.4f}" for u in unit)
 
 main()`,
       challenge_solution_code: `import sys, math
@@ -1164,6 +1204,7 @@ Because you liked Interstellar:
         "Slice the top n with scored[:n] and return it."
       ],
       challenge_title: "Recommend From a Taste Profile",
+      challenge_difficulty: "intermediate",
       challenge_description: "Average a user's liked-movie vectors into a taste profile, then recommend the unseen movie closest to it.",
       challenge_statement: "You are building the core of a movie recommender. A user has rated some movies, and you have an embedding for every movie in the catalog.\n\nBuild the user's **taste vector** as the **element-wise average** of the vectors of the movies they liked. Then score every movie the user has **not** liked by cosine similarity to the taste vector, and recommend the highest-scoring one.\n\nNever recommend a movie the user already liked (it would score near-perfectly against a taste vector built partly from itself). If two unseen movies tie for the top score, choose the one whose **name is lexicographically smallest**.",
       challenge_story: "It is launch week for the recommendations tab. The model team handed you embeddings for the whole catalog; your job is the logic that turns *\"movies this user loved\"* into *\"one movie to suggest next.\"* The trick everyone uses: blend the liked movies into a single **taste vector** (just average them), then find the unseen movie whose vector points most the same way. Skip anything they have already seen — recommending a movie back to the person who just rated it is the fastest way to look broken.",
@@ -1200,9 +1241,23 @@ def cosine(a, b):
 
 def main():
     lines = sys.stdin.read().split("\\n")
-    n, d = map(int, lines[0].split())
-    # TODO: read the catalog, read the liked names, build the average taste
-    # vector, then recommend the best unseen movie (exclude liked ones).
+    pos = 0
+    n, d = map(int, lines[pos].split()); pos += 1
+
+    # Parsing is done for you: the catalog (name -> vector) and the liked names.
+    catalog = {}
+    order = []
+    for _ in range(n):
+        parts = lines[pos].split(); pos += 1
+        name = parts[0]
+        catalog[name] = [float(x) for x in parts[1:1 + d]]
+        order.append(name)
+    liked = lines[pos].split(); pos += 1
+
+    # cosine() helper is ready above; the data is parsed.
+    # TODO: build the taste vector = element-wise AVERAGE of the liked vectors,
+    # then among movies NOT in 'liked', pick the highest cosine(taste, vec).
+    # Break ties by smallest name. Print "name score" (4 decimals).
 
 main()`,
       challenge_solution_code: `import sys, math
@@ -1508,6 +1563,7 @@ Top matches (semantic):
         "Notice the 'login' doc ranks 2nd despite sharing no words with the query: that's semantic matching."
       ],
       challenge_title: "Top-K Semantic Retrieval",
+      challenge_difficulty: "beginner",
       challenge_description: "Return the K documents most semantically similar to a query embedding, best first — the retrieval core of a RAG system.",
       challenge_story: "You are wiring up the retrieval step of a RAG (retrieval-augmented generation) assistant. Before the language model answers, your code has to pull the **K most relevant document chunks** out of the knowledge base and hand them over as context. Keyword search would miss a chunk about 'sign in' when the user types 'login isn't working' — but embeddings match on meaning, not spelling. Each chunk is already an embedding; so is the query. Rank by cosine similarity and return the top K, highest first.",
       challenge_statement: "You are given **N** document embeddings, a positive integer **K**, and one **query** embedding, all of dimension **D**. Return the **K documents with the highest cosine similarity** to the query, ordered from highest to lowest.\n\nIf two documents have equal cosine similarity, order them by **lexicographically smallest name first**. It is guaranteed that `K ≤ N`.",
@@ -1544,9 +1600,21 @@ def cosine(a, b):
 
 def main():
     lines = sys.stdin.read().split("\\n")
-    n, d, k = map(int, lines[0].split())
-    # TODO: read N documents and the query, rank by cosine similarity,
-    # break ties by name, and print the top K as "name score" (4 decimals).
+    pos = 0
+    n, d, k = map(int, lines[pos].split()); pos += 1
+
+    # Parsing is done for you: the N documents, then the query vector.
+    docs = []
+    for _ in range(n):
+        parts = lines[pos].split(); pos += 1
+        name = parts[0]
+        vec = [float(x) for x in parts[1:1 + d]]
+        docs.append((name, vec))
+    query = [float(x) for x in lines[pos].split()[:d]]; pos += 1
+
+    # cosine() helper is ready above; the data is parsed.
+    # TODO: score every doc with cosine(query, vec), sort by highest score
+    # (break ties by smaller name), and print the top K as "name score" (4 dp).
 
 main()`,
       challenge_solution_code: `import sys, math
@@ -1783,6 +1851,7 @@ dominant meaning: royalty`,
         "Use that index to look up the matching label in axes."
       ],
       challenge_title: "Dominant Axis Finder",
+      challenge_difficulty: "beginner",
       challenge_description: "For each query word, report which embedding dimension carries its strongest signal.",
       challenge_story: "You are debugging an embedding model and want a quick lens on what each word leans toward. Every word already has an embedding, and you have decided that the dimension with the **largest absolute value** is a rough proxy for that word's dominant semantic direction. Build the tool that, given the embedding table and a list of query words, prints the dominant axis index for each one. It is a crude probe, but it is exactly the kind of sanity check engineers run when inspecting a freshly trained model.",
       challenge_statement: "You are given **N** words, each with a **D-dimensional** embedding, then a list of **query words**.\n\nFor each query word, find the **dimension index (0-based) whose value has the largest absolute value** — its dominant axis. If two dimensions tie on absolute value, choose the **smaller index**.\n\nPrint each query word followed by its dominant axis index.",
@@ -1811,8 +1880,18 @@ def main():
     data = sys.stdin.read().split("\\n")
     pos = 0
     n, d = map(int, data[pos].split()); pos += 1
-    # TODO: read N word vectors, read the query words, and for each query word
-    # print its dominant axis index (largest absolute value, smaller index wins).
+
+    # Parsing is done for you: the word -> vector table, then the query words.
+    table = {}
+    for _ in range(n):
+        parts = data[pos].split(); pos += 1
+        name = parts[0]
+        table[name] = [float(x) for x in parts[1:1 + d]]
+    queries = data[pos].split(); pos += 1
+
+    # TODO: for each query word, find the dimension index with the largest
+    # ABSOLUTE value (use abs()); on a tie keep the smaller index.
+    # Print "word index" for each query word in order.
 
 main()`,
       challenge_solution_code: `import sys
@@ -2070,6 +2149,7 @@ again`,
         "After the loop, do not forget to append the final partial chunk if it is non-empty."
       ],
       challenge_title: "Fixed-Size Word Chunker",
+      challenge_difficulty: "beginner",
       challenge_description: "Split a document into greedy fixed-size word chunks, the first step of any embedding pipeline.",
       challenge_story: "You are building the ingestion stage of a RAG knowledge base. Before any text can be embedded, it has to be cut into chunks small enough that each vector carries a single focused idea. The team picked the simplest reliable scheme to start: **greedy fixed-size chunking by word count**. Walk the words left to right, packing each chunk until adding one more word would exceed the size cap, then start the next chunk. Get this right and every later stage has clean, focused passages to work with.",
       challenge_statement: "You are given a maximum chunk size **S** (in words), a word count **N**, and then **N** words (one per line).\n\nSplit the words into chunks using **greedy fixed-size chunking**: fill each chunk with consecutive words until it holds **S** words, then begin a new chunk. The final chunk may hold fewer than S words.\n\nPrint the number of chunks, then each chunk on its own line with its words space-separated, in order.",
@@ -2095,9 +2175,12 @@ again`,
 def main():
     data = sys.stdin.read().split("\\n")
     s, n = map(int, data[0].split())
+    # Parsing is done for you: 's' is the max words per chunk, 'words' the list.
     words = [data[1 + i].strip() for i in range(n)]
-    # TODO: greedily pack words into chunks of at most S words, then print
-    # the chunk count followed by each chunk's words on its own line.
+
+    # TODO: greedily pack 'words' into chunks of at most 's' words each
+    # (slice in steps of s). Print the chunk count, then each chunk on its own
+    # line with its words space-separated.
 
 main()`,
       challenge_solution_code: `import sys
@@ -2346,6 +2429,7 @@ api calls: 2`,
         "A match means the text is unchanged: return False without touching the cache."
       ],
       challenge_title: "Incremental Re-Embed Counter",
+      challenge_difficulty: "beginner",
       challenge_description: "Process a stream of chunk updates and count how many actually trigger an embedding API call.",
       challenge_story: "Your RAG pipeline re-runs every time the source docs change, and finance is watching the embedding bill. The rule is simple: a chunk only needs a fresh embedding when its **content hash** differs from what is cached — a brand-new chunk, or one whose text was edited. An unchanged chunk reuses its stored vector for free. You are given the ordered stream of (chunk id, content hash) events from one ingestion run. Report, per event, whether it re-embeds or hits the cache, then the total number of API calls so the team can sanity-check the bill.",
       challenge_statement: "You are given **N** events in order. Each event is a **chunk id** and the **content hash** of that chunk's current text.\n\nMaintain a cache mapping chunk id to its last-seen hash. For each event:\n\n- If the chunk id is **not yet cached**, or its **cached hash differs** from the event's hash, it is a **re-embed**: print `id REEMBED`, count an API call, and update the cache to the new hash.\n- Otherwise (cached hash matches) it is a cache hit: print `id CACHED`.\n\nAfter all events, print the total number of re-embeds (API calls).",
@@ -2370,8 +2454,16 @@ api calls: 2`,
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0].strip())
-    # TODO: process the N (chunk_id, hash) events, printing REEMBED or CACHED
-    # per event, then the total number of re-embeds.
+
+    # Parsing is done for you: parse each event into (chunk_id, content_hash).
+    events = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        events.append((parts[0], parts[1]))
+
+    # TODO: keep a dict cache mapping chunk_id -> last-seen hash. For each event,
+    # if cache.get(cid) != h it's a REEMBED (count it, update cache); else CACHED.
+    # Print "cid REEMBED" / "cid CACHED" per event, then the total re-embed count.
 
 main()`,
       challenge_solution_code: `import sys
