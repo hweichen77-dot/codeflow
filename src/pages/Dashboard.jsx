@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { getLevel } from "../components/gamification/XPLevelBar";
 import { getStreak, namespacedKey } from "../lib/progressStats";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../lib/AuthContext";
 import { UserChallenges } from "../api/supabaseClient";
 import { getChallengeStats } from "../api/progressStore";
 import ProgressRing from "../components/gamification/ProgressRing";
@@ -29,7 +29,10 @@ export default function Dashboard() {
     const local = getChallengeStats();
     setChallengeStats(local);
 
-    if (!supabaseUser) { setStatsLoading(false); return; }
+    // Only email-authed users have server-side rows. AuthContext also sets a
+    // local-* profile in guest mode — skip the Supabase fetch for those.
+    const sid = supabaseUser?.id;
+    if (!sid || String(sid).startsWith("local-")) { setStatsLoading(false); return; }
 
     // Signed-in: merge any server-side challenge rows on top of local counts.
     UserChallenges.list(supabaseUser.id).then(items => {
