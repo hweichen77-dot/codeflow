@@ -247,6 +247,7 @@ image tokens: 1024`,
         "Use integer math for the resize: `nw = w * cap // longest` avoids float drift entirely.",
         "Patch count along a side of length `d` is `(d + P - 1) // P` — that is ceil division without importing math.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -254,7 +255,16 @@ def main():
     idx = 0
     P = int(data[idx]); idx += 1
     q = int(data[idx]); idx += 1
-    # TODO: for each image, read detail, w, h; resize per the cap; count patches.
+    out = []
+    for _ in range(q):
+        detail = data[idx]; idx += 1
+        w = int(data[idx]); idx += 1
+        h = int(data[idx]); idx += 1
+        # TODO: cap = 512 for "low" else 1536. If max(w,h) > cap, resize both
+        # sides with integer math nw = w*cap//longest (same for h); else keep.
+        # Patch count per side is (size + P - 1)//P; token count is pw*ph.
+        # Append str(pw*ph) to out.
+    print("\\n".join(out))
 
 main()
 `,
@@ -541,6 +551,7 @@ text image`,
         "Base64 size is `((raw_bytes + 2) // 3) * 4` — that is `ceil(raw/3)*4` using only integers.",
         "Track three running totals as you go: accepted count, rejected count, and summed base64 bytes (public images add zero).",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def media_type(name):
@@ -550,7 +561,21 @@ def media_type(name):
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    # TODO: classify each attachment, print its line, and print the SUMMARY.
+    accepted = 0
+    rejected = 0
+    base64_total = 0
+    lines = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        filename = parts[0]
+        visibility = parts[1]
+        raw = int(parts[2])
+        # TODO: mt = media_type(filename). If None, REJECT (count rejected).
+        # Else count accepted; public -> "<f> url <mt>"; private -> base64 with
+        # enc = ((raw + 2)//3)*4 added to base64_total -> "<f> base64 <mt> <enc>".
+    for line in lines:
+        print(line)
+    print("SUMMARY " + str(accepted) + " " + str(rejected) + " " + str(base64_total))
 
 main()
 `,
@@ -840,13 +865,25 @@ total: 18.5`,
         "Trim the value with `.strip()` before testing it, and compare against `unreadable` with `.lower()` for case-insensitivity.",
         "Collect bad field names in a list as you go; if it's non-empty at the end, join it after `REVIEW`, else print `OK`.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     n, threshold = map(int, data[idx].split()); idx += 1
-    # TODO: clean each field, print its line, then print REVIEW <names> or OK.
+    flagged = []
+    field_lines = []
+    for _ in range(n):
+        name, value, conf = data[idx].split("|"); idx += 1
+        conf = int(conf)
+        v = value.strip()
+        # TODO: a field is bad if v == "" or v.lower() == "unreadable" or
+        # conf < threshold. Bad -> record name in flagged, line "<name>: MISSING";
+        # good -> line "<name>: <v>". Append to field_lines.
+    for line in field_lines:
+        print(line)
+    # If flagged is non-empty, print "REVIEW " + names joined by spaces, else "OK".
 
 main()
 `,
@@ -1101,71 +1138,58 @@ final noise: 7.78`,
         "Print inside the loop to see the noise shrink each step."
       ],
       challenge_title: "The Denoising Scheduler",
-      challenge_description: "Simulate a diffusion model's denoising loop, report the noise left after each requested step count, and find the smallest number of steps needed to hit a quality target.",
-      challenge_story: "You're tuning the **sampler** for an image-generation model. Diffusion models start from pure noise and remove a fixed fraction of the **remaining** noise on every denoising step — more steps means a cleaner image but a slower (and pricier) generation. Your design team keeps asking the same two questions: *'how clean is the image after N steps?'* and *'what's the fewest steps that gets us under our noise budget?'* Instead of eyeballing renders, build the **denoising scheduler** that answers both exactly, so the team can pick a step count on evidence instead of vibes.",
-      challenge_statement: "A render begins at noise level \`start\`. Each step multiplies the **remaining** noise by \`(100 - removal) / 100\` — i.e. it removes \`removal\` percent of what's left. Noise only ever decreases.\n\nDo two things:\n\n1. **Minimum steps.** Find the smallest number of steps after which the noise level is **less than or equal to** \`target\`. If \`start\` is already ≤ \`target\`, the answer is \`0\`.\n2. **Queries.** For each query step count \`s\`, report the noise level remaining after exactly \`s\` steps, formatted to **exactly 2 decimal places**.\n\nPrint each query result first (in order), then the minimum-steps line.",
-      challenge_input_format: "The first line has three integers `start removal target`.\n\nThe second line has an integer `q`: the number of queries.\n\nEach of the next `q` lines has one integer `s`: a step count to evaluate.",
-      challenge_output_format: "Print `q` lines, one per query: the remaining noise after `s` steps, formatted to exactly 2 decimals. Then print a final line `MIN_STEPS <k>` where `k` is the minimum steps to reach `target`.",
+      challenge_description: "Simulate a diffusion model's denoising loop step by step, reporting the noise level remaining after each of a fixed number of steps.",
+      challenge_story: "You're building the **denoising scheduler** for an image-generation model. Diffusion starts from pure noise and, on every step, removes a fixed fraction of the **remaining** noise — so the image gets cleaner step by step until a picture emerges. Your design team wants to *watch* that happen: given a render's starting noise and how aggressively each step removes noise, print the noise level after each step so they can see the steep early drop and the diminishing returns later on, and decide how many steps are worth paying for.",
+      challenge_statement: "A render begins at noise level \`start\`. Each step multiplies the **remaining** noise by \`(100 - removal) / 100\` — i.e. it removes \`removal\` percent of what's left. Noise only ever decreases.\n\nRun the loop for exactly \`steps\` steps. After **each** step, print the noise level remaining, formatted to **exactly 2 decimal places**, on its own line — one line per step, in order.",
+      challenge_input_format: "A single line with three integers `start removal steps`.",
+      challenge_output_format: "Print `steps` lines. Line `k` is the noise level remaining after the `k`-th step, formatted to exactly 2 decimal places.",
       challenge_constraints: [
         "1 ≤ start ≤ 100000",
         "1 ≤ removal ≤ 99",
-        "0 ≤ target ≤ start",
-        "1 ≤ q ≤ 1000",
-        "0 ≤ s ≤ 100000",
+        "1 ≤ steps ≤ 1000",
       ],
       challenge_examples: [
-        { input: "100 30 10\n3\n3\n6\n10", output: "34.30\n11.76\n2.82\nMIN_STEPS 7", explanation: "Each step keeps 70% of the noise. After 3 steps: 100*0.7^3 = 34.30; after 6: 11.76; after 10: 2.82. The first step count whose noise ≤ 10 is 7 (0.7^6 → 11.76 is still above, 0.7^7 → 8.24 is at or below)." },
-        { input: "50 10 50\n1\n0", output: "50.00\nMIN_STEPS 0", explanation: "After 0 steps the noise is the start value, and since 50 ≤ the target 50 no steps are needed." },
+        { input: "100 30 4", output: "70.00\n49.00\n34.30\n24.01", explanation: "Each step keeps 70% of the noise. After step 1: 100*0.7 = 70.00; step 2: 49.00; step 3: 34.30; step 4: 24.01. Notice the early steps strip the most noise." },
+        { input: "80 50 3", output: "40.00\n20.00\n10.00", explanation: "Removing 50% each step halves the noise: 80 → 40 → 20 → 10, printed after each of the 3 steps." },
       ],
-      challenge_notes: "This geometric decay is why diffusion samplers show steep early gains and diminishing returns — the first few steps strip most of the noise, and later steps polish. Formatting to a fixed 2 decimals keeps the output unambiguous; never print a raw float whose repr can vary.",
+      challenge_notes: "This geometric decay is why diffusion samplers show steep early gains and diminishing returns — the first few steps strip most of the noise, and later steps just polish. Apply the decay once per step and report; don't search for a target. Formatting to a fixed 2 decimals keeps the output unambiguous — a bare `round()` would drop a trailing zero like `70.0`.",
       challenge_hints: [
-        "Keep the noise as a float and multiply by `(100 - removal) / 100` each step. Don't try to subtract integers — the fraction matters.",
-        "For MIN_STEPS, loop multiplying until the noise is ≤ target, counting steps; handle the already-clean case (answer 0) up front.",
-        "Print each query with `\"{:.2f}\".format(value)` so 34.3 shows as `34.30` — a bare `round()` would drop the trailing zero.",
+        "Keep the noise as a float and multiply by `(100 - removal) / 100` each step — the fraction matters, so don't subtract integers.",
+        "Print inside the loop, right after updating the noise, so you emit one line per step.",
+        "Format each line with `\"{:.2f}\".format(noise)` so `70.0` shows as `70.00`.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
-    data = sys.stdin.read().split("\\n")
-    idx = 0
-    start, removal, target = map(int, data[idx].split()); idx += 1
-    q = int(data[idx].strip()); idx += 1
+    data = sys.stdin.read().split()
+    start = int(data[0]); removal = int(data[1]); steps = int(data[2])
     keep = (100 - removal) / 100.0
-    # TODO: answer each query, then compute and print MIN_STEPS.
+    noise = float(start)
+    # TODO: repeat 'steps' times: multiply noise by keep and collect it
+    # formatted to exactly 2 decimal places, one value per step.
 
 main()
 `,
       challenge_solution_code: `import sys
 
 def main():
-    data = sys.stdin.read().split("\\n")
-    idx = 0
-    start, removal, target = map(int, data[idx].split()); idx += 1
-    q = int(data[idx].strip()); idx += 1
+    data = sys.stdin.read().split()
+    start = int(data[0]); removal = int(data[1]); steps = int(data[2])
     keep = (100 - removal) / 100.0
-
     noise = float(start)
-    min_steps = 0
-    while noise > target:
-        noise = noise * keep
-        min_steps += 1
-
     out = []
-    for _ in range(q):
-        s = int(data[idx].strip()); idx += 1
-        nz = float(start)
-        for _ in range(s):
-            nz = nz * keep
-        out.append("{:.2f}".format(nz))
-    out.append("MIN_STEPS " + str(min_steps))
+    for _ in range(steps):
+        noise = noise * keep
+        out.append("{:.2f}".format(noise))
     print("\\n".join(out))
 
 main()
 `,
       challenge_test_cases: [
-        { input: "100 30 10\n3\n3\n6\n10", expected_output: "34.30\n11.76\n2.82\nMIN_STEPS 7", description: "Geometric decay queries plus the minimum-steps search." },
-        { input: "50 10 50\n1\n0", expected_output: "50.00\nMIN_STEPS 0", description: "Edge case: already at or below target needs zero steps." },
-        { input: "100 50 5\n2\n1\n5", expected_output: "50.00\n3.12\nMIN_STEPS 5", description: "Half-removal schedule; 0.5^5 = 3.125 is the first to dip under 5." }
+        { input: "100 30 4", expected_output: "70.00\n49.00\n34.30\n24.01", description: "Geometric decay reported after each of four steps." },
+        { input: "80 50 3", expected_output: "40.00\n20.00\n10.00", description: "Halving each step; noise drops 80 → 40 → 20 → 10." },
+        { input: "50 99 1", expected_output: "0.50", description: "Edge: a single aggressive step removes almost all noise." }
       ]
     },
     {
@@ -1408,6 +1432,7 @@ total cost: $0.006222`,
         "To format micro-dollars `m`: dollars = `m // 1_000_000`, fractional 6 digits = `str(m % 1_000_000).zfill(6)`.",
         "Accumulate ALL_LOW and ALL_HIGH totals for every request regardless of its flag; SAVINGS is just their difference.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 IN_RATE = 3    # $ per 1,000,000 input tokens
@@ -1417,13 +1442,32 @@ def cost_micro(input_tokens, output_tokens):
     return input_tokens * IN_RATE + output_tokens * OUT_RATE
 
 def fmt(micro):
-    # TODO: turn integer micro-dollars into "$D.dddddd".
+    # TODO: turn integer micro-dollars into "$D.dddddd"
+    # (dollars = micro // 1_000_000; 6-digit fraction = micro % 1_000_000).
     pass
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    # TODO: route each request, print its line, accumulate totals, print summaries.
+    total_low = 0
+    total_high = 0
+    lines = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        name = parts[0]
+        low_img = int(parts[1])
+        high_img = int(parts[2])
+        text = int(parts[3])
+        out_tok = int(parts[4])
+        needs = int(parts[5])
+        # TODO: low_cost = cost_micro(low_img+text, out_tok); high_cost likewise.
+        # Add both to total_low/total_high. Append "<name> high <fmt(high_cost)>"
+        # if needs == 1 else "<name> low <fmt(low_cost)>".
+    for line in lines:
+        print(line)
+    print("ALL_LOW " + fmt(total_low))
+    print("ALL_HIGH " + fmt(total_high))
+    print("SAVINGS " + fmt(total_high - total_low))
 
 main()
 `,
@@ -1717,6 +1761,7 @@ text image`,
         "Split each response line on the single `|`; handle an empty reported part by treating it as an empty list.",
         "Assemble the line in pieces: always `name score`, then conditionally ` MISSING ...`, then conditionally ` EXTRA ...`.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -1724,8 +1769,22 @@ def main():
     idx = 0
     n = int(data[idx]); idx += 1
     requested = data[idx].split(); idx += 1
-    # TODO: for each response, compute score, missing, extra; print the line.
-    # Then print AVG <integer average of scores>.
+    req_set = set(requested)
+    R = len(requested)
+    total_score = 0
+    out = []
+    for _ in range(n):
+        parts = data[idx].split("|"); idx += 1
+        name = parts[0]
+        reported = parts[1].split() if parts[1].strip() != "" else []
+        rep_set = set(reported)
+        # TODO: hits = requested fields present in rep_set; score = hits*100//R.
+        # missing = requested not in rep_set (in requested order); extra =
+        # reported not in req_set (in reported order). Build "<name> <score>",
+        # append " MISSING <a,b>" then " EXTRA <c,d>" when non-empty. Add score
+        # to total_score; append the line to out.
+    out.append("AVG " + str(total_score // n))
+    print("\\n".join(out))
 
 main()
 `,
@@ -2007,6 +2066,7 @@ total image tokens: 1024`,
         "For cuts, walk the sampled indices pairwise and test `abs(b[cur] - b[prev]) > thresh`.",
         "Format duration with `\"{:.2f}\".format(n / fps)` so a value like 0.1 prints as `0.10`.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -2016,7 +2076,9 @@ def main():
     thresh = int(data[idx].strip()); idx += 1
     n = int(data[idx].strip()); idx += 1
     brightness = list(map(int, data[idx].split())); idx += 1
-    # TODO: sample frame indices, count tokens and cuts, compute duration.
+    # TODO: sampled = list(range(0, n, step)); k = len(sampled); tokens = k*tpf.
+    # cuts = number of consecutive sampled pairs with abs brightness diff > thresh.
+    # duration = n/fps. Print SAMPLED, TOKENS, CUTS, then DURATION to 2 decimals.
 
 main()
 `,
@@ -2281,27 +2343,27 @@ grid: [[1, 2, 3], [4, 0, 0], [7, 0, 0]]`,
         "Increment changed only when the existing value differs from the fill value, then set it."
       ],
       challenge_title: "The Inpaint Engine",
-      challenge_description: "Apply a sequence of masked edits to an image grid, clamp each mask to the image bounds, count the pixels each edit actually changes, and report the final image checksum.",
-      challenge_story: "You're building the core of an **inpainting engine**. The image is a grid of integer pixel values, and an editor sends a list of rectangular **masks**, each with a fill value -- 'paint this region to X.' Masks may be dragged partly off-canvas, so you must **clamp** them to the image bounds before applying. Edits are applied in order, and a later edit can overwrite an earlier one (edits compound, exactly like the lesson warned). Your engine must report, per edit, how many pixels actually changed value (painting a pixel to the color it already had does not count), and after all edits, the **checksum** of the final image so the result can be verified.",
-      challenge_statement: "You have a grid of \`rows\` x \`cols\` integer pixels. Then \`m\` edits are applied **in order**. Each edit is a rectangle \`r0 c0 r1 c1\` (inclusive corners, with \`r0 <= r1\` and \`c0 <= c1\`) and a \`fill\` value.\n\nFor each edit:\n\n1. **Clamp** the rectangle to the grid: clamp \`r0,c0\` up to 0 and \`r1,c1\` down to \`rows-1, cols-1\`. If the clamped rectangle is empty (lies entirely off-grid), it changes nothing.\n2. For every pixel inside the clamped rectangle, set it to \`fill\`. Count a pixel as **changed** only if its value was different from \`fill\` before this edit.\n3. Print \`EDIT <i> <changed>\` where \`i\` is the 1-based edit number and \`changed\` is how many pixels that edit changed.\n\nAfter all edits, print \`CHECKSUM <s>\` where \`s\` is the sum of every pixel value in the final grid.",
-      challenge_input_format: "The first line has two integers `rows cols`.\n\nThe next `rows` lines each have `cols` space-separated integers: the starting pixel values.\n\nThe next line has one integer `m`: the number of edits.\n\nEach of the next `m` lines has five integers `r0 c0 r1 c1 fill`.",
-      challenge_output_format: "Print `m` lines `EDIT <i> <changed>` in order, then one `CHECKSUM <s>` line.",
+      challenge_description: "Apply one masked edit to an image grid: fill the masked rectangle from the prompt, count how many pixels actually changed, and print the resulting image.",
+      challenge_story: "You're building the core of an **inpainting engine**. The image is a grid of integer pixel values, and the editor marks a rectangular **mask** — 'replace this region with X' — while every pixel *outside* the mask must stay exactly as it was. That's the whole promise of inpainting: change only the masked region, leave the rest of the photo untouched. Your engine fills the masked rectangle, reports how many pixels it actually changed (painting a pixel the color it already was doesn't count), and outputs the final image.",
+      challenge_statement: "You have a grid of \`rows\` x \`cols\` integer pixels. A single rectangular mask is given by its inclusive corners \`r0 c0 r1 c1\` (with \`0 <= r0 <= r1 < rows\` and \`0 <= c0 <= c1 < cols\`) and a \`fill\` value.\n\nFor every pixel **inside** the mask rectangle, set it to \`fill\`. Leave every pixel **outside** the mask unchanged. Count a pixel as **changed** only if its value was different from \`fill\` before the edit.\n\nPrint, in order:\n1. \`CHANGED <c>\` where \`c\` is how many pixels actually changed value.\n2. The final grid: \`rows\` lines, each with \`cols\` space-separated integers.",
+      challenge_input_format: "The first line has two integers `rows cols`.\n\nThe next `rows` lines each have `cols` space-separated integers: the starting pixel values.\n\nThe final line has five integers `r0 c0 r1 c1 fill`: the mask corners and the fill value.",
+      challenge_output_format: "Print `CHANGED <c>` first, then the final grid as `rows` lines of `cols` space-separated integers.",
       challenge_constraints: [
         "1 ≤ rows, cols ≤ 200",
         "0 ≤ pixel values, fill ≤ 1000000",
-        "1 ≤ m ≤ 1000",
-        "-1000 ≤ r0, c0, r1, c1 ≤ 1000, with r0 ≤ r1 and c0 ≤ c1",
+        "0 ≤ r0 ≤ r1 < rows and 0 ≤ c0 ≤ c1 < cols",
       ],
       challenge_examples: [
-        { input: "3 3\n1 2 3\n4 5 6\n7 8 9\n1\n1 1 2 2 0", output: "EDIT 1 4\nCHECKSUM 17", explanation: "The mask covers cells (1,1)=5, (1,2)=6, (2,1)=8, (2,2)=9, all set to 0 -- 4 changed. Remaining values 1+2+3+4+7 = 17." },
-        { input: "2 2\n9 1\n2 3\n1\n0 0 5 5 9", output: "EDIT 1 3\nCHECKSUM 36", explanation: "The mask clamps to the whole 2x2 grid and fills 9. (0,0) was already 9 so only 3 pixels change, but all four become 9 -> checksum 36." },
+        { input: "3 3\n1 2 3\n4 5 6\n7 8 9\n1 1 2 2 0", output: "CHANGED 4\n1 2 3\n4 0 0\n7 0 0", explanation: "The mask covers (1,1)=5, (1,2)=6, (2,1)=8, (2,2)=9 — all set to 0, so 4 pixels changed. The first row and first column, outside the mask, are untouched." },
+        { input: "2 2\n9 9\n9 9\n0 0 1 1 9", output: "CHANGED 0\n9 9\n9 9", explanation: "The mask covers the whole grid but every pixel is already 9, so filling with 9 changes nothing." },
       ],
-      challenge_notes: "Clamping before applying is the whole trick: an editor's drag can run off the canvas, and a naive loop would crash or skip. Counting only real changes (skipping pixels already equal to fill) mirrors how production editors report 'pixels touched' for undo and cost accounting. Because edits apply in order, a later mask overwriting an earlier one is exactly the compounding-edits effect from the lesson.",
+      challenge_notes: "The heart of inpainting is the boundary: pixels inside the mask are repainted, pixels outside are pinned to the original. Counting only real changes (skipping pixels already equal to the fill) mirrors how production editors report 'pixels touched' for undo and cost accounting. The nested loop over the masked rectangle is the whole operation — no clamping needed here since the mask is guaranteed in-bounds.",
       challenge_hints: [
-        "Clamp with `max(0, r0)`, `min(rows-1, r1)` and likewise for columns; if the clamped range is empty, the edit changes nothing.",
-        "Loop the clamped rows and columns; increment the counter only when `grid[r][c] != fill`, then assign `fill`.",
-        "Compute the checksum at the end with `sum(sum(row) for row in grid)`.",
+        "The mask test is simply `r0 <= r <= r1 and c0 <= c <= c1` for a cell at row `r`, column `c`.",
+        "Inside the mask, increment the counter only when `grid[r][c] != fill`, then set `grid[r][c] = fill`.",
+        "Print the grid by joining each row's integers with spaces: `' '.join(map(str, row))`.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -2311,8 +2373,18 @@ def main():
     grid = []
     for _ in range(rows):
         grid.append(list(map(int, data[idx].split()))); idx += 1
-    m = int(data[idx].strip()); idx += 1
-    # TODO: apply each clamped masked edit, print EDIT lines, then CHECKSUM.
+    r0, c0, r1, c1, fill = map(int, data[idx].split()); idx += 1
+
+    changed = 0
+    for r in range(rows):
+        for c in range(cols):
+            # TODO: if (r, c) is inside the mask rectangle, set it to fill and
+            # count it as changed only when its current value differs from fill.
+            pass
+
+    print("CHANGED " + str(changed))
+    for row in grid:
+        print(" ".join(map(str, row)))
 
 main()
 `,
@@ -2325,34 +2397,26 @@ def main():
     grid = []
     for _ in range(rows):
         grid.append(list(map(int, data[idx].split()))); idx += 1
-    m = int(data[idx].strip()); idx += 1
-    out = []
-    for e in range(1, m + 1):
-        r0, c0, r1, c1, fill = map(int, data[idx].split()); idx += 1
-        rr0 = max(0, r0)
-        cc0 = max(0, c0)
-        rr1 = min(rows - 1, r1)
-        cc1 = min(cols - 1, c1)
-        changed = 0
-        if rr0 <= rr1 and cc0 <= cc1:
-            for r in range(rr0, rr1 + 1):
-                row = grid[r]
-                for c in range(cc0, cc1 + 1):
-                    if row[c] != fill:
-                        changed += 1
-                        row[c] = fill
-        out.append("EDIT " + str(e) + " " + str(changed))
-    checksum = sum(sum(row) for row in grid)
-    out.append("CHECKSUM " + str(checksum))
-    print("\\n".join(out))
+    r0, c0, r1, c1, fill = map(int, data[idx].split()); idx += 1
+
+    changed = 0
+    for r in range(rows):
+        for c in range(cols):
+            if r0 <= r <= r1 and c0 <= c <= c1:
+                if grid[r][c] != fill:
+                    changed += 1
+                grid[r][c] = fill
+
+    print("CHANGED " + str(changed))
+    for row in grid:
+        print(" ".join(map(str, row)))
 
 main()
 `,
       challenge_test_cases: [
-        { input: "3 3\n1 2 3\n4 5 6\n7 8 9\n1\n1 1 2 2 0", expected_output: "EDIT 1 4\nCHECKSUM 17", description: "A single interior mask fills four cells to zero." },
-        { input: "2 2\n9 1\n2 3\n1\n0 0 5 5 9", expected_output: "EDIT 1 3\nCHECKSUM 36", description: "Mask clamps to the whole grid; one pixel already equals the fill so only three change." },
-        { input: "2 2\n4 4\n4 4\n1\n0 0 0 0 4", expected_output: "EDIT 1 0\nCHECKSUM 16", description: "Edge case: filling a cell with its existing value counts as zero changes." },
-        { input: "2 2\n1 1\n1 1\n2\n0 0 1 1 5\n0 0 0 0 9", expected_output: "EDIT 1 4\nEDIT 2 1\nCHECKSUM 24", description: "Two compounding edits: the second overwrites part of the first; final grid is 9 5 5 5 = 24." }
+        { input: "3 3\n1 2 3\n4 5 6\n7 8 9\n1 1 2 2 0", expected_output: "CHANGED 4\n1 2 3\n4 0 0\n7 0 0", description: "An interior mask fills four cells; the rest of the image is preserved." },
+        { input: "2 2\n9 9\n9 9\n0 0 1 1 9", expected_output: "CHANGED 0\n9 9\n9 9", description: "Edge: filling pixels with the value they already hold changes nothing." },
+        { input: "1 4\n5 6 7 8\n0 1 0 2 0", expected_output: "CHANGED 2\n5 0 0 8", description: "A row mask spanning columns 1..2 repaints two cells to 0, leaving the ends untouched." }
       ]
     }
   ]

@@ -265,6 +265,7 @@ Last user said: What's my name?`,
         "Validation: the first role must be 'user', and each role must differ from the previous one.",
         "Billing: keep `running += cost` each turn and add `running` to `total` each turn.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -274,10 +275,12 @@ def main():
     for i in range(1, n + 1):
         role, cost = data[i].split(" ", 1)
         turns.append((role, int(cost)))
+    # parse done: 'turns' is a list of (role, token_cost) pairs in order
 
-    # TODO: validate the transcript (starts with user, roles alternate).
-    # TODO: if valid, sum the prefix sums of token costs and print VALID + total.
-    # TODO: if invalid, print INVALID.
+    # TODO: validate the transcript — it must start with a "user" turn and
+    #       roles must strictly alternate; if not, print "INVALID".
+    # TODO: if valid, the bill is the sum of prefix sums of the token costs;
+    #       print "VALID" then that total.
 
 main()
 `,
@@ -587,22 +590,23 @@ messages: 2`,
         "For each user rule, if its key is in the system dict, increment a blocked counter and skip it.",
         "Otherwise set the value; if the key is new, append it to the order list so it prints last.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     s = int(data[idx]); idx += 1
-    # TODO: read s system rules into a dict + order list (later duplicate wins).
-    for _ in range(s):
-        attr, val = data[idx].split(" ", 1); idx += 1
-        # ...
+    system_rules = [data[idx + i].split(" ", 1) for i in range(s)]; idx += s
     m = int(data[idx]); idx += 1
-    # TODO: read m user rules; block any whose attr is pinned by the system.
-    for _ in range(m):
-        attr, val = data[idx].split(" ", 1); idx += 1
-        # ...
-    # TODO: print blocked count, then attribute=value lines in order.
+    user_rules = [data[idx + i].split(" ", 1) for i in range(m)]; idx += m
+    # parse done: system_rules / user_rules are lists of [attr, value] pairs in order
+
+    # TODO: apply system rules first (later duplicate of an attr wins) and remember
+    #       first-seen order. Then apply user rules: if the attr is already pinned by
+    #       a system rule it is a BLOCKED override (count it, ignore the value);
+    #       otherwise set it (new attrs append in first-seen order).
+    # TODO: print the blocked count, then "attribute=value" lines in order.
 
 main()
 `,
@@ -906,6 +910,7 @@ user -> 10 tokens`,
         "Iterate the costs in reverse, adding each while `used + cost <= avail`, and break at the first that doesn't fit.",
         "Total used is `system + used + reserve`; dropped is `n - kept`.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -913,10 +918,12 @@ def main():
     budget, system, reserve = map(int, data[0].split())
     n = int(data[1])
     costs = list(map(int, data[2].split())) if n > 0 else []
+    # parse done: budget/system/reserve are ints; 'costs' is the n turn costs, oldest first
 
-    # TODO: if budget - system - reserve < 0, print OVERFLOW and return.
-    # TODO: keep newest turns while they fit the available history room.
-    # TODO: print "kept dropped" and the total tokens used.
+    # TODO: history room = budget - system - reserve; if it's < 0 print "OVERFLOW".
+    # TODO: otherwise keep the newest turns greedily while they fit that room
+    #       (iterate costs newest-first, stop at the first that doesn't fit).
+    # TODO: print "kept dropped" and the total tokens used (system + kept + reserve).
 
 main()
 `,
@@ -1216,6 +1223,7 @@ Turns now: 2`,
         "TTFT uses only the first chunk's time; total uses the sum of all chunk times.",
         "Build the reply with `''.join(chunks)` — no extra separators.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -1227,10 +1235,11 @@ def main():
         t, txt = data[i].split(" ", 1)
         times.append(int(t))
         chunks.append(txt)
+    # parse done: 'times' holds each chunk's generation ms, 'chunks' holds the texts
 
-    # TODO: TTFT = warmup + first chunk time (or warmup if no chunks).
+    # TODO: TTFT = warmup + first chunk time (or just warmup if there are no chunks).
     # TODO: total = warmup + sum of all chunk times.
-    # TODO: assemble = "".join(chunks).
+    # TODO: assemble the reply with "".join(chunks).
     # TODO: print "TTFT total", then the assembled reply.
 
 main()
@@ -1524,13 +1533,18 @@ s1 last: Your name is Sam.`,
         "After appending, if `len(history) > cap`, slice or pop from the front until exactly `cap` remain.",
         "Add the current stored length to the rebuild total on every event, then print sessions in first-seen order.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     cap, n = map(int, data[0].split())
-    # TODO: process n events; route each to its session, enforce the cap,
-    #       and total the stored length after each event (the rebuild cost).
+    events = [data[1 + i].split(" ", 1) for i in range(n)]  # parse done: list of [session_id, message]
+
+    # TODO: process events in order: append the message to that session's history
+    #       (creating it on first sight, recording first-seen order), enforce the cap
+    #       by dropping oldest until <= cap remain, and add the current stored length
+    #       to a running rebuild total.
     # TODO: print the total, then each session id + final length in first-seen order.
 
 main()
@@ -1837,6 +1851,7 @@ Last turn: What's my name again?`,
         "If `n <= keep`, print NOSUMMARY and the raw total and stop.",
         "Otherwise the kept cost is the sum of the last `keep` values; summarized = summary_cost + that, saved = raw - summarized.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -1844,10 +1859,11 @@ def main():
     keep, summary_cost = map(int, data[0].split())
     n = int(data[1].strip())
     costs = list(map(int, data[2].split())) if n > 0 else []
+    # parse done: keep/summary_cost are ints; 'costs' is the n turn costs, oldest first
 
-    # TODO: if n <= keep, print NOSUMMARY and the raw total.
-    # TODO: otherwise compute summarized = summary_cost + sum(last keep),
-    #       and saved = raw_total - summarized; print both.
+    # TODO: if n <= keep, print "NOSUMMARY" and the raw total (sum of all costs).
+    # TODO: otherwise summarized = summary_cost + sum of the last 'keep' costs,
+    #       saved = raw_total - summarized; print summarized then saved.
 
 main()
 `,
@@ -2148,14 +2164,19 @@ system after clear: You are a helpful assistant.`,
         "Check the exact '/clear' string first, then startswith('/persona ') with the trailing space.",
         "On /clear reset persona to default_persona; on /persona slice off the 9-character prefix for the new value.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     default_persona = data[0]
     n = int(data[1].strip())
-    # TODO: process the next n lines, routing /clear and /persona,
-    #       counting messages, clears, and switches, tracking the persona.
+    inputs = data[2:2 + n]  # parse done: the n input lines (commands or messages)
+
+    # TODO: start persona = default_persona; track counts of messages/clears/switches.
+    #       For each input: exact "/clear" -> reset history, persona=default, count clear;
+    #       startswith("/persona ") -> set persona to the text after the prefix, count switch;
+    #       otherwise -> a real message, count it.
     # TODO: print the final persona, then "messages clears switches".
 
 main()
@@ -2463,13 +2484,21 @@ u1 stored turns: 4`,
         "On each request add the message cost to that session's sum, then bill system_cost + that sum.",
         "Track both a running total and a max as you go; print them at the end.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     system_cost, n = map(int, data[0].split())
-    # TODO: for each of n requests, load the session's running history sum,
-    #       add the message cost, bill system_cost + that sum, track total and max.
+    requests = []
+    for i in range(1, n + 1):
+        sid, cost = data[i].split(" ", 1)
+        requests.append((sid, int(cost)))
+    # parse done: 'requests' is a list of (session_id, message_cost) in arrival order
+
+    # TODO: keep a dict of session_id -> running history token sum. For each request,
+    #       add its cost to that session's sum, bill = system_cost + that sum,
+    #       accumulate the total and track the max single-request bill.
     # TODO: print the total billed, then the max single-request bill.
 
 main()

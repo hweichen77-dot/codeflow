@@ -243,15 +243,22 @@ A shop has 3 boxes of 12 apples and sells 17. How many are left? Let's think ste
         "Recompute the true result for the step's operator and compare to the claimed value before trusting it.",
         "On the first mismatch, print `WRONG` and the 1-based index, then stop immediately.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     n, start = map(int, data[0].split())
+    steps = []
+    for i in range(1, n + 1):
+        parts = data[i].split()      # "op operand = claimed"
+        steps.append((parts[0], int(parts[1]), int(parts[3])))
+    # parse done: 'steps' is a list of (op, operand, claimed); acc starts at 'start'
+
     acc = start
-    # TODO: for each of the n steps, recompute the result from acc and
-    # compare it to the claimed value. Print WRONG i at the first mismatch,
-    # otherwise VALID acc at the end.
+    # TODO: walk steps in order; recompute the true result from acc for each op
+    # (+ - * and // for /), compare to claimed. Print "WRONG i" at the first
+    # mismatch (1-based) and stop; otherwise print "VALID acc" at the end.
 
 main()
 `,
@@ -544,6 +551,7 @@ Sentiment:`,
         "Comparing the tuple `(distance, feature)` handles the tie-break automatically — Python compares the second element only on ties.",
         "Read all input at once and index through it; build the output as a list and join with newlines.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -554,8 +562,12 @@ def main():
     for _ in range(k):
         feat, label = data[idx].split(); idx += 1
         examples.append((int(feat), label))
-    # TODO: read q queries, and for each assign the nearest example's label
-    # (ties -> smaller feature). Print one label per line.
+    q = int(data[idx]); idx += 1
+    queries = [int(data[idx + i]) for i in range(q)]; idx += q
+    # parse done: 'examples' is (feature, label) pairs; 'queries' is the q query features
+
+    # TODO: for each query, assign the label of the nearest example by |query - feature|.
+    #       Ties go to the smaller feature value. Print one label per query, in order.
 
 main()
 `,
@@ -822,14 +834,20 @@ majority answer: 42`,
         "Iterate the answers in sorted order so the first one you accept on a tie is already the smallest.",
         "Keep a running best; replace it only when a strictly larger total appears.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
-    tally = {}
-    # TODO: sum confidence per answer, then pick the answer with the largest
-    # total (ties -> smaller answer value). Print "answer total".
+    runs = []
+    for i in range(1, n + 1):
+        ans, conf = data[i].split()
+        runs.append((int(ans), int(conf)))
+    # parse done: 'runs' is a list of (answer, confidence) pairs
+
+    # TODO: sum confidence per distinct answer, then pick the answer with the
+    # largest total confidence (ties -> smaller answer value). Print "answer total".
 
 main()
 `,
@@ -1097,15 +1115,18 @@ Observation: About 14 million (2024).`,
         "Keep one `reg` variable and update it per action, appending its new value to a log list.",
         "Print the final `reg`, then `' '.join(...)` the log on the second line.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     n = int(data[0])
+    actions = [data[i].rstrip() for i in range(1, n + 1)]  # parse done: the n raw action strings tool("arg")
     reg = 0
     log = []
-    # TODO: for each action, parse the tool name and the quoted arg,
-    # apply it to reg, and record reg in log. Then print reg and the log.
+    # TODO: for each action, pull the tool name (before "(") and the quoted integer arg
+    # (between the first and last double-quote), apply it to reg
+    # (set/add/sub/mul), and append reg to log. Then print reg and the log.
 
 main()
 `,
@@ -1386,6 +1407,7 @@ summary: found 2 risks`,
         "Stage 2 sorts with key `(-score, id)` so higher scores come first and ties favor the smaller id.",
         "Stage 3 slices `[:K]`; print `-` and `0` when the kept set is empty.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
@@ -1395,8 +1417,11 @@ def main():
     for i in range(1, n + 1):
         iid, score = map(int, data[i].split())
         items.append((iid, score))
-    # TODO: stage 1 extract (score >= T), stage 2 rank (-score, id),
-    # stage 3 take top K. Print count, ids (or '-'), and the score sum.
+    # parse done: 'items' is a list of (id, score); T is the threshold, K the top count
+
+    # TODO: stage 1 extract (keep score >= T); stage 2 rank by (-score, id);
+    # stage 3 take the top K. Print the kept count, then the top-K ids in ranked
+    # order (or "-" if none), then the sum of the top-K scores.
 
 main()
 `,
@@ -1661,6 +1686,7 @@ kept branch: add first score: 7`,
         "Sort with key `(-score, id)` so higher scores come first and ties favor the smaller id, then take the first B.",
         "Sort the kept ids ascending for printing, and sum the kept scores separately.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -1670,7 +1696,9 @@ def main():
     for i in range(1, n + 1):
         bid, score = data[i].split()
         branches.append((int(bid), int(score)))
-    # TODO: keep the top B branches by score (ties -> smaller id).
+    # parse done: 'branches' is a list of (id, score); keep the top B by score
+
+    # TODO: keep the B highest-scoring branches (ties -> smaller id).
     # Print the kept ids in ascending order, then the sum of their scores.
 
 main()
@@ -1929,6 +1957,7 @@ fixes applied: 2`,
         "Stage 2: while the kept list is longer than L, pop from the end and increment the fix count.",
         "Track fixes across both stages; print `-` for the answer line if nothing survives.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -1937,8 +1966,11 @@ def main():
     b = int(data[1])
     banned = set(data[2].split()) if b > 0 else set()
     words = data[3].split()
-    # TODO: stage 1 strip banned words, stage 2 trim from the end to length L,
-    # counting each removal as one fix. Print the fix count and the final answer.
+    # parse done: L is the max length, 'banned' the banned-word set, 'words' the draft
+
+    # TODO: stage 1 - drop every word in 'banned' (each removal = 1 fix).
+    # TODO: stage 2 - while more than L words remain, pop from the END (each = 1 fix).
+    # Print the total fix count, then the final words (space-separated) or "-" if empty.
 
 main()
 `,
@@ -2207,13 +2239,23 @@ winner: promptB total: 19`,
         "Build a comparison key of (-total, length, id) so the smallest key under normal tuple ordering is the winner.",
         "Track the best candidate as you read; replace it whenever a strictly smaller key appears.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     n, m = map(int, data[0].split())
-    # TODO: for each candidate read id, length, and m scores; compute the total.
-    # Pick the best by (highest total, then smaller length, then smaller id).
+    candidates = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        cid = parts[0]
+        length = int(parts[1])
+        scores = list(map(int, parts[2:2 + m]))
+        candidates.append((cid, length, scores))
+    # parse done: each candidate is (id, length, [m scores])
+
+    # TODO: for each candidate compute its total (sum of scores). Pick the best by
+    # (highest total, then smaller length, then lexicographically smaller id).
     # Print "id total_score".
 
 main()
