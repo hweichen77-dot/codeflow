@@ -385,10 +385,15 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
-# C++ judge for the Competitive Coding section. Public (no auth) and needs no
-# secret — it proxies to the Compiler Explorer execute API.
+# LLM relay for code-execution simulation. Auth-gated: runs on the owner's
+# Anthropic key, so a valid Supabase JWT (or shared-secret header) is required.
+[functions.invoke-llm]
+verify_jwt = true
+
+# C++ judge for the Competitive Coding section. Proxies to the Compiler Explorer
+# execute API. Auth-gated to prevent use as an open compile relay.
 [functions.run-cpp]
-verify_jwt = false
+verify_jwt = true
 
 [analytics]
 enabled = true

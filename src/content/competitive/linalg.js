@@ -142,7 +142,7 @@ export default [
     test_cases: [
       { input: "3 2\n1 0\n0 1\n3 4\n1 0", expected_output: "0" },
       { input: "2 2\n-1 0\n-5 -1\n1 0", expected_output: "1" },
-      { input: "3 2\n1 1 1\n2 2 2\n3 3 3", expected_output: "0" },
+      { input: "3 2\n1 1\n2 2\n3 3\n3 3", expected_output: "0" },
       { input: "3 2\n0 5\n3 0\n-1 -1\n1 0", expected_output: "1" },
       { input: "2 2\n2 0\n1 1\n1 1", expected_output: "1" },
     ],

@@ -246,7 +246,12 @@ response = client.messages.create(
 )
 print(response.content[0].text)
 print("System prompt set:", system_prompt != "")`,
-      expected_output: `Arrr, the skies be clear and the winds be fair, matey!
+      // Real Anthropic SDK call: cannot run in the in-browser sandbox and the
+      // model's reply is non-deterministic. Marked illustrative — the pirate
+      // line below is one example, not a gradable target. See schema.js.
+      illustrative: true,
+      expected_output: `(example reply — actual output will vary)
+Arrr, the skies be clear and the winds be fair, matey!
 System prompt set: True`,
       hints: [
         "The system prompt is a plain string — describe the role and any format rule.",

@@ -62,12 +62,25 @@ export function runCodeInSandbox(code, timeoutMs = 5000) {
         console.error = (...args) => _log('[error]', ...args);
         console.warn = (...args) => _log('[warn]', ...args);
         window.onerror = (msg, src, line, col, err) => { _err((err && err.message) || msg); return true; };
-        try {
+        // Route async failures (rejected promises, errors thrown in timers via
+        // the host) to the error path instead of silently dropping them.
+        const _onRejection = (e) => {
+          const r = e && e.reason;
+          _err((r && r.message) || String(r));
+        };
+        window.addEventListener('unhandledrejection', _onRejection);
+        // Wrap user code in an async IIFE and await it so promise-based code
+        // settles before we signal "done" — otherwise a microtask error after
+        // a synchronous return would be lost and falsely report success.
+        (async () => {
           ${code}
+        })().then(() => {
+          window.removeEventListener('unhandledrejection', _onRejection);
           _done();
-        } catch(e) {
-          _err(e.message || String(e));
-        }
+        }, (e) => {
+          window.removeEventListener('unhandledrejection', _onRejection);
+          _err((e && e.message) || String(e));
+        });
       <\/script>
     `;
 

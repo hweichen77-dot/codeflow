@@ -4,9 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { getLevel } from "../components/gamification/XPLevelBar";
-import { getStreak } from "../lib/progressStats";
+import { getStreak, namespacedKey } from "../lib/progressStats";
 import { useAuth } from "../hooks/useAuth";
 import { UserChallenges } from "../api/supabaseClient";
+import { getChallengeStats } from "../api/progressStore";
 import ProgressRing from "../components/gamification/ProgressRing";
 import Achievements from "../components/gamification/Achievements";
 import LevelUpModal from "../components/gamification/LevelUpModal";
@@ -23,7 +24,14 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    // Local store is the guest-friendly source of truth (ChallengeDetail writes
+    // here on a pass). Seed from it first so guest mode shows real numbers.
+    const local = getChallengeStats();
+    setChallengeStats(local);
+
     if (!supabaseUser) { setStatsLoading(false); return; }
+
+    // Signed-in: merge any server-side challenge rows on top of local counts.
     UserChallenges.list(supabaseUser.id).then(items => {
       const completed = items.filter(i => i.status === 'completed').length;
       const inProgress = items.filter(i => i.status === 'in_progress').length;
@@ -39,7 +47,11 @@ export default function Dashboard() {
         if (uniqueDates[i] === expected.toDateString()) streak++;
         else break;
       }
-      setChallengeStats({ completed, inProgress, streak });
+      setChallengeStats({
+        completed: Math.max(local.completed, completed),
+        inProgress: Math.max(local.inProgress, inProgress),
+        streak: Math.max(local.streak, streak),
+      });
       setStatsLoading(false);
     }).catch(() => setStatsLoading(false));
   }, [supabaseUser]);
@@ -76,16 +88,17 @@ export default function Dashboard() {
       .filter((p) => p.completed)
       .reduce((sum, p) => sum + (p.points_earned || 10), 0);
     const currentLevel = getLevel(xp).level;
+    const lastLevelKey = namespacedKey("codeflow_last_level");
     let lastSeen = 0;
     try {
-      lastSeen = parseInt(localStorage.getItem("codeflow_last_level") || "0", 10) || 0;
+      lastSeen = parseInt(localStorage.getItem(lastLevelKey) || "0", 10) || 0;
     } catch { /* ignore */ }
 
     if (currentLevel > lastSeen) {
       // Only celebrate if the user had a baseline (avoid first-ever-load fanfare
       // for returning users who never had the key, but still record it).
       if (lastSeen > 0) setLevelUp(currentLevel);
-      try { localStorage.setItem("codeflow_last_level", String(currentLevel)); } catch { /* ignore */ }
+      try { localStorage.setItem(lastLevelKey, String(currentLevel)); } catch { /* ignore */ }
     }
   }, [user, progress]);
 

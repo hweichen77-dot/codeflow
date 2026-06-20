@@ -4,12 +4,40 @@
  */
 import { getLevel, LEVELS } from "../components/gamification/XPLevelBar";
 
-const STREAK_KEY = "codeflow_streak";
+const STREAK_BASE = "codeflow_streak";
+const PROFILE_KEY = "codeflow_profile_v1";
+
+/**
+ * Identity for the active account, read from the local profile store so per-user
+ * progress keys don't bleed across accounts. Falls back to "guest" when no
+ * profile is present (pre-login / guest-before-naming).
+ */
+export function activeUserId() {
+  if (typeof window === "undefined") return "guest";
+  try {
+    const raw = window.localStorage.getItem(PROFILE_KEY);
+    const p = raw ? JSON.parse(raw) : null;
+    return (p && (p.email || p.id)) || "guest";
+  } catch {
+    return "guest";
+  }
+}
+
+/**
+ * Namespace a progress key by account so a second user on the same browser
+ * doesn't inherit the first user's streak / level state.
+ * Accepts an optional explicit id (e.g. from a caller that knows the user).
+ */
+export function namespacedKey(base, id) {
+  return `${base}::${id || activeUserId()}`;
+}
+
+const streakKey = (id) => namespacedKey(STREAK_BASE, id);
 
 /** Read the current streak without mutating it (display-safe). */
 export function getStreak() {
   try {
-    const data = JSON.parse(localStorage.getItem(STREAK_KEY) || "{}");
+    const data = JSON.parse(localStorage.getItem(streakKey()) || "{}");
     const today = new Date().toDateString();
     const yesterday = new Date(Date.now() - 86400000).toDateString();
     if (data.lastVisit === today || data.lastVisit === yesterday) return data.streak || 0;
@@ -22,13 +50,13 @@ export function getStreak() {
 /** Record a visit for today, advancing or resetting the streak. Call once per session. */
 export function touchStreak() {
   try {
-    const data = JSON.parse(localStorage.getItem(STREAK_KEY) || "{}");
+    const data = JSON.parse(localStorage.getItem(streakKey()) || "{}");
     const today = new Date().toDateString();
     const yesterday = new Date(Date.now() - 86400000).toDateString();
     let streak = 1;
     if (data.lastVisit === today) streak = data.streak || 1;
     else if (data.lastVisit === yesterday) streak = (data.streak || 0) + 1;
-    localStorage.setItem(STREAK_KEY, JSON.stringify({ lastVisit: today, streak }));
+    localStorage.setItem(streakKey(), JSON.stringify({ lastVisit: today, streak }));
     return streak;
   } catch {
     return 0;

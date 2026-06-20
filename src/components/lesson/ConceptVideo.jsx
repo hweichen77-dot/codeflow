@@ -4,6 +4,13 @@ import { Play, ExternalLink } from "lucide-react";
 /**
  * Renders an embedded YouTube video with a thumbnail preview
  * and a "Watch on YouTube" fallback link.
+ *
+ * OPTIONAL / dormant feature. It is wired up in LessonEnhancements.jsx and only
+ * renders when a lesson supplies `video_id` (plus optional `video_title` /
+ * `video_caption`). No lesson currently sets those fields, so this component is
+ * inactive by default — kept intentionally so authors can attach a concept
+ * video to any lesson without new plumbing. Returns null when `youtubeId` is
+ * absent, so it is safe to leave in place.
  */
 export default function ConceptVideo({ youtubeId, title, caption }) {
   const [playing, setPlaying] = useState(false);

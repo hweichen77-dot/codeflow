@@ -716,9 +716,9 @@ def cache_hits(prefix, prompt_a, prompt_b):
     # start with the same cached prefix.
     return prompt_a.startswith(prefix) and prompt_b.startswith(prefix)
 
-system = "You are a helpful assistant. "
-a = system + "Question: capital of France?"
-b = system + "Question: capital of Japan?"
+system = "You are a helpful assistant."
+a = system + " Question: capital of France?"
+b = system + " Question: capital of Japan?"
 
 # TODO: print whether the cache hits for prefix=system.
 print("system:", system)
@@ -726,9 +726,9 @@ print("system:", system)
       solution_code: `def cache_hits(prefix, prompt_a, prompt_b):
     return prompt_a.startswith(prefix) and prompt_b.startswith(prefix)
 
-system = "You are a helpful assistant. "
-a = system + "Question: capital of France?"
-b = system + "Question: capital of Japan?"
+system = "You are a helpful assistant."
+a = system + " Question: capital of France?"
+b = system + " Question: capital of Japan?"
 
 print("system:", system)
 print("cache hits:", cache_hits(system, a, b))
@@ -1733,7 +1733,7 @@ def cosine(a, b):
 
 q1 = [0.9, 0.1]    # "reset my password"
 q2 = [0.88, 0.12]  # "change my password" - different words, similar meaning
-print(round(cosine(q1, q2), 4))   # ~0.9998 -> a hit above a 0.95 threshold
+print(round(cosine(q1, q2), 4))   # ~0.9997 -> a hit above a 0.95 threshold
 \`\`\`
 
 The flow per query: embed it, compare against every cached embedding, take the best similarity. If that best is at or above the threshold, serve the cached answer (a **hit**); otherwise call the model, then store this query's embedding and answer for next time (a **miss**).
@@ -1852,15 +1852,15 @@ sim = cosine(cached, query)
 print("similarity:", round(sim, 4))
 print("HIT" if sim >= threshold else "MISS")
 `,
-      expected_output: `similarity: 0.9998
+      expected_output: `similarity: 0.9997
 HIT`,
       step_throughs: [
         {
           title: "checking one query against the cache",
           steps: [
             { label: "Embed the new query", detail: "Convert the question text into a meaning vector. Different wording with the same intent lands nearby.", code: 'query = embed("change my password")  # [0.88, 0.12]' },
-            { label: "Score it against a cached query", detail: "Compute cosine similarity between the new vector and a stored one.", code: "sim = cosine(query, cached)  # 0.9998" },
-            { label: "Compare to the threshold", detail: "At or above the threshold is a hit; below is a miss. The threshold controls strictness.", code: "0.9998 >= 0.95  ->  HIT" },
+            { label: "Score it against a cached query", detail: "Compute cosine similarity between the new vector and a stored one.", code: "sim = cosine(query, cached)  # 0.9997" },
+            { label: "Compare to the threshold", detail: "At or above the threshold is a hit; below is a miss. The threshold controls strictness.", code: "0.9997 >= 0.95  ->  HIT" },
             { label: "Serve or store", detail: "On a hit, return the cached answer with no model call. On a miss, call the model and store this query and answer.", code: "return cached_answer  # no model call needed" }
           ]
         }

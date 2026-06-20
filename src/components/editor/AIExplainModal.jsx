@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { api, aiAvailable } from "@/api/apiClient";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2 } from "lucide-react";
@@ -6,6 +6,25 @@ import { X, Loader2 } from "lucide-react";
 export default function AIExplainModal({ hint, studentCode, solutionCode, lessonTitle, onClose }) {
   const [explanation, setExplanation] = useState(null);
   const [loading, setLoading] = useState(aiAvailable);
+  const dialogRef = useRef(null);
+  const previouslyFocused = useRef(null);
+
+  // Escape to close + focus the dialog on open, restore focus on close.
+  useEffect(() => {
+    previouslyFocused.current = document.activeElement;
+    dialogRef.current?.focus();
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      if (previouslyFocused.current?.focus) previouslyFocused.current.focus();
+    };
+  }, [onClose]);
 
   useEffect(() => {
     if (!aiAvailable) return;
@@ -47,10 +66,15 @@ Be direct and educational. Use code examples where helpful. Total response under
         onClick={onClose}
       >
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="How the AI caught this issue"
+          tabIndex={-1}
           initial={{ opacity: 0, scale: 0.96, y: 8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96 }}
-          className="w-full max-w-lg"
+          className="w-full max-w-lg outline-none"
           style={{ background: "#111", border: "1px solid #2a2a2a" }}
           onClick={e => e.stopPropagation()}
         >
@@ -61,7 +85,7 @@ Be direct and educational. Use code examples where helpful. Total response under
                 HOW DID I CATCH THIS?
               </span>
             </div>
-            <button onClick={onClose} style={{ color: "#c4c4c4" }} onMouseEnter={e => e.currentTarget.style.color = "#d4d4d4"} onMouseLeave={e => e.currentTarget.style.color = "#c4c4c4"}>
+            <button onClick={onClose} aria-label="Close dialog" style={{ color: "#c4c4c4" }} onMouseEnter={e => e.currentTarget.style.color = "#d4d4d4"} onMouseLeave={e => e.currentTarget.style.color = "#c4c4c4"}>
               <X size={16} />
             </button>
           </div>

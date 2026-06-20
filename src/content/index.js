@@ -40,7 +40,8 @@ export const LESSONS = MODULES.flatMap(m => m.lessons)
 const XP_BY_DIFFICULTY = { beginner: 15, intermediate: 25, advanced: 40 }
 
 export const CHALLENGES = LESSONS.filter(l => l.challenge_title).map((l, i) => {
-  const project = PROJECTS.find(p => p.id === l.project_id) || {}
+  // eslint-disable-next-line -- runtime fallback; project is always found in practice
+  const project = /** @type {any} */ (PROJECTS.find(p => p.id === l.project_id) || {})
   const difficulty = project.difficulty || 'beginner'
   // Topic = the project's primary tag, falling back to its category.
   const topic = (project.tags && project.tags[0]) || project.category || 'ai'

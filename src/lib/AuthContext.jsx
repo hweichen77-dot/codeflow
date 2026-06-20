@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getProfile, setProfile, clear as clearProfile } from '@/api/localProfile';
 import { auth as supaAuth } from '@/api/supabaseClient';
+import { namespacedKey } from '@/lib/progressStats';
 
 const AuthContext = createContext();
 
@@ -96,6 +97,15 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try { await supaAuth.signOut(); } catch { /* ignore */ }
+    // Clear this account's namespaced progress keys BEFORE wiping the profile,
+    // so a second user on this browser doesn't inherit the first user's state.
+    try {
+      const id = user?.email || user?.id;
+      if (id && typeof window !== 'undefined') {
+        window.localStorage.removeItem(namespacedKey('codeflow_streak', id));
+        window.localStorage.removeItem(namespacedKey('codeflow_last_level', id));
+      }
+    } catch { /* ignore */ }
     clearProfile();
     setUser(null);
     setIsAuthenticated(false);

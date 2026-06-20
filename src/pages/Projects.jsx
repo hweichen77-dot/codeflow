@@ -3,25 +3,10 @@ import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-
-// Known category labels. Tabs are derived from the categories that actually
-// have projects, so empty tracks never render as dead "No results" filters.
-const CATEGORY_LABELS = {
-  foundations: "Foundations",
-  prompting: "Prompting",
-  chatbots_agents: "Chatbots & Agents",
-  rag_search: "RAG & Search",
-  vision_multimodal: "Vision & Multimodal",
-  production_ops: "Production & Ops",
-};
-const CATEGORY_ORDER = [
-  "foundations",
-  "prompting",
-  "chatbots_agents",
-  "rag_search",
-  "vision_multimodal",
-  "production_ops",
-];
+// Category labels/order come from the single source of truth so tabs stay in
+// sync with the rest of the app. Tabs are still derived from categories that
+// actually have projects, so empty tracks never render as dead filters.
+import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/content/categories";
 
 const DIFFICULTY_LABEL = {
   beginner: "00",

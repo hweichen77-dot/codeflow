@@ -1,15 +1,20 @@
 // Fully static, offline data layer. No api backend, no Supabase.
 // Preserves the exact `api` shape the ~11 consumer files depend on.
-import {
-  PROJECTS,
-  LESSONS,
-  CHALLENGES,
-  getProject,
-  getLessonsByProject,
-} from '@/content/index.js'
+//
+// The curriculum content barrel (~3MB) is loaded LAZILY via dynamic import so it
+// stays out of the initial/marketing chunk. All entity methods are async, so they
+// await the content module on first access; the promise is cached after that.
 import { UserProgress, CapstoneSubmission } from './progressStore.js'
 import { getProfile, setProfile, clear as clearProfile } from './localProfile.js'
 import { auth } from './supabaseClient'
+
+// Cached dynamic import of the curriculum barrel. Fetched on first entity call,
+// then reused. Keeps PROJECTS/LESSONS/CHALLENGES out of the initial bundle.
+let _contentPromise = null
+const loadContent = () => {
+  if (!_contentPromise) _contentPromise = import('@/content/index.js')
+  return _contentPromise
+}
 
 const sortList = (arr, sort) => {
   if (!sort || typeof sort !== 'string') return arr
@@ -28,24 +33,44 @@ const sortList = (arr, sort) => {
 }
 
 const Project = {
-  list: async (sort) => sortList([...PROJECTS], sort || 'order'),
-  filter: async (q) => (q?.id ? PROJECTS.filter((p) => p.id === q.id) : [...PROJECTS]),
-  get: async (id) => getProject(id),
+  list: async (sort) => {
+    const { PROJECTS } = await loadContent()
+    return sortList([...PROJECTS], sort || 'order')
+  },
+  filter: async (q) => {
+    const { PROJECTS } = await loadContent()
+    return q?.id ? PROJECTS.filter((p) => p.id === q.id) : [...PROJECTS]
+  },
+  get: async (id) => {
+    const { getProject } = await loadContent()
+    return getProject(id)
+  },
 }
 
 const Lesson = {
-  list: async (sort) => sortList([...LESSONS], sort || 'order'),
-  filter: async (q) =>
-    q?.project_id
+  list: async (sort) => {
+    const { LESSONS } = await loadContent()
+    return sortList([...LESSONS], sort || 'order')
+  },
+  filter: async (q) => {
+    const { LESSONS, getLessonsByProject } = await loadContent()
+    return q?.project_id
       ? getLessonsByProject(q.project_id)
       : q?.id
         ? LESSONS.filter((l) => l.id === q.id)
-        : [...LESSONS],
+        : [...LESSONS]
+  },
 }
 
 const Challenge = {
-  list: async (sort) => sortList([...CHALLENGES], sort || 'order'),
-  filter: async (q) => (q?.id ? CHALLENGES.filter((c) => c.id === q.id) : [...CHALLENGES]),
+  list: async (sort) => {
+    const { CHALLENGES } = await loadContent()
+    return sortList([...CHALLENGES], sort || 'order')
+  },
+  filter: async (q) => {
+    const { CHALLENGES } = await loadContent()
+    return q?.id ? CHALLENGES.filter((c) => c.id === q.id) : [...CHALLENGES]
+  },
 }
 
 // LLM bridge. When Supabase is configured, route prompts through the

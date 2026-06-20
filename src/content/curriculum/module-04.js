@@ -1098,8 +1098,11 @@ full_reply = "Arrr, once I sailed past a kraken."
 
 def stream_chunks(reply):
     # Pretend each word arrives separately from the API.
-    for word in reply.split(" "):
-        yield word + " "
+    words = reply.split(" ")
+    for i, word in enumerate(words):
+        # Add a leading space before every word except the first, so the
+        # streamed line has no trailing space.
+        yield (" " if i else "") + word
 
 history = [{"role": "user", "content": "Tell me a sea story."}]
 full_reply = "Arrr, once I sailed past a kraken."
@@ -1110,7 +1113,6 @@ for chunk in stream_chunks(full_reply):
     assembled += chunk
 
 print()  # newline after the streamed line
-assembled = assembled.strip()
 history.append({"role": "assistant", "content": assembled})
 
 print("Stored reply:", history[-1]["content"])

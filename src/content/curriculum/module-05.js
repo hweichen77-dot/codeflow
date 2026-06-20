@@ -861,7 +861,12 @@ response = client.messages.create(
 
 print(response.content[0].text)
 `,
-      expected_output: `The receipt is from Blue Bottle Coffee.`,
+      // Real Anthropic vision SDK call: cannot run in the in-browser sandbox
+      // (no file I/O, non-deterministic reply). Marked illustrative — the line
+      // below is one example answer, not a gradable target. See schema.js.
+      illustrative: true,
+      expected_output: `(example reply — actual output will vary)
+The receipt is from Blue Bottle Coffee.`,
       hints: [
         "The content field is a list. Put the image block first, then the text block.",
         "The image block needs type 'image' and a 'source' with type 'base64', a media_type, and the data.",

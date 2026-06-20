@@ -109,6 +109,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
           >
             <button
               onClick={() => setIsOpen(true)}
+              aria-label="Open AI tutor chat"
               className="w-14 h-14 flex items-center justify-center transition-all duration-200"
               style={{ background: "#b8ff00", border: "1px solid #b8ff00", boxShadow: "0 4px 24px rgba(184,255,0,0.2)" }}
               onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(184,255,0,0.3)"; }}
@@ -153,6 +154,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               </div>
               <button
                 onClick={() => setIsOpen(false)}
+                aria-label="Close AI tutor chat"
                 style={{ color: "#e8e8e8" }}
                 onMouseEnter={e => e.currentTarget.style.color = "#d4d4d4"}
                 onMouseLeave={e => e.currentTarget.style.color = "#e8e8e8"}
@@ -235,6 +237,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSend()}
                     placeholder="Ask about this lesson..."
+                    aria-label="Ask the AI tutor a question"
                     className="flex-1 font-mono text-xs py-2.5 px-3 bg-transparent outline-none"
                     style={{ border: "1px solid #1e1e1e", color: "#e8e8e8", caretColor: "#b8ff00" }}
                     disabled={isLoading}
@@ -242,6 +245,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || isLoading}
+                    aria-label="Send message"
                     className="px-3 py-2.5 transition-all duration-150 disabled:opacity-30"
                     style={{ background: "#b8ff00", border: "1px solid #b8ff00" }}
                   >

@@ -32,7 +32,7 @@ export default function Portfolio() {
           <h1
             style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 12px" }}
           >
-            {user.full_name?.split(" ")[0] || "Your"}'s builds.
+            {user.name?.split(" ")[0] || user.email?.split("@")[0] || "Your"}'s builds.
           </h1>
           <p className="font-display text-sm" style={{ color: "#d4d4d4", fontWeight: 400 }}>
             {submissions.length > 0

@@ -8,6 +8,7 @@ import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
 import ProblemStatement from "../components/challenge/ProblemStatement";
 import { gradePython } from "../lib/pyRunner";
+import { markChallengeComplete } from "../api/progressStore";
 
 const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };
 
@@ -50,7 +51,10 @@ export default function ChallengeDetail() {
         text += `\n\n${lines.join("\n")}`;
       }
       setOutput(text);
-      setPassed(ok && !isError);
+      const didPass = ok && !isError;
+      setPassed(didPass);
+      // Persist the pass locally so guest mode + the Dashboard reflect it.
+      if (didPass && challengeId) markChallengeComplete(challengeId);
     } catch (e) {
       setOutput("Error: " + String(e?.message || e));
     }
@@ -112,9 +116,9 @@ export default function ChallengeDetail() {
                 >
                   {challenge.difficulty}
                 </span>
-                {challenge.xp_reward && (
+                {challenge.xp && (
                   <span className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
-                    +{challenge.xp_reward}xp
+                    +{challenge.xp}xp
                   </span>
                 )}
               </div>

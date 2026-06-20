@@ -4,15 +4,7 @@ import { createPageUrl } from "../../utils";
 import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-
-const categoryLabels = {
-  foundations: "Foundations",
-  prompting: "Prompting",
-  chatbots_agents: "Chatbots & Agents",
-  rag_search: "RAG & Search",
-  vision_multimodal: "Vision & Multimodal",
-  production_ops: "Production & Ops",
-};
+import { CATEGORY_LABELS } from "@/content/categories";
 
 const difficultyColors = {
   beginner: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -57,7 +49,7 @@ export default function ProjectCard({ project, index = 0, completedCount = 0 }) 
           <div className="p-5 flex-1 flex flex-col">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-medium text-[#6C5CE7] uppercase tracking-wider">
-                {categoryLabels[project.category] || project.category}
+                {CATEGORY_LABELS[project.category] || project.category}
               </span>
             </div>
             <h3 className="text-lg font-semibold mb-2 group-hover:text-[#6C5CE7] transition-colors">

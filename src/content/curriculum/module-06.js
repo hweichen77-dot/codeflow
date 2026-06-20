@@ -1145,11 +1145,11 @@ def recommend(title, n=3):
 
 print("Because you liked Die Hard:")
 for name, score in recommend("Die Hard"):
-    print("" + name + " (" + str(round(score, 3)) + ")")
+    print("  " + name + " (" + str(round(score, 3)) + ")")
 
 print("Because you liked Interstellar:")
 for name, score in recommend("Interstellar"):
-    print("" + name + " (" + str(round(score, 3)) + ")")`,
+    print("  " + name + " (" + str(round(score, 3)) + ")")`,
       expected_output: `Because you liked Die Hard:
   Mad Max: Fury Road (0.883)
   Blade Runner (0.692)
@@ -1495,7 +1495,7 @@ def search(query_vec, docs):
 print('Query: "I forgot my password and can\\'t sign in"')
 print("Top matches (semantic):")
 for doc, score in search(query_vec, docs):
-    print("" + str(round(score, 3)) + "" + doc)`,
+    print("  " + str(round(score, 3)) + "  " + doc)`,
       expected_output: `Query: "I forgot my password and can't sign in"
 Top matches (semantic):
   0.999  How do I reset my password?

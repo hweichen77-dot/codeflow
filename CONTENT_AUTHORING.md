@@ -13,7 +13,9 @@ export default {
 };
 ```
 
-`category` is always `"ai_ml"`. `difficulty` ∈ `beginner|intermediate|advanced`.
+`category` ∈ `foundations | prompting | chatbots_agents | rag_search | vision_multimodal | production_ops` (the single source of truth is `src/content/categories.js` — `CATEGORY_LABELS` / `CATEGORY_ORDER`). `difficulty` ∈ `beginner | intermediate | advanced`.
+
+> Competitive-coding **Problems** (`src/content/competitive/*.js`) are a separate shape: they use `difficulty ∈ easy | medium | hard`, a `topic` instead of `category`, and code fields suffixed by language (`starter_cpp` / `solution_cpp`) rather than `starter_code` / `solution_code`. See `src/content/schema.js` for both shapes.
 
 ## Lesson object — full field list
 

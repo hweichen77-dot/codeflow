@@ -27,8 +27,17 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh" }}>
+      {/* Skip link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] font-mono text-xs tracking-widest uppercase px-4 py-2"
+        style={{ background: "#b8ff00", color: "#0a0a0a" }}
+      >
+        Skip to content
+      </a>
       {/* Sticky nav */}
       <nav
+        aria-label="Primary"
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         style={{
           background: scrolled ? "rgba(10,10,10,0.95)" : "transparent",
@@ -138,6 +147,9 @@ export default function Layout({ children, currentPageName }) {
             className="md:hidden font-mono text-xs tracking-widest uppercase p-2 transition-colors"
             style={{ color: mobileOpen ? "#b8ff00" : "#e8e8e8" }}
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav-menu"
           >
             {mobileOpen ? "[ X ]" : "[ = ]"}
           </button>
@@ -146,6 +158,7 @@ export default function Layout({ children, currentPageName }) {
         {/* Mobile menu */}
         {mobileOpen && (
           <div
+            id="mobile-nav-menu"
             className="md:hidden px-8 py-4 space-y-1"
             style={{ background: "#0a0a0a", borderTop: "1px solid #1a1a1a" }}
           >
@@ -194,7 +207,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Page content */}
-      <main>{children}</main>
+      <main id="main-content">{children}</main>
     </div>
   );
 }

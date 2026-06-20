@@ -1,6 +1,9 @@
 // localStorage-backed entity stores that mimic the api entity API shape.
+import { touchStreak } from '../lib/progressStats'
+
 const PROGRESS_KEY = 'codeflow_progress_v1'
 const CAPSTONE_KEY = 'codeflow_capstones_v1'
+const CHALLENGES_KEY = 'codeflow_challenges_v1'
 
 let counter = 0
 
@@ -71,6 +74,65 @@ export const UserProgress = {
   async list(sort) {
     return applySort(readArr(PROGRESS_KEY), sort)
   },
+}
+
+/**
+ * Guest-friendly, localStorage-backed challenge completion store.
+ * Records form: { id, status: 'completed' | 'in_progress', completed_at }.
+ * Used by ChallengeDetail (write) and Dashboard (read) so guest mode shows
+ * real numbers instead of the Supabase-only path that returns nothing.
+ */
+
+/** Mark a challenge as completed (idempotent). Also advances the day streak. */
+export function markChallengeComplete(id) {
+  if (!id) return null
+  const rows = readArr(CHALLENGES_KEY)
+  const idx = rows.findIndex((r) => r.id === id)
+  const completed_at = new Date().toISOString()
+  if (idx === -1) {
+    rows.push({ id, status: 'completed', completed_at })
+  } else {
+    rows[idx] = { ...rows[idx], status: 'completed', completed_at }
+  }
+  writeArr(CHALLENGES_KEY, rows)
+  // Real learning activity → keep the streak alive on completion, not just on
+  // visiting the home route.
+  try { touchStreak() } catch { /* ignore */ }
+  return rows.find((r) => r.id === id) || null
+}
+
+/** Mark a challenge as in-progress (only if not already completed). */
+export function markChallengeInProgress(id) {
+  if (!id) return null
+  const rows = readArr(CHALLENGES_KEY)
+  const idx = rows.findIndex((r) => r.id === id)
+  if (idx === -1) {
+    rows.push({ id, status: 'in_progress', completed_at: null })
+  } else if (rows[idx].status !== 'completed') {
+    rows[idx] = { ...rows[idx], status: 'in_progress' }
+  }
+  writeArr(CHALLENGES_KEY, rows)
+  return rows.find((r) => r.id === id) || null
+}
+
+/** Aggregate challenge counts + a completion-date streak for the Dashboard. */
+export function getChallengeStats() {
+  const rows = readArr(CHALLENGES_KEY)
+  const completed = rows.filter((r) => r.status === 'completed').length
+  const inProgress = rows.filter((r) => r.status === 'in_progress').length
+  const completedDates = rows
+    .filter((r) => r.completed_at)
+    .map((r) => new Date(r.completed_at).toDateString())
+  const uniqueDates = [...new Set(completedDates)].sort().reverse()
+  let streak = 0
+  const today = new Date()
+  for (let i = 0; i < uniqueDates.length; i++) {
+    const expected = new Date(today)
+    expected.setDate(today.getDate() - i)
+    if (uniqueDates[i] === expected.toDateString()) streak++
+    else break
+  }
+  return { completed, inProgress, streak }
 }
 
 export const CapstoneSubmission = {

@@ -73,15 +73,37 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
   };
 
   const handleKeyDown = (e) => {
+    // Escape moves focus out so keyboard users aren't trapped in the editor.
+    if (e.key === "Escape") {
+      e.target.blur();
+      return;
+    }
     if (e.key === "Tab") {
       e.preventDefault();
-      const start = e.target.selectionStart;
-      const end = e.target.selectionEnd;
-      const newCode = code.substring(0, start) + "" + code.substring(end);
-      onChange(newCode);
-      setTimeout(() => {
-        e.target.selectionStart = e.target.selectionEnd = start + 2;
-      }, 0);
+      const target = e.target;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+
+      if (e.shiftKey) {
+        // Remove up to two leading spaces from the start of the current line.
+        const lineStart = code.lastIndexOf("\n", start - 1) + 1;
+        let removed = 0;
+        while (removed < 2 && code[lineStart + removed] === " ") removed++;
+        if (removed === 0) return;
+        const newCode = code.substring(0, lineStart) + code.substring(lineStart + removed);
+        onChange(newCode);
+        setTimeout(() => {
+          target.selectionStart = Math.max(lineStart, start - removed);
+          target.selectionEnd = Math.max(lineStart, end - removed);
+        }, 0);
+      } else {
+        // Insert two real spaces at the caret / over the selection.
+        const newCode = code.substring(0, start) + "  " + code.substring(end);
+        onChange(newCode);
+        setTimeout(() => {
+          target.selectionStart = target.selectionEnd = start + 2;
+        }, 0);
+      }
     }
   };
 
@@ -163,6 +185,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
             onScroll={handleScroll}
+            aria-label={`Code editor for ${filename}`}
             className="flex-1 bg-transparent font-mono py-5 pl-4 pr-5 resize-none outline-none overflow-auto"
             style={{ fontSize: "0.8125rem", lineHeight: "1.6rem", color: "#c8c8c8", caretColor: "#b8ff00" }}
             spellCheck={false}
@@ -183,7 +206,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
 
         {/* Output panel */}
         {output !== undefined && output !== null && (
-          <div style={{ borderTop: "1px solid #1a1a1a" }}>
+          <div role="status" aria-live="polite" style={{ borderTop: "1px solid #1a1a1a" }}>
             <div className="flex items-center gap-3 px-5 py-2.5" style={{ background: "#0a0a0a", borderBottom: "1px solid #1a1a1a" }}>
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#b8ff00" }} />
               <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>output</span>

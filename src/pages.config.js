@@ -47,17 +47,23 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import ChallengeDetail from './pages/ChallengeDetail';
-import Challenges from './pages/Challenges';
-import Dashboard from './pages/Dashboard';
-import Home from './pages/Home';
-import ProjectDetail from './pages/ProjectDetail';
-import Projects from './pages/Projects';
-import Portfolio from './pages/Portfolio';
-import AITrack from './pages/AITrack';
-import LessonDemo from './pages/LessonDemo';
-import Competitive from './pages/Competitive';
-import CompetitiveDetail from './pages/CompetitiveDetail';
+// Route-level code-splitting: every page is lazily imported so it ships in its
+// own chunk and is only fetched when its route is visited. Lazy components are
+// rendered behind a <Suspense> boundary in App.jsx. The Layout stays eager
+// because it wraps every route and is part of the app shell.
+import { lazy } from 'react';
+
+const ChallengeDetail = lazy(() => import('./pages/ChallengeDetail'));
+const Challenges = lazy(() => import('./pages/Challenges'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Home = lazy(() => import('./pages/Home'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
+const Projects = lazy(() => import('./pages/Projects'));
+const Portfolio = lazy(() => import('./pages/Portfolio'));
+const AITrack = lazy(() => import('./pages/AITrack'));
+const LessonDemo = lazy(() => import('./pages/LessonDemo'));
+const Competitive = lazy(() => import('./pages/Competitive'));
+const CompetitiveDetail = lazy(() => import('./pages/CompetitiveDetail'));
 import __Layout from './Layout.jsx';
 
 

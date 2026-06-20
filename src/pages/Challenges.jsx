@@ -1,18 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
-
-const categoryLabels = {
-  foundations: "Foundations",
-  prompting: "Prompting",
-  chatbots_agents: "Chatbots & Agents",
-  rag_search: "RAG & Search",
-  vision_multimodal: "Vision & Multimodal",
-  production_ops: "Production & Ops",
-};
+import { CATEGORY_LABELS } from "@/content/categories";
 
 const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };
 const DIFFICULTIES = ["all", "beginner", "intermediate", "advanced"];
@@ -26,17 +18,39 @@ export default function Challenges() {
     queryFn: () => api.entities.Challenge.list("order"),
   });
 
-  const filtered = challenges.filter((c) => {
-    const matchSearch = !search || c.title?.toLowerCase().includes(search.toLowerCase());
-    const matchDifficulty = difficulty === "all" || c.difficulty === difficulty;
-    return matchSearch && matchDifficulty;
-  });
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return challenges.filter((c) => {
+      const matchSearch = !search || c.title?.toLowerCase().includes(q);
+      const matchDifficulty = difficulty === "all" || c.difficulty === difficulty;
+      return matchSearch && matchDifficulty;
+    });
+  }, [challenges, search, difficulty]);
 
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
+      <style>{`
+        .challenge-row {
+          grid-template-columns: 2.5rem 1fr auto;
+        }
+        @media (min-width: 640px) {
+          .challenge-row {
+            grid-template-columns: 2.5rem 1fr auto auto;
+          }
+        }
+        .challenge-row-link:hover {
+          background: #0d0d0d;
+          padding-left: 1.75rem;
+        }
+        @media (min-width: 640px) {
+          .challenge-row-link:hover {
+            padding-left: 1.75rem;
+          }
+        }
+      `}</style>
       {/* Header */}
       <div
-        className="relative px-8 lg:px-16 pt-28 pb-16"
+        className="relative px-4 sm:px-8 lg:px-16 pt-28 pb-16"
         style={{ borderBottom: "1px solid #1a1a1a" }}
       >
         <div
@@ -58,7 +72,7 @@ export default function Challenges() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-12">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-12">
           <div className="relative flex-1 min-w-48 max-w-xs">
@@ -97,11 +111,15 @@ export default function Challenges() {
         {/* Table header */}
         {!isLoading && filtered.length > 0 && (
           <div
-            className="grid items-center gap-8 px-6 py-3 mb-px"
-            style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #1a1a1a" }}
+            className="grid items-center gap-4 sm:gap-8 px-4 sm:px-6 py-3 mb-px challenge-row"
+            style={{ borderBottom: "1px solid #1a1a1a" }}
           >
             {["LVL", "CHALLENGE", "TOPIC", "XP"].map(h => (
-              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>
+              <div
+                key={h}
+                className={`font-mono text-xs tracking-widest uppercase${h === "TOPIC" ? " hidden sm:block" : ""}`}
+                style={{ color: "#c4c4c4" }}
+              >
                 {h}
               </div>
             ))}
@@ -127,20 +145,12 @@ export default function Challenges() {
                 key={challenge.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.025, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ delay: Math.min(i, 12) * 0.025, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Link to={createPageUrl(`ChallengeDetail?id=${challenge.id}`)}>
                   <div
-                    className="grid items-center gap-8 px-6 py-5 transition-all duration-200 group"
-                    style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #111" }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = "#0d0d0d";
-                      e.currentTarget.style.paddingLeft = "1.75rem";
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = "";
-                      e.currentTarget.style.paddingLeft = "1.5rem";
-                    }}
+                    className="challenge-row challenge-row-link grid items-center gap-4 sm:gap-8 px-4 sm:px-6 py-5 transition-all duration-200 group"
+                    style={{ borderBottom: "1px solid #111" }}
                   >
                     {/* Level */}
                     <div
@@ -169,12 +179,12 @@ export default function Challenges() {
                     </div>
 
                     {/* Topic */}
-                    <div>
+                    <div className="hidden sm:block">
                       <span
                         className="font-mono text-xs tracking-widest uppercase px-2.5 py-1"
                         style={{ color: "#d4d4d4", border: "1px solid #2a2a2a" }}
                       >
-                        {categoryLabels[challenge.topic] || challenge.topic || challenge.category}
+                        {CATEGORY_LABELS[challenge.topic] || challenge.topic || challenge.category}
                       </span>
                     </div>
 
