@@ -8,7 +8,7 @@ export default {
     estimated_time: 45,
     lessons_count: 8,
     tags: ["cost", "tokens", "pricing", "budgeting", "fundamentals"],
-    order: 21,
+    order: 7,
     cover_image: ""
   },
   lessons: [

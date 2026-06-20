@@ -8,7 +8,7 @@ export default {
     estimated_time: 55,
     lessons_count: 8,
     tags: ["agents", "tool-use", "react", "planning", "guardrails"],
-    order: 9,
+    order: 13,
     cover_image: ""
   },
   lessons: [

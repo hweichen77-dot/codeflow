@@ -8,7 +8,7 @@ export default {
     estimated_time: 240,
     lessons_count: 8,
     tags: ["embeddings", "vectors", "cosine-similarity", "semantic-search", "recommender"],
-    order: 6,
+    order: 16,
     cover_image: ""
   },
   lessons: [

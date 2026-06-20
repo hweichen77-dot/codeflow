@@ -8,7 +8,7 @@ export default {
     estimated_time: 50,
     lessons_count: 8,
     tags: ["multimodal", "vision", "images", "ocr", "generation"],
-    order: 11,
+    order: 15,
     cover_image: ""
   },
   lessons: [

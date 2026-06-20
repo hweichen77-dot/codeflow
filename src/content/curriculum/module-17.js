@@ -8,7 +8,7 @@ export default {
     estimated_time: 90,
     lessons_count: 8,
     tags: ["messages", "system-prompt", "roles", "conversation", "fundamentals"],
-    order: 17,
+    order: 3,
     cover_image: ""
   },
   lessons: [

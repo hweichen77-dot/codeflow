@@ -8,7 +8,7 @@ export default {
     estimated_time: 55,
     lessons_count: 8,
     tags: ["deployment", "observability", "evals", "cost", "reliability", "production"],
-    order: 16,
+    order: 22,
     cover_image: ""
   },
   lessons: [

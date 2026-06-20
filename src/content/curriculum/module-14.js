@@ -8,7 +8,7 @@ export default {
     estimated_time: 50,
     lessons_count: 8,
     tags: ["safety", "security", "prompt-injection", "moderation", "guardrails", "pii"],
-    order: 14,
+    order: 21,
     cover_image: ""
   },
   lessons: [

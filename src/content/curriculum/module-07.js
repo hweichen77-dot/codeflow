@@ -8,7 +8,7 @@ export default {
     estimated_time: 180,
     lessons_count: 8,
     tags: ["rag", "retrieval", "embeddings", "vector-store", "chunking", "anthropic-api"],
-    order: 7,
+    order: 17,
     cover_image: ""
   },
   lessons: [

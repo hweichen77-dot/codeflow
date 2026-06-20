@@ -8,7 +8,7 @@ export default {
     estimated_time: 120,
     lessons_count: 8,
     tags: ["computer-vision", "cnn", "image-classification", "multimodal", "claude-api"],
-    order: 5,
+    order: 14,
     cover_image: ""
   },
   lessons: [

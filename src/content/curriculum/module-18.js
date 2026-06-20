@@ -8,7 +8,7 @@ export default {
     estimated_time: 45,
     lessons_count: 8,
     tags: ["context-window", "tokens", "limits", "memory", "fundamentals"],
-    order: 18,
+    order: 4,
     cover_image: ""
   },
   lessons: [

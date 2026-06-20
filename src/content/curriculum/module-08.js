@@ -8,7 +8,7 @@ export default {
     estimated_time: 180,
     lessons_count: 8,
     tags: ["fine-tuning", "evals", "prompt-engineering", "testing", "claude-api"],
-    order: 8,
+    order: 19,
     cover_image: ""
   },
   lessons: [

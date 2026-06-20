@@ -8,7 +8,7 @@ export default {
     estimated_time: 55,
     lessons_count: 8,
     tags: ["vector-db", "ann", "retrieval", "hybrid-search", "reranking", "search"],
-    order: 12,
+    order: 18,
     cover_image: ""
   },
   lessons: [

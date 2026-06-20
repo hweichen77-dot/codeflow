@@ -8,7 +8,7 @@ export default {
     estimated_time: 45,
     lessons_count: 8,
     tags: ["response", "finish-reason", "usage", "stop-sequence", "fundamentals"],
-    order: 20,
+    order: 6,
     cover_image: ""
   },
   lessons: [
@@ -1117,47 +1117,31 @@ print(generate_with_stop(raw, "\\nQ:"))
         "Slice the string up to that index with full_output[:idx] to keep only what comes before.",
         "If find returns -1, the stop string never appeared, so return the whole output unchanged."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Earliest-Wins Stop Sequence Cutter",
-      challenge_description: "Apply a whole set of stop sequences to a generated buffer at once: find the one that fires earliest, slice the output there, and report whether the model stopped on a tripwire or just ran to the end.",
-      challenge_story: "You configured your API call with **several stop sequences** — a Q&A turn marker, a code-fence closer, a custom \`<<<END>>>\` sentinel — because any of them should end generation. The model streamed a raw buffer back to you; now you have to post-process it exactly like the API does: scan for **every** configured stop string and cut at whichever one appears **first** in the text. If none appears, the model never hit a tripwire and you'll treat it as having run to the length cap.",
-      challenge_statement: "You are given \`k\` stop sequences and one generated \`text\` buffer. In both the stop sequences and the text, the two-character escapes \`\\n\` and \`\\t\` represent a real newline and tab respectively — decode them before searching.\n\nFind, among all stop sequences, the one whose **first occurrence** in the text starts at the smallest index. If two stop sequences first appear at the same index, prefer the **shorter** one (it ends generation sooner). Keep only the text **before** that index.\n\n- If some stop sequence is found, the finish reason is \`stop_sequence\` and the kept text is everything before the match.\n- If no stop sequence appears anywhere, the finish reason is \`length\` and the kept text is the whole buffer.\n\nPrint three lines: the kept text (with real newlines/tabs re-escaped back to \`\\n\`/\`\\t\`), then \`FINISH <reason>\`, then \`KEPT <n>\` where \`n\` is the number of characters kept (counting a real newline/tab as one character).",
-      challenge_input_format: "The first line is the integer `k`. The next `k` lines are the stop sequences (one per line, escapes allowed). The line after that is the generated text buffer (escapes allowed).",
-      challenge_output_format: "Three lines: the kept text (escaped), `FINISH stop_sequence` or `FINISH length`, and `KEPT <n>`.",
+      challenge_description: "Cut a generated line at the first place any of several plain marker strings appears, and report whether a stop sequence fired or the text ran to the end.",
+      challenge_story: "You configured your API call with **several stop sequences** — a Q&A turn marker like \`Q:\`, a section divider like \`###\`, a custom \`<<<END>>>\` sentinel — because any of them should end generation. The model handed back a line of text; now you post-process it exactly like the API does: scan for **every** configured marker and cut the text at whichever one appears **first**. If none appears, the model never hit a tripwire, so you treat it as having run to the length cap.",
+      challenge_statement: "You are given \`k\` stop sequences (plain marker strings) and one generated \`text\` line. All of them are ordinary strings with no special escaping — a marker is matched literally.\n\nFind, among all stop sequences, the one whose **first occurrence** in the text starts at the smallest index. If two stop sequences first appear at the same index, prefer the **shorter** one (it ends generation sooner). Keep only the text **before** that index.\n\n- If some stop sequence is found, the finish reason is \`stop_sequence\` and the kept text is everything before the match.\n- If no stop sequence appears anywhere, the finish reason is \`length\` and the kept text is the whole line.\n\nPrint three lines: the kept text, then \`FINISH <reason>\`, then \`KEPT <n>\` where \`n\` is the number of characters kept.",
+      challenge_input_format: "The first line is the integer `k`. The next `k` lines are the stop sequences (one per line). The line after that is the generated text.",
+      challenge_output_format: "Three lines: the kept text, `FINISH stop_sequence` or `FINISH length`, and `KEPT <n>`.",
       challenge_constraints: [
         "1 ≤ k ≤ 50",
-        "Each stop sequence is 1 to 50 characters after decoding and is non-empty.",
-        "The text buffer is 0 to 100000 characters after decoding.",
-        "Only `\\n` and `\\t` are escaped; all other characters are literal.",
+        "Each stop sequence is 1 to 50 characters and non-empty.",
+        "The text line is 0 to 100000 characters.",
+        "Markers are matched literally (no escape characters).",
         "Position ties are broken by the shorter stop sequence.",
       ],
       challenge_examples: [
-        { input: "2\n\\nQ:\nEND\nParis.\\nQ: next", output: "Paris.\nFINISH stop_sequence\nKEPT 6", explanation: "Decoded, the text is `Paris.<newline>Q: next`. The stop `<newline>Q:` first appears at index 6 (the literal `END` never appears), so everything before it — `Paris.` (6 chars) — is kept." },
-        { input: "1\n###\nplain text no marker", output: "plain text no marker\nFINISH length\nKEPT 20", explanation: "The stop sequence `###` never appears, so nothing is cut: the whole 20-character buffer is kept and the finish reason is `length`." },
+        { input: "2\nQ:\nEND\nParis. Q: next question", output: "Paris. \nFINISH stop_sequence\nKEPT 7", explanation: "`Q:` first appears at index 7 (the marker `END` never appears), so everything before it — `Paris. ` (7 chars, including the trailing space) — is kept." },
+        { input: "1\n###\nplain text no marker", output: "plain text no marker\nFINISH length\nKEPT 20", explanation: "The stop sequence `###` never appears, so nothing is cut: the whole 20-character line is kept and the finish reason is `length`." },
       ],
-      challenge_notes: "Real APIs apply all your stop sequences simultaneously and cut at the earliest hit — that's why a too-common stop string (like a single space) can chop answers off almost immediately. Decoding \`\\n\`/\`\\t\` lets the test cases express multi-line buffers on a single input line. The shorter-on-tie rule keeps the cut deterministic when one stop sequence is a prefix of another at the same spot.",
+      challenge_notes: "Real APIs apply all your stop sequences simultaneously and cut at the earliest hit — that's why a too-common stop string (like a single space) can chop answers off almost immediately. The shorter-on-tie rule keeps the cut deterministic when one stop sequence is a prefix of another at the same spot.",
       challenge_hints: [
-        "Decode `\\n` and `\\t` in every stop sequence and in the text before you search.",
-        "Use `text.find(stop)`; it returns the first index or -1. Track the smallest non-negative index, breaking ties by shorter stop length.",
-        "Re-escape real newlines/tabs back to `\\n`/`\\t` when printing the kept text, but count characters on the decoded string.",
+        "Use `text.find(stop)`; it returns the first index of the marker or -1 if it never appears.",
+        "Track the smallest non-negative index across all markers, breaking ties by the shorter marker length.",
+        "Slice with `text[:best_idx]` to keep what comes before the earliest marker.",
       ],
       challenge_starter_code: `import sys
-
-def main():
-    data = sys.stdin.read().split("\\n")
-    k = int(data[0])
-    # TODO: read k stop sequences and the text, decode the \\\\n and \\\\t escapes, find the
-    #       earliest stop (shorter wins ties), slice the text, and print the kept text
-    #       plus FINISH and KEPT lines.
-
-main()
-`,
-      challenge_solution_code: `import sys
-
-def dec(s):
-    return s.replace("\\\\t", "\\t").replace("\\\\n", "\\n")
-
-def enc(s):
-    return s.replace("\\n", "\\\\n").replace("\\t", "\\\\t")
 
 def main():
     data = sys.stdin.read().split("\\n")
@@ -1165,8 +1149,24 @@ def main():
     k = int(data[idx]); idx += 1
     stops = []
     for _ in range(k):
-        stops.append(dec(data[idx])); idx += 1
-    text = dec(data[idx]) if idx < len(data) else ""
+        stops.append(data[idx]); idx += 1
+    text = data[idx] if idx < len(data) else ""
+    # TODO: find the earliest marker in text (shorter wins ties), slice the text
+    #       before it, and set reason to "stop_sequence" or "length".
+    #       Print the kept text, then "FINISH <reason>", then "KEPT <n>".
+
+main()
+`,
+      challenge_solution_code: `import sys
+
+def main():
+    data = sys.stdin.read().split("\\n")
+    idx = 0
+    k = int(data[idx]); idx += 1
+    stops = []
+    for _ in range(k):
+        stops.append(data[idx]); idx += 1
+    text = data[idx] if idx < len(data) else ""
 
     best_idx = -1
     best_len = None
@@ -1185,16 +1185,17 @@ def main():
         kept = text[:best_idx]
         reason = "stop_sequence"
 
-    print(enc(kept))
+    print(kept)
     print(f"FINISH {reason}")
     print(f"KEPT {len(kept)}")
 
 main()
 `,
       challenge_test_cases: [
-        { input: "2\n\\nQ:\nEND\nParis.\\nQ: next", expected_output: "Paris.\nFINISH stop_sequence\nKEPT 6", description: "Earliest stop sequence wins; text before it is kept." },
-        { input: "1\n###\nplain text no marker", expected_output: "plain text no marker\nFINISH length\nKEPT 20", description: "No stop appears, so the finish reason is length and nothing is cut." },
-        { input: "1\nX\nXhello", expected_output: "\nFINISH stop_sequence\nKEPT 0", description: "A stop at index 0 keeps an empty string." }
+        { input: "2\nQ:\nEND\nParis. Q: next question", expected_output: "Paris. \nFINISH stop_sequence\nKEPT 7", description: "Earliest marker wins; text before it is kept." },
+        { input: "1\n###\nplain text no marker", expected_output: "plain text no marker\nFINISH length\nKEPT 20", description: "No marker appears, so the finish reason is length and nothing is cut." },
+        { input: "1\nX\nXhello", expected_output: "\nFINISH stop_sequence\nKEPT 0", description: "A marker at index 0 keeps an empty string." },
+        { input: "2\nABC\nAB\nzzAByABC", expected_output: "zz\nFINISH stop_sequence\nKEPT 2", description: "Both markers first appear at index 2; the shorter AB wins the tie." }
       ]
     },
     {

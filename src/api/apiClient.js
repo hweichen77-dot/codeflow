@@ -16,10 +16,20 @@ const loadContent = () => {
   return _contentPromise
 }
 
+const DIFF_RANK = { beginner: 0, intermediate: 1, advanced: 2 }
+const diffRank = (x) => DIFF_RANK[x?.difficulty] ?? 0
+
 const sortList = (arr, sort) => {
   if (!sort || typeof sort !== 'string') return arr
   if (sort === 'order') {
-    return [...arr].sort((a, b) => (a.order || 0) - (b.order || 0))
+    // Primary key = difficulty tier so a learner never meets advanced material
+    // before finishing easier material even if `order` values drift; `order`
+    // breaks ties within a tier.
+    return [...arr].sort((a, b) => (diffRank(a) - diffRank(b)) || ((a.order || 0) - (b.order || 0)))
+  }
+  if (sort === 'difficulty') {
+    // Easiest-first, used by the Challenges catalog.
+    return [...arr].sort((a, b) => (diffRank(a) - diffRank(b)) || ((a.order || 0) - (b.order || 0)))
   }
   const desc = sort.startsWith('-')
   const field = desc ? sort.slice(1) : sort
