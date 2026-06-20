@@ -8,7 +8,7 @@ export default {
     estimated_time: 120,
     lessons_count: 8,
     tags: ["chatbot", "message-history", "context-window", "streaming", "persona", "anthropic"],
-    order: 4,
+    order: 12,
     cover_image: ""
   },
   lessons: [

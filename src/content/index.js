@@ -42,7 +42,10 @@ const XP_BY_DIFFICULTY = { beginner: 15, intermediate: 25, advanced: 40 }
 export const CHALLENGES = LESSONS.filter(l => l.challenge_title).map((l, i) => {
   // eslint-disable-next-line -- runtime fallback; project is always found in practice
   const project = /** @type {any} */ (PROJECTS.find(p => p.id === l.project_id) || {})
-  const difficulty = project.difficulty || 'beginner'
+  // Per-challenge difficulty is calibrated independently of the parent project:
+  // a project can be "advanced" while an individual challenge is "beginner".
+  // Fall back to the project's difficulty only when a challenge isn't labelled.
+  const difficulty = l.challenge_difficulty || project.difficulty || 'beginner'
   // Topic = the project's primary tag, falling back to its category.
   const topic = (project.tags && project.tags[0]) || project.category || 'ai'
   return {

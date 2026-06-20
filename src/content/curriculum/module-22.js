@@ -8,7 +8,7 @@ export default {
     estimated_time: 45,
     lessons_count: 8,
     tags: ["model-selection", "latency", "cost", "quality", "fundamentals"],
-    order: 22,
+    order: 8,
     cover_image: ""
   },
   lessons: [

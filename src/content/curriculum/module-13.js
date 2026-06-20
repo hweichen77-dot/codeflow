@@ -8,7 +8,7 @@ export default {
     estimated_time: 50,
     lessons_count: 8,
     tags: ["streaming", "latency", "caching", "throughput", "performance", "sse"],
-    order: 13,
+    order: 20,
     cover_image: ""
   },
   lessons: [

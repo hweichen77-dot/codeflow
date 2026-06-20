@@ -8,7 +8,7 @@ export default {
     estimated_time: 50,
     lessons_count: 8,
     tags: ["prompting", "chain-of-thought", "few-shot", "react", "reasoning"],
-    order: 15,
+    order: 11,
     cover_image: ""
   },
   lessons: [
@@ -1639,41 +1639,39 @@ kept branch: add first score: 7`,
         "The kept branch is the tuple max() returns; print its label and score."
       ],
       challenge_title: "Prune the Reasoning Tree",
-      challenge_description: "Run a beam search over a tree of reasoning nodes and report the best-scoring path to a leaf.",
-      challenge_story: "Your agent solves hard problems with **tree of thoughts**: each reasoning node branches into candidate next thoughts, and a scorer rates every node. To keep the search affordable you run a **beam search** — at each level you keep only the `B` highest-scoring partial paths and prune the rest. A path's strength is the sum of the scores of the nodes along it. When the search reaches a leaf (a node with no children), that path is a complete answer. Build the beam search that finds the strongest complete path so you can see what survives pruning.",
-      challenge_statement: "You're given a tree of `n` nodes numbered `1..n`; node `1` is the root. Each node has an integer score and a list of child node ids. A **path** runs from the root down to a leaf, and its strength is the **sum of the scores** of the nodes on it.\n\nRun a level-by-level beam search with beam width `B`:\n\n1. Start with the root as the only path.\n2. At each level, expand every live path by one node into all of its children, accumulating the path strength.\n3. Any path that reaches a **leaf** (a node with no children) is a finished candidate answer.\n4. Among all paths at the level, keep only the `B` with the **highest accumulated strength** to expand further. Break ties by **smaller current node id**.\n\nPrint the leaf id of the best finished path and its total strength. If several finished paths tie on strength, prefer the one ending at the **smaller leaf id**.",
-      challenge_input_format: "The first line has two integers `n B`. Each of the next `n` lines describes one node: `id score` followed by zero or more child ids, all space-separated. Node `1` is the root.",
-      challenge_output_format: "One line: `leaf_id total_strength`, separated by a single space.",
+      challenge_description: "Do one level of tree-of-thoughts pruning: from a set of scored candidate branches, keep the top B by score and report them.",
+      challenge_story: "Your agent reasons with **tree of thoughts**: from the current node it branches into several candidate next thoughts, a scorer rates each one, and you keep only the most promising few — the **beam** — and prune the rest. This is the single move at the heart of the pattern, exactly what the lesson walks through: branch out, score every candidate, keep the top `B`. Build that one prune step so you can see which branches survive and which dead ends get cut.",
+      challenge_statement: "You're given `n` candidate branches proposed from the current reasoning node. Each branch has an integer id and an integer score from the evaluator.\n\nKeep the `B` highest-scoring branches and prune the rest. If two branches tie on score, prefer the one with the **smaller id**. If `B` is larger than `n`, simply keep all `n` branches.\n\nPrint two lines: the ids of the kept branches in **ascending id order**, space-separated, and the **sum of the kept branches' scores**.",
+      challenge_input_format: "The first line has two integers `n B`. Each of the next `n` lines has a branch's id and its score, two space-separated integers.",
+      challenge_output_format: "Line 1: the kept branch ids in ascending order, space-separated. Line 2: the sum of the kept branches' scores.",
       challenge_constraints: [
         "1 ≤ n ≤ 100000",
         "1 ≤ B ≤ n",
+        "ids are distinct integers in [0, 1000000000]",
         "-1000000000 ≤ score ≤ 1000000000",
-        "The structure is a tree rooted at node 1; every non-root node has exactly one parent.",
+        "On a score tie, the branch with the smaller id is kept.",
       ],
       challenge_examples: [
-        { input: "5 2\n1 3 2 3\n2 5 4\n3 1 5\n4 8\n5 2", output: "4 16", explanation: "Root 1(3) branches to 2(acc 8) and 3(acc 4). Both fit the beam. From 2: leaf 4 -> 8+8=16. From 3: leaf 5 -> 4+2=6. The best finished path ends at leaf 4 with strength 16." },
-        { input: "5 1\n1 0 2 3\n2 10 4\n3 1 5\n4 1\n5 100", output: "4 11", explanation: "Beam width 1 greedily keeps only node 2 (acc 10) over node 3 (acc 1), pruning the branch that led to the high-scoring leaf 5. It reaches leaf 4 with strength 0+10+1=11 and never sees the better path." },
+        { input: "4 2\n1 3\n2 7\n3 1\n4 5", output: "2 4\n12", explanation: "Scores are 3, 7, 1, 5. The top 2 by score are branch 2 (7) and branch 4 (5). Kept ids in order: 2 4; their score sum is 7+5 = 12. Branches 1 and 3 are pruned." },
+        { input: "3 2\n10 9\n20 9\n30 4", output: "10 20\n18", explanation: "Branches 10 and 20 tie at score 9, beating branch 30 (4). Both are kept (smaller ids win the tie over 30). Sum is 9+9 = 18." },
       ],
-      challenge_notes: "Notice example 2: beam width 1 is greedy chain of thought, and it prunes the branch through node 3 that actually leads to the best leaf (strength 101 with a wider beam). Widen the beam and the search keeps that slower-starting branch alive. That trade-off — search quality versus cost — is the whole point of the beam width knob.",
+      challenge_notes: "This is one level of the propose-score-prune loop the lesson shows: you do not traverse deeper or accumulate path strength — you simply rank this node's candidates and keep the beam. A beam width of 1 would keep only the single best branch, which is exactly greedy chain of thought. Sort the candidates by score descending (ties by smaller id), slice the first B, then print their ids in ascending order.",
       challenge_hints: [
-        "Store each node's score and child list; node 1 is the root and a leaf is any node with an empty child list.",
-        "Carry the frontier as a list of (node_id, accumulated_strength); a path that hits a leaf updates your best answer.",
-        "After building the next level, sort by (-strength, node_id) and slice to the first B entries to prune.",
+        "Read each branch as an (id, score) pair into a list.",
+        "Sort with key `(-score, id)` so higher scores come first and ties favor the smaller id, then take the first B.",
+        "Sort the kept ids ascending for printing, and sum the kept scores separately.",
       ],
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
     n, B = map(int, data[0].split())
-    score = [0] * (n + 1)
-    children = [[] for _ in range(n + 1)]
+    branches = []
     for i in range(1, n + 1):
-        parts = data[i].split()
-        node = int(parts[0])
-        score[node] = int(parts[1])
-        children[node] = [int(x) for x in parts[2:]]
-    # TODO: run a beam search of width B from the root (node 1). Track the best
-    # finished path (root-to-leaf strength sum); print "leaf_id total_strength".
+        bid, score = data[i].split()
+        branches.append((int(bid), int(score)))
+    # TODO: keep the top B branches by score (ties -> smaller id).
+    # Print the kept ids in ascending order, then the sum of their scores.
 
 main()
 `,
@@ -1682,41 +1680,25 @@ main()
 def main():
     data = sys.stdin.read().split("\\n")
     n, B = map(int, data[0].split())
-    score = [0] * (n + 1)
-    children = [[] for _ in range(n + 1)]
+    branches = []
     for i in range(1, n + 1):
-        parts = data[i].split()
-        node = int(parts[0])
-        score[node] = int(parts[1])
-        children[node] = [int(x) for x in parts[2:]]
+        bid, score = data[i].split()
+        branches.append((int(bid), int(score)))
 
-    best_score = None
-    best_leaf = None
-    frontier = [(1, score[1])]
-    while frontier:
-        next_level = []
-        for node, acc in frontier:
-            kids = children[node]
-            if not kids:
-                if best_score is None or acc > best_score or (acc == best_score and node < best_leaf):
-                    best_score = acc
-                    best_leaf = node
-            else:
-                for k in kids:
-                    next_level.append((k, acc + score[k]))
-        if not next_level:
-            break
-        next_level.sort(key=lambda x: (-x[1], x[0]))
-        frontier = next_level[:B]
-    print(f"{best_leaf} {best_score}")
+    ranked = sorted(branches, key=lambda b: (-b[1], b[0]))
+    kept = ranked[:B]
+    kept_ids = sorted(b[0] for b in kept)
+    total = sum(b[1] for b in kept)
+    print(" ".join(str(i) for i in kept_ids))
+    print(total)
 
 main()
 `,
       challenge_test_cases: [
-        { input: "5 2\n1 3 2 3\n2 5 4\n3 1 5\n4 8\n5 2", expected_output: "4 16", description: "Beam keeps both branches; best leaf path is 1->2->4 with strength 16." },
-        { input: "5 1\n1 0 2 3\n2 10 4\n3 1 5\n4 1\n5 100", expected_output: "4 11", description: "Beam width 1 (greedy) prunes the branch leading to the high-scoring leaf 5." },
-        { input: "5 2\n1 0 2 3\n2 10 4\n3 1 5\n4 1\n5 100", expected_output: "5 101", description: "Width 2 keeps the slower-starting branch alive, finding leaf 5 with strength 101." },
-        { input: "1 3\n1 7", expected_output: "1 7", description: "A lone root is itself a leaf; its strength is just its own score." }
+        { input: "4 2\n1 3\n2 7\n3 1\n4 5", expected_output: "2 4\n12", description: "Keep the top 2 of four branches by score; prune the rest." },
+        { input: "3 2\n10 9\n20 9\n30 4", expected_output: "10 20\n18", description: "A score tie is resolved toward the smaller ids, both kept over the lower-scoring branch." },
+        { input: "1 3\n5 8", expected_output: "5\n8", description: "Beam wider than the candidate set keeps the only branch." },
+        { input: "5 3\n1 5\n2 5\n3 5\n4 2\n5 2", expected_output: "1 2 3\n15", description: "Three branches tie at the top score; the smallest ids survive the prune." }
       ]
     },
     {

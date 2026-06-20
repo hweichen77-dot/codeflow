@@ -8,7 +8,7 @@ export default {
     estimated_time: 45,
     lessons_count: 8,
     tags: ["temperature", "sampling", "top-p", "randomness", "fundamentals"],
-    order: 19,
+    order: 5,
     cover_image: ""
   },
   lessons: [

@@ -8,7 +8,7 @@ export default {
     estimated_time: 90,
     lessons_count: 8,
     tags: ["prompt-engineering", "llm", "claude", "system-prompts", "structured-output"],
-    order: 3,
+    order: 9,
     cover_image: ""
   },
   lessons: [
