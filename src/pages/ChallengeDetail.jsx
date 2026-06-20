@@ -20,6 +20,7 @@ export default function ChallengeDetail() {
   const [output, setOutput] = useState(null);
   const [showHints, setShowHints] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [showPrimer, setShowPrimer] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
   const [passed, setPassed] = useState(false);
 
@@ -136,6 +137,49 @@ export default function ChallengeDetail() {
       </div>
 
       <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8">
+        {/* One-time primer: how challenges work */}
+        <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
+          <button
+            onClick={() => setShowPrimer(!showPrimer)}
+            className="flex items-center justify-between w-full px-5 py-3 text-left"
+            style={{ borderBottom: showPrimer ? "1px solid #1a1a1a" : "none" }}
+          >
+            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#b8ff00" }}>
+              How this works
+            </span>
+            <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>
+              {showPrimer ? "—" : "+"}
+            </span>
+          </button>
+          <AnimatePresence initial={false}>
+            {showPrimer && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="px-5 py-4 space-y-2.5">
+                  {[
+                    "Your program reads its input from STDIN and prints answers to STDOUT.",
+                    "The grader runs your code against each test case and compares your printed output to the expected output.",
+                    "Start from the provided starter code — the input is already parsed for you. Just fill in the logic.",
+                  ].map((line, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#b8ff00" }}>
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <p className="font-display text-sm leading-relaxed" style={{ color: "#bbb", fontWeight: 400 }}>
+                        {line}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         {/* Full USACO/Codeforces-style problem statement (when authored) */}
         {challenge.statement && <ProblemStatement problem={challenge} />}
 

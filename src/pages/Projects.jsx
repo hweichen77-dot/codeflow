@@ -59,6 +59,31 @@ export default function Projects() {
     return matchSearch && matchCat;
   });
 
+  // Soft-gating signal: has the learner finished the beginner foundations?
+  // We treat foundations as "done" once they've completed most beginner-tier
+  // projects (or there are none to complete). Advanced/intermediate rows get a
+  // gentle nudge until then — never a hard block.
+  const beginnerProjects = projects.filter((p) => p.difficulty === "beginner");
+  const beginnerDone = beginnerProjects.filter((p) => getStatus(p) === "completed").length;
+  const foundationsFinished =
+    beginnerProjects.length === 0 ||
+    beginnerDone >= Math.ceil(beginnerProjects.length * 0.6);
+
+  // Group the (filtered) projects into category sections so foundations modules
+  // sit together. When a filter pill is active we still pass through every
+  // matching project; empty sections are skipped at render time.
+  const grouped = CATEGORY_ORDER.map((c) => ({
+    id: c,
+    label: CATEGORY_LABELS[c],
+    items: filtered.filter((p) => p.category === c),
+  }));
+  // Anything with an unknown/missing category still needs a home.
+  const uncategorized = filtered.filter((p) => !CATEGORY_ORDER.includes(p.category));
+  const sections = [
+    ...grouped,
+    ...(uncategorized.length ? [{ id: "_other", label: "More", items: uncategorized }] : []),
+  ].filter((s) => s.items.length > 0);
+
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
       {/* Page header */}
@@ -81,7 +106,7 @@ export default function Projects() {
             Choose your module.
           </h1>
           <p className="font-display text-base" style={{ color: "#bbb", fontWeight: 400 }}>
-            Each project is a chapter. Work through them in order, or jump to what interests you.
+            Each project is a chapter. New here? Start at the top and work down — each one builds on the last.
           </p>
         </div>
       </div>
@@ -154,122 +179,160 @@ export default function Projects() {
               ))}
             </div>
 
-            <div>
-              {filtered.map((project, i) => {
-                const status = getStatus(project);
-                const pct = getProgress(project);
+            {sections.map((section) => (
+              <div key={section.id} className="mb-12 last:mb-0">
+                {/* Section header */}
+                <div
+                  className="flex items-baseline gap-3 px-6 pt-8 pb-3"
+                  style={{ borderBottom: "1px solid #141414" }}
+                >
+                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#b8ff00" }}>
+                    §
+                  </span>
+                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>
+                    {section.label}
+                  </span>
+                  <span className="font-mono text-xs" style={{ color: "#555" }}>
+                    {section.items.length}
+                  </span>
+                </div>
 
-                return (
-                  <Link
-                    key={project.id}
-                    to={createPageUrl(`ProjectDetail?id=${project.id}`)}
-                    className="group block"
-                  >
-                    <div
-                      className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-6 transition-all duration-200"
-                      style={{ borderBottom: "1px solid #1a1a1a" }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = "#0d0d0d";
-                        e.currentTarget.style.paddingLeft = "1.75rem";
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = "";
-                        e.currentTarget.style.paddingLeft = "1.5rem";
-                      }}
-                    >
-                      {/* Level */}
-                      <div
-                        className="font-mono font-bold"
-                        style={{
-                          fontSize: "1.5rem",
-                          color: "#e8e8e8",
-                          letterSpacing: "-0.05em",
-                        }}
+                <div>
+                  {section.items.map((project) => {
+                    const status = getStatus(project);
+                    const pct = getProgress(project);
+                    // Soft-gate: nudge harder material before foundations are done.
+                    // Never blocks the link — just de-emphasizes + hints.
+                    const gated =
+                      !foundationsFinished &&
+                      status !== "completed" &&
+                      (project.difficulty === "advanced" || project.difficulty === "intermediate");
+
+                    return (
+                      <Link
+                        key={project.id}
+                        to={createPageUrl(`ProjectDetail?id=${project.id}`)}
+                        className="group block"
                       >
-                        {DIFFICULTY_LABEL[project.difficulty] || "00"}
-                      </div>
-
-                      {/* Title + meta */}
-                      <div>
                         <div
-                          className="font-display font-bold text-lg leading-snug mb-1 transition-colors duration-200 group-hover:text-white"
-                          style={{ color: "#e0e0e0", letterSpacing: "-0.02em" }}
+                          className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-6 transition-all duration-200"
+                          style={{ borderBottom: "1px solid #1a1a1a", opacity: gated ? 0.55 : 1 }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.background = "#0d0d0d";
+                            e.currentTarget.style.paddingLeft = "1.75rem";
+                            if (gated) e.currentTarget.style.opacity = "0.8";
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.background = "";
+                            e.currentTarget.style.paddingLeft = "1.5rem";
+                            if (gated) e.currentTarget.style.opacity = "0.55";
+                          }}
                         >
-                          {project.title}
-                        </div>
-                        {project.description && (
+                          {/* Level */}
                           <div
-                            className="font-display text-sm line-clamp-1"
-                            style={{ color: "#bbb", fontWeight: 400 }}
+                            className="font-mono font-bold"
+                            style={{
+                              fontSize: "1.5rem",
+                              color: "#e8e8e8",
+                              letterSpacing: "-0.05em",
+                            }}
                           >
-                            {project.description}
+                            {DIFFICULTY_LABEL[project.difficulty] || "00"}
                           </div>
-                        )}
-                        {status === "in_progress" && (
-                          <div className="flex items-center gap-3 mt-2">
-                            <div className="flex gap-1">
-                              {Array.from({ length: 10 }).map((_, di) => (
-                                <div
-                                  key={di}
-                                  className="w-1.5 h-1.5 transition-all duration-200"
-                                  style={{
-                                    background: di < Math.round(pct / 10) ? "#b8ff00" : "#1e1e1e",
-                                  }}
-                                />
-                              ))}
+
+                          {/* Title + meta */}
+                          <div>
+                            <div className="flex items-center gap-3 mb-1">
+                              <div
+                                className="font-display font-bold text-lg leading-snug transition-colors duration-200 group-hover:text-white"
+                                style={{ color: "#e0e0e0", letterSpacing: "-0.02em" }}
+                              >
+                                {project.title}
+                              </div>
+                              {gated && (
+                                <span
+                                  className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap"
+                                  style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}
+                                >
+                                  Finish Foundations first
+                                </span>
+                              )}
                             </div>
-                            <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>
-                              {pct}%
-                            </span>
+                            {project.description && (
+                              <div
+                                className="font-display text-sm line-clamp-1"
+                                style={{ color: "#bbb", fontWeight: 400 }}
+                              >
+                                {project.description}
+                              </div>
+                            )}
+                            {status === "in_progress" && (
+                              <div className="flex items-center gap-3 mt-2">
+                                <div className="flex gap-1">
+                                  {Array.from({ length: 10 }).map((_, di) => (
+                                    <div
+                                      key={di}
+                                      className="w-1.5 h-1.5 transition-all duration-200"
+                                      style={{
+                                        background: di < Math.round(pct / 10) ? "#b8ff00" : "#1e1e1e",
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>
+                                  {pct}%
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
 
-                      {/* Lessons count */}
-                      <div
-                        className="font-mono text-sm text-right"
-                        style={{ color: "#bbb" }}
-                      >
-                        {project.lessons_count ? `${project.lessons_count}` : "—"}
-                        {project.estimated_time ? (
-                          <div className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
-                            {project.estimated_time}min
+                          {/* Lessons count */}
+                          <div
+                            className="font-mono text-sm text-right"
+                            style={{ color: "#bbb" }}
+                          >
+                            {project.lessons_count ? `${project.lessons_count}` : "—"}
+                            {project.estimated_time ? (
+                              <div className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
+                                {project.estimated_time}min
+                              </div>
+                            ) : null}
                           </div>
-                        ) : null}
-                      </div>
 
-                      {/* Status */}
-                      <div>
-                        {status === "completed" && (
-                          <span
-                            className="font-mono text-xs tracking-widest uppercase px-3 py-1"
-                            style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
-                          >
-                            DONE
-                          </span>
-                        )}
-                        {status === "in_progress" && (
-                          <span
-                            className="font-mono text-xs tracking-widest uppercase px-3 py-1"
-                            style={{ color: "#d4d4d4", border: "1px solid #2a2a2a", background: "#0d0d0d" }}
-                          >
-                            ACTIVE
-                          </span>
-                        )}
-                        {status === "not_started" && (
-                          <span
-                            className="font-mono text-xs tracking-widest uppercase px-3 py-1"
-                            style={{ color: "#d4d4d4", border: "1px solid #2a2a2a" }}
-                          >
-                            START
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+                          {/* Status */}
+                          <div>
+                            {status === "completed" && (
+                              <span
+                                className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                                style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
+                              >
+                                DONE
+                              </span>
+                            )}
+                            {status === "in_progress" && (
+                              <span
+                                className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                                style={{ color: "#d4d4d4", border: "1px solid #2a2a2a", background: "#0d0d0d" }}
+                              >
+                                ACTIVE
+                              </span>
+                            )}
+                            {status === "not_started" && (
+                              <span
+                                className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                                style={{ color: "#d4d4d4", border: "1px solid #2a2a2a" }}
+                              >
+                                START
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
 
             {filtered.length === 0 && (
               <div className="text-center py-24">
