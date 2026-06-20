@@ -9,13 +9,19 @@ import { CATEGORY_LABELS } from "@/content/categories";
 const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };
 const DIFFICULTIES = ["all", "beginner", "intermediate", "advanced"];
 
+const SORTS = [
+  { key: "difficulty", label: "Easiest first" },
+  { key: "order", label: "Curriculum order" },
+];
+
 export default function Challenges() {
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState("all");
+  const [sort, setSort] = useState("difficulty");
 
   const { data: challenges = [], isLoading } = useQuery({
-    queryKey: ["challenges"],
-    queryFn: () => api.entities.Challenge.list("order"),
+    queryKey: ["challenges", sort],
+    queryFn: () => api.entities.Challenge.list(sort),
   });
 
   const filtered = useMemo(() => {
@@ -106,6 +112,24 @@ export default function Challenges() {
               </button>
             ))}
           </div>
+
+          {/* Sort toggle */}
+          <div className="flex gap-2 flex-wrap sm:ml-auto">
+            {SORTS.map(s => (
+              <button
+                key={s.key}
+                onClick={() => setSort(s.key)}
+                className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                style={{
+                  border: `1px solid ${sort === s.key ? "#b8ff00" : "#1e1e1e"}`,
+                  color: sort === s.key ? "#b8ff00" : "#c4c4c4",
+                  background: sort === s.key ? "#b8ff0010" : "transparent",
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Table header */}
@@ -162,6 +186,14 @@ export default function Challenges() {
 
                     {/* Title */}
                     <div>
+                      {challenge.project_title && (
+                        <div
+                          className="font-mono text-xs tracking-wide mb-1"
+                          style={{ color: "#7a7a7a" }}
+                        >
+                          {challenge.project_title}
+                        </div>
+                      )}
                       <div
                         className="font-display font-bold text-base leading-snug mb-0.5 transition-colors duration-150 group-hover:text-white"
                         style={{ color: "#ccc", letterSpacing: "-0.02em" }}

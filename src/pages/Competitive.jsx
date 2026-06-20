@@ -42,6 +42,18 @@ export default function Competitive() {
           <p className="font-display text-base" style={{ color: "#d4d4d4", fontWeight: 400 }}>
             USACO/Codeforces-style problems in C++ — each one builds an algorithm behind modern AI.
           </p>
+          <div
+            className="mt-6 flex items-start gap-3 px-4 py-3 max-w-2xl"
+            style={{ border: "1px solid #2a2a2a", background: "#b8ff0008", borderRadius: "4px" }}
+          >
+            <span className="font-mono text-xs tracking-widest uppercase mt-px" style={{ color: "#b8ff00" }}>
+              Optional · Advanced
+            </span>
+            <p className="font-display text-xs leading-relaxed" style={{ color: "#c4c4c4", fontWeight: 400 }}>
+              Not part of the beginner flow. These are challenging C++ algorithm problems for learners
+              already comfortable with programming — a deliberate switch from the Python AI track.
+            </p>
+          </div>
         </div>
       </div>
 

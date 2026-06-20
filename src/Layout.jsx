@@ -19,7 +19,7 @@ export default function Layout({ children, currentPageName }) {
     { label: "AI Track", page: "AITrack" },
     { label: "Projects", page: "Projects" },
     { label: "Challenges", page: "Challenges" },
-    { label: "Compete", page: "Competitive" },
+    { label: "Compete", page: "Competitive", badge: "Advanced" },
     { label: "Dashboard", page: "Dashboard" },
   ];
 
@@ -75,7 +75,8 @@ export default function Layout({ children, currentPageName }) {
               <Link
                 key={link.page}
                 to={createPageUrl(link.page)}
-                className="font-mono text-xs tracking-widest uppercase px-5 py-2 transition-all duration-150 relative"
+                aria-label={link.badge ? `${link.label} — ${link.badge}, optional advanced track` : undefined}
+                className="font-mono text-xs tracking-widest uppercase px-5 py-2 transition-all duration-150 relative inline-flex items-center gap-1.5"
                 style={{
                   color: isActive(link.page) ? "#b8ff00" : "#d4d4d4",
                 }}
@@ -93,6 +94,20 @@ export default function Layout({ children, currentPageName }) {
                   />
                 )}
                 {link.label}
+                {link.badge && (
+                  <span
+                    aria-hidden="true"
+                    className="font-mono px-1.5 py-0.5 leading-none rounded-sm"
+                    style={{
+                      fontSize: "8px",
+                      letterSpacing: "0.06em",
+                      color: "#8a8a8a",
+                      border: "1px solid #2a2a2a",
+                    }}
+                  >
+                    {link.badge}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -167,10 +182,25 @@ export default function Layout({ children, currentPageName }) {
                 key={link.page}
                 to={createPageUrl(link.page)}
                 onClick={() => setMobileOpen(false)}
-                className="block font-mono text-xs tracking-widest uppercase px-4 py-3 transition-colors"
+                aria-label={link.badge ? `${link.label} — ${link.badge}, optional advanced track` : undefined}
+                className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase px-4 py-3 transition-colors"
                 style={{ color: isActive(link.page) ? "#b8ff00" : "#d4d4d4" }}
               >
                 {link.label}
+                {link.badge && (
+                  <span
+                    aria-hidden="true"
+                    className="font-mono px-1.5 py-0.5 leading-none rounded-sm"
+                    style={{
+                      fontSize: "8px",
+                      letterSpacing: "0.06em",
+                      color: "#8a8a8a",
+                      border: "1px solid #2a2a2a",
+                    }}
+                  >
+                    {link.badge}
+                  </span>
+                )}
               </Link>
             ))}
             <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "0.75rem", marginTop: "0.75rem" }}>
