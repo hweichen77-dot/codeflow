@@ -228,6 +228,7 @@ large: smarts=9 speed=3 price=12`,
         "Inside the loop, props is a dict — read props['smarts'], props['speed'], props['price'].",
         "An f-string makes it easy to print the name and all three numbers on one line."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Tier Selector",
       challenge_description: "Pick the cheapest model tier that is still good enough and fast enough for a production endpoint — the exact decision a routing layer makes on every request.",
       challenge_story: "You run the inference platform behind a customer-support assistant. A provider exposes several **model tiers**, each with a known **quality** score, typical **latency** in milliseconds, and a **cost** in cents per call. Product set two hard rules for this endpoint: the reply must clear a **minimum quality** bar (anything dumber frustrates users) and must come back **within a latency budget** (anything slower breaks the live chat). Among every tier that satisfies *both* rules, finance wants the **cheapest** one — there's no reason to pay for a smarter model than the job needs. Build the selector.",
@@ -254,9 +255,14 @@ large: smarts=9 speed=3 price=12`,
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n, min_quality, max_latency = map(int, data[0].split())
-    # TODO: read the next n tiers, keep only those meeting the quality floor
-    #       and latency budget, and print the cheapest (name + cost) or "NO TIER".
+    idx = 0
+    n, min_quality, max_latency = map(int, data[idx].split()); idx += 1
+    tiers = []  # each: (name, quality, latency, cost)
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        tiers.append((parts[0], int(parts[1]), int(parts[2]), int(parts[3])))
+    # TODO: keep only tiers with quality >= min_quality AND latency <= max_latency,
+    #       then print the cheapest (name + cost), ties by smallest name, or "NO TIER".
 
 main()
 `,
@@ -505,6 +511,7 @@ cost gap (large - small): 11`,
         "large['quality'] - small['quality'] gives the quality gap.",
         "Do the same with the 'cost' key for the cost gap, then print both."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Trade-off Scorer",
       challenge_description: "Turn the fuzzy 'fast, cheap, good — pick two' debate into one number per model, then let the weights of the day decide which model your app ships with.",
       challenge_story: "Every model is a different point on the **quality / latency / cost** triangle, and which point is 'best' depends entirely on the app. A live voice assistant weighs latency heavily; an overnight batch job weighs cost; a legal-review tool weighs quality. Rather than argue, your team agreed on a **weighted score**: reward quality, penalize latency and cost, each by a configurable weight. Plug in the weights for the current use case and the score ranks every candidate model objectively. Build the scorer that the model-selection config calls.",
@@ -531,10 +538,16 @@ cost gap (large - small): 11`,
 
 def main():
     data = sys.stdin.read().split("\\n")
-    wq, wl, wc = map(int, data[0].split())
-    n = int(data[1])
-    # TODO: for each of the n models, print "name score" where
-    #       score = wq*quality - wl*latency - wc*cost, then print "best <name>".
+    idx = 0
+    wq, wl, wc = map(int, data[idx].split()); idx += 1
+    n = int(data[idx]); idx += 1
+    models = []  # each: (name, quality, latency, cost)
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        models.append((parts[0], int(parts[1]), int(parts[2]), int(parts[3])))
+    # TODO: for each model print "name score" where
+    #       score = wq*quality - wl*latency - wc*cost (in input order),
+    #       then print "best <name>" (highest score, ties by smallest name).
 
 main()
 `,
@@ -791,6 +804,7 @@ medium`,
         "Then check `if task_type in hard:` and return 'large'.",
         "If neither matches, fall through to `return 'medium'`."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Routing Engine",
       challenge_description: "Stand up the dispatcher that sends each incoming request to the right model tier, then report the per-tier load and the total bill it ran up — the heart of a cost-aware AI gateway.",
       challenge_story: "Your AI gateway sees a flood of mixed requests: quick classifications, data extractions, heavy reasoning, long syntheses, and plenty of in-between work. Sending everything to the big model is accurate but ruinously expensive; sending everything to the small one is cheap but dumb. So you triage. Tasks on the **easy list** go to the **small** tier, tasks on the **hard list** go to the **large** tier, and anything unrecognized falls to a sensible **medium** default. Each tier charges a fixed cost per call. Process the day's request log, route every request, and report the load on each tier plus the total cost — the numbers your dashboard and finance both need.",
@@ -818,10 +832,16 @@ medium`,
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    cs, cm, cl = map(int, data[idx].split())
-    idx += 1
-    # TODO: read the easy list, the hard list, then route each of the q requests.
-    #       Print each "task -> tier", then the per-tier counts, then "total <T>".
+    cs, cm, cl = map(int, data[idx].split()); idx += 1
+    e = int(data[idx]); idx += 1
+    easy = set(data[idx + i].strip() for i in range(e)); idx += e
+    h = int(data[idx]); idx += 1
+    hard = set(data[idx + i].strip() for i in range(h)); idx += h
+    q = int(data[idx]); idx += 1
+    requests = [data[idx + i].strip() for i in range(q)]; idx += q
+    # TODO: route each request — easy -> small, hard -> large, else medium.
+    #       Print each "task -> tier", then "small <a> medium <b> large <c>",
+    #       then "total <T>" (summed per-call cost cs/cm/cl).
 
 main()
 `,
@@ -1096,6 +1116,7 @@ large scored 2 / 2`,
         "len(eval_set) gives the total number of cases.",
         "Print with an f-string: f'{model_id} scored {correct} / {len(eval_set)}'."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "Eval Harness",
       challenge_description: "Run the blind taste test that decides which model ships: score every candidate against a graded answer key, then pick the winner on accuracy first and cost second — never on vibes.",
       challenge_story: "A new model tier just dropped and three people on Slack swear it's smarter. You don't switch on rumors — you switch on an **eval**. You keep a small set of test cases, each with a known correct answer, and you run every candidate model over all of them. The model that answers the most cases correctly wins. When two models are equally accurate, you take the **cheaper** one, because there's no reason to pay more for the same quality. Build the harness that grades the candidates and names the model to deploy.",
@@ -1123,11 +1144,23 @@ large scored 2 / 2`,
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    m = int(data[idx])
-    idx += 1
-    # TODO: read m models (name + cost), k eval cases (input + expected),
-    #       then each model's k answers. Print "<name>: score/k" per model,
-    #       then "winner: <name>" (highest score, then lowest cost, then name).
+    m = int(data[idx]); idx += 1
+    models = []  # each: (name, cost)
+    for _ in range(m):
+        parts = data[idx].split(); idx += 1
+        models.append((parts[0], int(parts[1])))
+    k = int(data[idx]); idx += 1
+    cases = []  # each: (input, expected)
+    for _ in range(k):
+        parts = data[idx].split(); idx += 1
+        cases.append((parts[0], parts[1]))
+    answers = {}  # name -> [k answers]
+    for _ in range(m):
+        parts = data[idx].split(); idx += 1
+        answers[parts[0]] = parts[1:1 + k]
+    # TODO: score each model (answers matching the expected answer per case).
+    #       Print "<name>: score/k" in input order, then "winner: <name>"
+    #       (highest score, then lowest cost, then smallest name).
 
 main()
 `,
@@ -1393,6 +1426,7 @@ trusted score: 75.0`,
         "Sum that filtered list and divide by its length for the average.",
         "Print the count of clean benchmarks and the resulting trusted score."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "Contamination-Aware Ranker",
       challenge_description: "Rank models the way a careful engineer reads a leaderboard: throw out the benchmarks that might be contaminated, average only what's trustworthy, and refuse to rank a model with nothing clean left.",
       challenge_story: "Your team is choosing a model and three people keep pasting leaderboard screenshots. You insist on reading them critically. Each model was run on several **benchmarks**, and for each benchmark you've flagged whether it's \`clean\` or \`contaminated\` (its questions may have leaked into training data, inflating the score). The rule: a model's **trustworthy score** is the average of its **clean** benchmark scores only — contaminated ones are dropped entirely. A model with **no** clean benchmarks can't be ranked at all. Build the ranker that turns a wall of leaderboard numbers into one honest score per model and names the best pick.",
@@ -1420,11 +1454,18 @@ trusted score: 75.0`,
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    n = int(data[idx].strip())
-    idx += 1
-    # TODO: for each model read its benchmark (score flag) pairs, average only
-    #       the clean scores (floor), print "<name> <score>" or "<name> NONE",
-    #       then print "best <name>" or "NO TRUSTED MODEL".
+    n = int(data[idx].strip()); idx += 1
+    models = []  # each: (name, [(score, flag), ...])
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name = parts[0]
+        b = int(parts[1])
+        rest = parts[2:]
+        benchmarks = [(int(rest[2 * i]), rest[2 * i + 1]) for i in range(b)]
+        models.append((name, benchmarks))
+    # TODO: for each model, average only its CLEAN scores (floor). Print
+    #       "<name> <avg>" or "<name> NONE" if it has none, then "best <name>"
+    #       (highest avg, ties by smallest name) or "NO TRUSTED MODEL".
 
 main()
 `,
@@ -1693,6 +1734,7 @@ cheaper: open`,
         "Open total is the fixed monthly cost plus per_call * volume.",
         "Compare the two totals and print 'open' or 'closed' for whichever is smaller."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Hosting Cost Crossover",
       challenge_description: "Run the build-vs-buy math at a given request volume: price every hosting option, closed and open, and name the cheapest one — the call a platform team makes before committing to a model.",
       challenge_story: "Your platform team is choosing how to serve a model, and the debate is the classic one: rent a **closed** hosted model and pay per call, or self-host an **open-weight** model with a fixed monthly server bill plus a small per-call compute cost. The answer depends entirely on your projected **monthly volume**. At low volume the hosted API wins because you skip the fixed cost; at high volume self-hosting wins because that fixed cost amortizes across millions of calls. You've gathered the pricing for every candidate option. Compute each option's total monthly cost at your volume and report the cheapest — the number finance needs to sign off.",
@@ -1720,13 +1762,17 @@ cheaper: open`,
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    volume = int(data[idx].strip())
-    idx += 1
-    n = int(data[idx].strip())
-    idx += 1
-    # TODO: for each option compute its total (closed: per_call*volume;
-    #       open: fixed + per_call*volume), print "<name> <total>", then
-    #       print "cheapest <name>" (lowest total, ties by smallest name).
+    volume = int(data[idx].strip()); idx += 1
+    n = int(data[idx].strip()); idx += 1
+    options = []  # each: (name, kind, nums) where kind is "closed" or "open"
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        name, kind = parts[0], parts[1]
+        nums = [int(x) for x in parts[2:]]
+        options.append((name, kind, nums))
+    # TODO: for each option compute its total — closed: per_call*volume;
+    #       open: fixed + per_call*volume — and print "<name> <total>".
+    #       Then print "cheapest <name>" (lowest total, ties by smallest name).
 
 main()
 `,
@@ -1993,6 +2039,7 @@ total cost: 24`,
         "If difficulty > threshold, add strong_cost and label it 'escalated'.",
         "Accumulate each request's cost into total, and print the running label per request."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Cascade Router",
       challenge_description: "Run a two-stage cascade over a request stream: try the cheap model on everything, escalate only the hard inputs to the strong model, and report the load split and total bill — then prove the cascade beat going all-strong.",
       challenge_story: "Your gateway fronts two models: a **cheap-fast** one and a **strong-expensive** one. Rather than route by task type upfront, you run a **cascade**: every request hits the cheap model first, and only requests whose **difficulty** exceeds an **escalation threshold** get re-run on the strong model. An escalated request pays for *both* calls; an easy one pays only the cheap call. Process the day's request stream, decide cheap-vs-escalate for each, and report how many escalated and what it all cost — plus what it *would* have cost to send everything straight to the strong model, so the team can see the savings.",
@@ -2020,13 +2067,15 @@ total cost: 24`,
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    cheap, strong, threshold = map(int, data[idx].split())
-    idx += 1
-    q = int(data[idx].strip())
-    idx += 1
-    # TODO: for each request, pay cheap first and add strong if difficulty > threshold.
-    #       Print "<name> cheap" or "<name> escalated", then the escalation count,
-    #       the cascade total, and the all-strong cost (strong * q).
+    cheap, strong, threshold = map(int, data[idx].split()); idx += 1
+    q = int(data[idx].strip()); idx += 1
+    requests = []  # each: (name, difficulty)
+    for _ in range(q):
+        parts = data[idx].split(); idx += 1
+        requests.append((parts[0], int(parts[1])))
+    # TODO: each request pays 'cheap' first; if difficulty > threshold it escalates
+    #       and also pays 'strong'. Print "<name> cheap" or "<name> escalated",
+    #       then "escalations <count>", "total <T>", and "allstrong <strong*q>".
 
 main()
 `,
@@ -2290,6 +2339,7 @@ print(generate("hello"))
         "Call generate('hello') once before changing anything.",
         "Reassign active = 'smart', then call generate('hello') again to see the swap."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Provider Registry",
       challenge_description: "Build the swap-ready core of a model gateway: a registry of providers behind one interface, where calls always hit the active provider and switching is a single command — the abstraction that makes everything else in this module usable.",
       challenge_story: "You're building the thin layer that keeps your app **swap-ready**. A **registry** holds every available provider and its per-call cost, and one **active** provider handles all traffic. Your app issues two kinds of operations: a **call** (run the active provider on a request, paying its cost) and a **switch** (change the active provider — the one-line swap that, in a real app, redirects the entire system). If someone tries to switch to a provider that isn't registered, you reject it and keep the current one. Process the operation log, report each step, and total the bill — proving the interface let you swap models mid-stream without touching call logic.",
@@ -2317,11 +2367,17 @@ print(generate("hello"))
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
-    p = int(data[idx].strip())
-    idx += 1
-    # TODO: read p providers (name + cost), the default active provider, then
-    #       process each operation: "call" pays the active cost; "switch <name>"
-    #       changes active if registered else prints "unknown <name>".
+    p = int(data[idx].strip()); idx += 1
+    cost_of = {}  # provider name -> cost
+    for _ in range(p):
+        parts = data[idx].split(); idx += 1
+        cost_of[parts[0]] = int(parts[1])
+    active = data[idx].strip(); idx += 1
+    n = int(data[idx].strip()); idx += 1
+    ops = [data[idx + i].split() for i in range(n)]; idx += n
+    # TODO: process each op — "call" pays the active provider's cost and prints
+    #       "call <active> <cost>"; "switch <name>" sets active if registered
+    #       (print "switched to <name>") else prints "unknown <name>".
     #       Finally print "calls <count>" and "total <T>".
 
 main()

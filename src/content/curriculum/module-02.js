@@ -237,12 +237,16 @@ Response: what comes back`,
         "Loop over the next `n` lines; the first whitespace-separated token is the direction tag.",
         "Keep two counters; print `request R` then `response S` on separate lines.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 data = sys.stdin.read().split("\\n")
 n = int(data[0])
-# TODO: loop over the next n lines, count SEND vs RECV,
-# then print "request R" and "response S".
+entries = [data[i].strip() for i in range(1, n + 1)]
+
+# Each entry starts with a direction tag: "SEND" (request) or "RECV" (response).
+# TODO: count how many entries are SEND vs RECV, then print
+#       "request R" and "response S" on separate lines.
 `,
       challenge_solution_code: `import sys
 
@@ -529,12 +533,16 @@ Ada`,
         "Add up `len(m[\"content\"])` across all messages, then `math.ceil(total / 4)`.",
         "Print with `json.dumps(out, separators=(\",\", \":\"), sort_keys=True)` so the format is exact.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys, json, math
 
 data = json.load(sys.stdin)
-messages = data["messages"]
-# TODO: compute total content chars -> tokens (ceil chars/4),
-# count user turns, and print compact sorted JSON.
+messages = data["messages"]  # list of {"role": ..., "content": ...}
+
+# TODO: sum len(m["content"]) across messages -> tokens = ceil(total / 4);
+#       count messages whose role == "user" as user_turns; then print
+#       json.dumps({"tokens": tokens, "user_turns": user_turns},
+#                  separators=(",", ":"), sort_keys=True).
 `,
       challenge_solution_code: `import sys, json, math
 
@@ -812,14 +820,19 @@ else:
         "For each arrival `t`, filter your accepted list to keep only times `> t - 60`.",
         "If `len(accepted) < limit`, append `t` and count a 200; else count a 429.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 lines = sys.stdin.read().split("\\n")
 limit = int(lines[0])
 n = int(lines[1])
 arrivals = list(map(int, lines[2].split())) if n > 0 else []
-# TODO: slide a 60-second window of accepted requests,
-# count 200s and 429s, then print "200 A" and "429 B".
+
+# 'arrivals' are non-decreasing second timestamps; 'limit' accepted requests
+# are allowed per rolling 60-second window.
+# TODO: for each arrival t, drop accepted times x with x <= t - 60; if fewer
+#       than 'limit' remain, accept (record t, count a 200) else throttle (429).
+#       Print "200 A" then "429 B".
 `,
       challenge_solution_code: `import sys
 
@@ -1119,13 +1132,15 @@ Hello! It's great to meet you.`,
         "Fail fast: `n == 0` is invalid, and `roles[0] != \"user\"` is invalid.",
         "Loop from index 1 and check `roles[i] == roles[i - 1]` — if so, it's not alternating.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 lines = sys.stdin.read().split("\\n")
 n = int(lines[0])
 roles = [lines[i].strip() for i in range(1, n + 1)]
-# TODO: print "valid" if non-empty, starts with user, and strictly
-# alternates roles; otherwise print "invalid".
+
+# TODO: the conversation is valid only if it is non-empty (n > 0), roles[0]
+#       == "user", and no two adjacent roles are equal. Print "valid" or "invalid".
 `,
       challenge_solution_code: `import sys
 
@@ -1414,14 +1429,32 @@ body keys: model, max_tokens, messages`,
         "Build a dict of headers, then check `\"x-api-key\" in headers` and `headers.get(\"content-type\") == \"application/json\"`.",
         "Put the body field names in a set and confirm both `\"model\"` and `\"messages\"` are present.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 lines = sys.stdin.read().split("\\n")
 idx = 0
 method, path = lines[idx].split()
 idx += 1
-# TODO: read headers and body fields, then validate endpoint -> headers -> body
-# and print the first failing status (404 / 401 / 400) or 200 if all pass.
+
+h = int(lines[idx]); idx += 1
+headers = {}
+for _ in range(h):
+    name, value = lines[idx].split(" ", 1)
+    headers[name] = value
+    idx += 1
+
+b = int(lines[idx]); idx += 1
+fields = set()
+for _ in range(b):
+    fields.add(lines[idx].strip())
+    idx += 1
+
+# TODO: validate in priority order and print the FIRST failing status, else 200:
+#   1. endpoint: method == "POST" and path == "/v1/messages", else "404"
+#   2. headers: "x-api-key" in headers and headers.get("content-type") ==
+#      "application/json", else "401"
+#   3. body: "model" in fields and "messages" in fields, else "400"
 `,
       challenge_solution_code: `import sys
 
@@ -1726,12 +1759,18 @@ stop_reason: end_turn`,
         "Add `obj[\"usage\"][\"input_tokens\"] + obj[\"usage\"][\"output_tokens\"]` to a running total.",
         "Increment a truncated counter only when `obj[\"stop_reason\"] == \"max_tokens\"`.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys, json
 
 lines = sys.stdin.read().split("\\n")
 n = int(lines[0])
-# TODO: parse each of the next n JSON responses, sum input+output tokens,
-# count stop_reason == "max_tokens", then print "total T" and "truncated C".
+responses = [json.loads(lines[i]) for i in range(1, n + 1)]
+
+# Each response has a "usage" object with "input_tokens" and "output_tokens",
+# and a "stop_reason" string.
+# TODO: sum input_tokens + output_tokens across all responses into 'total';
+#       count responses where stop_reason == "max_tokens" into 'truncated';
+#       print "total T" then "truncated C".
 `,
       challenge_solution_code: `import sys, json
 
@@ -2018,14 +2057,19 @@ for code in [200, 401, 429, 500, 400]:
         "Before each retry (the k-th, 1-indexed), add `2 ** (k - 1)` to the total wait.",
         "Stop immediately on 200 (SUCCESS), on 400/401 (FAIL, no extra wait), or when retries run out (FAIL).",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 lines = sys.stdin.read().split("\\n")
 max_retries = int(lines[0])
 m = int(lines[1])
 outcomes = list(map(int, lines[2].split()))
-# TODO: simulate the backoff policy. 200 -> SUCCESS, 400/401 -> fatal FAIL,
-# 429/500/503 -> wait 2^(k-1)s then retry up to max_retries. Print result + total wait.
+
+# 'outcomes' are the status codes successive attempts return, in order.
+# TODO: walk the outcomes. 200 -> SUCCESS (stop). 400/401 -> FAIL immediately
+#       (no extra wait). 429/500/503 -> if retries remain, add 2^(k-1) to the
+#       wait for the k-th retry and try again, else FAIL. Print SUCCESS/FAIL
+#       then "waited W".
 `,
       challenge_solution_code: `import sys
 
@@ -2321,14 +2365,17 @@ print("key is set:", api_key is not None)
         "A line leaks when `\"sk-ant-\" in line` AND `\"os.environ\" not in line` AND `\".env.example\" not in line`.",
         "Track a boolean for whether any leak was seen; print BLOCKED if it's true, else CLEAN.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 lines = sys.stdin.read().split("\\n")
 n = int(lines[0])
 content = lines[1:1 + n]
-# TODO: for each line print "<num> LEAK" or "<num> OK"; a leak is a line with
-# "sk-ant-" that is not a safe reference (os.environ / .env.example).
-# Finally print "BLOCKED" if any leak, else "CLEAN".
+
+# TODO: for each line (1-based index) it LEAKs if "sk-ant-" in line AND
+#       "os.environ" not in line AND ".env.example" not in line; else OK.
+#       Print "<num> LEAK" or "<num> OK" per line, then "BLOCKED" if any leak
+#       else "CLEAN".
 `,
       challenge_solution_code: `import sys
 

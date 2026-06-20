@@ -224,6 +224,7 @@ total: $0.010500`,
         "input_cost uses input_price; output_cost uses output_price; total is their sum.",
         "Use an f-string with :.6f to print money to six decimal places."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "The Billing Meter",
       challenge_description: "Bill a batch of API calls per token, then flag the single most expensive call — the exact report your finance team needs before the first invoice lands.",
       challenge_story: "Your AI feature went live last night and the logs are already filling up. Finance wants two numbers before the billing cycle closes: **what the whole batch cost**, and **which single call was the most expensive** so the team can investigate runaway prompts. Each log line records a call's id, its input tokens (the prompt you sent) and its output tokens (the model's reply). Input and output are billed at **different per-million rates**, and output is the pricey one. Build the meter that turns the raw log into those two numbers — exactly, to the cent and beyond.",
@@ -255,9 +256,15 @@ def main():
     n = int(data[idx]); idx += 1
     in_price = int(data[idx]); idx += 1
     out_price = int(data[idx]); idx += 1
-    # TODO: for each of the n calls, accumulate the total cost numerator
-    #       and track the most expensive call's id (smaller id wins ties).
-    #       Print "$<total to 6 decimals>" then the winning id.
+    calls = []  # each: (id, input_tokens, output_tokens)
+    for _ in range(n):
+        cid = int(data[idx]); idx += 1
+        in_tok = int(data[idx]); idx += 1
+        out_tok = int(data[idx]); idx += 1
+        calls.append((cid, in_tok, out_tok))
+    # TODO: for each call, num = in_tok*in_price + out_tok*out_price.
+    #       Accumulate the total numerator and track the most expensive call's id
+    #       (smaller id wins ties). Print "$<total to 6 decimals>" then that id.
 
 main()
 `,
@@ -508,28 +515,29 @@ estimated cost: $0.001242`,
         "math.ceil(len(prompt) / 4) estimates input tokens, rounding partials up.",
         "Cost = est_input/1_000_000*input_price + est_output/1_000_000*output_price."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "The Pre-Flight Estimator",
-      challenge_description: "Estimate a batch of calls before you ship — turn raw prompt text into token counts, price the run, and count how many calls would blow a per-call budget cap.",
-      challenge_story: "Before your team ships a new AI endpoint, the rule is simple: **estimate the bill first**. You don't have the model's real tokenizer in your planning script, so you use the standard back-of-envelope rule — about **4 characters per token** — and round partial tokens **up**. Each planned call has a known prompt (you wrote it) and a hard cap on the reply length (you set it). Product also handed you a **per-call budget**: any single call estimated to cost *more* than the cap is a red flag worth reviewing before launch. Build the estimator that prices the whole batch and counts the red flags.",
-      challenge_statement: "You are given the per-million prices, a per-call budget, and a list of planned calls. For each call:\n\n1. Estimate its **input tokens** as `ceil(len(prompt) / 4)` (round partial tokens up).\n2. Its **output tokens** are exactly the given cap.\n3. Its estimated cost is `(input_tokens * input_price + output_tokens * output_price) / 1_000_000`.\n\nDo two things:\n\n1. Print the **total estimated cost** of the batch to exactly **6 decimal places**, prefixed with `$`.\n2. Print how many calls have an estimated cost **strictly greater than** the budget.",
-      challenge_input_format: "The first line has three integers: `n input_price output_price`.\n\nThe second line is the budget as a decimal dollar amount with 6 decimal places (e.g. `0.001000`).\n\nEach of the next `n` lines describes one call: the prompt text (which may contain spaces) followed by a single space and an integer — the output token cap. Split on the **last** space so prompt text stays intact.",
+      challenge_description: "Estimate a batch of calls before you ship — turn each prompt's character count into tokens, price the run with plain float math, and count how many calls would blow a per-call budget.",
+      challenge_story: "Before your team ships a new AI endpoint, the rule is simple: **estimate the bill first**. You don't have the model's real tokenizer in your planning script, so you use the standard back-of-envelope rule — about **4 characters per token** — and round partial tokens **up**. An upstream step already measured each planned prompt, so every call arrives as two clean numbers: the prompt's **character count** and the **output token cap** you set. Product also handed you a **per-call budget**: any single call estimated to cost *more* than the budget is a red flag worth reviewing before launch. Build the estimator that prices the whole batch and counts the red flags.",
+      challenge_statement: "You are given the per-million prices, a per-call budget, and a list of planned calls. For each call you get two integers: `chars` (the prompt's character count) and `out_cap` (the reply token cap). For each call:\n\n1. Estimate its **input tokens** as `ceil(chars / 4)` (round partial tokens up).\n2. Its **output tokens** are exactly `out_cap`.\n3. Its estimated cost is `(input_tokens * input_price + out_cap * output_price) / 1_000_000` dollars.\n\nDo two things:\n\n1. Print the **total estimated cost** of the batch, rounded to **6 decimal places** with `round(total, 6)` and shown via an f-string like `f\"${total:.6f}\"`.\n2. Print how many calls have an estimated cost **strictly greater than** the budget.",
+      challenge_input_format: "The first line has three integers: `n input_price output_price`.\n\nThe second line is the per-call budget as a decimal dollar amount (e.g. `0.005000`).\n\nEach of the next `n` lines has two integers: `chars out_cap` — the prompt's character count and the output token cap.",
       challenge_output_format: "Two lines. Line 1: `$` followed by the total estimated cost to exactly 6 decimal places. Line 2: the count of calls strictly over budget.",
       challenge_constraints: [
         "1 ≤ n ≤ 100000",
         "1 ≤ input_price, output_price ≤ 1000",
-        "0 ≤ output token cap ≤ 1000000",
-        "1 ≤ len(prompt) ≤ 1000; the prompt contains no leading/trailing spaces",
+        "0 ≤ out_cap ≤ 1000000",
+        "1 ≤ chars ≤ 1000",
         "0.000000 ≤ budget ≤ 1000.000000",
       ],
       challenge_examples: [
-        { input: "3 3 15\n0.001000\nWhat is the capital of France 50\nSummarize this very long document please now 200\nhi 10", output: "$0.003960\n1", explanation: "Prompts are 29, 44, 2 chars → 8, 11, 1 input tokens. Numerators: 8·3+50·15=774, 11·3+200·15=3033, 1·3+10·15=153 → total 3960 → $0.003960. Only call 2 ($0.003033) exceeds the $0.001 budget." },
-        { input: "2 3 15\n0.000000\nabcd 0\nabcdefgh 0", output: "$0.000009\n2", explanation: "1 and 2 input tokens, no output. Numerators 3 and 6 → total 9 → $0.000009. Both exceed a $0 budget." },
+        { input: "3 4 16\n0.002000\n40 100\n400 50\n8 200", output: "$0.006048\n1", explanation: "chars 40,400,8 → ceil/4 = 10,100,2 input tokens. Costs: (10·4+100·16)/1e6 = 0.001640, (100·4+50·16)/1e6 = 0.001200, (2·4+200·16)/1e6 = 0.003208. Total = 0.006048 → $0.006048. Only the third call (0.003208) exceeds the $0.002 budget, so the count is 1." },
+        { input: "2 4 0\n0.000000\n4 0\n8 0", output: "$0.000012\n2", explanation: "1 and 2 input tokens, no output. Costs 4/1e6 = 0.000004 and 8/1e6 = 0.000008 → total 0.000012. Both exceed a $0 budget." },
       ],
-      challenge_notes: "The 4-chars-per-token rule is a planning heuristic, not the real tokenizer — but it's accurate enough to catch budget blowups before you spend a cent. Rounding partial tokens **up** is the safe direction for an estimate: you'd rather over-predict the bill than be surprised by it. Keep the cost numerator as an integer and divide once at the end.",
+      challenge_notes: "The 4-chars-per-token rule is a planning heuristic, not the real tokenizer — but it's accurate enough to catch budget blowups before you spend a cent. Rounding partial tokens **up** with `math.ceil` is the safe direction for an estimate: you'd rather over-predict the bill than be surprised by it. Plain float math is fine here; round the final total to 6 decimals for a clean dollar figure.",
       challenge_hints: [
-        "Read the budget once as a Decimal so you can compare costs exactly without float rounding.",
-        "Split each call line with `rsplit(\" \", 1)` so a prompt containing spaces stays in one piece and the trailing integer comes off cleanly.",
-        "`math.ceil(len(prompt) / 4)` gives the estimated input tokens; compare each call's cost with `>` (strictly greater) against the budget.",
+        "Read the budget as a float so you can compare each call's cost against it.",
+        "Each line is already two integers — `chars, out_cap = map(int, line.split())` — no text to split off.",
+        "`math.ceil(chars / 4)` gives the estimated input tokens; compare each call's cost with `>` (strictly greater) against the budget, and print the total with `f\"${round(total, 6):.6f}\"`.",
       ],
       challenge_starter_code: `import sys
 import math
@@ -539,45 +547,40 @@ def main():
     idx = 0
     first = data[idx].split(); idx += 1
     n = int(first[0]); in_price = int(first[1]); out_price = int(first[2])
-    budget_line = data[idx].strip(); idx += 1
-    # TODO: for each of the n calls, estimate input tokens from the prompt length,
-    #       add output cap, accumulate total cost, and count calls over budget.
+    budget = float(data[idx].strip()); idx += 1
+    # TODO: for each of the n calls, read chars and out_cap, estimate input tokens
+    #       as ceil(chars / 4), accumulate total cost, and count calls over budget.
 
 main()
 `,
       challenge_solution_code: `import sys
 import math
-from decimal import Decimal, ROUND_HALF_UP
 
 def main():
     data = sys.stdin.read().split("\\n")
     idx = 0
     first = data[idx].split(); idx += 1
     n = int(first[0]); in_price = int(first[1]); out_price = int(first[2])
-    budget = Decimal(data[idx].strip()); idx += 1
-    total_num = 0
+    budget = float(data[idx].strip()); idx += 1
+    total = 0.0
     over_count = 0
     for _ in range(n):
-        parts = data[idx].rsplit(" ", 1); idx += 1
-        prompt_text = parts[0]
-        max_out = int(parts[1])
-        est_in = math.ceil(len(prompt_text) / 4)
-        num = est_in * in_price + max_out * out_price
-        total_num += num
-        cost = Decimal(num) / Decimal(1000000)
+        chars, out_cap = map(int, data[idx].split()); idx += 1
+        est_in = math.ceil(chars / 4)
+        cost = (est_in * in_price + out_cap * out_price) / 1_000_000
+        total += cost
         if cost > budget:
             over_count += 1
-    total = (Decimal(total_num) / Decimal(1000000)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
-    print(f"\${total}")
+    print(f"\${round(total, 6):.6f}")
     print(over_count)
 
 main()
 `,
       challenge_test_cases: [
-        { input: "3 3 15\n0.001000\nWhat is the capital of France 50\nSummarize this very long document please now 200\nhi 10", expected_output: "$0.003960\n1", description: "Batch estimate with one call over the per-call budget." },
-        { input: "2 3 15\n0.000000\nabcd 0\nabcdefgh 0", expected_output: "$0.000009\n2", description: "Zero output caps; both calls exceed a $0 budget." },
-        { input: "1 3 15\n1.000000\na 1", expected_output: "$0.000018\n0", description: "Single tiny call (1 input token, 1 output) well under a generous budget." },
-        { input: "1 1000 1000\n0.001000\nabcd 1", expected_output: "$0.002000\n1", description: "High prices push even a tiny call over budget: (1+1)·1000 = 2000 → $0.002000." }
+        { input: "3 4 16\n0.002000\n40 100\n400 50\n8 200", expected_output: "$0.006048\n1", description: "Batch estimate with one call over the per-call budget." },
+        { input: "2 4 0\n0.000000\n4 0\n8 0", expected_output: "$0.000012\n2", description: "Zero output caps; both calls exceed a $0 budget." },
+        { input: "1 4 16\n1.000000\n4 1", expected_output: "$0.000020\n0", description: "Single tiny call (1 input token, 1 output) well under a generous budget." },
+        { input: "1 1000 1000\n0.001000\n4 1", expected_output: "$0.002000\n1", description: "High prices push even a tiny call over budget: (1+1)*1000 = 2000 -> $0.002000." }
       ]
     },
     {
@@ -789,6 +792,7 @@ cumulative input tokens: 1500`,
         "Add history_tokens to total_input_tokens inside the loop.",
         "Print each turn's resend, then the cumulative total after the loop."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "The Stateless Transcript",
       challenge_description: "Replay a real chat session turn by turn, billing the whole transcript that gets resent every turn — then find the turn where the input bill peaked.",
       challenge_story: "The model is **stateless**: it remembers nothing between turns, so your chat app resends the **entire transcript** as input on every single turn to keep the conversation coherent. That means early messages get re-billed again and again as the session grows — the quiet way long chats blow up a budget. You're profiling a real session for the team. Each turn has a user message of some size and a model reply of some size, and there's a fixed **system prompt** prepended to the input every turn. Walk the session, total the input tokens billed across all turns, and pinpoint the turn where a single request's input was largest.",
@@ -818,8 +822,13 @@ def main():
     idx = 0
     first = data[idx].split(); idx += 1
     t = int(first[0]); s = int(first[1])
-    # TODO: walk the t turns, accumulating the resent transcript size each turn.
-    #       Print the cumulative input tokens, then the peak turn (earliest wins ties).
+    turns = []  # each: (user_tokens, reply_tokens)
+    for _ in range(t):
+        u, r = map(int, data[idx].split()); idx += 1
+        turns.append((u, r))
+    # TODO: walk the turns; on turn k the input is s + all user tokens so far
+    #       + all replies from earlier turns. Sum these across all turns, and
+    #       track the peak-input turn (earliest wins ties). Print the total, then the peak turn.
 
 main()
 `,
@@ -1062,6 +1071,7 @@ saved input tokens: 700`,
         "trimmed_history = tokens_per_turn * keep_recent.",
         "saved is the difference between the full and trimmed history."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "The Optimization Audit",
       challenge_description: "Run a before/after audit on a chat feature: apply two cost levers — trim history to the last K turns and cap the reply length — then report the input tokens, output tokens, and dollars saved.",
       challenge_story: "Your chat feature works, but the bill is climbing, so you run an optimization audit before the next billing cycle. You have two safe levers that don't touch model quality: **trim the resent history** down to the last `K` turns (instead of resending the whole transcript every turn), and **cap each reply** at a fixed output length (instead of letting answers run as long as they want). You project the feature over `t` turns under both the baseline and the optimized plan, then hand the team three numbers: input tokens saved, output tokens saved, and dollars saved. Numbers that justify the change.",
@@ -1346,6 +1356,7 @@ total:  $0.021000`,
         "Each side is tokens / 1_000_000 * its price.",
         "total is input_cost + output_cost; print each with an f-string and :.6f."
       ],
+      challenge_difficulty: "advanced",
       challenge_title: "The Asymmetry Auditor",
       challenge_description: "Bill a batch of calls under asymmetric pricing, report the total, and find the call where the output side most dominated the cost - the runaway-answer suspects.",
       challenge_story: "Pricing is **asymmetric**: output tokens cost several times more than input tokens, so a call's bill is driven by *which side* its tokens fall on, not the raw total. Your team wants an audit that surfaces the calls where the **output meter** ran away. For each logged call you know its input and output tokens; input and output have separate per-million prices and output is the dear one. Bill the whole batch, then flag the single call whose **output cost made up the largest share of its own total** - the clearest sign of a model that rambled. Build the auditor.",
@@ -1376,8 +1387,16 @@ def main():
     n = int(data[idx]); idx += 1
     in_price = int(data[idx]); idx += 1
     out_price = int(data[idx]); idx += 1
-    # TODO: bill the batch and find the call whose output cost is the
-    #       largest share of its own total. Print "$<total>" then that id.
+    calls = []  # each: (id, input_tokens, output_tokens)
+    for _ in range(n):
+        cid = int(data[idx]); idx += 1
+        in_tok = int(data[idx]); idx += 1
+        out_tok = int(data[idx]); idx += 1
+        calls.append((cid, in_tok, out_tok))
+    # TODO: for each call, num = in_tok*in_price + out_tok*out_price and
+    #       out_cost = out_tok*out_price. Accumulate the total numerator, and find
+    #       the call whose output share (out_cost/num) is largest (smaller id wins ties;
+    #       compare shares by cross-multiplying to avoid floats). Print "$<total>" then that id.
 
 main()
 `,
@@ -1630,6 +1649,7 @@ saved:  $0.005400`,
         "cached cost charges prefix_tokens at cache_rate of the price, plus new_tokens at full price.",
         "saved is full minus cached; print all three with :.6f."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "The Cache Ledger",
       challenge_description: "Bill a batch both ways - full price and with a cached shared prefix - then report what caching saved across the whole run.",
       challenge_story: "Your bot prepends the same **cacheable prefix** of `p` tokens to every request, then adds the user's unique input. Prompt caching bills that prefix at a steep discount on repeats, so you want a ledger that proves the savings before you flip it on. For each logged call you know its **total input tokens** (prefix plus new text) and its output tokens. Compute the batch cost with no caching, the cost with the prefix cached at a given discounted rate, and the dollars saved. Output is billed identically either way - caching only touches the input prefix.",
@@ -1663,8 +1683,14 @@ def main():
     cache_pct = int(data[idx]); idx += 1
     out_price = int(data[idx]); idx += 1
     p = int(data[idx]); idx += 1
-    # TODO: accumulate full and cached numerators across the n calls,
-    #       then print full cost, cached cost, and dollars saved.
+    calls = []  # each: (in_tok, out_tok)
+    for _ in range(n):
+        in_tok = int(data[idx]); idx += 1
+        out_tok = int(data[idx]); idx += 1
+        calls.append((in_tok, out_tok))
+    # TODO: for each call, full input = in_tok*base; cached input bills the first p
+    #       tokens at cache_pct% of base and the rest at full base. Output (out_tok*out_price)
+    #       is the same both ways. Print full cost, cached cost, and dollars saved (6 decimals).
 
 main()
 `,
@@ -1920,6 +1946,7 @@ billed numerator: 4500`,
         "Discounted cost is cost * (1 - discount); full price is just cost.",
         "Use an if/else to pick the lane and the billed amount."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "The Overnight Router",
       challenge_description: "Route a mixed workload between the real-time and batch lanes by each job's patience, then report the real-time bill, the discounted batch bill, and how many jobs took the slow lane.",
       challenge_story: "You run a pipeline with a mix of jobs: some are user-facing and need an instant answer, others are offline bulk work that can wait. The **batch API** offers a flat discount but takes up to `batch_latency` minutes to return. Your router's rule is simple: any job whose **latency tolerance** is at least the batch turnaround goes to the cheap batch lane; everything else stays real-time at full price. Cost the whole workload under that routing, and also show what it *would* have cost if every job ran real-time - the number that justifies the batch lane.",
@@ -1953,8 +1980,15 @@ def main():
     out_price = int(data[idx]); idx += 1
     discount = int(data[idx]); idx += 1
     batch_latency = int(data[idx]); idx += 1
-    # TODO: for each job compute its numerator, route by tolerance,
-    #       and print all-real-time cost, routed cost, and batched count.
+    jobs = []  # each: (in_tok, out_tok, tol)
+    for _ in range(n):
+        in_tok = int(data[idx]); idx += 1
+        out_tok = int(data[idx]); idx += 1
+        tol = int(data[idx]); idx += 1
+        jobs.append((in_tok, out_tok, tol))
+    # TODO: per job num = in_tok*in_price + out_tok*out_price. A job with
+    #       tol >= batch_latency batches at (100-discount)% of num; else full price.
+    #       Print all-real-time cost, routed cost (6 decimals each), and the batched count.
 
 main()
 `,
@@ -2212,6 +2246,7 @@ spent so far: 9600`,
         "Fire the alert when the new spent is >= cap * alert_at (e.g. 0.80).",
         "Keep spend per user in a dictionary keyed by user id."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "The Budget Guard",
       challenge_description: "Enforce per-user budgets across a stream of calls: block the ones that would breach a user's cap, fire a one-time alert when a user crosses the warning line, and report total spend, blocks, and alerts.",
       challenge_story: "Your product gives every user a spending budget so one heavy account cannot run up the whole bill. Calls arrive in order; for each, you know the user and the call's cost. Before a call runs you check whether it would push that user **over their cap** - if so, the call is **blocked** and the user's spend is unchanged. Otherwise it runs and the cost is added. The moment a user's spend first reaches a **warning threshold** (a percent of the cap), you fire **one** alert for that user so the team can look before they ever hit the wall. Build the guard and report the damage it prevented.",
@@ -2243,8 +2278,15 @@ def main():
     cap = int(data[idx]); idx += 1
     alert_pct = int(data[idx]); idx += 1
     n = int(data[idx]); idx += 1
-    # TODO: process n calls in order, enforcing per-user caps and one-time alerts.
-    #       Print total spend ($ to 6 decimals), blocked count, and alert count.
+    calls = []  # each: (uid, cost)
+    for _ in range(n):
+        uid = int(data[idx]); idx += 1
+        cost = int(data[idx]); idx += 1
+        calls.append((uid, cost))
+    # TODO: process calls in order with a per-user running spend. Block a call when
+    #       cur + cost > cap (spend unchanged); else add it. Fire one alert the first
+    #       time a user reaches cap*alert_pct/100. Print total spend ($ 6 decimals),
+    #       blocked count, and alert count.
 
 main()
 `,

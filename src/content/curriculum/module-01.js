@@ -260,13 +260,32 @@ i am running a little late`,
         "To pick the best candidate, track the best score seen and, on a tie, keep the lexicographically smaller token.",
         "Stop the loop on three conditions: chosen token is `<END>`, the current token isn't in the table, or you've reached `max_len` tokens.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n, max_len = map(int, data[0].split())
-    # TODO: build the table from the next n lines, read the start token,
-    #       then greedily generate until <END>, a dead end, or max_len.
+    idx = 0
+    n, max_len = map(int, data[idx].split())
+    idx += 1
+    table = {}
+    for _ in range(n):
+        parts = data[idx].split()
+        idx += 1
+        context = parts[0]
+        candidates = []
+        i = 1
+        while i < len(parts):
+            candidates.append((parts[i], int(parts[i + 1])))
+            i += 2
+        table[context] = candidates
+    start = data[idx].strip()
+
+    # 'table' maps each context token -> list of (candidate_token, score).
+    # 'start' is the starting token; 'max_len' caps the total sequence length.
+    # TODO: greedily generate from 'start' — at each step pick the highest-score
+    #       candidate (ties: lexicographically smallest), stop on <END>, a dead
+    #       end, or max_len, then print the sequence space-separated.
 
 main()
 `,
@@ -532,11 +551,12 @@ estimated tokens: 8`,
         "cost = input/1_000_000*3 + output/1_000_000*15.",
         "Format with an f-string to 6 decimals and prefix a dollar sign.",
       ],
-      challenge_starter_code: `# Read input_tokens and output_tokens from one line.
-# Input: $3 per 1,000,000 tokens.  Output: $15 per 1,000,000 tokens.
-# Print the total cost as $X.XXXXXX (6 decimal places).
-line = input()
-# TODO: parse the two numbers, compute the cost, and print it.
+      challenge_difficulty: "beginner",
+      challenge_starter_code: `# Input: $3 per 1,000,000 tokens.  Output: $15 per 1,000,000 tokens.
+input_tokens, output_tokens = map(int, input().split())
+
+# TODO: compute the total cost (input rate + output rate) and print it as
+#       $X.XXXXXX with exactly 6 decimal places, e.g. f"\${cost:.6f}".
 `,
       challenge_solution_code: `input_tokens, output_tokens = map(int, input().split())
 
@@ -784,6 +804,7 @@ after: 0.5`,
         "Loop `steps` times, reassigning `w` with the update rule each iteration.",
         "Format the final value with `f\"{w:.4f}\"` so it always shows four decimals.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -792,7 +813,8 @@ def main():
     target = float(data[1])
     learning_rate = float(data[2])
     steps = int(data[3])
-    # TODO: apply the update rule 'steps' times, then print w to 4 decimals.
+    # TODO: apply the update rule w = w + learning_rate * (target - w) exactly
+    #       'steps' times, then print w formatted to 4 decimals, e.g. f"{w:.4f}".
 
 main()
 `,
@@ -1047,13 +1069,32 @@ The capital of Australia is Sydney. (confidence 0.95) -> HALLUCINATION`,
         "Split each claim line with `line.split(\" \", 1)` to separate the confidence from the (possibly multi-word) claim text.",
         "Check grounding first, then the `>=` threshold; count only the `TRUST` verdicts for the final line.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     lines = sys.stdin.read().split("\\n")
-    threshold = int(lines[0].strip())
-    # TODO: read the grounded facts, then each claim, and apply the gate:
-    #       grounded -> TRUST, else confidence >= threshold -> VERIFY, else REJECT.
+    idx = 0
+    threshold = int(lines[idx].strip())
+    idx += 1
+    g = int(lines[idx].strip())
+    idx += 1
+    grounded = set()
+    for _ in range(g):
+        grounded.add(lines[idx].strip())
+        idx += 1
+    c = int(lines[idx].strip())
+    idx += 1
+    claims = []  # list of (confidence:int, claim_text:str)
+    for _ in range(c):
+        conf_str, claim = lines[idx].split(" ", 1)
+        claims.append((int(conf_str), claim))
+        idx += 1
+
+    # 'grounded' is the set of exact trusted facts; 'threshold' is the confidence cutoff.
+    # TODO: for each (conf, claim) apply the gate in priority order:
+    #       claim in grounded -> TRUST, elif conf >= threshold -> VERIFY, else REJECT.
+    #       Print "<claim> -> <VERDICT>" per claim, then "TRUSTED <count>".
 
 main()
 `,
@@ -1327,13 +1368,23 @@ sum: 1.000`,
         "Slice the first k after sorting, then sum their logits to get S.",
         "Format each share with an f-string like f\"{tok} {logit/S*100:.2f}\".",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n, k = map(int, data[0].split())
-    # TODO: read n (token, logit) pairs, sort by logit desc then token asc,
-    #       keep the top k, and print each token's share of their summed logits.
+    idx = 0
+    n, k = map(int, data[idx].split())
+    idx += 1
+    tokens = []  # list of (token:str, logit:int)
+    for _ in range(n):
+        tok, logit = data[idx].split()
+        tokens.append((tok, int(logit)))
+        idx += 1
+
+    # TODO: sort tokens by logit descending (ties: token text ascending), keep the
+    #       top k, sum their logits as S, and print "<token> <pct>" where pct is
+    #       logit / S * 100 to 2 decimals, e.g. f"{tok} {logit/S*100:.2f}".
 
 main()
 `,
@@ -1586,13 +1637,24 @@ print(f"output: {output}")
         "Each share is count/total*100; format with f\"{share:.1f}\".",
         "Compare total <= budget for the final FITS / TOO BIG line.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n = int(data[0].strip())
-    # TODO: read n (name, count) layers and the budget, then print each layer's
-    #       share, the total, and FITS or TOO BIG.
+    idx = 0
+    n = int(data[idx].strip())
+    idx += 1
+    layers = []  # list of (name:str, params:int)
+    for _ in range(n):
+        name, params = data[idx].split()
+        layers.append((name, int(params)))
+        idx += 1
+    budget = int(data[idx].strip())
+
+    # TODO: compute the total params, print "<name> <share>" (share = params/total*100
+    #       to 1 decimal) per layer, then "TOTAL <sum>", then "FITS" if total <= budget
+    #       else "TOO BIG".
 
 main()
 `,
@@ -1857,13 +1919,25 @@ focus: sat`,
         "Each weight percentage is score/total*100; format with f\"{pct:.1f}\".",
         "Track the best weight as you go and only replace it on a strictly greater value, so the earliest token wins ties.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n = int(data[0].strip())
-    # TODO: read n (token, score) pairs, normalize scores into weights,
-    #       print each token's weight, then print FOCUS <top token>.
+    idx = 0
+    n = int(data[idx].strip())
+    idx += 1
+    tokens = []
+    scores = []
+    for _ in range(n):
+        parts = data[idx].split()
+        tokens.append(parts[0])
+        scores.append(int(parts[1]))
+        idx += 1
+
+    # TODO: let total = sum(scores); print "<token> <pct>" per token where pct is
+    #       score/total*100 to 1 decimal, then "FOCUS <token>" for the highest-weight
+    #       token (ties: the earliest one in input order).
 
 main()
 `,
@@ -2129,6 +2203,7 @@ for size in [1, 100, 10000]:
         "Compute each loss as base_loss * N ** (-alpha); Python handles the negative exponent directly.",
         "Compare loss <= threshold for EMERGENT, and keep a running count to print at the end.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
@@ -2136,8 +2211,11 @@ def main():
     base_loss, alpha = map(float, data[0].split())
     threshold = float(data[1].strip())
     q = int(data[2].strip())
-    # TODO: for each of the q sizes, compute loss = base_loss * N ** (-alpha),
-    #       print N, the loss to 4 decimals, and EMERGENT/BASIC; then the count.
+    sizes = [int(data[3 + i].strip()) for i in range(q)]
+
+    # TODO: for each N in sizes, compute loss = base_loss * N ** (-alpha); print
+    #       "<N> <loss> <STATUS>" (loss to 4 decimals, EMERGENT if loss <= threshold
+    #       else BASIC), then a final "EMERGENT <count>" of how many were EMERGENT.
 
 main()
 `,

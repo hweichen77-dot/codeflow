@@ -227,6 +227,7 @@ print(text)
         "After choices[0], reach into the message dict, then its content key.",
         "Chain the keys: resp[\"choices\"][0][\"message\"][\"content\"]."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "Best-Candidate Response Router",
       challenge_description: "Walk the choices array of every API response, throw out anything that didn't finish cleanly, and route each request to its highest-scoring usable answer.",
       challenge_story: "Your inference service is configured to return **several candidate answers per request** (the model samples \`n\` completions and your reranker scores each one). The raw payload comes back as a response object with a \`choices\` array — but not every choice is shippable. A choice whose \`finish_reason\` isn't \`stop\` either got truncated, got filtered, or otherwise can't be trusted, so it must be discarded before scoring. Your job: write the **router** that opens each response, ignores the unusable choices, and forwards the best remaining candidate to the user.",
@@ -526,6 +527,7 @@ cut off`,
         "Use an if/elif to branch on the string value.",
         "\"stop\" prints complete; \"length\" prints cut off."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "Continuation Retry Engine",
       challenge_description: "Simulate the retry loop that turns a truncated answer into a finished one: keep issuing continuation calls while finish_reason stays 'length', stop the moment it finishes, give up filtered or budget-blown requests, and tally the call count.",
       challenge_story: "When the model hits its output cap, the API hands back \`finish_reason == \"length\"\` — a half-written answer. Production systems don't surface that to the user; they fire a **continuation call** to resume generation, and repeat until the model emits a real \`stop\`. But continuations cost money, so you cap them at \`max_retries\`. Your team also learned to **bail immediately** on \`content_filter\` (retrying a blocked completion just wastes calls). Build the retry engine that replays a recorded sequence of finish_reasons for each request and reports the outcome.",
@@ -828,6 +830,7 @@ total tokens: 30`,
         "Read the three keys: prompt_tokens, completion_tokens, total_tokens.",
         "Print each on its own line with a label."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "Multi-Turn Budget Meter",
       challenge_description: "Bill a whole chatbot conversation turn by turn, watching prompt_tokens balloon as the history re-feeds, and pull the plug the instant the next turn would blow the budget.",
       challenge_story: "Your support bot re-sends the entire conversation as context on every turn, so the \`prompt_tokens\` in each \`usage\` block grows as the chat goes on — and finance handed you a hard cost ceiling per session. You need a **budget meter**: replay the conversation, compute each turn's cost from its usage, and stop accepting turns the moment the running total would cross the ceiling. Input tokens bill at **\$3 per 1,000,000**, output tokens at **\$15 per 1,000,000**.",
@@ -1415,6 +1418,7 @@ print(text)
         "Use delta.get(\"content\", \"\") so chunks with no text safely add nothing.",
         "Append (+=) each fragment to your running text string in order."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Stream Assembler",
       challenge_description: "Reassemble a streamed answer from its deltas in order, halt the moment the stream's end marker arrives, and report how many real text fragments you stitched together.",
       challenge_story: "Your chat UI consumes a model response as a **stream of deltas** — each line is the next fragment of text the model just produced. The stream ends with a special terminal marker, the literal token \`<END>\`, which carries no text and just announces completion. Your assembler must walk the deltas in order, glue the text together exactly as it arrives, and stop the instant it sees \`<END>\` (anything after it is not part of this answer). Then report the assembled text and how many text fragments you actually consumed.",
@@ -1690,6 +1694,7 @@ else:
         "Use msg.get(\"refusal\") so a missing key is treated as 'not a refusal'.",
         "If there's no refusal, fall back to printing msg.get(\"content\", \"\")."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Refusal Router",
       challenge_description: "Walk a batch of model replies, separate the genuine answers from the refusals, deliver the answers and hold back the refusals, and report the split.",
       challenge_story: "Your assistant fields a queue of user requests, but not every reply is shippable. Some come back as **refusals** — the model declined, usually with a polite 'I can't help with that.' Showing those to users as if they were answers makes the product look broken, so you add a **router**: deliver real answers untouched, and quietly hold back refusals for a fallback path. Each reply is tagged with whether it's a refusal, so your job is to branch correctly and tally the results.",
@@ -1980,6 +1985,7 @@ else:
         "The first call is msg[\"tool_calls\"][0]; its function name and arguments live under [\"function\"].",
         "On the text branch, fall back to msg.get(\"content\", \"\")."
       ],
+      challenge_difficulty: "beginner",
       challenge_title: "Tool-Call Dispatcher",
       challenge_description: "Scan a batch of model responses, send the plain-text ones straight to the user and dispatch the tool-call ones to your function runner, and report how the batch split.",
       challenge_story: "Your agent loop reads each model response and must decide what to do with it. Some responses are **plain text** — just show them. Others are **tool calls** — the model is asking your code to run a function (search, weather, email) and report back. Mixing these up breaks the agent: a tool call shown as text confuses the user, and a text answer sent to the function runner does nothing. Build the **dispatcher** that reads each response's kind, routes it correctly, and tallies the split so you can see how often the model reached for a tool.",
@@ -2256,6 +2262,7 @@ for t in tokens:
         "Remember more negative = less confident, so flag logprob < threshold.",
         "Print the token text and its logprob for each flagged item."
       ],
+      challenge_difficulty: "intermediate",
       challenge_title: "Confidence Auditor",
       challenge_description: "Audit a generated answer token by token using its logprobs: flag every token below a confidence threshold and pinpoint the single least-confident token where a guess most likely hides.",
       challenge_story: "Your team ships model answers into a high-stakes workflow, so 'it sounded confident' isn't good enough — you want the receipts. Each generated token comes with a **logprob**: closer to zero means the model was sure, deeply negative means it hesitated. You're building a **confidence auditor** that scans every token, flags the ones below a threshold for human review, and calls out the single shakiest token — the most likely spot for a hallucination. To keep the math exact, logprobs are given as integers in hundredths (so -250 means a logprob of -2.50).",

@@ -18,6 +18,7 @@ export default {
       order: 1,
       title: "What the Context Window Is",
       concept: "Context window",
+      challenge_difficulty: "beginner",
       xp_reward: 10,
       explanation: `Imagine answering a question while staring at a desk that can only hold a few sheets of paper at once. Anything you want to consider has to fit on that desk. Push a new sheet on and an old one slides off the edge. That desk is the **context window** — the model's entire field of view for a single request.
 
@@ -243,8 +244,10 @@ def main():
     data = sys.stdin.buffer.read().split()
     W = int(data[0]); R = int(data[1]); n = int(data[2])
     sizes = [int(x) for x in data[3:3 + n]]
-    # TODO: pack chunks in order, stopping at the first that overflows W - R.
-    #       Print the packed count, then the leftover budget.
+    budget = W - R
+    # TODO: walk sizes in order, adding each chunk only while the running total
+    #       stays <= budget; stop at the first overflow. Print the packed count,
+    #       then the leftover budget (budget minus the total packed).
 
 main()
 `,
@@ -284,6 +287,7 @@ main()
       order: 2,
       title: "What Counts Against It",
       concept: "Token budget",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `You type one short sentence — "What's the weather?" — and somehow the request is 1,500 tokens. Where did they come from? You didn't write 1,500 tokens. But the app did, on your behalf, and all of it lands on the same desk.
 
@@ -521,8 +525,12 @@ total used: 1830`,
 def main():
     data = sys.stdin.buffer.read().split()
     W = int(data[0]); S = int(data[1]); R = int(data[2]); T = int(data[3])
-    # turns start at index 4: pairs (u, a)
-    # TODO: simulate; print OVERFLOW + first bad turn, or OK + final leftover.
+    turns = [(int(data[4 + 2 * t]), int(data[5 + 2 * t])) for t in range(T)]
+    # turns[t] is the (u, a) pair for turn t+1, oldest first.
+    # TODO: keep a running history total; for each turn compute
+    #       used = S + history + u + R BEFORE adding u + a to history. Record the
+    #       first turn (1-indexed) where used > W. Print OVERFLOW + that turn, or
+    #       OK + the leftover (W - used) after the final turn if none overflow.
 
 main()
 `,
@@ -568,6 +576,7 @@ main()
       order: 3,
       title: "When You Run Out",
       concept: "Truncation",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `Halfway through a long chat, the model suddenly forgets your name — even though you told it ten minutes ago. It isn't being rude or buggy. Your name slid off the desk. This is what running out of context looks like, and it happens in one of two ways.
 
@@ -799,8 +808,10 @@ def main():
     data = sys.stdin.buffer.read().split()
     W = int(data[0]); T = int(data[1])
     sizes = [int(x) for x in data[2:2 + T]]
-    # TODO: stream turns through a deque, evicting oldest while over budget
-    #       (but never the newest). Print dropped, surviving, final total.
+    # TODO: stream the sizes through a deque with a running total. After each
+    #       append, while total > W and more than one turn remains, popleft the
+    #       oldest (count it dropped) and subtract it. Print dropped count,
+    #       surviving count, and the final total.
 
 main()
 `,
@@ -841,6 +852,7 @@ main()
       order: 4,
       title: "Managing Context",
       concept: "Context management",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `So the desk fills up and old sheets slide off. You're not helpless about it. The whole craft of building good AI features is deciding *what stays on the desk* — and there are three reliable moves for keeping the important stuff in view.
 
@@ -1072,8 +1084,9 @@ def main():
     R = int(data[3]); C = int(data[4]); T = int(data[5])
     turns = [int(x) for x in data[6:6 + T]]
     budget = W - S - M - R
-    # TODO: find the smallest k whose summarized history fits the budget,
-    #       or print IMPOSSIBLE.
+    # TODO: using suffix sums of turns, find the smallest k (0..T) where the
+    #       history size (C if k > 0 else 0) + sum(turns[k:]) <= budget. Print k,
+    #       that size, and budget - size; or print IMPOSSIBLE if none fit.
 
 main()
 `,
@@ -1123,6 +1136,7 @@ main()
       order: 5,
       title: "Counting Tokens Accurately",
       concept: "Counting",
+      challenge_difficulty: "beginner",
       xp_reward: 10,
       explanation: `You paste a document, the app says "12,000 tokens," and your own back-of-the-envelope math said 9,000. Neither of you is wrong, exactly. You estimated; the app *counted*. Knowing the difference between those two — and when each is good enough — is the whole skill here.
 
@@ -1363,9 +1377,11 @@ drift: 1`,
 def main():
     data = sys.stdin.buffer.read().split()
     n = int(data[0])
-    # pairs start at index 1: (chars, actual)
-    # TODO: for each sample, compute estimate = (chars + 3) // 4,
-    #       sum |estimate - actual|, and count estimate < actual.
+    samples = [(int(data[1 + 2 * i]), int(data[2 + 2 * i])) for i in range(n)]
+    # samples[i] is the (chars, actual) pair for one sample.
+    # TODO: for each (chars, actual), compute estimate = (chars + 3) // 4,
+    #       accumulate abs(estimate - actual) into a total, and count the
+    #       samples where estimate < actual. Print the total, then that count.
 
 main()
 `,
@@ -1402,6 +1418,7 @@ main()
       order: 6,
       title: "Context Window Sizes Across Models",
       concept: "Sizes",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `The first widely used chat models had an 8,000-token window — about a dozen pages. A few years later, some models advertise windows of a million tokens or more — a stack of novels. That is a hundred-fold jump, and it completely changes what a model can do in one request. But bigger is not automatically better, and knowing why is what separates picking a model from guessing at one.
 
@@ -1645,8 +1662,12 @@ def main():
         w = int(data[idx]); idx += 1
         c = int(data[idx]); idx += 1
         models.append((w, c))
-    # TODO: for each job pick the cheapest model with window >= t
-    #       (tie-break smaller window); sum cost, count rejections.
+    jobs = [int(data[idx + i]) for i in range(j)]; idx += j
+    # jobs[i] is the required token count t for one job.
+    # TODO: for each job t, scan models for those with window >= t and pick the
+    #       lowest cost, breaking ties by smaller window. Add the chosen cost to
+    #       the bill; if none qualify, count a rejection. Print total cost, then
+    #       the rejected count.
 
 main()
 `,
@@ -1695,6 +1716,7 @@ main()
       order: 7,
       title: "Lost in the Middle",
       concept: "Position",
+      challenge_difficulty: "advanced",
       xp_reward: 10,
       explanation: `Researchers ran a clean experiment: bury one true fact inside a long context and ask the model to find it. When the fact sat at the very start or the very end, the model nailed it. When the *same* fact sat in the middle, accuracy fell off a cliff. They named the effect **"lost in the middle,"** and once you know it, you'll arrange every long prompt differently.
 
@@ -1926,9 +1948,11 @@ def main():
     data = sys.stdin.buffer.read().split()
     n = int(data[0])
     items = [int(data[1 + i]) for i in range(n)]
-    # TODO: sort by importance desc (tie: original index), then fill from
-    #       both edges inward (end first, then start). Print arrangement
-    #       and the middle value at index n // 2.
+    # TODO: order the items by importance descending (break ties by smaller
+    #       original index). Build a result list, filling from both edges inward
+    #       with two pointers: place the most important at the last position,
+    #       the next at the first, then alternate end, start, end, start...
+    #       Print the result space-separated, then the value at index n // 2.
 
 main()
 `,
@@ -1970,6 +1994,7 @@ main()
       order: 8,
       title: "Long-Context Strategies",
       concept: "Strategy",
+      challenge_difficulty: "beginner",
       xp_reward: 10,
       explanation: `You have a 500-page manual and a model that holds maybe 200 pages. The question that decides your whole architecture is deceptively simple: do you cram, compress, or fetch? Each answer is a real strategy with real trade-offs, and picking wrong means slow, expensive, or wrong answers. This lesson ties together everything from the module into three named moves.
 
@@ -2211,8 +2236,16 @@ def main():
     idx = 0
     W = int(data[idx]); idx += 1
     q = int(data[idx]); idx += 1
-    # each task: an int t and a word need ('specific' or 'gist')
-    # TODO: route each task and tally STUFF / SUMMARIZE / RETRIEVE.
+    tasks = []
+    for _ in range(q):
+        t = int(data[idx]); idx += 1
+        need = data[idx].decode() if isinstance(data[idx], bytes) else data[idx]
+        idx += 1
+        tasks.append((t, need))
+    # tasks[i] is the (t, need) pair for one task; need is 'specific' or 'gist'.
+    # TODO: route each task with three counters: if t <= W -> STUFF; else if
+    #       need == 'specific' -> RETRIEVE; else -> SUMMARIZE. Print
+    #       "STUFF <count>", "SUMMARIZE <count>", "RETRIEVE <count>" in that order.
 
 main()
 `,

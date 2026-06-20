@@ -18,6 +18,7 @@ export default {
       order: 1,
       title: "Why the Same Prompt Gives Different Answers",
       concept: "Sampling",
+      challenge_difficulty: "beginner",
       xp_reward: 10,
       explanation: `Ask a model "write me a one-line slogan for a coffee shop" twice and you'll often get two different lines. Same prompt, same model, different answer. That isn't a bug or a hidden mood — it's the model doing exactly what it always does: rolling dice over its own predictions.
 
@@ -225,27 +226,26 @@ sampled: blue`,
         "It returns a list, so index [0] to get the single token.",
         "Keep random.seed(1) at the top so the output is reproducible."
       ],
-      challenge_title: "The Sampling Harness",
-      challenge_description: "Reproduce a model's sampling step deterministically: drive a fixed pseudo-random generator through thousands of weighted token draws and report the empirical counts.",
-      challenge_story: "Your inference team is debugging why a generation endpoint feels 'streaky' — sometimes a rare token shows up far more than its probability suggests. Before blaming the model, you build a **sampling harness**: a deterministic replay of the sampler so the same seed always produces the same draws. Real samplers pull from a hardware RNG, but for a reproducible test rig you wire in a classic **linear congruential generator (LCG)** so QA can compare runs byte-for-byte. Feed it a token distribution and a seed, draw many times, and tally the results — if the empirical counts drift from the weights, *that's* a bug worth chasing.",
-      challenge_statement: "You are given \`n\` tokens, each with an integer **weight**, a number of **draws**, and a **seed**. Simulate \`draws\` independent samples using this exact deterministic procedure:\n\n1. Let \`total\` be the sum of all weights. Start the generator at \`state = seed\`.\n2. For each draw, first advance the generator:\n\n   \`\`\`\n   state = (1664525 * state + 1013904223) mod 4294967296\n   \`\`\`\n\n   then compute \`r = state mod total\`.\n3. Walk the tokens **in input order**, accumulating their weights into a running prefix sum. The drawn token is the **first** one whose prefix sum is strictly greater than \`r\`.\n\nAfter all draws, print the final count for each token, in input order, separated by single spaces.",
-      challenge_input_format: "The first line has three integers: `n draws seed`.\n\nEach of the next `n` lines has a token (no spaces) and its integer `weight`.",
-      challenge_output_format: "One line: the `n` counts in input order, separated by single spaces. They sum to `draws`.",
+      challenge_title: "The Weighted Draw",
+      challenge_description: "Implement the core of weighted sampling: given a token distribution and a random number handed in by the sampler, walk the cumulative weights and report exactly which token that number selects.",
+      challenge_story: "Your inference team is reviewing how the sampler turns a random number into a chosen token. The random part already happened upstream — a number generator produced an integer \`r\` somewhere between 0 and the total weight. Your job is the **selection step**: given the model's next-token weights and that \`r\`, decide which token gets picked. This is the heart of a weighted draw, exactly like \`random.choices\` does internally: lay the tokens end to end in input order, each taking up a slice of the number line as wide as its weight, and see which slice \`r\` lands in. Get this right and the empirical counts will track the weights perfectly.",
+      challenge_statement: "You are given \`n\` tokens, each with an integer **weight**, and a single random integer \`r\` with \`0 <= r < total\`, where \`total\` is the sum of all weights. Perform one weighted draw:\n\n1. Walk the tokens **in input order**, accumulating their weights into a running prefix sum.\n2. The drawn token is the **first** one whose prefix sum is **strictly greater than** \`r\`.\n\nPrint that single token.\n\nThis is the weighted draw from Lesson 1 with the random number already handed in: each token owns a slice of the \`0 .. total-1\` number line as wide as its weight, and \`r\` lands in exactly one slice.",
+      challenge_input_format: "The first line has two integers: `n r` — the number of tokens and the random integer the sampler drew.\n\nEach of the next `n` lines has a token (no spaces) and its integer `weight`.",
+      challenge_output_format: "One line: the single token that `r` selects.",
       challenge_constraints: [
         "1 ≤ n ≤ 1000",
-        "0 ≤ draws ≤ 1000000",
-        "0 ≤ seed < 4294967296",
         "1 ≤ weight ≤ 1000000",
+        "0 ≤ r < total, where total is the sum of all weights",
       ],
       challenge_examples: [
-        { input: "3 1000 0\na 70\nb 20\nc 10", output: "703 200 97", explanation: "Total weight 100. Over 1000 deterministic LCG draws, `a` (70%) lands ~703 times, `c` (10%) only ~97 — close to the weights but not exact, which is the whole point of sampling." },
-        { input: "2 10000 42\nheads 1\ntails 1", output: "5000 5000", explanation: "Equal weights, and with seed 42 the LCG splits 10000 draws into an exact 5000/5000 here." },
+        { input: "3 5\na 70\nb 20\nc 10", output: "a", explanation: "Prefix sums are 70, 90, 100. `r = 5` is below 70, so it lands in `a`'s slice (0..69) — the first prefix sum strictly greater than 5 is 70." },
+        { input: "3 85\na 70\nb 20\nc 10", output: "b", explanation: "`b` owns the slice 70..89 (prefix sum 90). `r = 85` falls there: 70 is not > 85, but 90 is, so `b` is drawn." },
       ],
-      challenge_notes: "An LCG is the simplest reproducible RNG: one multiply, one add, one modulo. It's not cryptographically strong, but it's perfect for a *replayable* test harness — same seed, same stream, every machine. Note the half-open interval: `r` ranges over `0 .. total-1`, and the prefix-sum comparison is strictly greater-than, so every `r` maps to exactly one token.",
+      challenge_notes: "This is exactly the 'weighted draw' idea from the lesson — only the random number is given to you instead of rolled here. Each token occupies a contiguous slice of the number line whose width is its weight, and the strict greater-than comparison maps every valid `r` to exactly one token. Because `r` ranges over `0 .. total-1`, the last token's prefix sum equals `total`, so there is always a winner.",
       challenge_hints: [
-        "Build a prefix-sum (cumulative weight) array once, before the loop — recomputing it per draw is wasteful.",
-        "Advance `state` *before* using it each draw, exactly as written; the order matters for matching the expected output.",
-        "With `draws = 0` the loop never runs, so every count is 0.",
+        "Keep a running total of weights; after adding each token's weight, check whether the running total is strictly greater than `r`.",
+        "Return the first token whose running prefix sum exceeds `r`, then stop — don't keep scanning.",
+        "Since 0 <= r < total, you are guaranteed to find a token before running off the end of the list.",
       ],
       challenge_starter_code: `import sys
 
@@ -253,14 +253,13 @@ def main():
     data = sys.stdin.read().split()
     idx = 0
     n = int(data[idx]); idx += 1
-    draws = int(data[idx]); idx += 1
-    seed = int(data[idx]); idx += 1
+    r = int(data[idx]); idx += 1
     tokens, weights = [], []
     for _ in range(n):
         tokens.append(data[idx]); idx += 1
         weights.append(int(data[idx])); idx += 1
-    # TODO: build a prefix-sum table, run the LCG for each draw,
-    #       tally counts in input order, and print them space-separated.
+    # TODO: walk the prefix sum of weights in input order and print the
+    #       first token whose prefix sum is strictly greater than r.
 
 main()
 `,
@@ -270,39 +269,30 @@ def main():
     data = sys.stdin.read().split()
     idx = 0
     n = int(data[idx]); idx += 1
-    draws = int(data[idx]); idx += 1
-    seed = int(data[idx]); idx += 1
+    r = int(data[idx]); idx += 1
     tokens, weights = [], []
     for _ in range(n):
         tokens.append(data[idx]); idx += 1
         weights.append(int(data[idx])); idx += 1
 
-    total = sum(weights)
-    cum = []
     running = 0
-    for w in weights:
-        running += w
-        cum.append(running)
+    selected = tokens[-1]
+    for i in range(n):
+        running += weights[i]
+        if running > r:
+            selected = tokens[i]
+            break
 
-    counts = [0] * n
-    state = seed
-    for _ in range(draws):
-        state = (1664525 * state + 1013904223) % 4294967296
-        r = state % total
-        for i in range(n):
-            if r < cum[i]:
-                counts[i] += 1
-                break
-
-    print(" ".join(str(c) for c in counts))
+    print(selected)
 
 main()
 `,
       challenge_test_cases: [
-        { input: "3 1000 0\na 70\nb 20\nc 10", expected_output: "703 200 97", description: "Empirical counts track the 70/20/10 weights over 1000 seeded draws." },
-        { input: "2 10000 42\nheads 1\ntails 1", expected_output: "5000 5000", description: "Even split; seed 42 yields an exact 5000/5000 here." },
-        { input: "1 5 99\nonly 7", expected_output: "5", description: "Single token absorbs every draw regardless of seed." },
-        { input: "3 0 0\na 1\nb 1\nc 1", expected_output: "0 0 0", description: "Zero draws means every count stays 0." }
+        { input: "3 5\na 70\nb 20\nc 10", expected_output: "a", description: "r=5 lands in a's slice (0..69)." },
+        { input: "3 85\na 70\nb 20\nc 10", expected_output: "b", description: "r=85 lands in b's slice (70..89)." },
+        { input: "3 95\na 70\nb 20\nc 10", expected_output: "c", description: "r=95 lands in the last slice (90..99)." },
+        { input: "1 0\nonly 7", expected_output: "only", description: "A single token owns the whole number line, so any valid r picks it." },
+        { input: "4 9\nw 5\nx 5\ny 5\nz 5", expected_output: "x", description: "r=9 falls in x's slice (5..9); the first prefix sum over 9 is 10." }
       ]
     },
     {
@@ -311,6 +301,7 @@ main()
       order: 2,
       title: "Temperature: The Randomness Dial",
       concept: "Temperature",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `If sampling is drawing weighted tickets from a hat, **temperature** is the knob that decides how lopsided the hat is. Crank it down and the favorite gets almost every ticket — the model becomes focused and repeatable. Crank it up and the long shots get a real chance — the model gets wild and inventive.
 
@@ -560,10 +551,6 @@ flat T=2.0: [0.506, 0.307, 0.186]`,
       ],
       challenge_starter_code: `import sys, math
 
-def softmax_temp(logits, T):
-    # TODO: scale by T, subtract the max, exponentiate, normalize.
-    return []
-
 def main():
     data = sys.stdin.read().split("\\n")
     n, q = map(int, data[0].split())
@@ -572,8 +559,10 @@ def main():
         tok, lg = data[i].split()
         tokens.append(tok)
         logits.append(float(lg))
-    # TODO: for each of the q temperatures, print the winning token and its
-    #       probability to 4 decimals (lexicographic tie-break).
+    temps = [float(data[n + 1 + j].strip()) for j in range(q)]
+    # TODO: for each temperature in temps, build the temperature-scaled softmax
+    #       over logits, then print the highest-probability token and its
+    #       probability to 4 decimals (break ties by lexicographically smaller token).
 
 main()
 `,
@@ -624,6 +613,7 @@ main()
       order: 3,
       title: "Top-p and Top-k",
       concept: "Nucleus sampling",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `Temperature reshapes *how lopsided* the odds are. But there's a separate problem: even after reshaping, the model's hat still contains tens of thousands of junk tokens, each with a tiny sliver of probability. Add up enough slivers and there's a real chance of drawing garbage. **Top-k** and **top-p** fix this by throwing out the junk *before* the draw.
 
@@ -917,6 +907,7 @@ main()
       order: 4,
       title: "Choosing Settings for the Task",
       concept: "Settings strategy",
+      challenge_difficulty: "beginner",
       xp_reward: 10,
       explanation: `You now have three dials — temperature, top-p, top-k. The beginner mistake is fiddling with all of them at once. The pro move is simpler: **start from what the task needs, change one thing, and usually leave top-p alone.** This lesson is the cheat sheet.
 
@@ -1204,6 +1195,7 @@ main()
       order: 5,
       title: "The Softmax Behind Sampling",
       concept: "Softmax",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `You've used the word "probability" a lot — \`blue\` has 0.60, \`clear\` has 0.15. But the model never produces those numbers directly. Inside, it emits raw scores that can be any size: 8.2, -3.7, 0.0, even 50. The function that turns that messy pile of scores into clean probabilities that sum to 1 is **softmax**, and it's the exact spot where temperature does its work.
 
@@ -1448,10 +1440,6 @@ sum: 1.0`,
       ],
       challenge_starter_code: `import sys, math
 
-def softmax_temp(logits, T):
-    # TODO: scale by T, subtract the max, exponentiate, normalize.
-    return []
-
 def main():
     data = sys.stdin.read().split("\\n")
     n, q = map(int, data[0].split())
@@ -1460,8 +1448,12 @@ def main():
         tok, lg = data[i].split()
         tokens.append(tok)
         logits.append(float(lg))
-    # TODO: for each query (T, target token), print that token's probability
-    #       to 4 decimal places.
+    queries = []
+    for j in range(q):
+        parts = data[n + 1 + j].split()
+        queries.append((float(parts[0]), parts[1]))
+    # TODO: for each (T, target) query, build the temperature-scaled softmax
+    #       over logits and print the target token's probability to 4 decimals.
 
 main()
 `,
@@ -1509,6 +1501,7 @@ main()
       order: 6,
       title: "Greedy vs Sampled Decoding",
       concept: "Decoding",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `Once softmax hands you a probability distribution, you still have to commit to *one* token. There are two fundamentally different ways to do that, and the choice quietly decides whether your model is a calculator or a poet. **Greedy decoding** always grabs the single highest-probability token. **Sampled decoding** rolls the weighted dice. Same distribution, opposite philosophies.
 
@@ -1754,12 +1747,18 @@ def main():
     data = sys.stdin.read().split()
     idx = 0
     s = int(data[idx]); idx += 1
-    result = []
+    steps = []
     for _ in range(s):
         m = int(data[idx]); idx += 1
-        # TODO: read m (token, logit) pairs, find the greedy argmax with a
-        #       lexicographic tie-break, and append it to result.
-    print(" ".join(result))
+        candidates = []
+        for _ in range(m):
+            tok = data[idx]; idx += 1
+            lg = float(data[idx]); idx += 1
+            candidates.append((tok, lg))
+        steps.append(candidates)
+    # TODO: for each step's list of (token, logit) candidates, pick the token
+    #       with the highest logit (break ties by lexicographically smaller
+    #       token) and join the picks with single spaces.
 
 main()
 `,
@@ -1800,6 +1799,7 @@ main()
       order: 7,
       title: "Repetition and Frequency Penalties",
       concept: "Penalties",
+      challenge_difficulty: "intermediate",
       xp_reward: 10,
       explanation: `Even with sampling and a sensible top-p, long generations have a nasty habit: they repeat. The model says "very, very, very" or circles back to the same sentence, because once a token appears it often becomes *more* likely to appear again. **Repetition penalties** fight this directly by docking the logits of tokens the model has already used, before sampling. Two flavors do the work: **presence** and **frequency**.
 
@@ -2057,8 +2057,14 @@ def main():
     n = int(first[0])
     P = float(first[1])
     F = float(first[2])
-    # TODO: read each (token, logit, count), compute the penalized logit,
-    #       and report the winner (lexicographic tie-break) to 2 decimals.
+    entries = []
+    for i in range(1, n + 1):
+        parts = data[i].split()
+        entries.append((parts[0], float(parts[1]), int(parts[2])))
+    # TODO: for each (token, logit, count) entry, compute its penalized logit
+    #       (subtract P once if count > 0, then subtract F * count), then report
+    #       the highest-scoring token and its penalized logit to 2 decimals
+    #       (break ties by lexicographically smaller token).
 
 main()
 `,
@@ -2106,6 +2112,7 @@ main()
       order: 8,
       title: "Seeds and Reproducibility",
       concept: "Seeds",
+      challenge_difficulty: "beginner",
       xp_reward: 10,
       explanation: `Sampling is random — that's the whole point. But "random" and "untestable" are not the same thing. If you've ever needed a sampled model to give the *exact same* output twice (to write a unit test, reproduce a bug, or compare two prompts fairly), the tool you reach for is the **seed**. A seed makes randomness *replayable*: same seed, same dice rolls, same output, every time.
 
@@ -2328,96 +2335,62 @@ seed 8 differs? True`,
         "run(8) uses a different starting point, so its sequence should differ from run(7)."
       ],
       challenge_title: "The Reproducibility Checker",
-      challenge_description: "Build the deterministic sampler a test harness relies on, then prove reproducibility: run it under two seeds and report each drawn sequence plus whether they match.",
-      challenge_story: "Your QA team needs to certify that the generation endpoint is reproducible: same seed in, same tokens out. You're building the **reproducibility checker** they'll run in CI. It uses a deterministic linear congruential generator (LCG) so the test is identical on every machine. Given a token distribution and two seeds, it draws a sequence under each seed and reports whether the two runs produced the same tokens. When a developer passes the same seed twice it must print MATCH; when they pass different seeds it should (almost always) print DIFFER — and the checker shows the actual sequences so failures are easy to read.",
-      challenge_statement: "You are given \`n\` tokens, each with an integer **weight**, a number of **draws**, and two seeds \`seedA\` and \`seedB\`. For each seed, generate a sequence of \`draws\` tokens using this exact deterministic procedure (start \`state = seed\`):\n\n1. Let \`total\` be the sum of all weights.\n2. For each draw, first advance the generator:\n\n   \`\`\`\n   state = (1664525 * state + 1013904223) mod 4294967296\n   \`\`\`\n\n   then compute \`r = state mod total\`.\n3. Walk the tokens **in input order**, accumulating a prefix sum of weights; the drawn token is the **first** whose prefix sum is strictly greater than \`r\`.\n\nPrint the sequence for \`seedA\` (tokens space-separated) on line 1, the sequence for \`seedB\` on line 2, and on line 3 print \`MATCH\` if the two sequences are identical, otherwise \`DIFFER\`.",
-      challenge_input_format: "The first line has four integers: `n draws seedA seedB`.\n\nEach of the next `n` lines has a token (no spaces) and its integer `weight`.",
-      challenge_output_format: "Three lines: the seedA token sequence (space-separated), the seedB token sequence (space-separated), then `MATCH` or `DIFFER`. If `draws` is 0 the first two lines are empty.",
+      challenge_description: "Decide whether a generation endpoint is reproducible: given the token sequences several runs produced, report whether every run came out identical.",
+      challenge_story: "Your QA team needs to certify that the generation endpoint is reproducible: same seed in, same tokens out. The runs have already been executed upstream — each one sampled a sequence of tokens and logged it. You're building the **reproducibility checker** they'll run in CI. It doesn't generate anything; it just compares the logged runs. If every run produced the exact same token sequence, the endpoint is reproducible and the check passes. If even one run diverged, something is leaking nondeterminism — a stray unseeded RNG, a hardware difference — and the check must fail loudly so engineers can investigate.",
+      challenge_statement: "You are given \`runs\` token sequences, one per run, each \`length\` tokens long. They are the outputs logged from running the same seeded prompt several times. Determine reproducibility:\n\n1. Compare every run's token sequence against the first run's sequence.\n2. If **all** runs are identical, the endpoint is reproducible.\n3. If **any** run differs, it is not.\n\nPrint \`REPRODUCIBLE\` if every run matches, otherwise print \`NONDETERMINISTIC\`.",
+      challenge_input_format: "The first line has two integers: `runs length` — the number of runs and the number of tokens in each run.\n\nEach of the next `runs` lines has that run's `length` tokens (no spaces within a token), separated by single spaces.",
+      challenge_output_format: "One line: `REPRODUCIBLE` if all runs produced the identical token sequence, otherwise `NONDETERMINISTIC`.",
       challenge_constraints: [
-        "1 ≤ n ≤ 1000",
-        "0 ≤ draws ≤ 100000",
-        "0 ≤ seedA, seedB < 4294967296",
-        "1 ≤ weight ≤ 1000000",
+        "1 ≤ runs ≤ 1000",
+        "1 ≤ length ≤ 1000",
+        "Each run has exactly `length` tokens.",
       ],
       challenge_examples: [
-        { input: "3 4 7 7\nrock 1\npaper 1\nscissors 1", output: "rock rock paper paper\nrock rock paper paper\nMATCH", explanation: "Both seeds are 7, so the LCG produces the identical stream and the identical four draws — reproducibility confirmed with MATCH." },
-        { input: "3 4 7 99\nrock 1\npaper 1\nscissors 1", output: "rock rock paper paper\npaper scissors scissors paper\nDIFFER", explanation: "Different seeds start the generator at different points, so the two sequences diverge and the checker reports DIFFER." },
+        { input: "3 4\nrock rock paper paper\nrock rock paper paper\nrock rock paper paper", output: "REPRODUCIBLE", explanation: "All three runs produced `rock rock paper paper`, so the same seed gave the same output every time — reproducible." },
+        { input: "2 4\nrock rock paper paper\npaper scissors scissors paper", output: "NONDETERMINISTIC", explanation: "The two runs disagree at the very first token, so the endpoint is not reproducible — something other than the seed is varying." },
       ],
-      challenge_notes: "This is the engine behind 'same seed, same output'. The LCG is deterministic, so seeding it identically replays the exact draw sequence — that's what makes a sampled endpoint testable. Note the half-open mapping: `r` ranges over `0 .. total-1` and the comparison is strictly greater-than, so each `r` maps to exactly one token, matching the harness in Lesson 1.",
+      challenge_notes: "Reproducibility is just an equality check on the logged outputs: same seed (and same everything else) should mean same tokens. A single differing run means nondeterminism leaked in — often an unseeded RNG, a changed setting, or hardware/library differences. Note a single run is trivially reproducible: there is nothing to disagree with.",
       challenge_hints: [
-        "Write one helper that takes a seed and returns the list of drawn tokens, then call it for seedA and seedB.",
-        "Build the prefix-sum (cumulative weight) array once and reuse it for both seeds.",
-        "Compare the two token lists with == to decide between MATCH and DIFFER; with draws=0 both are empty and MATCH.",
+        "Compare each run's token list against the first run's list with `==`.",
+        "`all(seq == sequences[0] for seq in sequences)` is true exactly when every run matches.",
+        "With only one run there is nothing to differ from, so the answer is REPRODUCIBLE.",
       ],
       challenge_starter_code: `import sys
 
-def sample_sequence(tokens, cum, total, draws, seed):
-    # TODO: run the LCG for draws steps from seed, returning the drawn tokens.
-    return []
-
 def main():
-    data = sys.stdin.read().split()
-    idx = 0
-    n = int(data[idx]); idx += 1
-    draws = int(data[idx]); idx += 1
-    seedA = int(data[idx]); idx += 1
-    seedB = int(data[idx]); idx += 1
-    tokens, weights = [], []
-    for _ in range(n):
-        tokens.append(data[idx]); idx += 1
-        weights.append(int(data[idx])); idx += 1
-    # TODO: build prefix sums, sample under both seeds, print sequences + MATCH/DIFFER.
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    runs = int(first[0])
+    length = int(first[1])
+    sequences = []
+    for i in range(1, runs + 1):
+        sequences.append(data[i].split())
+    # TODO: check whether every run's token sequence equals the first run's,
+    #       and print REPRODUCIBLE or NONDETERMINISTIC.
 
 main()
 `,
       challenge_solution_code: `import sys
 
-def sample_sequence(tokens, cum, total, draws, seed):
-    out = []
-    state = seed
-    n = len(tokens)
-    for _ in range(draws):
-        state = (1664525 * state + 1013904223) % 4294967296
-        r = state % total
-        for i in range(n):
-            if r < cum[i]:
-                out.append(tokens[i])
-                break
-    return out
-
 def main():
-    data = sys.stdin.read().split()
-    idx = 0
-    n = int(data[idx]); idx += 1
-    draws = int(data[idx]); idx += 1
-    seedA = int(data[idx]); idx += 1
-    seedB = int(data[idx]); idx += 1
-    tokens, weights = [], []
-    for _ in range(n):
-        tokens.append(data[idx]); idx += 1
-        weights.append(int(data[idx])); idx += 1
+    data = sys.stdin.read().split("\\n")
+    first = data[0].split()
+    runs = int(first[0])
+    length = int(first[1])
+    sequences = []
+    for i in range(1, runs + 1):
+        sequences.append(data[i].split())
 
-    total = sum(weights)
-    cum = []
-    running = 0
-    for w in weights:
-        running += w
-        cum.append(running)
-
-    seqA = sample_sequence(tokens, cum, total, draws, seedA)
-    seqB = sample_sequence(tokens, cum, total, draws, seedB)
-
-    print(" ".join(seqA))
-    print(" ".join(seqB))
-    print("MATCH" if seqA == seqB else "DIFFER")
+    reproducible = all(seq == sequences[0] for seq in sequences)
+    print("REPRODUCIBLE" if reproducible else "NONDETERMINISTIC")
 
 main()
 `,
       challenge_test_cases: [
-        { input: "3 4 7 7\nrock 1\npaper 1\nscissors 1", expected_output: "rock rock paper paper\nrock rock paper paper\nMATCH", description: "Identical seeds reproduce the identical sequence." },
-        { input: "3 4 7 99\nrock 1\npaper 1\nscissors 1", expected_output: "rock rock paper paper\npaper scissors scissors paper\nDIFFER", description: "Different seeds diverge into different sequences." },
-        { input: "2 6 42 42\nyes 3\nno 1", expected_output: "yes yes no yes yes yes\nyes yes no yes yes yes\nMATCH", description: "Weighted distribution; same seed still reproduces exactly." },
-        { input: "1 3 0 1\nx 5", expected_output: "x x x\nx x x\nMATCH", description: "A single token absorbs every draw, so any two seeds MATCH." }
+        { input: "3 4\nrock rock paper paper\nrock rock paper paper\nrock rock paper paper", expected_output: "REPRODUCIBLE", description: "All three runs identical — reproducible." },
+        { input: "2 4\nrock rock paper paper\npaper scissors scissors paper", expected_output: "NONDETERMINISTIC", description: "The two runs diverge, so nondeterminism leaked in." },
+        { input: "1 3\na b c", expected_output: "REPRODUCIBLE", description: "A single run has nothing to disagree with." },
+        { input: "3 2\nyes no\nyes no\nyes yes", expected_output: "NONDETERMINISTIC", description: "The third run differs on the last token." }
       ]
     }
   ]
