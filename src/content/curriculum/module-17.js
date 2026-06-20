@@ -246,14 +246,23 @@ user: What is a token?`,
         "Keep a separate `turn` counter that you increment only for `user`/`assistant` messages.",
         "Track three integer counts as you go, then print the summary line after the loop.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n = int(data[0])
-    # TODO: for each of the next n lines, split once on the first space into
-    #       role and content. Print [setup] for system, [turn] for user/assistant
-    #       (capitalize the role), then print the role tally.
+    idx = 0
+    n = int(data[idx]); idx += 1
+    messages = []  # list of (role:str, content:str)
+    for _ in range(n):
+        role, content = data[idx].split(" ", 1)
+        messages.append((role, content))
+        idx += 1
+
+    # TODO: render each message. A "system" message prints "[setup] System: <content>"
+    #       and does NOT advance the turn counter. A "user"/"assistant" message is a
+    #       turn: print "[<turn>] <Role>: <content>" (role capitalized), turn starting
+    #       at 1. Then print "system=<s> user=<u> assistant=<a>".
 
 main()
 `,
@@ -519,14 +528,25 @@ first role: system`,
         "For each message, scan rules in order and take the first whose keyword is a substring of the lowercased message.",
         "If the scan finds no match, emit the default prompt.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n, q = map(int, data[0].split())
-    # TODO: read n rules (keyword + prompt), then the default prompt, then q
-    #       messages. For each message print the highest-priority matching
-    #       rule's prompt, or the default if none match.
+    idx = 0
+    n, q = map(int, data[idx].split()); idx += 1
+    routes = []  # (keyword_lower, prompt) in priority order (earlier = higher)
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        keyword = parts[0]
+        prompt = " ".join(parts[1:])
+        routes.append((keyword.lower(), prompt))
+    default = data[idx]; idx += 1
+    messages = [data[idx + i] for i in range(q)]
+
+    # TODO: for each message, pick the first route whose keyword is a substring
+    #       of the lowercased message (highest priority wins); if none match, use
+    #       'default'. Print the chosen prompt per message, in order.
 
 main()
 `,
@@ -797,14 +817,22 @@ messages resent next turn: 3`,
         "Iterate the non-system messages in reverse, accumulating tokens; break the moment the next one would overflow.",
         "Total kept = (number of system messages) + (number of recent non-system messages that fit).",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n, budget = map(int, data[0].split())
-    # TODO: read n (role, tokens) messages. Keep all system messages, then keep
-    #       non-system messages newest-first while they fit the remaining budget.
-    #       Print kept, dropped, and total kept tokens.
+    idx = 0
+    n, budget = map(int, data[idx].split()); idx += 1
+    msgs = []  # list of (role:str, tokens:int), oldest-first
+    for _ in range(n):
+        parts = data[idx].split(); idx += 1
+        msgs.append((parts[0], int(parts[1])))
+
+    # TODO: keep ALL system messages and charge their tokens first. With the
+    #       leftover budget, keep non-system messages newest-first while each
+    #       still fits (stop at the first that doesn't). Print "kept <k>",
+    #       "dropped <d>", "tokens <t>" (tokens of all kept messages).
 
 main()
 `,
@@ -1082,14 +1110,23 @@ assistant`,
         "Take the window: if `k == 0` keep none, else keep the final `k` turns in order.",
         "Prepend the system message, then print each message with its index and a final `total` line.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n, k = map(int, data[0].split())
-    system = data[1]
-    # TODO: read n turns, keep only the last k (none if k == 0), prepend the
-    #       system message, then print each "<index> <role>: <content>" and total.
+    idx = 0
+    n, k = map(int, data[idx].split()); idx += 1
+    system = data[idx]; idx += 1
+    turns = []  # list of (role:str, content:str), oldest-first
+    for _ in range(n):
+        role, content = data[idx].split(" ", 1)
+        turns.append((role, content))
+        idx += 1
+
+    # TODO: keep only the last k turns (none if k == 0), prepend the system
+    #       message as index 0, then print each message as "<index> <role>:
+    #       <content>", then "total <m>".
 
 main()
 `,
@@ -1358,14 +1395,21 @@ full reply: {"name": "George Washington", "age": 57}`,
         "For each item, read two consecutive lines (prefill then continuation) and concatenate them directly.",
         "Accumulate len(full) as you go and print 'chars <total>' after the loop.",
       ],
+      challenge_difficulty: "beginner",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n = int(data[0])
-    # TODO: for each of the n items, read the prefill line then the continuation
-    #       line, print prefill + continuation, and sum the lengths. Finally print
-    #       "chars <total>".
+    idx = 0
+    n = int(data[idx]); idx += 1
+    items = []  # list of (prefill:str, continuation:str) — DON'T strip; spaces matter
+    for _ in range(n):
+        prefill = data[idx]; idx += 1
+        continuation = data[idx]; idx += 1
+        items.append((prefill, continuation))
+
+    # TODO: for each item build full = prefill + continuation (no separator),
+    #       print it, and accumulate len(full); then print "chars <total>".
 
 main()
 `,
@@ -1627,14 +1671,21 @@ tool result from get_weather: 18C, clear`,
         "For each name, matched += min(call_count, result_count); unanswered and orphan are the leftover on each side.",
         "Handle c or r being 0 by reading an empty line as an empty list (line.split() on '' gives []).",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 from collections import Counter
 
 def main():
     data = sys.stdin.read().split("\\n")
-    c, r = map(int, data[0].split())
-    # TODO: read the called names and returned names, count by name, and report
-    #       matched (intersection size), unanswered, and orphan counts.
+    idx = 0
+    c, r = map(int, data[idx].split()); idx += 1
+    called = data[idx].split(); idx += 1     # tool names the assistant called
+    returned = data[idx].split(); idx += 1   # tool names that came back
+
+    # Treat both as multisets (each result answers at most one call).
+    # TODO: matched = sum over names of min(called_count, returned_count);
+    #       unanswered = total called - matched; orphan = total returned - matched.
+    #       Print "matched <m>", "unanswered <u>", "orphan <o>".
 
 main()
 `,
@@ -1900,14 +1951,23 @@ user starts with: Context:`,
         "Take the first k after sorting; these are your context lines, each printed as '- ' + text.",
         "Print SYSTEM, then USER, Context:, the snippet lines, an empty string (blank line), then 'Question: ' + question.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n, k = map(int, data[0].split())
-    question = data[1]
-    # TODO: read n snippets (score + text), take the top k by score (ties by
-    #       input order), and print the SYSTEM line and USER context block.
+    idx = 0
+    n, k = map(int, data[idx].split()); idx += 1
+    question = data[idx]; idx += 1
+    snippets = []  # list of (score:int, original_index:int, text:str)
+    for i in range(n):
+        score_str, text = data[idx].split(" ", 1); idx += 1
+        snippets.append((int(score_str), i, text))
+
+    # TODO: keep the top k snippets by score descending (ties: original_index
+    #       ascending). Print "SYSTEM: Answer only from the context below.", then
+    #       "USER:", "Context:", each kept snippet as "- <text>" (highest first),
+    #       a blank line, then "Question: <question>".
 
 main()
 `,
@@ -2189,14 +2249,24 @@ bug: two user turns in a row`,
         "Count messages whose role is not in the set {system, user, assistant}; that count drives the roles line.",
         "For alternation, walk the messages keeping the previous user/assistant role; increment a counter when the current user/assistant role equals it.",
       ],
+      challenge_difficulty: "intermediate",
       challenge_starter_code: `import sys
 
 def main():
     data = sys.stdin.read().split("\\n")
-    n = int(data[0])
-    # TODO: read n messages (role + content). Run three checks: leading system
-    #       message, all roles valid, and user/assistant alternation. Print one
-    #       result line per check in order.
+    idx = 0
+    n = int(data[idx]); idx += 1
+    roles = []  # role token of each message (may be misspelled / miscased)
+    for _ in range(n):
+        role, _content = data[idx].split(" ", 1); idx += 1
+        roles.append(role)
+    valid = {"system", "user", "assistant"}
+
+    # TODO: print three lines, in order:
+    #   1. "system: OK" if roles[0] == "system" else "system: MISSING".
+    #   2. "roles: OK" if every role is in 'valid' else "roles: BAD <count>".
+    #   3. "alternation: OK" if no two adjacent user/assistant roles match (scan
+    #      only user/assistant roles) else "alternation: BAD <count>".
 
 main()
 `,
