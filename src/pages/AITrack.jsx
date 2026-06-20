@@ -61,11 +61,22 @@ export default function AITrack() {
   };
 
   const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "Beginner");
+
+  // Soft-gating signal: foundations are "finished" once the learner has fully
+  // completed most beginner-tier modules (or there are none). Until then,
+  // harder modules get a gentle nudge — links still work.
+  const beginnerProjects = projects.filter((p) => p.difficulty === "beginner");
+  const beginnerDone = beginnerProjects.filter((p) => modulePct(p.id) === 100).length;
+  const foundationsFinished =
+    beginnerProjects.length === 0 ||
+    beginnerDone >= Math.ceil(beginnerProjects.length * 0.6);
+
   // Build the curriculum straight from content so every module is listed.
   const trackItems = projects.map((p, i) => ({
     number: String(i + 1).padStart(2, "0"),
     title: p.title,
     difficulty: cap(p.difficulty),
+    rawDifficulty: p.difficulty,
     time: p.estimated_time ? `${p.estimated_time} min` : "—",
     description: p.description,
     concepts: (p.tags || []).slice(0, 3),
@@ -113,6 +124,12 @@ export default function AITrack() {
             const dc = DIFF_COLOR[item.difficulty] || DIFF_COLOR.Beginner;
             const pct = modulePct(item.projectId);
             const done = pct === 100;
+            // Soft-gate harder modules until foundations are finished. Never
+            // blocks the link — just de-emphasizes the row and adds a hint.
+            const gated =
+              !foundationsFinished &&
+              !done &&
+              (item.rawDifficulty === "advanced" || item.rawDifficulty === "intermediate");
             return (
               <Link
                 key={item.projectId}
@@ -121,9 +138,9 @@ export default function AITrack() {
               >
                 <div
                   className="grid gap-8 px-6 py-6 transition-all duration-200"
-                  style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #111" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#0d0d0d"; e.currentTarget.style.paddingLeft = "1.75rem"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; }}
+                  style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #111", opacity: gated ? 0.55 : 1 }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#0d0d0d"; e.currentTarget.style.paddingLeft = "1.75rem"; if (gated) e.currentTarget.style.opacity = "0.8"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; if (gated) e.currentTarget.style.opacity = "0.55"; }}
                 >
                   <div className="flex items-center" style={{ minWidth: "3rem" }}>
                     {pct > 0 ? (
@@ -142,6 +159,11 @@ export default function AITrack() {
                       {done && (
                         <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
                           DONE
+                        </span>
+                      )}
+                      {gated && (
+                        <span className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap" style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}>
+                          Finish Foundations first
                         </span>
                       )}
                     </div>

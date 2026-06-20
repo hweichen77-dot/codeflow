@@ -64,7 +64,7 @@ export default function HeroSection() {
           cursor: "pointer",
           fontFamily: "inherit",
         }}
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/ProjectDetail?id=ai-01")}
           onMouseEnter={e => e.currentTarget.style.background = "#caff35"}
           onMouseLeave={e => e.currentTarget.style.background = "#b8ff00"}
         >
