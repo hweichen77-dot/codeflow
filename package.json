@@ -1,7 +1,7 @@
 {
   "name": "codeflow",
   "private": true,
-  "version": "0.11.0",
+  "version": "0.11.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,7 @@
     "typecheck": "tsc -p ./jsconfig.json",
     "validate:content": "node scripts/validate-content.mjs",
     "preview": "vite preview",
-    "build:desktop": "VITE_BASE=/ vite build",
+    "build:desktop": "cross-env VITE_BASE=/ vite build",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -91,6 +91,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "baseline-browser-mapping": "^2.8.32",
+    "cross-env": "^10.1.0",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.0.0",
