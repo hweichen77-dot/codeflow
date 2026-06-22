@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function Footer() {
   return (
@@ -50,6 +52,22 @@ export default function Footer() {
             >
               Contact
             </a>
+            <Link
+              to={createPageUrl("Privacy")}
+              style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
+              onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
+              onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
+            >
+              Privacy
+            </Link>
+            <Link
+              to={createPageUrl("Terms")}
+              style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
+              onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
+              onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
+            >
+              Terms
+            </Link>
           </div>
         </div>
 
