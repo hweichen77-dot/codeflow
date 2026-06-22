@@ -64,6 +64,8 @@ const AITrack = lazy(() => import('./pages/AITrack'));
 const LessonDemo = lazy(() => import('./pages/LessonDemo'));
 const Competitive = lazy(() => import('./pages/Competitive'));
 const CompetitiveDetail = lazy(() => import('./pages/CompetitiveDetail'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +81,8 @@ export const PAGES = {
     "LessonDemo": LessonDemo,
     "Competitive": Competitive,
     "CompetitiveDetail": CompetitiveDetail,
+    "Privacy": Privacy,
+    "Terms": Terms,
 }
 
 export const pagesConfig = {
