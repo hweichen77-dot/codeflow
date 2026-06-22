@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { trace } from "@/components/lesson/trace/theme";
 
 export default function LessonQuiz({ questions }) {
   const [answers, setAnswers] = useState({});
@@ -15,20 +16,20 @@ export default function LessonQuiz({ questions }) {
   const handleReset = () => { setAnswers({}); setSubmitted(false); };
 
   return (
-    <div style={{ border: "1px solid #1e1e1e" }}>
+    <div style={{ border: `1px solid ${trace.border}` }}>
       {/* Header */}
       <div
         className="flex items-center justify-between px-6 py-4"
-        style={{ borderBottom: "1px solid #1e1e1e", background: "#0d0d0d" }}
+        style={{ borderBottom: `1px solid ${trace.border}`, background: trace.terminal }}
       >
         <div className="flex items-center gap-3">
           <div
             className="font-mono text-xs tracking-widest uppercase px-2 py-1"
-            style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
+            style={{ color: trace.lime, border: `1px solid ${trace.lime}33`, background: trace.limeFaint }}
           >
             QUIZ
           </div>
-          <span className="font-mono text-xs" style={{ color: "#444" }}>
+          <span className="font-mono text-xs" style={{ color: trace.muted }}>
             {questions.length} question{questions.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -36,16 +37,16 @@ export default function LessonQuiz({ questions }) {
           <div className="flex items-center gap-4">
             <span
               className="font-mono text-sm font-bold"
-              style={{ color: score === questions.length ? "#b8ff00" : score >= questions.length / 2 ? "#ffb300" : "#ff5555" }}
+              style={{ color: score === questions.length ? trace.ok : score >= questions.length / 2 ? trace.warn : trace.fail }}
             >
               {score}/{questions.length}
             </span>
             <button
               onClick={handleReset}
               className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-colors"
-              style={{ color: "#444", border: "1px solid #1e1e1e" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#888"}
-              onMouseLeave={e => e.currentTarget.style.color = "#444"}
+              style={{ color: trace.muted, border: `1px solid ${trace.border}` }}
+              onMouseEnter={e => e.currentTarget.style.color = trace.dim}
+              onMouseLeave={e => e.currentTarget.style.color = trace.muted}
             >
               Retry
             </button>
@@ -54,7 +55,7 @@ export default function LessonQuiz({ questions }) {
       </div>
 
       {/* Questions */}
-      <div className="divide-y" style={{ borderColor: "#1a1a1a" }}>
+      <div className="divide-y" style={{ borderColor: trace.border }}>
         {questions.map((q, qi) => {
           const selected = answers[qi];
           const isCorrect = submitted && selected === q.correct_index;
@@ -63,10 +64,10 @@ export default function LessonQuiz({ questions }) {
           return (
             <div key={qi} className="px-6 py-6">
               <div className="flex gap-3 mb-4">
-                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#333" }}>
+                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: trace.muted }}>
                   {String(qi + 1).padStart(2, "0")}
                 </span>
-                <p className="font-display text-sm leading-relaxed" style={{ color: "#cccccc", fontWeight: 500 }}>
+                <p className="font-display text-sm leading-relaxed" style={{ color: trace.text, fontWeight: 500 }}>
                   {q.question}
                 </p>
               </div>
@@ -77,15 +78,15 @@ export default function LessonQuiz({ questions }) {
                   const isThisCorrect = submitted && oi === q.correct_index;
                   const isThisWrong = submitted && isSelected && oi !== q.correct_index;
 
-                  let borderColor = "#1e1e1e";
+                  let borderColor = trace.border;
                   let bgColor = "transparent";
-                  let textColor = "#666";
-                  let dotColor = "#2a2a2a";
+                  let textColor = trace.faint;
+                  let dotColor = trace.borderStrong;
 
-                  if (isSelected && !submitted) { borderColor = "#555"; textColor = "#ccc"; dotColor = "#888"; }
-                  if (isThisCorrect && submitted) { borderColor = "#b8ff0055"; bgColor = "#b8ff0008"; textColor = "#b8ff00"; dotColor = "#b8ff00"; }
-                  if (isThisWrong) { borderColor = "#ff555533"; bgColor = "#ff55550a"; textColor = "#ff5555"; dotColor = "#ff5555"; }
-                  if (submitted && !isSelected && !isThisCorrect) { textColor = "#333"; }
+                  if (isSelected && !submitted) { borderColor = trace.borderActive; textColor = trace.text; dotColor = trace.dim; }
+                  if (isThisCorrect && submitted) { borderColor = `${trace.ok}55`; bgColor = trace.okWash; textColor = trace.ok; dotColor = trace.ok; }
+                  if (isThisWrong) { borderColor = `${trace.fail}33`; bgColor = trace.failWash; textColor = trace.fail; dotColor = trace.fail; }
+                  if (submitted && !isSelected && !isThisCorrect) { textColor = trace.muted; }
 
                   return (
                     <button
@@ -100,13 +101,13 @@ export default function LessonQuiz({ questions }) {
                         style={{ border: `1.5px solid ${dotColor}`, background: isSelected ? dotColor : "transparent" }}
                       >
                         {isSelected && !submitted && (
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#0a0a0a" }} />
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: trace.bg }} />
                         )}
                         {isThisCorrect && submitted && (
-                          <span className="font-mono text-xs leading-none" style={{ color: "#0a0a0a", fontSize: "8px" }}>✓</span>
+                          <span className="font-mono text-xs leading-none" style={{ color: trace.bg, fontSize: "8px" }}>✓</span>
                         )}
                         {isThisWrong && (
-                          <span className="font-mono text-xs leading-none" style={{ color: "#fff", fontSize: "8px" }}>✕</span>
+                          <span className="font-mono text-xs leading-none" style={{ color: trace.bg, fontSize: "8px" }}>✕</span>
                         )}
                       </span>
                       <span className="font-display text-sm" style={{ color: textColor, fontWeight: 400 }}>
@@ -129,17 +130,17 @@ export default function LessonQuiz({ questions }) {
                     <div
                       className="px-4 py-3"
                       style={{
-                        borderLeft: `2px solid ${isCorrect ? "#b8ff00" : "#ff5555"}`,
-                        background: isCorrect ? "#b8ff0008" : "#ff55550a",
+                        borderLeft: `2px solid ${isCorrect ? trace.ok : trace.fail}`,
+                        background: isCorrect ? trace.okWash : trace.failWash,
                       }}
                     >
                       <div
                         className="font-mono text-xs tracking-widest uppercase mb-1"
-                        style={{ color: isCorrect ? "#b8ff00" : "#ff5555" }}
+                        style={{ color: isCorrect ? trace.ok : trace.fail }}
                       >
                         {isCorrect ? "Correct" : "Incorrect"}
                       </div>
-                      <p className="font-display text-xs leading-relaxed" style={{ color: "#777", fontWeight: 400 }}>
+                      <p className="font-display text-xs leading-relaxed" style={{ color: trace.dim, fontWeight: 400 }}>
                         {q.explanation}
                       </p>
                     </div>
@@ -153,14 +154,14 @@ export default function LessonQuiz({ questions }) {
 
       {/* Submit */}
       {!submitted && (
-        <div className="px-6 py-4" style={{ borderTop: "1px solid #1a1a1a", background: "#0d0d0d" }}>
+        <div className="px-6 py-4" style={{ borderTop: `1px solid ${trace.border}`, background: trace.terminal }}>
           <button
             onClick={handleSubmit}
             disabled={Object.keys(answers).length < questions.length}
             className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all duration-150"
             style={{
-              background: Object.keys(answers).length === questions.length ? "#b8ff00" : "#1a1a1a",
-              color: Object.keys(answers).length === questions.length ? "#0a0a0a" : "#333",
+              background: Object.keys(answers).length === questions.length ? trace.lime : trace.surface,
+              color: Object.keys(answers).length === questions.length ? trace.bg : trace.muted,
               border: "1px solid transparent",
               fontWeight: 700,
               cursor: Object.keys(answers).length < questions.length ? "not-allowed" : "pointer",
@@ -168,7 +169,7 @@ export default function LessonQuiz({ questions }) {
           >
             Check Answers
           </button>
-          <span className="font-mono text-xs ml-4" style={{ color: "#333" }}>
+          <span className="font-mono text-xs ml-4" style={{ color: trace.muted }}>
             {Object.keys(answers).length}/{questions.length} answered
           </span>
         </div>

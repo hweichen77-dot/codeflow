@@ -30,7 +30,7 @@ const RouteFallback = () => (
 // App pages that require a signed-in (or guest) profile. Public: marketing Home + LessonDemo.
 const PROTECTED = new Set([
   'ChallengeDetail', 'Challenges', 'Dashboard', 'ProjectDetail', 'Projects', 'Portfolio', 'AITrack',
-  'Competitive', 'CompetitiveDetail',
+  'Competitive', 'CompetitiveDetail', 'APCS',
 ]);
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?

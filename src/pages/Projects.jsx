@@ -32,10 +32,12 @@ export default function Projects() {
     api.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: allProjects = [], isLoading } = useQuery({
     queryKey: ["projects"],
     queryFn: () => api.entities.Project.list("order"),
   });
+  // Projects page covers the AI track only; AP CSP/CSA modules have their own hub.
+  const projects = allProjects.filter((p) => (p.track || "ai") === "ai");
 
   const { data: progress = [] } = useQuery({
     queryKey: ["progress", user?.email],

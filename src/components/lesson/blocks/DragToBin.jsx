@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Check, X } from "lucide-react";
+import { trace } from "@/components/lesson/trace/theme";
 
 /**
  * DragToBin — classify activity (zyBooks matching / drag-to-bin).
@@ -37,13 +38,13 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
   const correctCount = items.filter((it) => placed[it.id] === it.bin).length;
 
   return (
-    <div className="my-7" style={{ border: "1px solid #e4e4e7", background: "#ffffff" }}>
-      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #ececef" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#9333ea" }}>
+    <div className="my-7" style={{ border: `1px solid ${trace.border}`, background: trace.raised }}>
+      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${trace.border}` }}>
+        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: trace.lime }}>
           SORT IT — {title}
         </span>
         {checked && (
-          <span className="font-mono text-xs" style={{ color: correctCount === items.length ? "#4d7c0f" : "#ea580c" }}>
+          <span className="font-mono text-xs" style={{ color: correctCount === items.length ? trace.ok : trace.fail }}>
             {correctCount}/{items.length} correct
           </span>
         )}
@@ -58,16 +59,16 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
               onClick={() => setSelected(selected === it.id ? null : it.id)}
               className="font-mono text-xs px-3 py-2 transition-all"
               style={{
-                background: selected === it.id ? "#9333ea14" : "#f6f6f7",
-                border: selected === it.id ? "1px solid #9333ea" : "1px solid #e4e4e7",
-                color: selected === it.id ? "#9333ea" : "#3f3f46",
+                background: selected === it.id ? trace.limeFaint : trace.raised,
+                border: selected === it.id ? `1px solid ${trace.lime}` : `1px solid ${trace.borderStrong}`,
+                color: selected === it.id ? trace.lime : trace.text,
                 cursor: "pointer",
               }}
             >
               {it.text}
             </button>
           ))}
-          {allPlaced && <span className="font-mono text-xs" style={{ color: "#6b7280" }}>all sorted — check your answer</span>}
+          {allPlaced && <span className="font-mono text-xs" style={{ color: trace.dim }}>all sorted — check your answer</span>}
         </div>
 
         {/* bins */}
@@ -80,13 +81,13 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
                 onClick={() => place(bin.id)}
                 className="px-3 py-3 transition-all"
                 style={{
-                  border: selected ? "1px dashed #9333ea66" : "1px solid #e4e4e7",
-                  background: selected ? "#9333ea08" : "#fafafa",
+                  border: selected ? `1px dashed ${trace.lime}66` : `1px solid ${trace.border}`,
+                  background: selected ? trace.limeFaint : trace.surface,
                   minHeight: 92,
                   cursor: selected ? "pointer" : "default",
                 }}
               >
-                <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#52525b" }}>{bin.label}</div>
+                <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: trace.dim }}>{bin.label}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {binItems.map((it) => {
                     const ok = it.bin === bin.id;
@@ -96,9 +97,9 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
                         onClick={(e) => { e.stopPropagation(); setPlaced((p) => { const n = { ...p }; delete n[it.id]; return n; }); setChecked(false); }}
                         className="inline-flex items-center gap-1 font-mono text-xs px-2 py-1"
                         style={{
-                          background: "#f6f6f7",
-                          border: `1px solid ${checked ? (ok ? "#4d7c0f55" : "#ea580c55") : "#e4e4e7"}`,
-                          color: checked ? (ok ? "#4d7c0f" : "#ea580c") : "#3f3f46",
+                          background: checked ? (ok ? trace.okWash : trace.failWash) : trace.raised,
+                          border: `1px solid ${checked ? (ok ? trace.ok : trace.fail) : trace.borderStrong}`,
+                          color: checked ? (ok ? trace.ok : trace.fail) : trace.text,
                           cursor: "pointer",
                         }}
                       >
@@ -118,11 +119,11 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
             onClick={check}
             disabled={!allPlaced}
             className="font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all disabled:opacity-30"
-            style={{ background: "#9333ea", color: "#ffffff", fontWeight: 700, border: "none", cursor: allPlaced ? "pointer" : "not-allowed" }}
+            style={{ background: trace.lime, color: trace.bg, fontWeight: 700, border: "none", cursor: allPlaced ? "pointer" : "not-allowed" }}
           >
             Check answer
           </button>
-          <button onClick={reset} className="font-mono text-xs tracking-widest uppercase px-3 py-2" style={{ background: "transparent", border: "1px solid #d4d4d8", color: "#52525b", cursor: "pointer" }}>
+          <button onClick={reset} className="font-mono text-xs tracking-widest uppercase px-3 py-2" style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: trace.dim, cursor: "pointer" }}>
             Reset
           </button>
         </div>

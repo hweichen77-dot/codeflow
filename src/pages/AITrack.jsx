@@ -71,16 +71,19 @@ export default function AITrack() {
 
   const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "Beginner");
 
+  // This page is the AI track only. AP CSP/CSA modules live on the AP CS hub.
+  const aiProjects = projects.filter((p) => (p.track || "ai") === "ai");
+
   // Hard-gate: intermediate/advanced modules stay locked until most beginner
   // foundations are complete. Same rule enforced on ProjectDetail deep links.
-  const beginnerProjects = projects.filter((p) => p.difficulty === "beginner");
+  const beginnerProjects = aiProjects.filter((p) => p.difficulty === "beginner");
   const foundationsFinished = foundationsAreFinished(
     beginnerProjects,
     (p) => modulePct(p.id) === 100
   );
 
   // Build the curriculum straight from content so every module is listed.
-  const trackItems = projects.map((p, i) => ({
+  const trackItems = aiProjects.map((p, i) => ({
     number: String(i + 1).padStart(2, "0"),
     title: p.title,
     difficulty: cap(p.difficulty),

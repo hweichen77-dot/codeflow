@@ -10,8 +10,9 @@ import RichLessonPanel from "../components/lesson/RichLessonPanel";
 import LessonEnhancements from "../components/lesson/LessonEnhancements";
 import LessonBlocks from "../components/lesson/LessonBlocks";
 import ProjectBrief from "../components/lesson/ProjectBrief";
-import ZybooksQuiz from "../components/lesson/ZybooksQuiz";
+import CheckBlock from "../components/lesson/CheckBlock";
 import ParticipationActivity from "../components/lesson/ParticipationActivity";
+import { trace } from "../components/lesson/trace/theme";
 import LessonPointsSummary from "../components/lesson/LessonPointsSummary";
 import LessonChallenge from "../components/lesson/LessonChallenge";
 import { runCodeInSandbox } from "../lib/codeRunner";
@@ -519,26 +520,26 @@ export default function ProjectDetail() {
                   {/* Project brief — shown on the first lesson as the overview */}
                   {activeLessonIndex === 0 && <ProjectBrief brief={project?.brief} />}
 
-                  {/* Zybooks-style section number + title */}
+                  {/* TRACE section header: § NN / TITLE  ▸ XP */}
                   <div style={{ marginBottom: "8px" }}>
+                    <div className="font-mono" style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: trace.lime, marginBottom: "6px" }}>
+                      § {String(activeLessonIndex + 1).padStart(2, "0")} &nbsp;▸&nbsp; {activeLesson.xp_reward || 10} XP
+                    </div>
                     <h2 style={{
-                      fontFamily: "'IBM Plex Serif', Georgia, serif",
-                      fontSize: "1.55rem", fontWeight: 600, color: "#e0e0e0", letterSpacing: "-0.005em",
+                      fontFamily: trace.serif,
+                      fontSize: "1.55rem", fontWeight: 600, color: trace.text, letterSpacing: "-0.005em",
                       margin: 0, lineHeight: 1.35,
                     }}>
-                      {activeLessonIndex + 1}.{" "}{activeLesson.title}
+                      {activeLesson.title}
                     </h2>
-                    <div className="font-mono text-xs mt-2" style={{ color: "#b8ff00" }}>
-                      {activeLesson.xp_reward || 10} points available
-                    </div>
                   </div>
 
-                  {/* Rich lesson reading area */}
-                  <div style={{ background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: "4px", padding: "32px 36px" }}>
+                  {/* Rich lesson reading area — flat dark editorial surface (TRACE) */}
+                  <div style={{ background: "transparent", borderTop: `1px solid ${trace.border}`, paddingTop: "28px" }}>
                     {activeLesson.concept && (
                       <h3 style={{
-                        fontFamily: "'IBM Plex Serif', Georgia, serif",
-                        fontSize: "1.15rem", fontWeight: 600, color: "#222", margin: "0 0 16px",
+                        fontFamily: trace.serif,
+                        fontSize: "1.15rem", fontWeight: 600, color: trace.text, margin: "0 0 16px",
                       }}>
                         {activeLesson.concept}
                       </h3>
@@ -547,22 +548,22 @@ export default function ProjectDetail() {
                     <RichLessonPanel lesson={activeLesson} />
 
                     {!readingDone && (
-                      <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e8e8e8" }}>
+                      <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: `1px solid ${trace.border}` }}>
                         <button
                           onClick={() => { setReadingDone(true); setEarnedPoints(p => p + 2); showXPToast("Reading complete!", 2, ""); }}
+                          className="font-mono"
                           style={{
-                            background: "#65a30d", color: "#0f1b00", border: "none", borderRadius: "2px",
-                            padding: "10px 28px", fontSize: "0.875rem", fontWeight: 700, cursor: "pointer",
-                            boxShadow: "0 1px 0 #4d7c0f",
+                            background: "transparent", color: trace.lime, border: `1px solid ${trace.lime}55`, borderRadius: "3px",
+                            padding: "10px 28px", fontSize: "0.8125rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer",
                           }}
                         >
-                          Mark section as read (+2 pts)
+                          ✓ mark read (+2 XP)
                         </button>
                       </div>
                     )}
                     {readingDone && (
-                      <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e8e8e8", color: "#2d7a3a", fontSize: "0.875rem", fontWeight: 600 }}>
-                        Reading complete (+2 pts)
+                      <div className="font-mono" style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: `1px solid ${trace.border}`, color: trace.ok, fontSize: "0.8125rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                        ✓ read (+2 XP)
                       </div>
                     )}
 
@@ -598,9 +599,9 @@ export default function ProjectDetail() {
                     }}
                   />
 
-                  {/* Quiz — zybooks participation style */}
+                  {/* Quiz — TRACE check block */}
                   {activeLesson.quiz_questions?.length > 0 && (
-                    <ZybooksQuiz
+                    <CheckBlock
                       questions={activeLesson.quiz_questions}
                       sectionNumber={`${activeLessonIndex + 1}`}
                       onComplete={(correct, total) => {

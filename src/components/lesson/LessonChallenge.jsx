@@ -5,6 +5,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import CodeEditor from "../editor/CodeEditor";
 import { gradePython } from "../../lib/pyRunner";
+import { gradeJava } from "../../lib/javaRunner";
+import { gradeCpp } from "../../lib/cppRunner";
+import { trace, traceStyles } from "./trace/theme";
+
+const EXT = { python: "py", java: "java", cpp: "cpp" };
 
 export default function LessonChallenge({ lesson }) {
   const [code, setCode] = useState(lesson.challenge_starter_code || "");
@@ -16,12 +21,18 @@ export default function LessonChallenge({ lesson }) {
   const hasChallenge = lesson.challenge_title || lesson.challenge_description;
   if (!hasChallenge) return null;
 
+  // Pick the runner by language. Defaults to Python; CSA lessons set
+  // challenge_language/language to "java", competitive-style to "cpp".
+  const lang = lesson.challenge_language || lesson.language || "python";
+  const grade = lang === "java" ? gradeJava : lang === "cpp" ? gradeCpp : gradePython;
+  const ext = EXT[lang] || "py";
+
   const handleRun = async () => {
     setIsRunning(true);
     setPassed(false);
     setOutput("Running…");
     try {
-      const { output: out, passed: ok, results, isError } = await gradePython(code, lesson.challenge_test_cases);
+      const { output: out, passed: ok, results, isError } = await grade(code, lesson.challenge_test_cases);
       let text = out || "(no output)";
       if (results.length > 0) {
         const lines = results.map((r, i) =>
@@ -39,37 +50,40 @@ export default function LessonChallenge({ lesson }) {
   };
 
   return (
-    <div style={{ border: "1px solid #e4e4e7", borderRadius: "4px", background: "#ffffff" }}>
+    <div style={{ ...traceStyles.panel }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-6 py-4"
-        style={{ borderBottom: "1px solid #e4e4e7", background: "#fafafa" }}
+        style={{ borderBottom: `1px solid ${trace.border}`, background: trace.surface, borderTopLeftRadius: 4, borderTopRightRadius: 4 }}
       >
         <div
           className="font-mono text-xs tracking-widest uppercase px-2 py-1"
-          style={{ color: "#4d7c0f", border: "1px solid #65a30d44", background: "#65a30d12" }}
+          style={{ color: trace.lime, border: `1px solid ${trace.lime}44`, background: trace.limeFaint, borderRadius: 3 }}
         >
-          CHALLENGE
+          ▸ RUN
         </div>
-        <span className="font-display text-sm font-semibold" style={{ color: "#18181b" }}>
+        <span className="font-display text-sm font-semibold" style={{ color: trace.text }}>
           {lesson.challenge_title}
+        </span>
+        <span className="font-mono ml-auto" style={{ fontSize: "0.625rem", letterSpacing: "0.08em", textTransform: "uppercase", color: trace.faint }}>
+          {lang}
         </span>
       </div>
 
       <div className="px-6 py-5">
         <style>{`
-          .lc-md { color: #3f3f46; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 0.875rem; line-height: 1.7; }
+          .lc-md { color: ${trace.dim}; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 0.875rem; line-height: 1.7; }
           .lc-md p { margin: 0 0 0.6rem; }
           .lc-md ul, .lc-md ol { margin: 0.3rem 0 0.7rem 1.2rem; }
           .lc-md li { margin-bottom: 0.2rem; }
-          .lc-md strong { color: #18181b; font-weight: 700; }
-          .lc-md code { font-family: 'IBM Plex Mono', monospace; font-size: 0.82em; background: #f4f4f5; color: #4d7c0f; padding: 0.1em 0.35em; border-radius: 3px; border: 1px solid #e4e4e7; }
-          .lc-md pre { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; background: #f6f6f7; border: 1px solid #e4e4e7; padding: 0.75rem 0.9rem; overflow-x: auto; border-radius: 3px; margin: 0 0 0.7rem; color: #1f2937; }
+          .lc-md strong { color: ${trace.text}; font-weight: 700; }
+          .lc-md code { font-family: 'IBM Plex Mono', monospace; font-size: 0.82em; background: ${trace.surface}; color: ${trace.lime}; padding: 0.1em 0.35em; border-radius: 3px; border: 1px solid ${trace.border}; }
+          .lc-md pre { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; background: ${trace.terminal}; border: 1px solid ${trace.border}; padding: 0.75rem 0.9rem; overflow-x: auto; border-radius: 3px; margin: 0 0 0.7rem; color: ${trace.text}; }
         `}</style>
 
         {/* Story hook (rich problems) */}
         {lesson.challenge_story && (
-          <div className="mb-4 px-4 py-3" style={{ borderLeft: "2px solid #65a30d", background: "#65a30d0a", borderRadius: "2px" }}>
+          <div className="mb-4 px-4 py-3" style={{ borderLeft: `2px solid ${trace.lime}`, background: trace.limeFaint, borderRadius: "2px" }}>
             <div className="lc-md" style={{ fontStyle: "italic" }}>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.challenge_story}</ReactMarkdown>
             </div>
@@ -94,7 +108,7 @@ export default function LessonChallenge({ lesson }) {
           </div>
         ) : (
           lesson.challenge_description && (
-            <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#3f3f46", fontWeight: 400 }}>
+            <p className="font-display text-sm leading-relaxed mb-5" style={{ color: trace.dim, fontWeight: 400 }}>
               {lesson.challenge_description}
             </p>
           )
@@ -105,23 +119,23 @@ export default function LessonChallenge({ lesson }) {
           <div className="mb-4 grid sm:grid-cols-2 gap-3">
             {lesson.challenge_input_format && (
               <div>
-                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#4d7c0f" }}>Input</div>
+                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Input</div>
                 <div className="lc-md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.challenge_input_format}</ReactMarkdown></div>
               </div>
             )}
             {lesson.challenge_output_format && (
               <div>
-                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#4d7c0f" }}>Output</div>
+                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Output</div>
                 <div className="lc-md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.challenge_output_format}</ReactMarkdown></div>
               </div>
             )}
             {Array.isArray(lesson.challenge_constraints) && lesson.challenge_constraints.length > 0 && (
               <div className="sm:col-span-2">
-                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#4d7c0f" }}>Constraints</div>
+                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Constraints</div>
                 <ul className="space-y-0.5">
                   {lesson.challenge_constraints.map((c, i) => (
-                    <li key={i} className="font-mono text-xs flex gap-2" style={{ color: "#52525b" }}>
-                      <span style={{ color: "#65a30d" }}>•</span><span>{c}</span>
+                    <li key={i} className="font-mono text-xs flex gap-2" style={{ color: trace.dim }}>
+                      <span style={{ color: trace.lime }}>•</span><span>{c}</span>
                     </li>
                   ))}
                 </ul>
@@ -132,10 +146,10 @@ export default function LessonChallenge({ lesson }) {
 
         {/* Test cases */}
         {lesson.challenge_test_cases?.length > 0 && (
-          <div className="mb-5" style={{ border: "1px solid #e4e4e7", borderRadius: "4px", overflow: "hidden" }}>
+          <div className="mb-5" style={{ ...traceStyles.terminal, overflow: "hidden" }}>
             <div
               className="px-4 py-2 font-mono text-xs tracking-widest uppercase"
-              style={{ borderBottom: "1px solid #e4e4e7", color: "#6b7280", background: "#fafafa" }}
+              style={{ borderBottom: `1px solid ${trace.border}`, color: trace.faint, background: trace.surface }}
             >
               test cases
             </div>
@@ -143,12 +157,12 @@ export default function LessonChallenge({ lesson }) {
               <div
                 key={i}
                 className="flex flex-wrap gap-6 px-4 py-3 font-mono text-xs"
-                style={{ background: "#f6f6f7", borderBottom: i < lesson.challenge_test_cases.length - 1 ? "1px solid #e4e4e7" : "none" }}
+                style={{ background: trace.terminal, borderBottom: i < lesson.challenge_test_cases.length - 1 ? `1px solid ${trace.border}` : "none" }}
               >
-                <span style={{ color: "#6b7280" }}>#{i + 1}</span>
-                <span><span style={{ color: "#6b7280" }}>in </span><span style={{ color: "#1f2937" }}>{tc.input}</span></span>
-                <span style={{ color: "#6b7280" }}>→</span>
-                <span><span style={{ color: "#6b7280" }}>out </span><span style={{ color: "#166534" }}>{tc.expected_output}</span></span>
+                <span style={{ color: trace.faint }}>#{i + 1}</span>
+                <span><span style={{ color: trace.faint }}>in </span><span style={{ color: trace.text }}>{tc.input}</span></span>
+                <span style={{ color: trace.faint }}>→</span>
+                <span><span style={{ color: trace.faint }}>out </span><span style={{ color: trace.ok }}>{tc.expected_output}</span></span>
               </div>
             ))}
           </div>
@@ -162,7 +176,7 @@ export default function LessonChallenge({ lesson }) {
             onRun={handleRun}
             output={output}
             isRunning={isRunning}
-            filename="challenge.py"
+            filename={`challenge.${ext}`}
           />
         </div>
 
@@ -174,12 +188,12 @@ export default function LessonChallenge({ lesson }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="mb-4 px-5 py-4 flex items-center gap-3"
-              style={{ border: "1px solid #65a30d44", background: "#65a30d12", borderLeft: "2px solid #65a30d", borderRadius: "2px" }}
+              style={{ border: `1px solid ${trace.lime}44`, background: trace.okWash, borderLeft: `2px solid ${trace.lime}`, borderRadius: "2px" }}
             >
-              <CheckCircle2 size={18} color="#4d7c0f" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+              <CheckCircle2 size={18} color={trace.lime} strokeWidth={2.5} style={{ flexShrink: 0 }} />
               <div>
-                <div className="font-display font-bold text-sm" style={{ color: "#18181b" }}>Challenge complete.</div>
-                <div className="font-display text-xs" style={{ color: "#52525b" }}>All tests passed.</div>
+                <div className="font-display font-bold text-sm" style={{ color: trace.text }}>Challenge complete.</div>
+                <div className="font-display text-xs" style={{ color: trace.dim }}>All tests passed.</div>
               </div>
             </motion.div>
           )}
@@ -193,9 +207,9 @@ export default function LessonChallenge({ lesson }) {
               className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150 mb-3"
               style={{
                 borderRadius: "4px",
-                border: `1px solid ${showSolution ? "#4d7c0f33" : "#d4d4d8"}`,
-                color: showSolution ? "#4d7c0f" : "#3f3f46",
-                background: showSolution ? "#4d7c0f14" : "transparent",
+                border: `1px solid ${showSolution ? `${trace.lime}33` : trace.borderStrong}`,
+                color: showSolution ? trace.lime : trace.dim,
+                background: showSolution ? trace.limeFaint : "transparent",
               }}
             >
               {showSolution ? "Hide Solution" : "/ Solution"}
@@ -208,13 +222,13 @@ export default function LessonChallenge({ lesson }) {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  <div style={{ border: "1px solid #e4e4e7", borderRadius: "4px", overflow: "hidden", background: "#f6f6f7" }}>
-                    <div className="px-4 py-2.5" style={{ borderBottom: "1px solid #e4e4e7", background: "#fafafa" }}>
-                      <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#6b7280" }}>solution.py</span>
+                  <div style={{ ...traceStyles.terminal, overflow: "hidden" }}>
+                    <div className="px-4 py-2.5" style={{ borderBottom: `1px solid ${trace.border}`, background: trace.surface }}>
+                      <span className="font-mono text-xs tracking-widest uppercase" style={{ color: trace.faint }}>solution.{ext}</span>
                     </div>
                     <pre
                       className="font-mono overflow-x-auto p-5"
-                      style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#1f2937" }}
+                      style={{ fontSize: "0.75rem", lineHeight: "1.7", color: trace.text }}
                     >
                       {lesson.challenge_solution_code}
                     </pre>

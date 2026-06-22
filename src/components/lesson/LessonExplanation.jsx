@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Copy, Check } from "lucide-react";
+import { trace } from "@/components/lesson/trace/theme";
 
 function CodeBlock({ children, className }) {
   const [copied, setCopied] = useState(false);
@@ -16,16 +17,30 @@ function CodeBlock({ children, className }) {
   };
 
   return (
-    <div className="my-5 rounded" style={{ border: "1px solid #e0e0e0", background: "#f8f8f8" }}>
+    <div
+      className="my-5 rounded"
+      style={{ border: `1px solid ${trace.border}`, background: trace.terminal }}
+    >
       <div
         className="flex items-center justify-between px-4 py-2"
-        style={{ borderBottom: "1px solid #e0e0e0", background: "#f0f0f0" }}
+        style={{ borderBottom: `1px solid ${trace.border}`, background: trace.terminal }}
       >
-        <span className="font-mono text-xs" style={{ color: "#999" }}>{lang}</span>
+        <span
+          className="font-mono text-xs"
+          style={{ color: trace.lime, letterSpacing: "0.08em" }}
+        >
+          {lang}
+        </span>
         <button
           onClick={handleCopy}
           className="flex items-center gap-1 font-mono text-xs transition-colors"
-          style={{ color: copied ? "#2d8a4e" : "#999" }}
+          style={{ color: copied ? trace.lime : trace.faint }}
+          onMouseEnter={(e) => {
+            if (!copied) e.currentTarget.style.color = trace.lime;
+          }}
+          onMouseLeave={(e) => {
+            if (!copied) e.currentTarget.style.color = trace.faint;
+          }}
         >
           {copied ? <Check size={11} /> : <Copy size={11} />}
           {copied ? "copied" : "copy"}
@@ -37,11 +52,11 @@ function CodeBlock({ children, className }) {
             <div key={i} className="flex px-4">
               <span
                 className="select-none flex-shrink-0 text-right w-6 mr-4"
-                style={{ color: "#ccc", fontSize: "0.7rem" }}
+                style={{ color: trace.faint, fontSize: "0.7rem" }}
               >
                 {i + 1}
               </span>
-              <span style={{ color: "#333" }}>{line || " "}</span>
+              <span style={{ color: trace.text }}>{line || " "}</span>
             </div>
           ))}
         </code>
@@ -57,7 +72,7 @@ export default function LessonExplanation({ explanation, concept }) {
     <div className="lesson-doc">
       <style>{`
         .lesson-doc {
-          color: #1a1a1a;
+          color: #e8e8e8;
           line-height: 1.75;
           font-family: 'IBM Plex Sans', system-ui, sans-serif;
         }
@@ -65,7 +80,7 @@ export default function LessonExplanation({ explanation, concept }) {
           font-family: 'IBM Plex Serif', Georgia, serif;
           font-size: 1.6rem;
           font-weight: 700;
-          color: #111;
+          color: #e8e8e8;
           margin-bottom: 1.25rem;
           margin-top: 0;
           letter-spacing: -0.005em;
@@ -75,7 +90,7 @@ export default function LessonExplanation({ explanation, concept }) {
           font-family: 'IBM Plex Serif', Georgia, serif;
           font-size: 1.15rem;
           font-weight: 600;
-          color: #111;
+          color: #e8e8e8;
           margin-top: 2rem;
           margin-bottom: 0.6rem;
           letter-spacing: 0;
@@ -86,17 +101,23 @@ export default function LessonExplanation({ explanation, concept }) {
           font-family: 'IBM Plex Serif', Georgia, serif;
           font-size: 1rem;
           font-weight: 600;
-          color: #222;
+          color: #e8e8e8;
           margin-top: 1.5rem;
           margin-bottom: 0.4rem;
         }
         .lesson-doc p {
           font-size: 0.9375rem;
-          color: #222;
+          color: #e8e8e8;
           margin-bottom: 0.85rem;
           line-height: 1.75;
           font-weight: 400;
         }
+        .lesson-doc a {
+          color: #b8ff00;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+        .lesson-doc a:hover { color: #b8ff00; }
         .lesson-doc ul {
           margin: 0.5rem 0 1rem 1.25rem;
           padding-left: 0;
@@ -109,16 +130,19 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc li {
           font-size: 0.9375rem;
-          color: #222;
+          color: #e8e8e8;
           margin-bottom: 0.3rem;
           padding-left: 0;
           position: relative;
           line-height: 1.7;
           font-weight: 400;
         }
+        .lesson-doc li::marker {
+          color: #6a6a6a;
+        }
         .lesson-doc strong, .lesson-doc b {
           font-weight: 700;
-          color: #111;
+          color: #f0f0f0;
         }
         .lesson-doc em {
           font-style: italic;
@@ -126,24 +150,24 @@ export default function LessonExplanation({ explanation, concept }) {
         .lesson-doc code {
           font-family: 'IBM Plex Mono', 'Courier New', monospace;
           font-size: 0.82em;
-          background: #f4f4f5;
-          color: #4d7c0f;
-          padding: 0.1em 0.35em;
+          background: #161616;
+          color: #b8ff00;
+          padding: 2px 6px;
           border-radius: 3px;
-          border: 1px solid #e4e4e7;
+          border: 1px solid #1e1e1e;
         }
         .lesson-doc blockquote {
-          border-left: 3px solid #65a30d;
+          border-left: 2px solid #b8ff00;
           padding: 0.75rem 1.25rem;
           margin: 1.25rem 0;
-          background: #65a30d0a;
-          color: #444;
+          background: #111111;
+          color: #a0a0a0;
           font-style: normal;
         }
-        .lesson-doc blockquote p { margin-bottom: 0; color: #444; }
+        .lesson-doc blockquote p { margin-bottom: 0; color: #a0a0a0; }
         .lesson-doc hr {
           border: none;
-          border-top: 1px solid #e5e5e5;
+          border-top: 1px solid #1e1e1e;
           margin: 1.75rem 0;
         }
         .lesson-doc table {
@@ -153,17 +177,20 @@ export default function LessonExplanation({ explanation, concept }) {
           font-size: 0.875rem;
         }
         .lesson-doc th {
-          background: #f5f5f5;
-          border: 1px solid #ddd;
+          background: #161616;
+          border: 1px solid #1e1e1e;
           padding: 0.5rem 0.75rem;
           font-weight: 700;
           text-align: left;
-          color: #111;
+          color: #e8e8e8;
         }
         .lesson-doc td {
-          border: 1px solid #ddd;
+          border: 1px solid #1e1e1e;
           padding: 0.45rem 0.75rem;
-          color: #333;
+          color: #e8e8e8;
+        }
+        .lesson-doc tbody tr:nth-child(even) td {
+          background: #0d0d0d;
         }
       `}</style>
 

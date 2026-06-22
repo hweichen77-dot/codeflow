@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Check, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { trace, traceStyles } from "@/components/lesson/trace/theme";
 
-export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
+export default function CheckBlock({ questions, sectionNumber, onComplete }) {
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState({});
   const totalQuestions = questions?.length || 0;
@@ -26,22 +27,17 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
   };
 
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: "4px", marginTop: "24px", marginBottom: "24px" }}>
+    <div style={{ ...traceStyles.panel, marginTop: "24px", marginBottom: "24px" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid #e4e4e7" }}>
-        <div style={{ width: "4px", background: "#ea580c", flexShrink: 0 }} />
+      <div style={{ display: "flex", alignItems: "stretch", borderBottom: `1px solid ${trace.border}` }}>
+        <div style={{ width: "4px", background: trace.lime, flexShrink: 0 }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, padding: "10px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            <div>
-              <div style={{ fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#18181b", lineHeight: 1.2 }}>
-                PARTICIPATION
-              </div>
-              <div style={{ fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#18181b", lineHeight: 1.2 }}>
-                ACTIVITY
-              </div>
+            <div style={{ ...traceStyles.monoLabel, lineHeight: 1.2 }}>
+              ▸ CHECK
             </div>
-            <div style={{ width: "1px", height: "28px", background: "#e4e4e7" }} />
-            <span style={{ fontSize: "0.875rem", color: "#52525b" }}>
+            <div style={{ width: "1px", height: "28px", background: trace.border }} />
+            <span style={{ fontSize: "0.875rem", color: trace.dim }}>
               {sectionNumber}: Quiz
             </span>
           </div>
@@ -52,10 +48,10 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                 animate={{ opacity: 1, scale: 1 }}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: "4px",
-                  fontFamily: "monospace", fontSize: "0.7rem", fontWeight: 700,
-                  color: correctCount === totalQuestions ? "#059669" : "#ea580c",
-                  background: correctCount === totalQuestions ? "#05966914" : "#ea580c14",
-                  border: `1px solid ${correctCount === totalQuestions ? "#05966933" : "#ea580c33"}`,
+                  fontFamily: trace.mono, fontSize: "0.7rem", fontWeight: 700,
+                  color: correctCount === totalQuestions ? trace.ok : trace.fail,
+                  background: correctCount === totalQuestions ? trace.okWash : trace.failWash,
+                  border: `1px solid ${correctCount === totalQuestions ? trace.ok : trace.fail}`,
                   padding: "3px 10px", borderRadius: "3px",
                 }}
               >
@@ -66,9 +62,9 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
             <div style={{
               width: "32px", height: "32px", borderRadius: "4px",
               display: "flex", alignItems: "center", justifyContent: "center",
-              background: allChecked ? "#ea580c" : "#e4e4e7",
+              background: allChecked ? trace.lime : trace.surface,
             }}>
-              {allChecked && <Check size={20} color="#fff" strokeWidth={3} />}
+              {allChecked && <Check size={20} color={trace.bg} strokeWidth={3} />}
             </div>
           </div>
         </div>
@@ -86,15 +82,15 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: qi * 0.07 }}
             style={{
-              padding: "20px 28px", borderBottom: "1px solid #e4e4e7",
-              background: isChecked ? (isCorrect ? "#05966908" : "#dc262608") : "#ffffff",
+              padding: "20px 28px", borderBottom: `1px solid ${trace.border}`,
+              background: isChecked ? (isCorrect ? trace.okWash : trace.failWash) : "transparent",
               transition: "background 0.3s ease",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "0.9375rem", color: "#18181b", lineHeight: 1.6, margin: "0 0 14px" }}>
-                  <span style={{ color: "#52525b", marginRight: "8px" }}>{qi + 1})</span>
+                <p style={{ fontSize: "0.9375rem", color: trace.text, lineHeight: 1.6, margin: "0 0 14px" }}>
+                  <span style={{ color: trace.dim, marginRight: "8px" }}>{qi + 1})</span>
                   {q.question}
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginLeft: "24px" }}>
@@ -113,24 +109,24 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                           display: "flex", alignItems: "center", gap: "10px",
                           cursor: isChecked ? "default" : "pointer",
                           padding: "6px 10px", fontSize: "0.9375rem",
-                          color: isThisCorrect ? "#059669" : isThisWrong ? "#dc2626" : "#18181b",
+                          color: isThisCorrect ? trace.ok : isThisWrong ? trace.fail : trace.text,
                           fontWeight: isThisCorrect ? 600 : 400,
                           borderRadius: "4px",
-                          background: isThisCorrect ? "#05966914" : isThisWrong ? "#dc262614" : isSelected ? "#f6f6f7" : "transparent",
-                          border: isThisCorrect ? "1px solid #05966933" : isThisWrong ? "1px solid #dc262633" : "1px solid transparent",
+                          background: isThisCorrect ? trace.okWash : isThisWrong ? trace.failWash : isSelected ? trace.surface : "transparent",
+                          border: isThisCorrect ? `1px solid ${trace.ok}` : isThisWrong ? `1px solid ${trace.fail}` : "1px solid transparent",
                           transition: "all 0.2s",
                         }}
                       >
                         <span
                           style={{
                             width: "16px", height: "16px", borderRadius: "50%",
-                            border: `2px solid ${isThisCorrect ? "#059669" : isThisWrong ? "#dc2626" : isSelected ? "#6b7280" : "#d4d4d8"}`,
+                            border: `2px solid ${isThisCorrect ? trace.ok : isThisWrong ? trace.fail : isSelected ? trace.dim : trace.borderStrong}`,
                             display: "flex", alignItems: "center", justifyContent: "center",
                             flexShrink: 0,
                           }}
                         >
                           {isSelected && (
-                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: isThisCorrect ? "#059669" : isThisWrong ? "#dc2626" : "#6b7280" }} />
+                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: isThisCorrect ? trace.ok : isThisWrong ? trace.fail : trace.dim }} />
                           )}
                         </span>
                         {opt}
@@ -147,7 +143,7 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                     onClick={() => handleCheck(qi)}
                     style={{
                       marginTop: "12px", marginLeft: "24px",
-                      background: "#ea580c", color: "#ffffff", border: "none", borderRadius: "4px",
+                      background: trace.lime, color: trace.bg, border: "none", borderRadius: "4px",
                       padding: "7px 20px", fontSize: "0.8125rem", fontWeight: 700, cursor: "pointer",
                     }}
                   >
@@ -162,11 +158,11 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                       style={{
                         display: "flex", alignItems: "flex-start", gap: "6px",
                         fontSize: "0.8125rem",
-                        color: isCorrect ? "#059669" : "#dc2626",
+                        color: isCorrect ? trace.ok : trace.fail,
                         marginTop: "10px", marginLeft: "24px", lineHeight: 1.6,
-                        background: isCorrect ? "#05966914" : "#dc262614",
+                        background: isCorrect ? trace.okWash : trace.failWash,
                         padding: "8px 12px", borderRadius: "4px",
-                        borderLeft: `3px solid ${isCorrect ? "#059669" : "#dc2626"}`,
+                        borderLeft: `3px solid ${isCorrect ? trace.ok : trace.fail}`,
                       }}
                     >
                       {isCorrect
@@ -183,12 +179,12 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
                 style={{
                   flexShrink: 0, width: "32px", height: "32px", borderRadius: "4px",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: isChecked ? (isCorrect ? "#059669" : "#dc2626") : "#e4e4e7",
+                  background: isChecked ? (isCorrect ? trace.ok : trace.fail) : trace.surface,
                 }}
               >
                 {isChecked && (isCorrect
-                  ? <Check size={18} color="#fff" strokeWidth={3} />
-                  : <X size={18} color="#fff" strokeWidth={3} />)}
+                  ? <Check size={18} color={trace.bg} strokeWidth={3} />
+                  : <X size={18} color={trace.bg} strokeWidth={3} />)}
               </motion.div>
             </div>
           </motion.div>
@@ -200,12 +196,12 @@ export default function ZybooksQuiz({ questions, sectionNumber, onComplete }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          style={{ padding: "14px 28px", borderTop: "1px solid #e4e4e7", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+          style={{ padding: "14px 28px", borderTop: `1px solid ${trace.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
-          <span style={{ fontSize: "0.8125rem", color: "#52525b" }}>
+          <span style={{ fontSize: "0.8125rem", color: trace.dim }}>
             {correctCount === totalQuestions ? "Perfect score!" : `Keep practicing — review the explanations above.`}
           </span>
-          <span style={{ fontSize: "0.8125rem", color: "#ea580c", fontWeight: 700 }}>
+          <span style={{ fontSize: "0.8125rem", color: trace.lime, fontWeight: 700 }}>
             {correctCount}/{totalQuestions} correct
           </span>
         </motion.div>

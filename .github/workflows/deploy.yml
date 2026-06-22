@@ -23,6 +23,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      # JDK so verify:solutions can compile+run the AP CSA (Java) reference
+      # solutions. Without it those cases are skipped (never silently passed).
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
       - run: npm ci
       # Content gates — a broken lesson or a reference solution that no longer
       # passes its own test cases must fail CI, not ship to users.

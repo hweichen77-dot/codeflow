@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Star } from "lucide-react";
 import confetti from "canvas-confetti";
+import { trace, traceStyles } from "@/components/lesson/trace/theme";
 
 export default function LessonPointsSummary({
   lessonTitle,
@@ -33,119 +33,89 @@ export default function LessonPointsSummary({
   }, [allDone]);
 
   const items = [
-    { label: "Reading", done: readingComplete, pts: 2, emoji: "" },
-    { label: "Participation Activities", done: participationComplete, pts: 3, emoji: "" },
-    { label: "Quiz", done: quizComplete, pts: 3, emoji: "" },
-    { label: "Coding Challenge", done: challengeComplete, pts: 2, emoji: "" },
+    { label: "Reading", done: readingComplete, pts: 2 },
+    { label: "Participation Activities", done: participationComplete, pts: 3 },
+    { label: "Quiz", done: quizComplete, pts: 3 },
+    { label: "Coding Challenge", done: challengeComplete, pts: 2 },
   ];
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "4px", overflow: "hidden" }}>
+    <div style={{ ...traceStyles.terminal, overflow: "hidden", fontFamily: trace.mono }}>
       {/* Header */}
-      <div style={{ padding: "20px 28px", borderBottom: "1px solid #e8e8e8", background: allDone ? "#f0fff0" : "#fff" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ padding: "20px 28px", borderBottom: `1px solid ${trace.border}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#222", margin: "0 0 4px", display: "flex", alignItems: "center", gap: "8px" }}>
-              {allDone && <span style={{ fontSize: "1.1rem" }}></span>}
-              Activity summary: {lessonTitle}
-            </h3>
+            <div style={{ ...traceStyles.monoLabel, color: trace.lime, fontSize: "0.8125rem", textTransform: "none", letterSpacing: "0.04em" }}>
+              {allDone ? "> RUN COMPLETE" : "> RUN IN PROGRESS"}
+            </div>
+            <div style={{ fontSize: "0.75rem", color: trace.dim, marginTop: "6px", fontFamily: trace.mono }}>
+              {lessonTitle}
+            </div>
             {allDone && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="font-mono text-xs tracking-widest"
-                style={{ color: "#2d7a3a", marginTop: "2px" }}
+                style={{ color: trace.lime, marginTop: "8px", fontFamily: trace.mono, fontSize: "0.7rem", letterSpacing: "0.12em" }}
               >
-                LESSON COMPLETE — AMAZING WORK!
+                ✓ LESSON COMPLETE — ALL TASKS PASSED
               </motion.div>
             )}
           </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: "1.35rem", fontWeight: 800, color: allDone ? "#2d7a3a" : "#222", letterSpacing: "-0.03em" }}>
-              {earnedPoints} <span style={{ fontSize: "0.85rem", color: "#888", fontWeight: 400 }}>/ {totalPoints}</span>
+          <div style={{ textAlign: "right", fontFamily: trace.mono }}>
+            <div style={{ fontSize: "0.7rem", color: trace.faint, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              XP
             </div>
-            <div style={{ fontSize: "0.7rem", color: "#aaa", fontFamily: "monospace", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              points
+            <div style={{ fontSize: "1.35rem", fontWeight: 700, color: allDone ? trace.lime : trace.text, letterSpacing: "-0.02em" }}>
+              {earnedPoints} <span style={{ fontSize: "0.85rem", color: trace.faint, fontWeight: 400 }}>/ {totalPoints}</span>
             </div>
           </div>
         </div>
 
         {/* Animated progress bar */}
-        <div style={{ height: "6px", background: "#e8e8e8", borderRadius: "3px", marginTop: "14px", overflow: "hidden" }}>
+        <div style={{ height: "6px", background: trace.surface, borderRadius: "3px", marginTop: "14px", overflow: "hidden", border: `1px solid ${trace.border}` }}>
           <motion.div
             initial={{ width: "0%" }}
             animate={{ width: `${pct}%` }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             style={{
               height: "100%",
-              background: allDone
-                ? "linear-gradient(90deg, #2d7a3a, #4caf50)"
-                : `linear-gradient(90deg, #4d7c0f, #84cc16)`,
+              background: `linear-gradient(90deg, ${trace.limeDim}, ${trace.lime})`,
               borderRadius: "3px",
             }}
           />
-        </div>
-
-        {/* Stars */}
-        <div style={{ display: "flex", gap: "4px", marginTop: "10px" }}>
-          {[1, 2, 3].map(star => (
-            <motion.div
-              key={star}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: pct >= star * 33 ? 1 : 0.5, opacity: pct >= star * 33 ? 1 : 0.2 }}
-              transition={{ delay: star * 0.15, type: "spring", stiffness: 400 }}
-            >
-              <Star
-                size={16}
-                fill={pct >= star * 33 ? "#f59e0b" : "none"}
-                color={pct >= star * 33 ? "#f59e0b" : "#ddd"}
-              />
-            </motion.div>
-          ))}
         </div>
       </div>
 
       {/* Task list */}
       <div style={{ padding: "16px 28px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {items.map((item, i) => (
             <motion.div
               key={item.label}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.06 }}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontFamily: trace.mono, fontSize: "0.8125rem" }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <motion.div
-                  animate={{ scale: item.done ? [1, 1.3, 1] : 1 }}
-                  transition={{ duration: 0.3 }}
-                  style={{
-                    width: "22px", height: "22px", borderRadius: "50%",
-                    background: item.done ? "#2d7a3a" : "#e0e0e0",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  {item.done && <Check size={12} color="#fff" strokeWidth={3} />}
-                </motion.div>
-                <span style={{ fontSize: "0.875rem", color: item.done ? "#222" : "#888", fontWeight: item.done ? 500 : 400 }}>
-                  {item.emoji} {item.label}
+              <span style={{ color: item.done ? trace.text : trace.muted }}>
+                <span style={{ color: item.done ? trace.lime : trace.muted, marginRight: "8px" }}>
+                  {item.done ? "[x]" : "[ ]"}
                 </span>
-              </div>
+                {item.label}
+              </span>
               <AnimatePresence>
                 {item.done ? (
                   <motion.span
                     key="done"
                     initial={{ opacity: 0, scale: 0.7 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    style={{ fontSize: "0.8125rem", color: "#2d7a3a", fontWeight: 700 }}
+                    style={{ color: trace.lime, fontWeight: 700 }}
                   >
-                    +{item.pts} pts
+                    +{item.pts} XP
                   </motion.span>
                 ) : (
-                  <span key="todo" style={{ fontSize: "0.8125rem", color: "#bbb" }}>
-                    {item.pts} pts
+                  <span key="todo" style={{ color: trace.muted }}>
+                    {item.pts} XP
                   </span>
                 )}
               </AnimatePresence>
@@ -156,20 +126,25 @@ export default function LessonPointsSummary({
 
       {/* Next section */}
       {nextLessonTitle && (
-        <div style={{ padding: "14px 28px", borderTop: "1px solid #e8e8e8", textAlign: "right", background: allDone ? "#f9fff9" : "#fafafa" }}>
+        <div style={{ padding: "14px 28px", borderTop: `1px solid ${trace.border}`, textAlign: "right" }}>
           <button
             onClick={onNextLesson}
             style={{
-              fontSize: "0.875rem",
-              color: allDone ? "#2d7a3a" : "#2980b9",
-              background: "none", border: "none",
-              cursor: "pointer", fontWeight: 600,
+              fontFamily: trace.mono,
+              fontSize: "0.8125rem",
+              fontWeight: 700,
+              color: "#0a0a0a",
+              background: trace.lime,
+              border: "none",
+              borderRadius: "4px",
+              padding: "8px 18px",
+              cursor: "pointer",
               display: "inline-flex", alignItems: "center", gap: "6px",
             }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.7"}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
-            {allDone ? " Next:" : "↓"} {nextLessonTitle} →
+            {nextLessonTitle} →
           </button>
         </div>
       )}

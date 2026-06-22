@@ -17,6 +17,7 @@ export default function Layout({ children, currentPageName }) {
 
   const navLinks = [
     { label: "AI Track", page: "AITrack" },
+    { label: "AP CS", page: "APCS", badge: "New" },
     { label: "Projects", page: "Projects" },
     { label: "Challenges", page: "Challenges" },
     { label: "Compete", page: "Competitive", badge: "Advanced" },

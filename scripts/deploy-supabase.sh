@@ -13,8 +13,9 @@ npx -y supabase@latest login
 read -r -p "Supabase project ref: " PROJECT_REF
 npx -y supabase@latest link --project-ref "$PROJECT_REF"
 
-# 3. Deploy the C++ runner. No secret needed; verify_jwt is off (config.toml).
-npx -y supabase@latest functions deploy run-cpp --no-verify-jwt
+# 3. Deploy the C++ and Java runners (verify_jwt=true per config.toml).
+npx -y supabase@latest functions deploy run-cpp
+npx -y supabase@latest functions deploy run-java
 
 echo
 echo "Done. Now set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (see"

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { trace, traceStyles } from "@/components/lesson/trace/theme";
 
 function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnswer }) {
   const [selected, setSelected] = useState(null);
@@ -17,14 +18,14 @@ function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnsw
 
   return (
     <div style={{
-      padding: "20px 28px", borderBottom: "1px solid #e8e8e8",
-      background: checked ? (isCorrect ? "#f9fff9" : "#fff9f9") : "#fff",
+      padding: "20px 28px", borderBottom: `1px solid ${trace.border}`,
+      background: checked ? (isCorrect ? trace.okWash : trace.failWash) : trace.raised,
       transition: "background 0.3s ease",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: "0.9375rem", color: "#333", lineHeight: 1.6, margin: "0 0 14px" }}>
-            <span style={{ color: "#888", marginRight: "8px" }}>{index})</span>
+          <p style={{ fontSize: "0.9375rem", color: trace.text, lineHeight: 1.6, margin: "0 0 14px" }}>
+            <span style={{ color: trace.faint, marginRight: "8px" }}>{index})</span>
             {question}
           </p>
           <div style={{ display: "flex", gap: "10px", marginLeft: "24px" }}>
@@ -42,8 +43,8 @@ function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnsw
                   style={{
                     padding: "8px 20px", fontSize: "0.875rem", fontWeight: 600,
                     borderRadius: "4px", cursor: checked ? "default" : "pointer", border: "none",
-                    background: isThisCorrect ? "#2d7a3a" : isThisWrong ? "#e74c3c" : isSelected ? "#555" : "#e0e0e0",
-                    color: isSelected || isThisCorrect || isThisWrong ? "#fff" : "#444",
+                    background: isThisCorrect ? trace.ok : isThisWrong ? trace.fail : isSelected ? trace.borderActive : trace.surface,
+                    color: isThisCorrect ? trace.bg : isThisWrong ? "#fff" : isSelected ? trace.text : trace.dim,
                     transition: "all 0.2s",
                   }}
                 >
@@ -60,7 +61,7 @@ function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnsw
               onClick={handleCheck}
               style={{
                 marginTop: "12px", marginLeft: "24px",
-                background: "#65a30d", color: "#0f1b00", border: "none", borderRadius: "2px",
+                background: trace.lime, color: trace.bg, border: "none", borderRadius: "2px",
                 padding: "7px 20px", fontSize: "0.8125rem", fontWeight: 700, cursor: "pointer",
               }}
             >
@@ -74,11 +75,11 @@ function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnsw
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 style={{
-                  fontSize: "0.8125rem", color: isCorrect ? "#2d7a3a" : "#c0392b",
+                  fontSize: "0.8125rem", color: isCorrect ? trace.ok : trace.fail,
                   marginTop: "10px", marginLeft: "24px", lineHeight: 1.6,
-                  background: isCorrect ? "#f0fff4" : "#fff0f0",
+                  background: isCorrect ? trace.okWash : trace.failWash,
                   padding: "8px 12px", borderRadius: "4px",
-                  borderLeft: `3px solid ${isCorrect ? "#2d7a3a" : "#c0392b"}`,
+                  borderLeft: `3px solid ${isCorrect ? trace.ok : trace.fail}`,
                 }}
               >
                 {isCorrect ? "✓ Correct! " : "✕ Incorrect. "}{explanation}
@@ -93,10 +94,10 @@ function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnsw
           style={{
             flexShrink: 0, width: "32px", height: "32px", borderRadius: "4px",
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: checked ? (isCorrect ? "#65a30d" : "#e74c3c") : "#e0e0e0",
+            background: checked ? (isCorrect ? trace.ok : trace.fail) : trace.surface,
           }}
         >
-          {checked && <Check size={18} color="#fff" strokeWidth={3} />}
+          {checked && <Check size={18} color={isCorrect ? trace.bg : "#fff"} strokeWidth={3} />}
         </motion.div>
       </div>
     </div>
@@ -116,14 +117,14 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
 
   return (
     <div style={{
-      padding: "20px 28px", borderBottom: "1px solid #e8e8e8",
-      background: checked ? (isCorrect ? "#f9fff9" : "#fff9f9") : "#fff",
+      padding: "20px 28px", borderBottom: `1px solid ${trace.border}`,
+      background: checked ? (isCorrect ? trace.okWash : trace.failWash) : trace.raised,
       transition: "background 0.3s ease",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: "0.9375rem", color: "#333", lineHeight: 1.6, margin: "0 0 14px" }}>
-            <span style={{ color: "#888", marginRight: "8px" }}>{index})</span>
+          <p style={{ fontSize: "0.9375rem", color: trace.text, lineHeight: 1.6, margin: "0 0 14px" }}>
+            <span style={{ color: trace.faint, marginRight: "8px" }}>{index})</span>
             {question}
           </p>
           <div style={{ marginLeft: "24px" }}>
@@ -136,12 +137,12 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
               disabled={checked}
               placeholder="Type your answer..."
               style={{
-                fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-                border: `1px solid ${checked ? (isCorrect ? "#2d7a3a" : "#e74c3c") : "#d4d4d8"}`,
+                fontFamily: trace.mono,
+                border: `1px solid ${checked ? (isCorrect ? trace.ok : trace.fail) : trace.borderStrong}`,
                 borderRadius: "2px", padding: "9px 14px", fontSize: "0.875rem",
                 lineHeight: 1.5, minHeight: "40px",
-                width: "260px", outline: "none", color: "#18181b",
-                background: checked ? (isCorrect ? "#e8f5e9" : "#fde8e8") : "#fff",
+                width: "260px", outline: "none", color: trace.text,
+                background: checked ? (isCorrect ? trace.okWash : trace.failWash) : trace.surface,
                 transition: "all 0.2s",
               }}
               onKeyDown={e => { if (e.key === "Enter" && !checked && input.trim()) handleCheck(); }}
@@ -154,8 +155,8 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
                   onClick={handleCheck}
                   disabled={!input.trim()}
                   style={{
-                    background: input.trim() ? "#65a30d" : "#d4d4d8",
-                    color: input.trim() ? "#0f1b00" : "#fff", border: "none", borderRadius: "2px",
+                    background: input.trim() ? trace.lime : trace.muted,
+                    color: input.trim() ? trace.bg : trace.faint, border: "none", borderRadius: "2px",
                     padding: "7px 20px", fontSize: "0.8125rem", fontWeight: 700,
                     cursor: input.trim() ? "pointer" : "not-allowed",
                   }}
@@ -166,7 +167,7 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
               {!checked && (
                 <button
                   onClick={() => { setInput(correctAnswer); setChecked(true); onAnswer(false); }}
-                  style={{ fontSize: "0.8125rem", color: "#999", background: "none", border: "none", cursor: "pointer", fontWeight: 500, textDecoration: "underline" }}
+                  style={{ fontSize: "0.8125rem", color: trace.faint, background: "none", border: "none", cursor: "pointer", fontWeight: 500, textDecoration: "underline" }}
                 >
                   Show answer
                 </button>
@@ -178,11 +179,11 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   style={{
-                    fontSize: "0.8125rem", color: isCorrect ? "#2d7a3a" : "#c0392b",
+                    fontSize: "0.8125rem", color: isCorrect ? trace.ok : trace.fail,
                     marginTop: "10px", lineHeight: 1.6,
-                    background: isCorrect ? "#f0fff4" : "#fff0f0",
+                    background: isCorrect ? trace.okWash : trace.failWash,
                     padding: "8px 12px", borderRadius: "4px",
-                    borderLeft: `3px solid ${isCorrect ? "#2d7a3a" : "#c0392b"}`,
+                    borderLeft: `3px solid ${isCorrect ? trace.ok : trace.fail}`,
                   }}
                 >
                   {isCorrect ? "✓ Correct!" : `✕ The answer is: "${correctAnswer}". `}{explanation}
@@ -197,10 +198,10 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
           style={{
             flexShrink: 0, width: "32px", height: "32px", borderRadius: "4px",
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: checked ? (isCorrect ? "#65a30d" : "#e74c3c") : "#e0e0e0",
+            background: checked ? (isCorrect ? trace.ok : trace.fail) : trace.surface,
           }}
         >
-          {checked && <Check size={18} color="#fff" strokeWidth={3} />}
+          {checked && <Check size={18} color={isCorrect ? trace.bg : "#fff"} strokeWidth={3} />}
         </motion.div>
       </div>
     </div>
@@ -223,23 +224,18 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
   };
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "4px", marginTop: "24px", marginBottom: "24px" }}>
+    <div style={{ background: trace.raised, border: `1px solid ${trace.border}`, borderRadius: "4px", marginTop: "24px", marginBottom: "24px" }}>
       {/* Header bar */}
-      <div style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid #e0e0e0" }}>
-        <div style={{ width: "4px", background: "#65a30d", flexShrink: 0 }} />
+      <div style={{ display: "flex", alignItems: "stretch", borderBottom: `1px solid ${trace.border}` }}>
+        <div style={{ width: "4px", background: trace.lime, flexShrink: 0 }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, padding: "10px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            <div>
-              <div style={{ fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#18181b", lineHeight: 1.25 }}>
-                PARTICIPATION
-              </div>
-              <div style={{ fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#18181b", lineHeight: 1.25 }}>
-                ACTIVITY
-              </div>
+            <div style={{ ...traceStyles.monoLabel, lineHeight: 1.25 }}>
+              DRILL §{sectionNumber}.{activityIndex}
             </div>
-            <div style={{ width: "1px", height: "28px", background: "#ddd" }} />
-            <span style={{ fontSize: "0.875rem", color: "#555" }}>
-              {sectionNumber}.{activityIndex}: {activity.activity_title}
+            <div style={{ width: "1px", height: "28px", background: trace.borderStrong }} />
+            <span style={{ fontSize: "0.875rem", color: trace.dim }}>
+              {activity.activity_title}
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -248,10 +244,10 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
                 initial={{ opacity: 0, scale: 0.7 }}
                 animate={{ opacity: 1, scale: 1 }}
                 style={{
-                  fontFamily: "monospace", fontSize: "0.7rem", fontWeight: 700,
-                  color: correctCount === totalQuestions ? "#2d7a3a" : "#65a30d",
-                  background: correctCount === totalQuestions ? "#e8f5e9" : "#fff5f0",
-                  border: `1px solid ${correctCount === totalQuestions ? "#a5d6a7" : "#ffccbc"}`,
+                  fontFamily: trace.mono, fontSize: "0.7rem", fontWeight: 700,
+                  color: correctCount === totalQuestions ? trace.ok : trace.warn,
+                  background: correctCount === totalQuestions ? trace.okWash : trace.failWash,
+                  border: `1px solid ${correctCount === totalQuestions ? trace.ok : trace.warn}`,
                   padding: "3px 10px", borderRadius: "3px",
                 }}
               >
@@ -264,10 +260,10 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
               style={{
                 width: "32px", height: "32px", borderRadius: "4px",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                background: allAnswered ? "#65a30d" : "#e0e0e0",
+                background: allAnswered ? trace.lime : trace.surface,
               }}
             >
-              {allAnswered && <Check size={20} color="#fff" strokeWidth={3} />}
+              {allAnswered && <Check size={20} color={trace.bg} strokeWidth={3} />}
             </motion.div>
           </div>
         </div>
@@ -304,12 +300,12 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          style={{ padding: "12px 28px", borderTop: "1px solid #e8e8e8", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+          style={{ padding: "12px 28px", borderTop: `1px solid ${trace.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
-          <span style={{ fontSize: "0.8125rem", color: "#888" }}>
+          <span style={{ fontSize: "0.8125rem", color: trace.faint }}>
             {correctCount === totalQuestions ? " All correct!" : "Nice effort — review the explanations above."}
           </span>
-          <span style={{ fontSize: "0.8125rem", color: "#65a30d", fontWeight: 600 }}>
+          <span style={{ fontSize: "0.8125rem", color: trace.lime, fontWeight: 600 }}>
             {correctCount}/{totalQuestions} correct
           </span>
         </motion.div>
