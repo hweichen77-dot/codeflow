@@ -1,6 +1,31 @@
 # CodeFlow Content Authoring Standard
 
-Goal: every lesson reads with **GeeksforGeeks depth** and offers **zyBooks activity variety**. Minimal passive text — an interactive check every few sections. No emojis anywhere.
+Goal: every lesson reads with **GeeksforGeeks depth** and offers high **interactive variety**. Minimal passive text — an interactive check every few sections. No emojis anywhere.
+
+Lessons render in the **TRACE** reading surface: a unified dark, debugger/terminal
+style (not a light textbook page). Authors write the same data model; the renderer
+applies the look. Activity blocks surface with CodeFlow's own labels — `DRILL §N.M`
+(participation), `▸ CHECK` (quizzes), `TRACE` (step-throughs), `> RUN COMPLETE`
+(points summary). Do not reference "zyBooks" anywhere.
+
+## Tracks & languages
+
+Content spans three tracks, scoped by `project.track`:
+- `ai` (default) — the AI curriculum, Python. `src/content/curriculum/*.js`.
+- `apcsp` — AP Computer Science Principles, Python + pseudocode-in-prose. `src/content/csp/*.js`.
+- `apcsa` — AP Computer Science A, **Java**. `src/content/csa/*.js`.
+
+A lesson's runnable code language is `lesson.language` (`python` | `java` | `cpp`,
+default `python`); `lesson.challenge_language` overrides it for the challenge.
+Code stays in `starter_code`/`solution_code`/`challenge_*_code` regardless of
+language — the runner is chosen by the language field, not the field name.
+Execution is **real**: Python via in-browser Pyodide, Java via a remote OpenJDK
+judge, C++ via Compiler Explorer. Every reference solution is compiled/run against
+its test cases in CI (`verify:solutions`), so solutions must actually pass.
+
+**Java (CSA) rules:** solution and starter must declare `public class Main` with
+`public static void main(String[] args)`, no `package` statement; read stdin with
+`Scanner`. Stay within the AP CSA Java subset.
 
 ## File shape
 
@@ -8,12 +33,16 @@ Each module is `src/content/curriculum/module-0X.js`:
 
 ```js
 export default {
-  project: { id, title, description, difficulty, category, estimated_time, lessons_count, tags:[], order, cover_image:"" },
+  project: { id, title, description, difficulty, category, order, track, unit, tags:[], estimated_time, lessons_count, cover_image:"" },
   lessons: [ /* lesson objects */ ]
 };
 ```
 
-`category` ∈ `foundations | prompting | chatbots_agents | rag_search | vision_multimodal | production_ops` (the single source of truth is `src/content/categories.js` — `CATEGORY_LABELS` / `CATEGORY_ORDER`). `difficulty` ∈ `beginner | intermediate | advanced`.
+`category` is the single source of truth in `src/content/categories.js`
+(`CATEGORY_LABELS` / `CATEGORY_ORDER`) — AI categories plus `apcsp` / `apcsa`.
+`difficulty` ∈ `beginner | intermediate | advanced`. AP modules also set
+`track` (`apcsp` | `apcsa`) and `unit` (the Big Idea / Unit label the AP CS hub
+groups by).
 
 > Competitive-coding **Problems** (`src/content/competitive/*.js`) are a separate shape: they use `difficulty ∈ easy | medium | hard`, a `topic` instead of `category`, and code fields suffixed by language (`starter_cpp` / `solution_cpp`) rather than `starter_code` / `solution_code`. See `src/content/schema.js` for both shapes.
 
@@ -28,7 +57,7 @@ export default {
 - `callouts: [{ type, title, content, position }]` — type ∈ `analogy|insight|tip|warning`; position `before|after`. 2 per lesson.
 - `concept_diagram: { title, steps:[{ label, desc }] }` — 4 steps
 - `inline_quizzes: [{ question, options:[], correct_index, explanation }]` — quick mid-read check
-- `quiz_questions: [{ question, options:[4], correct_index, explanation }]` — 3 questions (renders as ZybooksQuiz)
+- `quiz_questions: [{ question, options:[4], correct_index, explanation }]` — 3 questions (renders as the `▸ CHECK` block)
 - `participation_activities: [{ activity_title, questions:[{ question, type, correct_answer, explanation }] }]` — type ∈ `true_false|fill_in`
 
 **NEW activity blocks (render via LessonBlocks — add these for variety)**
@@ -42,8 +71,12 @@ export default {
 **Code practice (keep)**
 - `starter_code`, `solution_code`, `expected_output`, `hints:[3]`
 - `challenge_title`, `challenge_description`, `challenge_starter_code`, `challenge_solution_code`, `challenge_test_cases:[{ input, expected_output, description }]`
+- `challenge_language` — `python` (default) | `java` | `cpp`. Selects the grader.
 
-> Code is **Python** (matches the AI/ML domain). Execution is LLM-simulated.
+> Challenges read **stdin** and print **stdout**; `challenge_test_cases` compare
+> exact stdout (trailing whitespace per line and one trailing newline are
+> ignored). The reference `challenge_solution_code` must pass every case — CI runs
+> it for real.
 
 ## Depth rules for `explanation` (GfG standard)
 
@@ -62,8 +95,9 @@ Aim for **5–7 distinct interaction types** per lesson. Not every block fits ev
 
 ## Hard rules
 
-- Valid JS. After editing, `node -e "import('./src/content/curriculum/module-0X.js')"` must not throw.
+- `npm run validate:content` must pass (zod) and `npm run verify:solutions` must pass (every reference solution runs green; Java needs a local JDK or runs in CI).
 - **No emojis** in any string.
 - IDs stable and unique. `order` sequential from 1.
-- Escape `$` in template literals as `\$` and backticks as needed.
-- Use the existing Module 1 Lesson 2 ("Tokens") as the reference exemplar — it has every new block populated.
+- AP module files may be authored as JSON (`export default { ... }`) to sidestep template-literal escaping; if you use template literals, escape `$` as `\$` and backticks as needed.
+- Register new AP modules in `src/content/csp/index.js` or `src/content/csa/index.js`.
+- Reference exemplars: Module 1 Lesson 2 ("Tokens") for AI depth; any `src/content/csa/*.js` lesson for the Java challenge shape.

@@ -1,10 +1,13 @@
 // AP Computer Science Principles — module aggregator.
-// Each module file exports default { project, lessons } like the AI curriculum,
-// with project.track === 'apcsp' and project.unit === the Big Idea label.
-//
-// NOTE: explicit static imports (NOT import.meta.glob) — the Node validate/verify
-// scripts import this under plain Node where glob is undefined. As each Big Idea
-// module is authored (Phase 4), add its import to MODULES below.
-export const MODULES = []
+// Each module exports default { project, lessons } with project.track === 'apcsp'.
+// Explicit static imports (Node validate/verify scripts import this).
+import csp_crd from './module-csp-crd.js'
+import csp_dat from './module-csp-dat.js'
+import csp_aap1 from './module-csp-aap1.js'
+import csp_aap2 from './module-csp-aap2.js'
+import csp_csn from './module-csp-csn.js'
+import csp_ioc from './module-csp-ioc.js'
+
+export const MODULES = [csp_crd, csp_dat, csp_aap1, csp_aap2, csp_csn, csp_ioc]
 
 export { default as BRIEFS } from './briefs.js'

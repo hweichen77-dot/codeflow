@@ -280,8 +280,13 @@ export default function ProjectDetail() {
     const pp = allProgress.filter((x) => x.project_id === p.id);
     return p.lessons_count ? pp.length >= p.lessons_count : false;
   };
-  const beginnerProjects = allProjects.filter((p) => p.difficulty === "beginner");
-  const moduleGated = isModuleGated({
+  // The Foundations gate is an AI-track concept; AP CSP/CSA modules are never
+  // gated by it. Only consider AI beginner modules when evaluating it.
+  const isAiTrack = (project.track || "ai") === "ai";
+  const beginnerProjects = allProjects.filter(
+    (p) => p.difficulty === "beginner" && (p.track || "ai") === "ai"
+  );
+  const moduleGated = isAiTrack && isModuleGated({
     finished: foundationsAreFinished(beginnerProjects, projectCompleted),
     done: projectCompleted(project),
     difficulty: project.difficulty,
