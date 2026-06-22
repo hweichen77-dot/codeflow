@@ -24,6 +24,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Content gates — a broken lesson or a reference solution that no longer
+      # passes its own test cases must fail CI, not ship to users.
+      - name: Validate content schemas
+        run: npm run validate:content
+      - name: Verify reference solutions
+        run: npm run verify:solutions
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

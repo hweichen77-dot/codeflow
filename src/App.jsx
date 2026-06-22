@@ -8,6 +8,9 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import AuthGate from '@/components/AuthGate';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import FeedbackWidget from '@/components/FeedbackWidget';
+import WelcomeModal from '@/components/WelcomeModal';
 
 // Route-level code-splitting: each page becomes its own chunk loaded on demand.
 const LessonExpander = lazy(() => import('./pages/LessonExpander'));
@@ -91,18 +94,22 @@ const Gate = () => {
     <Router basename={import.meta.env.BASE_URL}>
       <NavigationTracker />
       <AuthenticatedApp />
+      <WelcomeModal />
+      <FeedbackWidget />
     </Router>
   );
 };
 
 function App() {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Gate />
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Gate />
+          <Toaster />
+        </QueryClientProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }
 
