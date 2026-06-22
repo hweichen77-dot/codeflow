@@ -32,7 +32,7 @@ function Input({ label, ...props }) {
 }
 
 export default function AuthGate() {
-  const { signInEmail, signUpEmail, resetPassword, signInGuest, supabaseConfigured } = useAuth();
+  const { signInEmail, signUpEmail, signInGoogle, resetPassword, signInGuest, supabaseConfigured } = useAuth();
   const navigate = useNavigate();
 
   // 'signin' | 'signup' | 'forgot' | 'guest'
@@ -46,6 +46,18 @@ export default function AuthGate() {
   const [notice, setNotice] = useState('');
 
   const go = () => navigate('/');
+
+  const google = async () => {
+    setError(''); setNotice('');
+    if (!supabaseConfigured) {
+      setError('Email accounts are not configured yet. Use "Continue as guest" for now.');
+      return;
+    }
+    setBusy(true);
+    const { error } = await signInGoogle();
+    if (error) { setError(error.message || 'Could not sign in with Google.'); setBusy(false); }
+    // On success the browser redirects to Google, then back to '/'.
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -134,6 +146,34 @@ export default function AuthGate() {
           <div className="font-mono text-xs mb-6 px-3 py-2" style={{ color: '#ffb300', background: '#ffb30010', border: '1px solid #ffb30033' }}>
             Email accounts aren’t set up on this build yet. Use <strong>Continue as guest</strong> to start now.
           </div>
+        )}
+
+        {/* OAuth — only meaningful when Supabase + a Google provider are configured. */}
+        {supabaseConfigured && mode !== 'guest' && mode !== 'forgot' && (
+          <>
+            <button
+              type="button"
+              onClick={google}
+              disabled={busy}
+              className="w-full font-mono text-sm tracking-widest uppercase px-8 py-3.5 mb-5 transition-all duration-150 flex items-center justify-center gap-3"
+              style={{ background: '#0a0a0a', color: '#e8e8e8', border: '1px solid #2a2a2a', fontFamily: MONO, cursor: busy ? 'not-allowed' : 'pointer' }}
+              onMouseEnter={(e) => { if (!busy) e.currentTarget.style.borderColor = '#b8ff00'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
+                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.3 35.1 26.8 36 24 36c-5.2 0-9.6-3.3-11.2-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/>
+                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.4l6.3 5.3C41.4 36.5 44 30.8 44 24c0-1.3-.1-2.3-.4-3.5z"/>
+              </svg>
+              Continue with Google
+            </button>
+            <div className="flex items-center gap-3 mb-5">
+              <div style={{ flex: 1, height: '1px', background: '#1e1e1e' }} />
+              <span className="font-mono text-xs" style={{ color: '#666', fontFamily: MONO }}>or</span>
+              <div style={{ flex: 1, height: '1px', background: '#1e1e1e' }} />
+            </div>
+          </>
         )}
 
         {/* Tabs */}

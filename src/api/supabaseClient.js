@@ -11,6 +11,7 @@ const makeStub = () => ({
     getSession: async () => ({ data: { session: null } }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
     signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
+    signInWithOAuth: async () => ({ data: null, error: new Error('Supabase not configured') }),
     signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
     signOut: async () => ({ error: null }),
     resetPasswordForEmail: async () => ({ data: null, error: new Error('Supabase not configured') }),
@@ -36,6 +37,15 @@ export const auth = {
   signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
   signUp: (email, password, name) =>
     supabase.auth.signUp({ email, password, options: { data: { name: name || '' } } }),
+  signInWithGoogle: () =>
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined'
+          ? `${window.location.origin}${import.meta.env.BASE_URL || '/'}`
+          : undefined,
+      },
+    }),
   signOut: () => supabase.auth.signOut(),
   getSession: () => supabase.auth.getSession(),
   onAuthStateChange: (cb) => supabase.auth.onAuthStateChange(cb),
