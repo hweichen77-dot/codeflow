@@ -115,3 +115,21 @@ create table public.user_tracks (
 alter table public.user_tracks enable row level security;
 create policy "Users manage own track progress" on public.user_tracks
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ── Cloud progress sync ───────────────────────────────────────────────────────
+-- One JSONB blob per user mirroring the local-first progress store
+-- (codeflow_progress_v1 / _challenges_v1 / _capstones_v1). The app merges this
+-- with localStorage on sign-in (see src/api/cloudSync.js), giving durable,
+-- cross-device progress without per-entity tables.
+create table public.user_state (
+  user_id uuid references auth.users on delete cascade primary key,
+  state jsonb not null default '{}'::jsonb,
+  updated_at timestamptz default now()
+);
+alter table public.user_state enable row level security;
+create policy "Users can read own state" on public.user_state
+  for select using (auth.uid() = user_id);
+create policy "Users can insert own state" on public.user_state
+  for insert with check (auth.uid() = user_id);
+create policy "Users can update own state" on public.user_state
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);

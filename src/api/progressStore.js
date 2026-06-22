@@ -1,9 +1,19 @@
 // localStorage-backed entity stores that mimic the api entity API shape.
 import { touchStreak } from '../lib/progressStats'
+import { track } from '../lib/analytics'
 
-const PROGRESS_KEY = 'codeflow_progress_v1'
-const CAPSTONE_KEY = 'codeflow_capstones_v1'
-const CHALLENGES_KEY = 'codeflow_challenges_v1'
+export const PROGRESS_KEY = 'codeflow_progress_v1'
+export const CAPSTONE_KEY = 'codeflow_capstones_v1'
+export const CHALLENGES_KEY = 'codeflow_challenges_v1'
+
+// Cloud sync (when signed in) listens for this so a local write is mirrored to
+// Supabase. Dispatched after every successful localStorage write; harmless when
+// nobody is listening (guest / unconfigured build).
+export const PROGRESS_CHANGED_EVENT = 'codeflow:progress-changed'
+const emitChange = () => {
+  if (typeof window === 'undefined') return
+  try { window.dispatchEvent(new Event(PROGRESS_CHANGED_EVENT)) } catch { /* ignore */ }
+}
 
 let counter = 0
 
@@ -22,6 +32,7 @@ const writeArr = (key, arr) => {
   if (typeof window === 'undefined') return
   try {
     window.localStorage.setItem(key, JSON.stringify(arr))
+    emitChange()
   } catch {
     /* ignore */
   }
@@ -88,6 +99,7 @@ export function markChallengeComplete(id) {
   if (!id) return null
   const rows = readArr(CHALLENGES_KEY)
   const idx = rows.findIndex((r) => r.id === id)
+  const wasNew = idx === -1 || rows[idx].status !== 'completed'
   const completed_at = new Date().toISOString()
   if (idx === -1) {
     rows.push({ id, status: 'completed', completed_at })
@@ -98,6 +110,7 @@ export function markChallengeComplete(id) {
   // Real learning activity → keep the streak alive on completion, not just on
   // visiting the home route.
   try { touchStreak() } catch { /* ignore */ }
+  if (wasNew) { try { track('challenge_complete', { id }) } catch { /* ignore */ } }
   return rows.find((r) => r.id === id) || null
 }
 

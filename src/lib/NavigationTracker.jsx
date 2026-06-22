@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { api } from '@/api/apiClient';
 import { pagesConfig } from '@/pages.config';
+import { trackPageview } from '@/lib/analytics';
 
 export default function NavigationTracker() {
     const location = useLocation();
@@ -30,6 +31,10 @@ export default function NavigationTracker() {
 
             pageName = matchedKey || null;
         }
+
+        // Analytics pageview for every navigation (visitors included), independent
+        // of the in-app activity log which only tracks signed-in users.
+        trackPageview(pageName);
 
         if (isAuthenticated && pageName) {
             api.appLogs.logUserInApp(pageName).catch(() => {
