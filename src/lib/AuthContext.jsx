@@ -1,7 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getProfile, setProfile, clear as clearProfile } from '@/api/localProfile';
 import { auth as supaAuth } from '@/api/supabaseClient';
+import { activateSync, deactivateSync } from '@/api/cloudSync';
 import { namespacedKey } from '@/lib/progressStats';
+import { identify, resetIdentity, track } from '@/lib/analytics';
+import { setMonitoringUser } from '@/lib/monitoring';
 
 const AuthContext = createContext();
 
@@ -27,6 +30,10 @@ export const AuthProvider = ({ children }) => {
     setUser({ ...p });
     setIsAuthenticated(true);
     setAuthMode('email');
+    // Real account → tie analytics/monitoring to a stable id and start cloud sync.
+    identify(p.id, { email: p.email, name: p.name });
+    setMonitoringUser({ id: p.id, email: p.email });
+    activateSync(p.id);
   };
 
   useEffect(() => {
@@ -74,8 +81,16 @@ export const AuthProvider = ({ children }) => {
   const signInEmail = async ({ email, password }) => {
     const { data, error } = await supaAuth.signIn(email, password);
     if (error) return { error };
-    if (data?.user) adoptSupabaseUser(data.user);
+    if (data?.user) { track('sign_in', { method: 'email' }); adoptSupabaseUser(data.user); }
     return { data };
+  };
+
+  // OAuth redirects away and back; the returning session is picked up by the
+  // onAuthStateChange listener / getSession on next load.
+  const signInGoogle = async () => {
+    track('sign_in_start', { method: 'google' });
+    const { error } = await supaAuth.signInWithGoogle();
+    return { error };
   };
 
   const resetPassword = async (email) => {
@@ -89,6 +104,7 @@ export const AuthProvider = ({ children }) => {
     setUser({ ...profile, mode: 'guest' });
     setIsAuthenticated(true);
     setAuthMode('guest');
+    track('guest_start');
     return profile;
   };
 
@@ -96,6 +112,9 @@ export const AuthProvider = ({ children }) => {
   const signInLocal = signInGuest;
 
   const logout = async () => {
+    deactivateSync();
+    resetIdentity();
+    setMonitoringUser(null);
     try { await supaAuth.signOut(); } catch { /* ignore */ }
     // Clear this account's namespaced progress keys BEFORE wiping the profile,
     // so a second user on this browser doesn't inherit the first user's state.
@@ -133,6 +152,7 @@ export const AuthProvider = ({ children }) => {
       supabaseConfigured: supaAuth.isConfigured,
       signUpEmail,
       signInEmail,
+      signInGoogle,
       resetPassword,
       signInGuest,
       signInLocal,
