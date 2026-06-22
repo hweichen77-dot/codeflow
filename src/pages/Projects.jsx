@@ -7,6 +7,7 @@ import { createPageUrl } from "../utils";
 // sync with the rest of the app. Tabs are still derived from categories that
 // actually have projects, so empty tracks never render as dead filters.
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/content/categories";
+import { foundationsAreFinished, isModuleGated } from "@/lib/foundationsGate";
 
 const DIFFICULTY_LABEL = {
   beginner: "00",
@@ -18,6 +19,14 @@ export default function Projects() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [user, setUser] = useState(null);
+  // Transient nudge shown when a learner clicks a locked module.
+  const [nudge, setNudge] = useState(null);
+
+  useEffect(() => {
+    if (!nudge) return;
+    const t = setTimeout(() => setNudge(null), 3200);
+    return () => clearTimeout(t);
+  }, [nudge]);
 
   useEffect(() => {
     api.auth.me().then(setUser).catch(() => {});
@@ -59,15 +68,14 @@ export default function Projects() {
     return matchSearch && matchCat;
   });
 
-  // Soft-gating signal: has the learner finished the beginner foundations?
-  // We treat foundations as "done" once they've completed most beginner-tier
-  // projects (or there are none to complete). Advanced/intermediate rows get a
-  // gentle nudge until then — never a hard block.
+  // Hard-gate: intermediate/advanced modules stay locked until the learner has
+  // finished most beginner-tier foundations. Same rule is enforced on the
+  // ProjectDetail page so deep links can't bypass it.
   const beginnerProjects = projects.filter((p) => p.difficulty === "beginner");
-  const beginnerDone = beginnerProjects.filter((p) => getStatus(p) === "completed").length;
-  const foundationsFinished =
-    beginnerProjects.length === 0 ||
-    beginnerDone >= Math.ceil(beginnerProjects.length * 0.6);
+  const foundationsFinished = foundationsAreFinished(
+    beginnerProjects,
+    (p) => getStatus(p) === "completed"
+  );
 
   // Group the (filtered) projects into category sections so foundations modules
   // sit together. When a filter pill is active we still pass through every
@@ -201,19 +209,14 @@ export default function Projects() {
                   {section.items.map((project) => {
                     const status = getStatus(project);
                     const pct = getProgress(project);
-                    // Soft-gate: nudge harder material before foundations are done.
-                    // Never blocks the link — just de-emphasizes + hints.
-                    const gated =
-                      !foundationsFinished &&
-                      status !== "completed" &&
-                      (project.difficulty === "advanced" || project.difficulty === "intermediate");
-
-                    return (
-                      <Link
-                        key={project.id}
-                        to={createPageUrl(`ProjectDetail?id=${project.id}`)}
-                        className="group block"
-                      >
+                    // Hard-gate: block navigation into harder material until
+                    // foundations are done. Clicking a locked row nudges instead.
+                    const gated = isModuleGated({
+                      finished: foundationsFinished,
+                      done: status === "completed",
+                      difficulty: project.difficulty,
+                    });
+                    const rowInner = (
                         <div
                           className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-6 transition-all duration-200"
                           style={{ borderBottom: "1px solid #1a1a1a", opacity: gated ? 0.55 : 1 }}
@@ -254,7 +257,7 @@ export default function Projects() {
                                   className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap"
                                   style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}
                                 >
-                                  Finish Foundations first
+                                  🔒 Finish Foundations first
                                 </span>
                               )}
                             </div>
@@ -301,7 +304,15 @@ export default function Projects() {
 
                           {/* Status */}
                           <div>
-                            {status === "completed" && (
+                            {gated && (
+                              <span
+                                className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                                style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}
+                              >
+                                LOCKED
+                              </span>
+                            )}
+                            {!gated && status === "completed" && (
                               <span
                                 className="font-mono text-xs tracking-widest uppercase px-3 py-1"
                                 style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
@@ -309,7 +320,7 @@ export default function Projects() {
                                 DONE
                               </span>
                             )}
-                            {status === "in_progress" && (
+                            {!gated && status === "in_progress" && (
                               <span
                                 className="font-mono text-xs tracking-widest uppercase px-3 py-1"
                                 style={{ color: "#d4d4d4", border: "1px solid #2a2a2a", background: "#0d0d0d" }}
@@ -317,7 +328,7 @@ export default function Projects() {
                                 ACTIVE
                               </span>
                             )}
-                            {status === "not_started" && (
+                            {!gated && status === "not_started" && (
                               <span
                                 className="font-mono text-xs tracking-widest uppercase px-3 py-1"
                                 style={{ color: "#d4d4d4", border: "1px solid #2a2a2a" }}
@@ -327,6 +338,35 @@ export default function Projects() {
                             )}
                           </div>
                         </div>
+                    );
+
+                    // Locked rows render a non-navigating shell that nudges on
+                    // click; unlocked rows are normal links into the module.
+                    return gated ? (
+                      <div
+                        key={project.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-disabled="true"
+                        title="Finish the Foundations modules to unlock this"
+                        className="group block cursor-not-allowed"
+                        onClick={() => setNudge(project.title)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setNudge(project.title);
+                          }
+                        }}
+                      >
+                        {rowInner}
+                      </div>
+                    ) : (
+                      <Link
+                        key={project.id}
+                        to={createPageUrl(`ProjectDetail?id=${project.id}`)}
+                        className="group block"
+                      >
+                        {rowInner}
                       </Link>
                     );
                   })}
@@ -350,6 +390,17 @@ export default function Projects() {
           </div>
         )}
       </div>
+
+      {/* Locked-module nudge */}
+      {nudge && (
+        <div
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-mono text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
+          style={{ color: "#ffb300", border: "1px solid #ffb30055", background: "#1a1407" }}
+          role="status"
+        >
+          🔒 Finish the Foundations modules to unlock “{nudge}”
+        </div>
+      )}
     </div>
   );
 }

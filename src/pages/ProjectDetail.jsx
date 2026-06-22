@@ -21,6 +21,7 @@ import StreakBadge from "../components/gamification/StreakBadge";
 import BadgeUnlock from "../components/gamification/BadgeUnlock";
 import OutputComparison from "../components/lesson/OutputComparison";
 import LessonCompletionCelebration from "../components/lesson/LessonCompletionCelebration";
+import { foundationsAreFinished, isModuleGated } from "@/lib/foundationsGate";
 
 const DIFFICULTY_NUM = { beginner: "00", intermediate: "01", advanced: "02" };
 
@@ -69,6 +70,19 @@ export default function ProjectDetail() {
     queryKey: ["user-progress", projectId, user?.email],
     queryFn: () => api.entities.UserProgress.filter({ user_email: user.email, project_id: projectId }),
     enabled: !!user && !!projectId,
+  });
+
+  // Foundations hard-gate enforcement for deep/direct links. We load every
+  // project + the learner's full progress so we can compute the same gate the
+  // list pages use and block entry into a still-locked module.
+  const { data: allProjects = [] } = useQuery({
+    queryKey: ["all-projects"],
+    queryFn: () => api.entities.Project.list("order"),
+  });
+  const { data: allProgress = [] } = useQuery({
+    queryKey: ["all-progress", user?.email],
+    queryFn: () => api.entities.UserProgress.filter({ user_email: user.email }),
+    enabled: !!user,
   });
 
   useEffect(() => {
@@ -252,6 +266,44 @@ export default function ProjectDetail() {
         <Link to={createPageUrl("Projects")}>
           <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#b8ff00", border: "1px solid #b8ff0033" }}>
             ← Back to Projects
+          </button>
+        </Link>
+      </div>
+    );
+  }
+
+  // Deep-link guard: enforce the same Foundations gate the list pages show, so
+  // a still-locked module can't be opened by typing/sharing its URL. Mirrors
+  // Projects.jsx getStatus (progress rows >= lessons_count === completed).
+  const projectCompleted = (p) => {
+    const pp = allProgress.filter((x) => x.project_id === p.id);
+    return p.lessons_count ? pp.length >= p.lessons_count : false;
+  };
+  const beginnerProjects = allProjects.filter((p) => p.difficulty === "beginner");
+  const moduleGated = isModuleGated({
+    finished: foundationsAreFinished(beginnerProjects, projectCompleted),
+    done: projectCompleted(project),
+    difficulty: project.difficulty,
+  });
+
+  if (moduleGated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-8 text-center" style={{ background: "#0a0a0a" }}>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ffb300" }}>
+          🔒 Module Locked
+        </div>
+        <h1
+          style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.15, maxWidth: "32rem" }}
+        >
+          Finish the Foundations first.
+        </h1>
+        <p className="font-display text-base" style={{ color: "#bbb", maxWidth: "32rem" }}>
+          “{project.title}” builds on the beginner modules. Complete most of the
+          Foundations track and this unlocks automatically.
+        </p>
+        <Link to={createPageUrl("Projects")}>
+          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 mt-2" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
+            ← Back to Foundations
           </button>
         </Link>
       </div>

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/apiClient";
 import ProgressRing from "../components/gamification/ProgressRing";
+import { foundationsAreFinished, isModuleGated } from "@/lib/foundationsGate";
 
 const CAPSTONES = [
   {
@@ -33,6 +34,14 @@ const DIFF_COLOR = {
 };
 
 export default function AITrack() {
+  // Transient nudge shown when a learner clicks a locked module.
+  const [nudge, setNudge] = useState(null);
+  useEffect(() => {
+    if (!nudge) return;
+    const t = setTimeout(() => setNudge(null), 3200);
+    return () => clearTimeout(t);
+  }, [nudge]);
+
   // Per-module progress: completed lessons / total lessons for that project.
   const { data: user } = useQuery({
     queryKey: ["me"],
@@ -62,14 +71,13 @@ export default function AITrack() {
 
   const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "Beginner");
 
-  // Soft-gating signal: foundations are "finished" once the learner has fully
-  // completed most beginner-tier modules (or there are none). Until then,
-  // harder modules get a gentle nudge — links still work.
+  // Hard-gate: intermediate/advanced modules stay locked until most beginner
+  // foundations are complete. Same rule enforced on ProjectDetail deep links.
   const beginnerProjects = projects.filter((p) => p.difficulty === "beginner");
-  const beginnerDone = beginnerProjects.filter((p) => modulePct(p.id) === 100).length;
-  const foundationsFinished =
-    beginnerProjects.length === 0 ||
-    beginnerDone >= Math.ceil(beginnerProjects.length * 0.6);
+  const foundationsFinished = foundationsAreFinished(
+    beginnerProjects,
+    (p) => modulePct(p.id) === 100
+  );
 
   // Build the curriculum straight from content so every module is listed.
   const trackItems = projects.map((p, i) => ({
@@ -124,18 +132,14 @@ export default function AITrack() {
             const dc = DIFF_COLOR[item.difficulty] || DIFF_COLOR.Beginner;
             const pct = modulePct(item.projectId);
             const done = pct === 100;
-            // Soft-gate harder modules until foundations are finished. Never
-            // blocks the link — just de-emphasizes the row and adds a hint.
-            const gated =
-              !foundationsFinished &&
-              !done &&
-              (item.rawDifficulty === "advanced" || item.rawDifficulty === "intermediate");
-            return (
-              <Link
-                key={item.projectId}
-                to={createPageUrl(`ProjectDetail?id=${item.projectId}`)}
-                className="group block"
-              >
+            // Hard-gate harder modules until foundations are finished. Clicking
+            // a locked row nudges instead of navigating.
+            const gated = isModuleGated({
+              finished: foundationsFinished,
+              done,
+              difficulty: item.rawDifficulty,
+            });
+            const rowInner = (
                 <div
                   className="grid gap-8 px-6 py-6 transition-all duration-200"
                   style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #111", opacity: gated ? 0.55 : 1 }}
@@ -163,7 +167,7 @@ export default function AITrack() {
                       )}
                       {gated && (
                         <span className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap" style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}>
-                          Finish Foundations first
+                          🔒 Finish Foundations first
                         </span>
                       )}
                     </div>
@@ -190,6 +194,33 @@ export default function AITrack() {
                     {item.time}
                   </div>
                 </div>
+            );
+
+            return gated ? (
+              <div
+                key={item.projectId}
+                role="button"
+                tabIndex={0}
+                aria-disabled="true"
+                title="Finish the Foundations modules to unlock this"
+                className="group block cursor-not-allowed"
+                onClick={() => setNudge(item.title)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setNudge(item.title);
+                  }
+                }}
+              >
+                {rowInner}
+              </div>
+            ) : (
+              <Link
+                key={item.projectId}
+                to={createPageUrl(`ProjectDetail?id=${item.projectId}`)}
+                className="group block"
+              >
+                {rowInner}
               </Link>
             );
           })}
@@ -261,6 +292,17 @@ export default function AITrack() {
           </Link>
         </div>
       </div>
+
+      {/* Locked-module nudge */}
+      {nudge && (
+        <div
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-mono text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
+          style={{ color: "#ffb300", border: "1px solid #ffb30055", background: "#1a1407" }}
+          role="status"
+        >
+          🔒 Finish the Foundations modules to unlock “{nudge}”
+        </div>
+      )}
     </div>
   );
 }
