@@ -12,6 +12,10 @@ export const CATEGORY_LABELS = {
   rag_search: "RAG & Search",
   vision_multimodal: "Vision & Multimodal",
   production_ops: "Production & Ops",
+  // AP tracks (scoped to their own hub via project.track; never shown on the AI
+  // Projects page, which filters to track 'ai').
+  apcsp: "AP CS Principles",
+  apcsa: "AP CS A",
 };
 
 /** @type {string[]} canonical display order of categories */
@@ -22,6 +26,8 @@ export const CATEGORY_ORDER = [
   "rag_search",
   "vision_multimodal",
   "production_ops",
+  "apcsp",
+  "apcsa",
 ];
 
 /** @type {string[]} valid difficulty enum for projects/challenges */

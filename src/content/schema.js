@@ -28,6 +28,11 @@ import { CATEGORY_ORDER, DIFFICULTIES } from "./categories.js";
 
 const difficulty = z.enum(["beginner", "intermediate", "advanced"]);
 const category = z.enum(/** @type {[string, ...string[]]} */ (CATEGORY_ORDER));
+// Curriculum is multi-track: the AI track (Python) plus AP Computer Science
+// Principles (Python/pseudocode) and AP Computer Science A (Java). `track`
+// scopes a project to its landing page; `language` selects the code runner.
+const trackEnum = z.enum(["ai", "apcsp", "apcsa"]);
+const languageEnum = z.enum(["python", "java", "cpp"]);
 
 /**
  * @typedef {Object} Project
@@ -50,6 +55,9 @@ export const ProjectSchema = z
     tags: z.array(z.string()).optional(),
     order: z.number(),
     cover_image: z.string().optional(),
+    // Track scoping (default "ai" at read time) + AP Big Idea / Unit label.
+    track: trackEnum.optional(),
+    unit: z.string().optional(),
   })
   .passthrough();
 
@@ -82,6 +90,11 @@ export const LessonSchema = z
     concept: z.string().optional(),
     xp_reward: z.number().optional(),
     explanation: z.string().min(1),
+    // Runner language for this lesson's code practice/challenge. Defaults to
+    // "python" at read time; CSA lessons set "java". challenge_language overrides
+    // for the challenge specifically. Code stays keyed by `*_code` regardless.
+    language: languageEnum.optional(),
+    challenge_language: languageEnum.optional(),
     // Python code practice — keyed by `*_code` (curriculum convention).
     starter_code: z.string().optional(),
     solution_code: z.string().optional(),
@@ -115,6 +128,7 @@ export const ChallengeSchema = z
     topic: z.string(),
     xp: z.number().optional(),
     order: z.number().optional(),
+    language: languageEnum.optional(),
     starter_code: z.string().optional(),
     solution_code: z.string().optional(),
     test_cases: z.array(testCase).optional(),

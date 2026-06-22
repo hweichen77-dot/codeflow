@@ -23,6 +23,11 @@ import m22 from './curriculum/module-22.js'
 
 import BRIEFS from './briefs.js'
 
+// AP tracks live in their own dirs and aggregate their own module arrays so the
+// AI curriculum above stays untouched. Each exports { MODULES, BRIEFS }.
+import { MODULES as CSP_MODULES, BRIEFS as CSP_BRIEFS } from './csp/index.js'
+import { MODULES as CSA_MODULES, BRIEFS as CSA_BRIEFS } from './csa/index.js'
+
 // Competitive Coding catalog (C++ problems teaching AI algorithms).
 export {
   COMPETITIVE,
@@ -31,9 +36,12 @@ export {
   getCompetitive,
 } from './competitive/index.js'
 
-const MODULES = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21, m22]
+const AI_MODULES = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21, m22]
+// AI modules default to track 'ai'; AP modules carry their own track/unit.
+const MODULES = [...AI_MODULES, ...CSP_MODULES, ...CSA_MODULES]
+const ALL_BRIEFS = { ...BRIEFS, ...CSP_BRIEFS, ...CSA_BRIEFS }
 
-export const PROJECTS = MODULES.map(m => ({ ...m.project, brief: BRIEFS[m.project.id] || null }))
+export const PROJECTS = MODULES.map(m => ({ ...m.project, brief: ALL_BRIEFS[m.project.id] || null }))
 export const LESSONS = MODULES.flatMap(m => m.lessons)
 
 // Derive a Challenge catalog from lessons that declare a challenge.
@@ -58,6 +66,7 @@ export const CHALLENGES = LESSONS.filter(l => l.challenge_title).map((l, i) => {
     xp: l.challenge_xp || XP_BY_DIFFICULTY[difficulty] || 15,
     // Global ordering so the catalog is stable and numbered sensibly.
     order: (project.order || 0) * 100 + (l.order || i),
+    language: l.challenge_language || l.language || 'python',
     starter_code: l.challenge_starter_code,
     solution_code: l.challenge_solution_code,
     test_cases: l.challenge_test_cases,

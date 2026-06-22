@@ -395,6 +395,11 @@ verify_jwt = true
 [functions.run-cpp]
 verify_jwt = true
 
+# Java judge for the AP Computer Science A track. Proxies to the Compiler
+# Explorer OpenJDK execute API. Auth-gated to prevent use as an open compile relay.
+[functions.run-java]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

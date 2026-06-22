@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
+import { trace } from "@/components/lesson/trace/theme";
 
 /**
  * InteractiveTokenizer — a live "tool" (zyBooks-style) for the Tokens lesson.
  * Type text → see an approximate token split, counts, and cost. Pure client-side
  * heuristic (NOT a real BPE tokenizer, but close enough to build intuition).
  */
-const PALETTE = ["#4d7c0f", "#2563eb", "#9333ea", "#ea580c", "#059669", "#b45309"];
 
 // Rough heuristic: whitespace+punct boundaries, then chop long word-pieces ~4 chars.
 function tokenize(text) {
@@ -45,12 +45,12 @@ export default function InteractiveTokenizer() {
   const ratio = charCount ? (charCount / Math.max(tokenCount, 1)).toFixed(1) : "0";
 
   return (
-    <div className="my-7" style={{ border: "1px solid #e4e4e7", background: "#ffffff" }}>
-      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #ececef" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#4d7c0f" }}>
+    <div className="my-7" style={{ border: `1px solid ${trace.border}`, background: trace.raised }}>
+      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${trace.border}` }}>
+        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: trace.lime }}>
           TOOL — TOKENIZER PLAYGROUND
         </span>
-        <span className="font-mono text-xs" style={{ color: "#6b7280" }}>approximate</span>
+        <span className="font-mono text-xs" style={{ color: trace.faint }}>approximate</span>
       </div>
 
       <div className="p-5">
@@ -60,7 +60,7 @@ export default function InteractiveTokenizer() {
           rows={2}
           spellCheck={false}
           className="w-full px-4 py-3 font-mono text-sm resize-none outline-none"
-          style={{ background: "#f6f6f7", border: "1px solid #e4e4e7", color: "#1f2937" }}
+          style={{ background: trace.surface, border: `1px solid ${trace.borderStrong}`, color: trace.text }}
         />
 
         {/* presets */}
@@ -70,7 +70,7 @@ export default function InteractiveTokenizer() {
               key={p}
               onClick={() => setText(p)}
               className="font-mono text-xs px-2.5 py-1 transition-all"
-              style={{ background: "transparent", border: "1px solid #d4d4d8", color: "#3f3f46", cursor: "pointer", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+              style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: trace.dim, cursor: "pointer", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
             >
               {p}
             </button>
@@ -79,32 +79,29 @@ export default function InteractiveTokenizer() {
 
         {/* token chips */}
         <div className="flex flex-wrap gap-1.5 mt-5">
-          {visible.map((tok, idx) => {
-            const c = PALETTE[idx % PALETTE.length];
-            return (
-              <span
-                key={idx}
-                className="font-mono text-xs px-2 py-1"
-                style={{ background: `${c}14`, border: `1px solid ${c}55`, color: c, whiteSpace: "pre" }}
-                title={`token ${idx + 1}`}
-              >
-                {tok.t}
-              </span>
-            );
-          })}
+          {visible.map((tok, idx) => (
+            <span
+              key={idx}
+              className="font-mono text-xs px-2 py-1"
+              style={{ background: trace.surface, border: `1px solid ${trace.lime}55`, color: trace.lime, whiteSpace: "pre" }}
+              title={`token ${idx + 1}`}
+            >
+              {tok.t}
+            </span>
+          ))}
           {visible.length === 0 && (
-            <span className="font-mono text-xs" style={{ color: "#6b7280" }}>type something above…</span>
+            <span className="font-mono text-xs" style={{ color: trace.faint }}>type something above…</span>
           )}
         </div>
 
         {/* stats */}
-        <div className="grid grid-cols-4 gap-0 mt-5" style={{ border: "1px solid #e4e4e7" }}>
-          <Stat label="Tokens" value={tokenCount} accent="#4d7c0f" />
+        <div className="grid grid-cols-4 gap-0 mt-5" style={{ border: `1px solid ${trace.border}` }}>
+          <Stat label="Tokens" value={tokenCount} accent={trace.lime} />
           <Stat label="Characters" value={charCount} />
           <Stat label="Chars / token" value={ratio} />
-          <Stat label="Input cost" value={`$${inCost.toFixed(6)}`} accent="#2563eb" last />
+          <Stat label="Input cost" value={`$${inCost.toFixed(6)}`} accent={trace.info} last />
         </div>
-        <p className="font-mono text-xs mt-3" style={{ color: "#6b7280" }}>
+        <p className="font-mono text-xs mt-3" style={{ color: trace.faint }}>
           Notice: rare/long words shatter into many tiny pieces, while common words stay whole.
         </p>
       </div>
@@ -114,11 +111,11 @@ export default function InteractiveTokenizer() {
 
 function Stat({ label, value, accent, last }) {
   return (
-    <div className="px-4 py-3" style={{ borderRight: last ? "none" : "1px solid #e4e4e7" }}>
-      <div className="font-display font-black" style={{ fontSize: "1.4rem", color: accent || "#18181b", letterSpacing: "-0.03em", lineHeight: 1 }}>
+    <div className="px-4 py-3" style={{ borderRight: last ? "none" : `1px solid ${trace.border}` }}>
+      <div className="font-display font-black" style={{ fontSize: "1.4rem", color: accent || trace.text, letterSpacing: "-0.03em", lineHeight: 1 }}>
         {value}
       </div>
-      <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "#6b7280" }}>{label}</div>
+      <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: trace.faint }}>{label}</div>
     </div>
   );
 }
