@@ -6,41 +6,41 @@
 // tokens into their inline styles — matching the codebase's inline-style
 // convention (CSS vars can't feed the conditional ternaries these components use).
 //
-// Brand: lime (#b8ff00) + mono + the "§" section motif on near-black.
+// Brand: warm amber (#E8A33C) + Bricolage/Hanken + the "§" motif on warm near-black.
 
 export const trace = Object.freeze({
-  // ── Surfaces ────────────────────────────────────────────────────────────────
-  bg: '#0a0a0a',          // page / shell
-  raised: '#111111',      // cards, activity panels
-  surface: '#161616',     // inset surfaces (code chips, inputs)
-  terminal: '#0d0d0d',    // fenced code / output blocks (matches CodeEditor)
+  // ── Surfaces (warm near-black, tinted toward amber — not cold gray) ──────────
+  bg: '#15130E',          // page / shell
+  raised: '#1C1A14',      // cards, activity panels
+  surface: '#221F18',     // inset surfaces (code chips, inputs)
+  terminal: '#131009',    // fenced code / output blocks (matches CodeEditor)
 
   // ── Lines ─────────────────────────────────────────────────────────────────
-  border: '#1e1e1e',      // hairline
-  borderStrong: '#2a2a2a',// default control border
-  borderActive: '#3a3a3a',// hover
+  border: '#262219',      // hairline
+  borderStrong: '#34302A',// default control border
+  borderActive: '#46413A',// hover
 
-  // ── Text ────────────────────────────────────────────────────────────────────
-  text: '#e8e8e8',        // primary body
-  dim: '#a0a0a0',         // secondary
-  faint: '#6a6a6a',       // tertiary / captions
-  muted: '#444444',       // disabled / step dots
+  // ── Text (warm off-white) ───────────────────────────────────────────────────
+  text: '#ECE7DC',        // primary body
+  dim: '#A39B8C',         // secondary
+  faint: '#756C5C',       // tertiary / captions
+  muted: '#4A453C',       // disabled / step dots
 
-  // ── Brand + state (all tuned for legibility on near-black) ───────────────────
-  lime: '#b8ff00',        // primary accent
-  limeDim: '#9fd80a',     // accent on lighter inset
-  limeFaint: '#b8ff0014', // accent wash (background tint)
-  ok: '#b8ff00',          // pass / correct
-  okWash: '#b8ff0010',
-  fail: '#ff5c5c',        // fail / incorrect (legible on dark, unlike #dc2626)
-  failWash: '#ff5c5c12',
-  warn: '#ffb300',        // caution
-  info: '#7cc4ff',        // neutral highlight (was #2563eb blue)
+  // ── Brand + state. Single muted amber accent (replaces neon lime). ───────────
+  lime: '#E8A33C',        // primary accent (name kept; value is amber)
+  limeDim: '#C78A2E',     // accent on lighter inset
+  limeFaint: '#E8A33C14', // accent wash (background tint)
+  ok: '#E8A33C',          // pass / correct
+  okWash: '#E8A33C12',
+  fail: '#FF6B5C',        // fail / incorrect (warm coral, legible on dark)
+  failWash: '#FF6B5C14',
+  warn: '#E0B341',        // caution (warm gold)
+  info: '#C2643C',        // secondary highlight (warm clay, replaces cold blue)
 
-  // ── Fonts (match tailwind.config.js + .reader-surface) ───────────────────────
-  mono: "'IBM Plex Mono', 'Space Mono', monospace",
-  serif: "'IBM Plex Serif', Georgia, serif",
-  sans: "'IBM Plex Sans', system-ui, sans-serif",
+  // ── Fonts (match tailwind.config.js + index.css) ─────────────────────────────
+  mono: "'Spline Sans Mono', ui-monospace, monospace",
+  serif: "'Bricolage Grotesque', system-ui, sans-serif",
+  sans: "'Hanken Grotesk', system-ui, sans-serif",
 })
 
 // Reusable style fragments — spread into style={{ ... }} for consistency.

@@ -4,8 +4,8 @@ import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/utils'
 import { track } from '@/lib/analytics'
 
-const MONO = "'Space Mono', monospace"
-const SERIF = "Georgia, 'Times New Roman', serif"
+const MONO = "'Spline Sans Mono', ui-monospace, monospace"
+const SERIF = "'Bricolage Grotesque', system-ui, sans-serif"
 const ONBOARDED_KEY = 'codeflow_onboarded_v1'
 
 const STEPS = [
@@ -51,26 +51,26 @@ export default function WelcomeModal() {
       style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) dismiss(false) }}
     >
-      <div className="w-full max-w-lg p-10" style={{ border: '1px solid #1f1f1f', background: '#0d0d0d', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
-        <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#b8ff00', fontFamily: MONO }}>
+      <div className="w-full max-w-lg p-10" style={{ border: '1px solid #2A261E', background: '#131009', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#E8A33C', fontFamily: MONO }}>
           § WELCOME TO CODEFLOW
         </div>
-        <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#f0f0f0', lineHeight: 1.12, margin: '0 0 8px' }}>
+        <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#F2EDE2', lineHeight: 1.12, margin: '0 0 8px' }}>
           Hey {firstName} — here&apos;s the idea.
         </h1>
-        <p className="font-display text-sm mb-7" style={{ color: '#d4d4d4' }}>
+        <p className="font-display text-sm mb-7" style={{ color: '#C9C1B2' }}>
           Three things make CodeFlow work. Then you&apos;re off.
         </p>
 
         <div className="space-y-4 mb-8">
           {STEPS.map((s) => (
             <div key={s.n} className="flex gap-4">
-              <span className="font-mono text-sm flex-shrink-0" style={{ color: '#4d7c0f', fontFamily: MONO, width: '28px' }}>
+              <span className="font-mono text-sm flex-shrink-0" style={{ color: '#9A6A1F', fontFamily: MONO, width: '28px' }}>
                 {s.n}
               </span>
               <div>
-                <div className="font-display text-sm font-medium" style={{ color: '#f0f0f0' }}>{s.t}</div>
-                <div className="font-mono text-xs mt-1" style={{ color: '#c4c4c4', fontFamily: MONO, lineHeight: 1.5 }}>{s.d}</div>
+                <div className="font-display text-sm font-medium" style={{ color: '#F2EDE2' }}>{s.t}</div>
+                <div className="font-mono text-xs mt-1" style={{ color: '#BBB3A4', fontFamily: MONO, lineHeight: 1.5 }}>{s.d}</div>
               </div>
             </div>
           ))}
@@ -81,7 +81,7 @@ export default function WelcomeModal() {
             type="button"
             onClick={() => dismiss(false)}
             className="font-mono text-xs tracking-widest uppercase px-5 py-3 transition-all"
-            style={{ color: '#888', border: '1px solid #2a2a2a', fontFamily: MONO }}
+            style={{ color: '#8F8779', border: '1px solid #34302A', fontFamily: MONO }}
           >
             I&apos;ll look around
           </button>
@@ -89,7 +89,7 @@ export default function WelcomeModal() {
             type="button"
             onClick={() => dismiss(true)}
             className="font-mono text-sm tracking-widest uppercase px-7 py-3 transition-all"
-            style={{ background: '#b8ff00', color: '#0a0a0a', fontWeight: 700, fontFamily: MONO }}
+            style={{ background: '#E8A33C', color: '#15130E', fontWeight: 700, fontFamily: MONO }}
           >
             Start learning →
           </button>

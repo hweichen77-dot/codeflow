@@ -95,27 +95,27 @@ export default function Projects() {
   ].filter((s) => s.items.length > 0);
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
+    <div className="min-h-screen" style={{ background: "#15130E" }}>
       {/* Page header */}
       <div
         className="relative px-8 lg:px-16 pt-28 pb-16"
-        style={{ borderBottom: "1px solid #1a1a1a" }}
+        style={{ borderBottom: "1px solid #262219" }}
       >
         {/* Horizontal accent */}
         <div
           className="absolute top-0 left-0 right-0 h-px"
-          style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }}
+          style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }}
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#d4d4d4" }}>§ PROJECTS</span>
+            <span className="font-mono text-xs tracking-widest" style={{ color: "#C9C1B2" }}>§ PROJECTS</span>
           </div>
           <h1
-            style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 16px" }}
+            style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
           >
             Choose your module.
           </h1>
-          <p className="font-display text-base" style={{ color: "#bbb", fontWeight: 400 }}>
+          <p className="font-display text-base" style={{ color: "#A8A092", fontWeight: 400 }}>
             Each project is a chapter. New here? Start at the top and work down — each one builds on the last.
           </p>
         </div>
@@ -128,7 +128,7 @@ export default function Projects() {
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span
               className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs pointer-events-none"
-              style={{ color: "#c4c4c4" }}
+              style={{ color: "#BBB3A4" }}
             >
               /search
             </span>
@@ -138,9 +138,9 @@ export default function Projects() {
               placeholder="filter projects..."
               className="w-full font-mono text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
               style={{
-                border: "1px solid #1e1e1e",
-                color: "#e8e8e8",
-                caretColor: "#b8ff00",
+                border: "1px solid #262219",
+                color: "#ECE7DC",
+                caretColor: "#E8A33C",
               }}
             />
           </div>
@@ -153,9 +153,9 @@ export default function Projects() {
                 onClick={() => setCategory(cat.value)}
                 className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                 style={{
-                  border: `1px solid ${category === cat.value ? "#b8ff00" : "#1e1e1e"}`,
-                  color: category === cat.value ? "#b8ff00" : "#d4d4d4",
-                  background: category === cat.value ? "#b8ff0010" : "transparent",
+                  border: `1px solid ${category === cat.value ? "#E8A33C" : "#262219"}`,
+                  color: category === cat.value ? "#E8A33C" : "#C9C1B2",
+                  background: category === cat.value ? "#E8A33C10" : "transparent",
                 }}
               >
                 {cat.label}
@@ -171,7 +171,7 @@ export default function Projects() {
               <div
                 key={i}
                 className="h-24 animate-pulse"
-                style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}
+                style={{ background: "#131009", border: "1px solid #262219" }}
               />
             ))}
           </div>
@@ -180,10 +180,10 @@ export default function Projects() {
             {/* Column headers */}
             <div
               className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-3 mb-px"
-              style={{ borderBottom: "1px solid #1a1a1a" }}
+              style={{ borderBottom: "1px solid #262219" }}
             >
               {["LVL", "PROJECT", "LESSONS", "STATUS"].map(h => (
-                <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>
+                <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
                   {h}
                 </div>
               ))}
@@ -194,15 +194,15 @@ export default function Projects() {
                 {/* Section header */}
                 <div
                   className="flex items-baseline gap-3 px-6 pt-8 pb-3"
-                  style={{ borderBottom: "1px solid #141414" }}
+                  style={{ borderBottom: "1px solid #1F1C15" }}
                 >
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#b8ff00" }}>
+                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
                     §
                   </span>
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>
+                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
                     {section.label}
                   </span>
-                  <span className="font-mono text-xs" style={{ color: "#555" }}>
+                  <span className="font-mono text-xs" style={{ color: "#5A554B" }}>
                     {section.items.length}
                   </span>
                 </div>
@@ -221,9 +221,9 @@ export default function Projects() {
                     const rowInner = (
                         <div
                           className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-6 transition-all duration-200"
-                          style={{ borderBottom: "1px solid #1a1a1a", opacity: gated ? 0.55 : 1 }}
+                          style={{ borderBottom: "1px solid #262219", opacity: gated ? 0.55 : 1 }}
                           onMouseEnter={e => {
-                            e.currentTarget.style.background = "#0d0d0d";
+                            e.currentTarget.style.background = "#131009";
                             e.currentTarget.style.paddingLeft = "1.75rem";
                             if (gated) e.currentTarget.style.opacity = "0.8";
                           }}
@@ -238,7 +238,7 @@ export default function Projects() {
                             className="font-mono font-bold"
                             style={{
                               fontSize: "1.5rem",
-                              color: "#e8e8e8",
+                              color: "#ECE7DC",
                               letterSpacing: "-0.05em",
                             }}
                           >
@@ -250,14 +250,14 @@ export default function Projects() {
                             <div className="flex items-center gap-3 mb-1">
                               <div
                                 className="font-display font-bold text-lg leading-snug transition-colors duration-200 group-hover:text-white"
-                                style={{ color: "#e0e0e0", letterSpacing: "-0.02em" }}
+                                style={{ color: "#D8D1C2", letterSpacing: "-0.02em" }}
                               >
                                 {project.title}
                               </div>
                               {gated && (
                                 <span
                                   className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap"
-                                  style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}
+                                  style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}
                                 >
                                   🔒 Finish Foundations first
                                 </span>
@@ -266,7 +266,7 @@ export default function Projects() {
                             {project.description && (
                               <div
                                 className="font-display text-sm line-clamp-1"
-                                style={{ color: "#bbb", fontWeight: 400 }}
+                                style={{ color: "#A8A092", fontWeight: 400 }}
                               >
                                 {project.description}
                               </div>
@@ -279,12 +279,12 @@ export default function Projects() {
                                       key={di}
                                       className="w-1.5 h-1.5 transition-all duration-200"
                                       style={{
-                                        background: di < Math.round(pct / 10) ? "#b8ff00" : "#1e1e1e",
+                                        background: di < Math.round(pct / 10) ? "#E8A33C" : "#262219",
                                       }}
                                     />
                                   ))}
                                 </div>
-                                <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>
+                                <span className="font-mono text-xs" style={{ color: "#E8A33C" }}>
                                   {pct}%
                                 </span>
                               </div>
@@ -294,11 +294,11 @@ export default function Projects() {
                           {/* Lessons count */}
                           <div
                             className="font-mono text-sm text-right"
-                            style={{ color: "#bbb" }}
+                            style={{ color: "#A8A092" }}
                           >
                             {project.lessons_count ? `${project.lessons_count}` : "—"}
                             {project.estimated_time ? (
-                              <div className="font-mono text-xs" style={{ color: "#d4d4d4" }}>
+                              <div className="font-mono text-xs" style={{ color: "#C9C1B2" }}>
                                 {project.estimated_time}min
                               </div>
                             ) : null}
@@ -309,7 +309,7 @@ export default function Projects() {
                             {gated && (
                               <span
                                 className="font-mono text-xs tracking-widest uppercase px-3 py-1"
-                                style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}
+                                style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}
                               >
                                 LOCKED
                               </span>
@@ -317,7 +317,7 @@ export default function Projects() {
                             {!gated && status === "completed" && (
                               <span
                                 className="font-mono text-xs tracking-widest uppercase px-3 py-1"
-                                style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
+                                style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}
                               >
                                 DONE
                               </span>
@@ -325,7 +325,7 @@ export default function Projects() {
                             {!gated && status === "in_progress" && (
                               <span
                                 className="font-mono text-xs tracking-widest uppercase px-3 py-1"
-                                style={{ color: "#d4d4d4", border: "1px solid #2a2a2a", background: "#0d0d0d" }}
+                                style={{ color: "#C9C1B2", border: "1px solid #34302A", background: "#131009" }}
                               >
                                 ACTIVE
                               </span>
@@ -333,7 +333,7 @@ export default function Projects() {
                             {!gated && status === "not_started" && (
                               <span
                                 className="font-mono text-xs tracking-widest uppercase px-3 py-1"
-                                style={{ color: "#d4d4d4", border: "1px solid #2a2a2a" }}
+                                style={{ color: "#C9C1B2", border: "1px solid #34302A" }}
                               >
                                 START
                               </span>
@@ -380,11 +380,11 @@ export default function Projects() {
               <div className="text-center py-24">
                 <div
                   className="font-mono text-xs tracking-widest uppercase mb-4"
-                  style={{ color: "#d4d4d4" }}
+                  style={{ color: "#C9C1B2" }}
                   >
                    NO RESULTS
                 </div>
-                <p className="font-display text-base" style={{ color: "#bbb" }}>
+                <p className="font-display text-base" style={{ color: "#A8A092" }}>
                   No projects match your filter.
                 </p>
               </div>
@@ -397,7 +397,7 @@ export default function Projects() {
       {nudge && (
         <div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-mono text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
-          style={{ color: "#ffb300", border: "1px solid #ffb30055", background: "#1a1407" }}
+          style={{ color: "#E0B341", border: "1px solid #E0B34155", background: "#1a1407" }}
           role="status"
         >
           🔒 Finish the Foundations modules to unlock “{nudge}”

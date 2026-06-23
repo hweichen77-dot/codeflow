@@ -22,8 +22,8 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
 // Lightweight full-screen fallback shown while a route chunk loads.
 const RouteFallback = () => (
-  <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#0a0a0a" }}>
-    <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#1a1a1a", borderTopColor: "#b8ff00" }}></div>
+  <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#15130E" }}>
+    <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#262219", borderTopColor: "#E8A33C" }}></div>
   </div>
 );
 
@@ -84,8 +84,8 @@ const Gate = () => {
 
   if (isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#0a0a0a" }}>
-        <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#1a1a1a", borderTopColor: "#b8ff00" }}></div>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#15130E" }}>
+        <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#262219", borderTopColor: "#E8A33C" }}></div>
       </div>
     );
   }

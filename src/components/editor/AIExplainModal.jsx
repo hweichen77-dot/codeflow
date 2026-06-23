@@ -75,43 +75,43 @@ Be direct and educational. Use code examples where helpful. Total response under
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96 }}
           className="w-full max-w-lg outline-none"
-          style={{ background: "#111", border: "1px solid #2a2a2a" }}
+          style={{ background: "#1C1A14", border: "1px solid #34302A" }}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #1e1e1e" }}>
+          <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #262219" }}>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs tracking-widest uppercase px-2 py-1" style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}>
+              <span className="font-mono text-xs tracking-widest uppercase px-2 py-1" style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}>
                 HOW DID I CATCH THIS?
               </span>
             </div>
-            <button onClick={onClose} aria-label="Close dialog" style={{ color: "#c4c4c4" }} onMouseEnter={e => e.currentTarget.style.color = "#d4d4d4"} onMouseLeave={e => e.currentTarget.style.color = "#c4c4c4"}>
+            <button onClick={onClose} aria-label="Close dialog" style={{ color: "#BBB3A4" }} onMouseEnter={e => e.currentTarget.style.color = "#C9C1B2"} onMouseLeave={e => e.currentTarget.style.color = "#BBB3A4"}>
               <X size={16} />
             </button>
           </div>
 
           {/* Flagged hint */}
-          <div className="px-6 py-4" style={{ borderBottom: "1px solid #1a1a1a", background: "#0d0d0d" }}>
-            <p className="font-mono text-xs" style={{ color: "#c4c4c4" }}>Flagged issue:</p>
-            <p className="font-mono text-sm mt-1" style={{ color: "#ffb300" }}>"{hint}"</p>
+          <div className="px-6 py-4" style={{ borderBottom: "1px solid #262219", background: "#131009" }}>
+            <p className="font-mono text-xs" style={{ color: "#BBB3A4" }}>Flagged issue:</p>
+            <p className="font-mono text-sm mt-1" style={{ color: "#E0B341" }}>"{hint}"</p>
           </div>
 
           {/* Explanation */}
           <div className="px-6 py-5" style={{ minHeight: "180px" }}>
             {loading ? (
               <div className="flex items-center gap-3">
-                <Loader2 size={14} className="animate-spin" style={{ color: "#ffb300" }} />
-                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>Analyzing your code...</span>
+                <Loader2 size={14} className="animate-spin" style={{ color: "#E0B341" }} />
+                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>Analyzing your code...</span>
               </div>
             ) : (
-              <div className="font-display text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#d4d4d4", fontWeight: 400 }}>
+              <div className="font-display text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#C9C1B2", fontWeight: 400 }}>
                 {explanation}
               </div>
             )}
           </div>
 
-          <div className="px-6 py-3" style={{ borderTop: "1px solid #1a1a1a" }}>
-            <p className="font-mono text-xs" style={{ color: "#e8e8e8" }}>
+          <div className="px-6 py-3" style={{ borderTop: "1px solid #262219" }}>
+            <p className="font-mono text-xs" style={{ color: "#ECE7DC" }}>
               The AI analyzed your code against the expected solution pattern to surface this.
             </p>
           </div>

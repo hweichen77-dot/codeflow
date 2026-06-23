@@ -2,84 +2,99 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
+const display = "'Bricolage Grotesque', system-ui, sans-serif";
+const body = "'Hanken Grotesk', system-ui, sans-serif";
+const mono = "'Spline Sans Mono', monospace";
+
+const idx = {
+  fontFamily: mono,
+  fontSize: "0.72rem",
+  letterSpacing: "0.18em",
+  color: "#D4882E",
+  textTransform: "uppercase",
+  fontWeight: 500,
+  marginBottom: "14px",
+};
+
+function Wordmark() {
+  return (
+    <div style={{ display: "flex", alignItems: "baseline", gap: "10px", fontFamily: display, fontWeight: 800, fontSize: "1.18rem", letterSpacing: "-0.02em", color: "#ECE7DC" }}>
+      <span style={{ width: "9px", height: "9px", background: "#E8A33C", borderRadius: "1px", transform: "translateY(-1px)" }} />
+      CodeFlow
+    </div>
+  );
+}
+
+function FootLink({ children, ...props }) {
+  return (
+    <a
+      {...props}
+      style={{ fontFamily: body, color: "#A39B8C", textDecoration: "none", fontSize: "0.9rem", display: "block", marginBottom: "8px" }}
+      onMouseEnter={e => (e.currentTarget.style.color = "#E8A33C")}
+      onMouseLeave={e => (e.currentTarget.style.color = "#A39B8C")}
+    >
+      {children}
+    </a>
+  );
+}
+
+function FootRouterLink({ to, children }) {
+  return (
+    <Link
+      to={to}
+      style={{ fontFamily: body, color: "#A39B8C", textDecoration: "none", fontSize: "0.9rem", display: "block", marginBottom: "8px" }}
+      onMouseEnter={e => (e.currentTarget.style.color = "#E8A33C")}
+      onMouseLeave={e => (e.currentTarget.style.color = "#A39B8C")}
+    >
+      {children}
+    </Link>
+  );
+}
+
 export default function Footer() {
   return (
-    <footer style={{
-      borderTop: "1px solid #1a1a1a",
-      padding: "48px 2rem 36px",
-    }}>
-      <div style={{
-        maxWidth: "1200px",
-        margin: "0 auto",
-      }}>
-        {/* Top row */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "48px",
-          flexWrap: "wrap",
-          gap: "24px",
-        }}>
-          {/* Brand */}
+    <footer style={{ padding: "64px 2rem 96px" }}>
+      <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "32px" }}>
+          {/* brand */}
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
-              <span style={{ color: "#b8ff00", fontSize: "16px", fontWeight: 800 }}>•</span>
-              <span style={{ color: "#f0f0f0", fontSize: "16px", fontWeight: 700, letterSpacing: "-0.3px" }}>CodeFlow</span>
-            </div>
-            <div style={{ color: "#d4d4d4", fontSize: "13px", fontFamily: "monospace" }}>
-              Learn AI. Build things.
-            </div>
+            <div style={{ marginBottom: "12px" }}><Wordmark /></div>
+            <p style={{ fontFamily: body, color: "#756C5C", fontSize: "0.86rem", maxWidth: "42ch", lineHeight: 1.6 }}>
+              Built for people who learn by doing. Real code execution, an AI
+              tutor that won't cheat, no fluff.
+            </p>
           </div>
 
-          {/* Links */}
-          <div style={{ display: "flex", gap: "28px" }}>
-            <a
-              href="https://github.com/hweichen77-dot/codeflow"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
-              onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
-              onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
-            >
-              GitHub
-            </a>
-            <a
-              href="mailto:hello@codeflow.app"
-              style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
-              onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
-              onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
-            >
-              Contact
-            </a>
-            <Link
-              to={createPageUrl("Privacy")}
-              style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
-              onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
-              onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
-            >
-              Privacy
-            </Link>
-            <Link
-              to={createPageUrl("Terms")}
-              style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
-              onMouseEnter={e => e.currentTarget.style.color = "#c0c0c0"}
-              onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
-            >
-              Terms
-            </Link>
+          {/* product */}
+          <div>
+            <div style={idx}>Product</div>
+            <FootRouterLink to={createPageUrl("Lessons")}>AI track</FootRouterLink>
+            <FootRouterLink to={createPageUrl("Lessons")}>AP CS</FootRouterLink>
+            <FootRouterLink to={createPageUrl("Challenges")}>Compete</FootRouterLink>
+            <FootRouterLink to={createPageUrl("Projects")}>Projects</FootRouterLink>
+          </div>
+
+          {/* about */}
+          <div>
+            <div style={idx}>About</div>
+            <FootLink href="https://github.com/hweichen77-dot/codeflow" target="_blank" rel="noopener noreferrer">GitHub</FootLink>
+            <FootLink href="mailto:hello@codeflow.app">Contact</FootLink>
+            <FootRouterLink to={createPageUrl("Privacy")}>Privacy</FootRouterLink>
+            <FootRouterLink to={createPageUrl("Terms")}>Terms</FootRouterLink>
           </div>
         </div>
 
-        {/* Bottom line */}
+        {/* bottom line */}
         <div style={{
-          borderTop: "1px solid #1a1a1a",
+          marginTop: "64px",
           paddingTop: "24px",
-          color: "#c4c4c4",
-          fontSize: "12px",
-          fontFamily: "monospace",
+          borderTop: "1px solid #221F18",
+          fontFamily: mono,
+          fontSize: "0.72rem",
+          color: "#756C5C",
+          letterSpacing: "0.04em",
         }}>
-          © 2025 CodeFlow. All rights reserved.
+          © 2026 CodeFlow — learn by building.
         </div>
       </div>
     </footer>

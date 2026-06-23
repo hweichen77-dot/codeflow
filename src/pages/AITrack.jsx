@@ -28,9 +28,9 @@ const CAPSTONES = [
 ];
 
 const DIFF_COLOR = {
-  Beginner: { color: "#b8ff00", border: "#b8ff0033", bg: "#b8ff0010" },
-  Intermediate: { color: "#ffb300", border: "#ffb30033", bg: "#ffb30010" },
-  Advanced: { color: "#ff6b6b", border: "#ff6b6b33", bg: "#ff6b6b10" },
+  Beginner: { color: "#E8A33C", border: "#E8A33C33", bg: "#E8A33C10" },
+  Intermediate: { color: "#E0B341", border: "#E0B34133", bg: "#E0B34110" },
+  Advanced: { color: "#FF6B5C", border: "#FF6B5C33", bg: "#FF6B5C10" },
 };
 
 export default function AITrack() {
@@ -95,19 +95,19 @@ export default function AITrack() {
   }));
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
+    <div className="min-h-screen" style={{ background: "#15130E" }}>
       {/* Hero */}
-      <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #1a1a1a" }}>
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }} />
+      <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #262219" }}>
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
-          <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#c4c4c4" }}>§ AI TRACK</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4" }}>§ AI TRACK</div>
           <h1
-            style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 20px" }}
+            style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 20px" }}
           >
             Learn to build<br />
-            <span style={{ WebkitTextStroke: "1.5px #b8ff00", color: "transparent" }}>with AI.</span>
+            <span style={{ WebkitTextStroke: "1.5px #E8A33C", color: "transparent" }}>with AI.</span>
           </h1>
-          <p className="font-display text-base max-w-prose" style={{ color: "#d4d4d4", fontWeight: 400 }}>
+          <p className="font-display text-base max-w-prose" style={{ color: "#C9C1B2", fontWeight: 400 }}>
             Not just theory. A full progression from "what is a model" to building and deploying real AI-powered applications — with working code at every step.
           </p>
         </div>
@@ -117,17 +117,17 @@ export default function AITrack() {
 
         {/* Curriculum */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#c4c4c4" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#BBB3A4" }}>
             CURRICULUM — {trackItems.length} MODULES
           </div>
 
           {/* Table header */}
           <div
             className="grid gap-8 px-6 py-3 mb-px"
-            style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #1a1a1a" }}
+            style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #262219" }}
           >
             {["MOD", "PROJECT", "LEVEL", "TIME"].map(h => (
-              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>{h}</div>
+              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>{h}</div>
             ))}
           </div>
 
@@ -145,41 +145,41 @@ export default function AITrack() {
             const rowInner = (
                 <div
                   className="grid gap-8 px-6 py-6 transition-all duration-200"
-                  style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #111", opacity: gated ? 0.55 : 1 }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#0d0d0d"; e.currentTarget.style.paddingLeft = "1.75rem"; if (gated) e.currentTarget.style.opacity = "0.8"; }}
+                  style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #1C1A14", opacity: gated ? 0.55 : 1 }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#131009"; e.currentTarget.style.paddingLeft = "1.75rem"; if (gated) e.currentTarget.style.opacity = "0.8"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; if (gated) e.currentTarget.style.opacity = "0.55"; }}
                 >
                   <div className="flex items-center" style={{ minWidth: "3rem" }}>
                     {pct > 0 ? (
-                      <ProgressRing percent={pct} size={38} color="#b8ff00" />
+                      <ProgressRing percent={pct} size={38} color="#E8A33C" />
                     ) : (
-                      <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#e8e8e8", letterSpacing: "-0.05em" }}>
+                      <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}>
                         {item.number}
                       </span>
                     )}
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="font-display font-bold text-base transition-colors duration-150 group-hover:text-white" style={{ color: done ? "#b8ff00" : "#ccc", letterSpacing: "-0.02em" }}>
+                      <span className="font-display font-bold text-base transition-colors duration-150 group-hover:text-white" style={{ color: done ? "#E8A33C" : "#C2BAAA", letterSpacing: "-0.02em" }}>
                         {item.title}
                       </span>
                       {done && (
-                        <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
+                        <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
                           DONE
                         </span>
                       )}
                       {gated && (
-                        <span className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap" style={{ color: "#ffb300", border: "1px solid #ffb30033", background: "#ffb30010" }}>
+                        <span className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap" style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}>
                           🔒 Finish Foundations first
                         </span>
                       )}
                     </div>
-                    <p className="font-display text-sm mb-3" style={{ color: "#d4d4d4", fontWeight: 400 }}>
+                    <p className="font-display text-sm mb-3" style={{ color: "#C9C1B2", fontWeight: 400 }}>
                       {item.description}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {item.concepts.map(c => (
-                        <span key={c} className="font-mono text-xs px-2 py-0.5" style={{ color: "#c4c4c4", border: "1px solid #2a2a2a" }}>
+                        <span key={c} className="font-mono text-xs px-2 py-0.5" style={{ color: "#BBB3A4", border: "1px solid #34302A" }}>
                           {c}
                         </span>
                       ))}
@@ -193,7 +193,7 @@ export default function AITrack() {
                       {item.difficulty}
                     </span>
                   </div>
-                  <div className="font-mono text-sm text-right" style={{ color: "#d4d4d4" }}>
+                  <div className="font-mono text-sm text-right" style={{ color: "#C9C1B2" }}>
                     {item.time}
                   </div>
                 </div>
@@ -231,17 +231,17 @@ export default function AITrack() {
 
         {/* Capstone projects */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#c4c4c4" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#BBB3A4" }}>
             CAPSTONE PROJECTS — WHAT YOU WILL BUILD
           </div>
-          <div className="grid md:grid-cols-3 gap-0" style={{ border: "1px solid #1a1a1a" }}>
+          <div className="grid md:grid-cols-3 gap-0" style={{ border: "1px solid #262219" }}>
             {CAPSTONES.map((cap, i) => {
               const dc = DIFF_COLOR[cap.level];
               return (
                 <div
                   key={cap.title}
                   className="p-8"
-                  style={{ borderRight: i < 2 ? "1px solid #1a1a1a" : "none" }}
+                  style={{ borderRight: i < 2 ? "1px solid #262219" : "none" }}
                 >
                   <span
                     className="inline-block font-mono text-xs tracking-widest uppercase px-2.5 py-1 mb-5"
@@ -251,18 +251,18 @@ export default function AITrack() {
                   </span>
                   <h3
                     className="font-display font-bold text-xl mb-3"
-                    style={{ color: "#e8e8e8", letterSpacing: "-0.03em" }}
+                    style={{ color: "#ECE7DC", letterSpacing: "-0.03em" }}
                   >
                     {cap.title}
                   </h3>
-                  <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#d4d4d4", fontWeight: 400 }}>
+                  <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#C9C1B2", fontWeight: 400 }}>
                     {cap.description}
                   </p>
                   <div className="space-y-1.5">
                     {cap.skills.map(s => (
                       <div key={s} className="flex items-center gap-2">
-                        <span className="font-mono text-xs" style={{ color: "#b8ff00" }}>→</span>
-                        <span className="font-mono text-xs" style={{ color: "#d4d4d4" }}>{s}</span>
+                        <span className="font-mono text-xs" style={{ color: "#E8A33C" }}>→</span>
+                        <span className="font-mono text-xs" style={{ color: "#C9C1B2" }}>{s}</span>
                       </div>
                     ))}
                   </div>
@@ -273,21 +273,21 @@ export default function AITrack() {
         </div>
 
         {/* CTA */}
-        <div className="text-center py-12" style={{ border: "1px solid #1a1a1a" }}>
-          <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#c4c4c4" }}>READY?</div>
+        <div className="text-center py-12" style={{ border: "1px solid #262219" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#BBB3A4" }}>READY?</div>
           <h2
-            style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", margin: "0 0 16px" }}
+            style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", margin: "0 0 16px" }}
           >
             Start building with AI.
           </h2>
-          <p className="font-display text-base mb-8" style={{ color: "#d4d4d4", fontWeight: 400 }}>
+          <p className="font-display text-base mb-8" style={{ color: "#C9C1B2", fontWeight: 400 }}>
             The projects are in the Projects section. Filter by category "AI/ML".
           </p>
           <Link to={createPageUrl("Projects")}>
             <button
               className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
-              style={{ background: "#b8ff00", color: "#0a0a0a", border: "1px solid #b8ff00", fontWeight: 700 }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(184,255,0,0.3)"; }}
+              style={{ background: "#E8A33C", color: "#15130E", border: "1px solid #E8A33C", fontWeight: 700 }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(232,163,60,0.3)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
             >
               Browse Projects →
@@ -300,7 +300,7 @@ export default function AITrack() {
       {nudge && (
         <div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-mono text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
-          style={{ color: "#ffb300", border: "1px solid #ffb30055", background: "#1a1407" }}
+          style={{ color: "#E0B341", border: "1px solid #E0B34155", background: "#1a1407" }}
           role="status"
         >
           🔒 Finish the Foundations modules to unlock “{nudge}”

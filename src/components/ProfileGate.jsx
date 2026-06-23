@@ -15,25 +15,25 @@ export default function ProfileGate() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-6"
-      style={{ background: '#0a0a0a' }}
+      style={{ background: '#15130E' }}
     >
       <div
         className="w-full max-w-md p-10"
-        style={{ border: '1px solid #1a1a1a', background: '#0d0d0d' }}
+        style={{ border: '1px solid #262219', background: '#131009' }}
       >
         <div
           className="font-mono text-xs tracking-widest uppercase mb-3"
-          style={{ color: '#c4c4c4' }}
+          style={{ color: '#BBB3A4' }}
         >
           § WELCOME
         </div>
         <h1
           style={{
-            fontFamily: "Georgia, 'Times New Roman', serif",
+            fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
             fontSize: '2.25rem',
             fontWeight: 800,
             letterSpacing: '-0.025em',
-            color: '#f0f0f0',
+            color: '#F2EDE2',
             lineHeight: 1.12,
             margin: '0 0 12px',
           }}
@@ -42,7 +42,7 @@ export default function ProfileGate() {
         </h1>
         <p
           className="font-display text-sm mb-8"
-          style={{ color: '#d4d4d4', fontWeight: 400 }}
+          style={{ color: '#C9C1B2', fontWeight: 400 }}
         >
           Learn to build with AI. Your progress is saved locally on this device.
         </p>
@@ -50,7 +50,7 @@ export default function ProfileGate() {
         <form onSubmit={handleStart}>
           <label
             className="font-mono text-xs tracking-widest uppercase block mb-2"
-            style={{ color: '#c4c4c4', fontFamily: "'Space Mono', monospace" }}
+            style={{ color: '#BBB3A4', fontFamily: "'Spline Sans Mono', ui-monospace, monospace" }}
           >
             Your name
           </label>
@@ -62,28 +62,28 @@ export default function ProfileGate() {
             placeholder="Ada Lovelace"
             className="w-full px-4 py-3 mb-6 font-display text-base outline-none"
             style={{
-              background: '#0a0a0a',
-              border: '1px solid #2a2a2a',
-              color: '#e8e8e8',
+              background: '#15130E',
+              border: '1px solid #34302A',
+              color: '#ECE7DC',
             }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = '#b8ff00'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = '#E8A33C'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = '#34302A'; }}
           />
           <button
             type="submit"
             disabled={!name.trim()}
             className="w-full font-mono text-sm tracking-widest uppercase px-8 py-4 transition-all duration-150"
             style={{
-              background: name.trim() ? '#b8ff00' : '#1a1a1a',
-              color: name.trim() ? '#0a0a0a' : '#c4c4c4',
+              background: name.trim() ? '#E8A33C' : '#262219',
+              color: name.trim() ? '#15130E' : '#BBB3A4',
               fontWeight: 700,
               cursor: name.trim() ? 'pointer' : 'not-allowed',
-              fontFamily: "'Space Mono', monospace",
+              fontFamily: "'Spline Sans Mono', ui-monospace, monospace",
             }}
             onMouseEnter={(e) => {
               if (!name.trim()) return;
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(184,255,0,0.2)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(232,163,60,0.2)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = '';

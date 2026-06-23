@@ -72,25 +72,25 @@ export default function LessonExplanation({ explanation, concept }) {
     <div className="lesson-doc">
       <style>{`
         .lesson-doc {
-          color: #e8e8e8;
+          color: #ECE7DC;
           line-height: 1.75;
-          font-family: 'IBM Plex Sans', system-ui, sans-serif;
+          font-family: 'Hanken Grotesk', system-ui, sans-serif;
         }
         .lesson-doc h1 {
-          font-family: 'IBM Plex Serif', Georgia, serif;
+          font-family: 'Bricolage Grotesque', system-ui, sans-serif;
           font-size: 1.6rem;
           font-weight: 700;
-          color: #e8e8e8;
+          color: #ECE7DC;
           margin-bottom: 1.25rem;
           margin-top: 0;
           letter-spacing: -0.005em;
           line-height: 1.3;
         }
         .lesson-doc h2 {
-          font-family: 'IBM Plex Serif', Georgia, serif;
+          font-family: 'Bricolage Grotesque', system-ui, sans-serif;
           font-size: 1.15rem;
           font-weight: 600;
-          color: #e8e8e8;
+          color: #ECE7DC;
           margin-top: 2rem;
           margin-bottom: 0.6rem;
           letter-spacing: 0;
@@ -98,26 +98,26 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc h2:first-child { margin-top: 0; }
         .lesson-doc h3 {
-          font-family: 'IBM Plex Serif', Georgia, serif;
+          font-family: 'Bricolage Grotesque', system-ui, sans-serif;
           font-size: 1rem;
           font-weight: 600;
-          color: #e8e8e8;
+          color: #ECE7DC;
           margin-top: 1.5rem;
           margin-bottom: 0.4rem;
         }
         .lesson-doc p {
           font-size: 0.9375rem;
-          color: #e8e8e8;
+          color: #ECE7DC;
           margin-bottom: 0.85rem;
           line-height: 1.75;
           font-weight: 400;
         }
         .lesson-doc a {
-          color: #b8ff00;
+          color: #E8A33C;
           text-decoration: underline;
           text-underline-offset: 2px;
         }
-        .lesson-doc a:hover { color: #b8ff00; }
+        .lesson-doc a:hover { color: #E8A33C; }
         .lesson-doc ul {
           margin: 0.5rem 0 1rem 1.25rem;
           padding-left: 0;
@@ -130,7 +130,7 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc li {
           font-size: 0.9375rem;
-          color: #e8e8e8;
+          color: #ECE7DC;
           margin-bottom: 0.3rem;
           padding-left: 0;
           position: relative;
@@ -142,32 +142,32 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc strong, .lesson-doc b {
           font-weight: 700;
-          color: #f0f0f0;
+          color: #F2EDE2;
         }
         .lesson-doc em {
           font-style: italic;
         }
         .lesson-doc code {
-          font-family: 'IBM Plex Mono', 'Courier New', monospace;
+          font-family: 'Spline Sans Mono', ui-monospace, monospace;
           font-size: 0.82em;
-          background: #161616;
-          color: #b8ff00;
+          background: #221F18;
+          color: #E8A33C;
           padding: 2px 6px;
           border-radius: 3px;
-          border: 1px solid #1e1e1e;
+          border: 1px solid #262219;
         }
         .lesson-doc blockquote {
-          border-left: 2px solid #b8ff00;
+          border-left: 2px solid #E8A33C;
           padding: 0.75rem 1.25rem;
           margin: 1.25rem 0;
-          background: #111111;
+          background: #1C1A14;
           color: #a0a0a0;
           font-style: normal;
         }
         .lesson-doc blockquote p { margin-bottom: 0; color: #a0a0a0; }
         .lesson-doc hr {
           border: none;
-          border-top: 1px solid #1e1e1e;
+          border-top: 1px solid #262219;
           margin: 1.75rem 0;
         }
         .lesson-doc table {
@@ -177,20 +177,20 @@ export default function LessonExplanation({ explanation, concept }) {
           font-size: 0.875rem;
         }
         .lesson-doc th {
-          background: #161616;
-          border: 1px solid #1e1e1e;
+          background: #221F18;
+          border: 1px solid #262219;
           padding: 0.5rem 0.75rem;
           font-weight: 700;
           text-align: left;
-          color: #e8e8e8;
+          color: #ECE7DC;
         }
         .lesson-doc td {
-          border: 1px solid #1e1e1e;
+          border: 1px solid #262219;
           padding: 0.45rem 0.75rem;
-          color: #e8e8e8;
+          color: #ECE7DC;
         }
         .lesson-doc tbody tr:nth-child(even) td {
-          background: #0d0d0d;
+          background: #131009;
         }
       `}</style>
 

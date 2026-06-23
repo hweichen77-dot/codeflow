@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 
-const MONO = "'Space Mono', monospace";
-const SERIF = "Georgia, 'Times New Roman', serif";
+const MONO = "'Spline Sans Mono', ui-monospace, monospace";
+const SERIF = "'Bricolage Grotesque', system-ui, sans-serif";
 
 const field = {
-  background: '#0a0a0a',
-  border: '1px solid #2a2a2a',
-  color: '#e8e8e8',
+  background: '#15130E',
+  border: '1px solid #34302A',
+  color: '#ECE7DC',
 };
 
 function Input({ label, ...props }) {
@@ -16,7 +16,7 @@ function Input({ label, ...props }) {
     <label className="block mb-4">
       <span
         className="font-mono text-xs tracking-widest uppercase block mb-2"
-        style={{ color: '#c4c4c4', fontFamily: MONO }}
+        style={{ color: '#BBB3A4', fontFamily: MONO }}
       >
         {label}
       </span>
@@ -24,8 +24,8 @@ function Input({ label, ...props }) {
         {...props}
         className="w-full px-4 py-3 font-display text-base outline-none"
         style={field}
-        onFocus={(e) => { e.currentTarget.style.borderColor = '#b8ff00'; }}
-        onBlur={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+        onFocus={(e) => { e.currentTarget.style.borderColor = '#E8A33C'; }}
+        onBlur={(e) => { e.currentTarget.style.borderColor = '#34302A'; }}
       />
     </label>
   );
@@ -101,8 +101,8 @@ export default function AuthGate() {
       onClick={() => { setMode(key); setError(''); setNotice(''); }}
       className="font-mono text-xs tracking-widest uppercase px-3 py-2 transition-all"
       style={{
-        color: mode === key ? '#b8ff00' : '#888',
-        borderBottom: mode === key ? '2px solid #b8ff00' : '2px solid transparent',
+        color: mode === key ? '#E8A33C' : '#8F8779',
+        borderBottom: mode === key ? '2px solid #E8A33C' : '2px solid transparent',
         background: 'transparent', fontFamily: MONO, marginBottom: '-1px',
       }}
     >
@@ -130,20 +130,20 @@ export default function AuthGate() {
     : (email.trim() && password);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#0a0a0a' }}>
-      <div className="w-full max-w-md p-10" style={{ border: '1px solid #1a1a1a', background: '#0d0d0d' }}>
-        <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#c4c4c4', fontFamily: MONO }}>
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#15130E' }}>
+      <div className="w-full max-w-md p-10" style={{ border: '1px solid #262219', background: '#131009' }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#BBB3A4', fontFamily: MONO }}>
           § CODEFLOW
         </div>
-        <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#f0f0f0', lineHeight: 1.12, margin: '0 0 10px' }}>
+        <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#F2EDE2', lineHeight: 1.12, margin: '0 0 10px' }}>
           {titles[mode]}
         </h1>
-        <p className="font-display text-sm mb-7" style={{ color: '#d4d4d4', fontWeight: 400 }}>
+        <p className="font-display text-sm mb-7" style={{ color: '#C9C1B2', fontWeight: 400 }}>
           {subtitles[mode]}
         </p>
 
         {!supabaseConfigured && mode !== 'guest' && (
-          <div className="font-mono text-xs mb-6 px-3 py-2" style={{ color: '#ffb300', background: '#ffb30010', border: '1px solid #ffb30033' }}>
+          <div className="font-mono text-xs mb-6 px-3 py-2" style={{ color: '#E0B341', background: '#E0B34110', border: '1px solid #E0B34133' }}>
             Email accounts aren’t set up on this build yet. Use <strong>Continue as guest</strong> to start now.
           </div>
         )}
@@ -156,9 +156,9 @@ export default function AuthGate() {
               onClick={google}
               disabled={busy}
               className="w-full font-mono text-sm tracking-widest uppercase px-8 py-3.5 mb-5 transition-all duration-150 flex items-center justify-center gap-3"
-              style={{ background: '#0a0a0a', color: '#e8e8e8', border: '1px solid #2a2a2a', fontFamily: MONO, cursor: busy ? 'not-allowed' : 'pointer' }}
-              onMouseEnter={(e) => { if (!busy) e.currentTarget.style.borderColor = '#b8ff00'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+              style={{ background: '#15130E', color: '#ECE7DC', border: '1px solid #34302A', fontFamily: MONO, cursor: busy ? 'not-allowed' : 'pointer' }}
+              onMouseEnter={(e) => { if (!busy) e.currentTarget.style.borderColor = '#E8A33C'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#34302A'; }}
             >
               <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
                 <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
@@ -169,15 +169,15 @@ export default function AuthGate() {
               Continue with Google
             </button>
             <div className="flex items-center gap-3 mb-5">
-              <div style={{ flex: 1, height: '1px', background: '#1e1e1e' }} />
-              <span className="font-mono text-xs" style={{ color: '#666', fontFamily: MONO }}>or</span>
-              <div style={{ flex: 1, height: '1px', background: '#1e1e1e' }} />
+              <div style={{ flex: 1, height: '1px', background: '#262219' }} />
+              <span className="font-mono text-xs" style={{ color: '#6E665A', fontFamily: MONO }}>or</span>
+              <div style={{ flex: 1, height: '1px', background: '#262219' }} />
             </div>
           </>
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-7" style={{ borderBottom: '1px solid #1e1e1e' }}>
+        <div className="flex gap-1 mb-7" style={{ borderBottom: '1px solid #262219' }}>
           {tab('signin', 'Sign in')}
           {tab('signup', 'Sign up')}
           {tab('guest', 'Guest')}
@@ -215,12 +215,12 @@ export default function AuthGate() {
           )}
 
           {error && (
-            <div className="font-mono text-xs mb-4 px-3 py-2" style={{ color: '#fca5a5', background: '#ef444412', border: '1px solid #ef444433' }}>
+            <div className="font-mono text-xs mb-4 px-3 py-2" style={{ color: '#F3B0A6', background: '#FF6B5C12', border: '1px solid #FF6B5C33' }}>
               {error}
             </div>
           )}
           {notice && (
-            <div className="font-mono text-xs mb-4 px-3 py-2" style={{ color: '#b8ff00', background: '#b8ff0010', border: '1px solid #b8ff0033' }}>
+            <div className="font-mono text-xs mb-4 px-3 py-2" style={{ color: '#E8A33C', background: '#E8A33C10', border: '1px solid #E8A33C33' }}>
               {notice}
             </div>
           )}
@@ -230,8 +230,8 @@ export default function AuthGate() {
             disabled={!canSubmit || busy}
             className="w-full font-mono text-sm tracking-widest uppercase px-8 py-4 transition-all duration-150"
             style={{
-              background: canSubmit && !busy ? '#b8ff00' : '#1a1a1a',
-              color: canSubmit && !busy ? '#0a0a0a' : '#888',
+              background: canSubmit && !busy ? '#E8A33C' : '#262219',
+              color: canSubmit && !busy ? '#15130E' : '#8F8779',
               fontWeight: 700, cursor: canSubmit && !busy ? 'pointer' : 'not-allowed', fontFamily: MONO,
             }}
           >
@@ -247,13 +247,13 @@ export default function AuthGate() {
         <div className="mt-5 flex items-center justify-between">
           {mode === 'signin' ? (
             <button type="button" onClick={() => { setMode('forgot'); setError(''); setNotice(''); }}
-              className="font-mono text-xs" style={{ color: '#888', fontFamily: MONO }}>
+              className="font-mono text-xs" style={{ color: '#8F8779', fontFamily: MONO }}>
               Forgot password?
             </button>
           ) : <span />}
           {mode !== 'guest' && (
             <button type="button" onClick={() => { setMode('guest'); setError(''); setNotice(''); }}
-              className="font-mono text-xs" style={{ color: '#b8ff00', fontFamily: MONO }}>
+              className="font-mono text-xs" style={{ color: '#E8A33C', fontFamily: MONO }}>
               Continue as guest →
             </button>
           )}

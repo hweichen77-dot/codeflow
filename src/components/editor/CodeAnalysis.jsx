@@ -12,31 +12,31 @@ export default function CodeAnalysis({ hint, onDismiss, onExplain }) {
           transition={{ duration: 0.2 }}
           className="flex items-start gap-3 px-4 py-3"
           style={{
-            background: "#0a0a0a",
-            borderTop: "1px solid #1e1e1e",
-            borderLeft: "2px solid #ffb300",
+            background: "#15130E",
+            borderTop: "1px solid #262219",
+            borderLeft: "2px solid #E0B341",
           }}
         >
-          <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#ffb300" }}>AI</span>
-          <p className="font-mono text-xs flex-1 leading-relaxed" style={{ color: "#d4d4d4" }}>
+          <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#E0B341" }}>AI</span>
+          <p className="font-mono text-xs flex-1 leading-relaxed" style={{ color: "#C9C1B2" }}>
             {hint}
           </p>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={onExplain}
               className="font-mono text-xs px-2 py-1 transition-colors"
-              style={{ color: "#c4c4c4", border: "1px solid #1e1e1e" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#ffb300"}
-              onMouseLeave={e => e.currentTarget.style.color = "#c4c4c4"}
+              style={{ color: "#BBB3A4", border: "1px solid #262219" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#E0B341"}
+              onMouseLeave={e => e.currentTarget.style.color = "#BBB3A4"}
             >
               how?
             </button>
             <button
               onClick={onDismiss}
               className="font-mono text-xs"
-              style={{ color: "#e8e8e8" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#c4c4c4"}
-              onMouseLeave={e => e.currentTarget.style.color = "#e8e8e8"}
+              style={{ color: "#ECE7DC" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#BBB3A4"}
+              onMouseLeave={e => e.currentTarget.style.color = "#ECE7DC"}
             >
               ×
             </button>

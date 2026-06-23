@@ -1,213 +1,186 @@
 import React from "react";
 
-const card = {
-  background: "#111111",
-  border: "1px solid #262626",
-  borderRadius: "12px",
-  padding: "28px",
+const display = "'Bricolage Grotesque', system-ui, sans-serif";
+const body = "'Hanken Grotesk', system-ui, sans-serif";
+const mono = "'Spline Sans Mono', monospace";
+
+const idx = {
+  fontFamily: mono,
+  fontSize: "0.72rem",
+  letterSpacing: "0.18em",
+  color: "#D4882E",
+  textTransform: "uppercase",
+  fontWeight: 500,
 };
 
-function CodeMockup() {
+export default function BentoGrid() {
+  return (
+    <section id="learn" style={{ borderBottom: "1px solid #221F18" }}>
+      <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "96px 2rem" }}>
+        {/* section head */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
+          <span style={idx}>02 — The reading surface</span>
+        </div>
+
+        {/* lesson surface: gutter number + prose + inline check */}
+        <div className="cf-lesson" style={{
+          display: "grid",
+          gridTemplateColumns: "64px 1fr",
+          gap: "32px",
+        }}>
+          <div className="cf-gutter" style={{
+            fontFamily: display,
+            fontWeight: 800,
+            fontSize: "2.6rem",
+            color: "#34302A",
+            lineHeight: 1,
+            letterSpacing: "-0.04em",
+          }}>
+            03
+          </div>
+
+          <div>
+            <h3 style={{
+              fontFamily: display,
+              fontWeight: 700,
+              fontSize: "1.7rem",
+              letterSpacing: "-0.02em",
+              color: "#ECE7DC",
+              margin: "0 0 16px",
+            }}>
+              Prompts as programs
+            </h3>
+            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: "0 0 24px", lineHeight: 1.62 }}>
+              A model call is just a <b style={{ color: "#ECE7DC", fontWeight: 600 }}>function</b> with a fuzzy
+              contract: you hand it text, it hands back text. The craft is writing
+              the input so the output is predictable — the same discipline you'd
+              apply to any <Code>def</Code> you ship.
+            </p>
+            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: "0 0 24px", lineHeight: 1.62 }}>
+              You don't watch this. You run it, read the output, change one line,
+              run it again — and watch the behavior move.
+            </p>
+
+            {/* inline check — bordered card, NOT a side-stripe */}
+            <div style={{
+              margin: "32px 0",
+              background: "#1C1A14",
+              border: "1px solid #34302A",
+              borderRadius: "4px",
+              padding: "32px",
+            }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}>
+                <span style={{
+                  fontFamily: mono,
+                  fontSize: "0.7rem",
+                  color: "#15130E",
+                  background: "#E8A33C",
+                  padding: "2px 7px",
+                  borderRadius: "2px",
+                  fontWeight: 500,
+                  letterSpacing: "0.04em",
+                }}>
+                  03.1
+                </span>
+                <span style={{ fontFamily: display, fontWeight: 700, fontSize: "0.95rem", color: "#ECE7DC" }}>
+                  Check
+                </span>
+              </div>
+              <div style={{ fontFamily: body, fontWeight: 500, marginBottom: "16px", color: "#ECE7DC" }}>
+                Why treat a prompt like code?
+              </div>
+              <div style={{ display: "grid", gap: "12px" }}>
+                <Opt k="A">Because the model memorizes your wording</Opt>
+                <Opt k="B" correct>Because small input changes change the output</Opt>
+                <Opt k="C">Because prompts have to be valid Python</Opt>
+              </div>
+            </div>
+
+            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: 0, lineHeight: 1.62 }}>
+              Next you'll <b style={{ color: "#ECE7DC", fontWeight: 600 }}>trace</b> how the same prompt drifts
+              across two models — and learn to pin it down.
+            </p>
+          </div>
+        </div>
+
+        {/* three numbered pillars — varied, not identical cards */}
+        <div className="cf-pillars" style={{
+          marginTop: "80px",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "48px",
+        }}>
+          <Pillar n="01" title="Run, don't watch">
+            Every lesson is a real task. Write the code, run it, see what breaks.
+            We guide you through it — not past it.
+          </Pillar>
+          <Pillar n="02" title="Real projects">
+            Not toy examples. A sentiment classifier, a semantic search engine, a
+            chatbot with memory — things you'd put on a portfolio.
+          </Pillar>
+          <Pillar n="03" title="A tutor that won't cheat">
+            Stuck? The tutor knows your lesson and nudges your thinking. It won't
+            hand you the answer.
+          </Pillar>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Code({ children }) {
+  return (
+    <code style={{
+      fontFamily: mono,
+      fontSize: "0.86em",
+      background: "#221F18",
+      color: "#E8A33C",
+      padding: "1px 6px",
+      borderRadius: "3px",
+      border: "1px solid #262219",
+    }}>
+      {children}
+    </code>
+  );
+}
+
+function Opt({ k, children, correct }) {
   return (
     <div style={{
-      background: "#0d0d0d",
-      border: "1px solid #1e1e1e",
-      borderRadius: "8px",
-      padding: "16px",
-      fontFamily: "monospace",
-      fontSize: "12.5px",
-      lineHeight: 1.8,
-      marginTop: "20px",
+      display: "flex",
+      alignItems: "center",
+      gap: "16px",
+      padding: "13px 16px",
+      background: "#15130E",
+      border: correct ? "1px solid #E8A33C" : "1px solid #262219",
+      borderRadius: "3px",
+      ...(correct ? { background: "rgba(232,163,60,0.10)" } : {}),
     }}>
-      <div style={{ color: "#d4d4d4", marginBottom: "6px" }}>// lesson_03.js</div>
-      <div><span style={{ color: "#c084fc" }}>async function</span> <span style={{ color: "#60a5fa" }}>analyzeText</span><span style={{ color: "#d4d4d4" }}>(input) {"{"}</span></div>
-      <div style={{ paddingLeft: "18px" }}>
-        <span style={{ color: "#d4d4d4" }}>const result = </span>
-        <span style={{ color: "#34d399" }}>await</span>
-        <span style={{ color: "#d4d4d4" }}> openai.</span>
-        <span style={{ color: "#60a5fa" }}>chat</span>
-        <span style={{ color: "#d4d4d4" }}>({"{"})</span>
-      </div>
-      <div style={{ paddingLeft: "36px" }}>
-        <span style={{ color: "#b8ff00" }}>model</span>
-        <span style={{ color: "#d4d4d4" }}>: </span>
-        <span style={{ color: "#86efac" }}>"gpt-4o-mini"</span>
-        <span style={{ color: "#d4d4d4" }}>,</span>
-      </div>
-      <div style={{ paddingLeft: "36px" }}>
-        <span style={{ color: "#b8ff00" }}>messages</span>
-        <span style={{ color: "#d4d4d4" }}>: [{"{"}role: </span>
-        <span style={{ color: "#86efac" }}>"user"</span>
-        <span style={{ color: "#d4d4d4" }}>, content: input{"}"}]</span>
-      </div>
-      <div style={{ paddingLeft: "18px" }}><span style={{ color: "#d4d4d4" }}>{"})"}</span></div>
-      <div style={{ paddingLeft: "18px" }}>
-        <span style={{ color: "#34d399" }}>return</span>
-        <span style={{ color: "#d4d4d4" }}> result.choices[0].message.content</span>
-      </div>
-      <div><span style={{ color: "#d4d4d4" }}>{"}"}</span></div>
-      <div style={{
-        marginTop: "12px",
-        padding: "10px",
-        background: "#0a0a0a",
-        border: "1px solid #1a1a1a",
-        borderRadius: "4px",
-        color: "#86efac",
-        fontSize: "11px",
-      }}>
-        ✓ Output: "Sentiment is positive with 94% confidence."
-      </div>
+      <span style={{ fontFamily: mono, fontSize: "0.78rem", color: correct ? "#E8A33C" : "#756C5C", width: "1.2em" }}>
+        {k}
+      </span>
+      <span style={{ fontFamily: body, color: "#ECE7DC", fontSize: "0.95rem" }}>{children}</span>
     </div>
   );
 }
 
-const projects = [
-  "AI writing assistant",
-  "Semantic search engine",
-  "Chatbot with memory",
-  "Image classifier",
-  "Code reviewer",
-];
-
-const aiFeatures = [
-  { icon: "", label: "Ask anything" },
-  { icon: "", label: "Get unstuck" },
-  { icon: "", label: "Build faster" },
-];
-
-export default function BentoGrid() {
+function Pillar({ n, title, children }) {
   return (
-    <section id="learn" style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 2rem 96px" }}>
-      <div className="cf-bento" style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(12, 1fr)",
-        gridTemplateRows: "auto auto",
-        gap: "16px",
+    <div style={{ borderTop: "1px solid #221F18", paddingTop: "24px" }}>
+      <div style={{ fontFamily: mono, fontSize: "0.92rem", color: "#756C5C", marginBottom: "16px" }}>{n}</div>
+      <h4 style={{
+        fontFamily: display,
+        fontWeight: 700,
+        fontSize: "1.22rem",
+        letterSpacing: "-0.01em",
+        color: "#ECE7DC",
+        margin: "0 0 10px",
       }}>
-
-        {/* LARGE: Learn by doing */}
-        <div style={{ ...card, gridColumn: "span 7" }}>
-          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#b8ff00", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
-            CORE EXPERIENCE
-          </div>
-          <h3 style={{ color: "#f0f0f0", fontSize: "22px", fontWeight: 700, margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-            Learn by doing, not watching.
-          </h3>
-          <p style={{ color: "#d4d4d4", fontSize: "14px", lineHeight: 1.7, margin: 0, maxWidth: "380px" }}>
-            Every lesson is a real task. Write the code, run it, see what breaks.
-            We guide you through it — not past it.
-          </p>
-          <CodeMockup />
-        </div>
-
-        {/* TALL: Real projects */}
-        <div id="projects" style={{ ...card, gridColumn: "span 5", gridRow: "span 2" }}>
-          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#b8ff00", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
-            PROJECT LIBRARY
-          </div>
-          <h3 style={{ color: "#f0f0f0", fontSize: "20px", fontWeight: 700, margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-            Real projects, real skills.
-          </h3>
-          <p style={{ color: "#c0c0c0", fontSize: "14px", lineHeight: 1.65, margin: "0 0 28px" }}>
-            Not toy examples. These are things you'd actually put on a portfolio.
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {projects.map((p) => (
-              <div key={p} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span style={{ color: "#b8ff00", fontSize: "16px", lineHeight: 1 }}>✓</span>
-                <span style={{ color: "#d4d4d4", fontSize: "15px", fontWeight: 500 }}>{p}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            marginTop: "auto",
-            paddingTop: "40px",
-            borderTop: "1px solid #1e1e1e",
-            marginTop: "36px",
-          }}>
-            <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#c4c4c4", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
-              Skill level
-            </div>
-            {["Beginner", "Intermediate", "Advanced"].map((lvl, i) => (
-              <div key={lvl} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                <div style={{
-                  height: "4px",
-                  flex: 1,
-                  background: "#1e1e1e",
-                  borderRadius: "2px",
-                  overflow: "hidden",
-                }}>
-                  <div style={{
-                    height: "100%",
-                    width: `${[40, 70, 90][i]}%`,
-                    background: i === 0 ? "#b8ff00" : i === 1 ? "#7acc00" : "#4d9900",
-                    borderRadius: "2px",
-                  }} />
-                </div>
-                <span style={{ color: "#d4d4d4", fontSize: "12px", fontFamily: "monospace", minWidth: "80px" }}>{lvl}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* WIDE: AI guidance */}
-        <div style={{ ...card, gridColumn: "span 4" }}>
-          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#b8ff00", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px" }}>
-            AI TUTOR
-          </div>
-          <h3 style={{ color: "#f0f0f0", fontSize: "18px", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>
-            AI-powered guidance.
-          </h3>
-          <p style={{ color: "#c0c0c0", fontSize: "13px", lineHeight: 1.65, margin: "0 0 22px" }}>
-            Stuck? Ask your AI tutor. It knows what lesson you're on and won't just give you the answer.
-          </p>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            {aiFeatures.map(f => (
-              <div key={f.label} style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "7px",
-                background: "#0d0d0d",
-                border: "1px solid #1e1e1e",
-                borderRadius: "6px",
-                padding: "8px 12px",
-                flex: 1,
-                minWidth: "100px",
-              }}>
-                <span style={{ fontSize: "16px" }}>{f.icon}</span>
-                <span style={{ color: "#c0c0c0", fontSize: "12px", fontWeight: 500 }}>{f.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* SMALL: Learner count */}
-        <div style={{ ...card, gridColumn: "span 4", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ color: "#b8ff00", fontSize: "42px", fontWeight: 800, lineHeight: 1, fontFamily: "Georgia, serif", letterSpacing: "-0.03em" }}>
-            2,400+
-          </div>
-          <div style={{ color: "#c0c0c0", fontSize: "14px", marginTop: "8px", fontWeight: 500 }}>
-            learners building with AI
-          </div>
-          <div style={{ fontFamily: "monospace", fontSize: "11px", color: "#d4d4d4", marginTop: "4px" }}>
-            and growing every week
-          </div>
-        </div>
-
-        {/* SMALL: Beginner friendly */}
-        <div style={{ ...card, gridColumn: "span 4", display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ fontSize: "28px" }}></div>
-          <div>
-            <div style={{ color: "#f0f0f0", fontSize: "16px", fontWeight: 700, marginBottom: "6px", letterSpacing: "-0.01em" }}>
-              Beginner friendly.
-            </div>
-            <div style={{ color: "#c0c0c0", fontSize: "13px", lineHeight: 1.6 }}>
-              No CS degree needed. If you can Google something, you can learn here.
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
+        {title}
+      </h4>
+      <p style={{ fontFamily: body, color: "#A39B8C", fontSize: "0.95rem", lineHeight: 1.6, margin: 0 }}>
+        {children}
+      </p>
+    </div>
   );
 }

@@ -6,7 +6,7 @@ const QUOTES = [
     text: "I tried three other platforms before this. None of them had me writing actual API calls on day two. This is different.",
     name: "Alex R.",
     role: "Career changer → junior dev",
-    accent: "#b8ff00",
+    accent: "#E8A33C",
   },
   {
     text: "The AI track is what I was looking for. Every other resource was either too basic or dumped theory without code. Here it's hands-on from the first lesson.",
@@ -18,7 +18,7 @@ const QUOTES = [
     text: "Built my first RAG system in week three. Put it in my portfolio. Got a callback a week later. Not saying correlation is causation, but.",
     name: "Dami O.",
     role: "CS student, intern at startup",
-    accent: "#b8ff00",
+    accent: "#E8A33C",
   },
 ];
 
@@ -55,20 +55,20 @@ function QuoteCard({ quote, index, scrollYProgress }) {
         </div>
         <blockquote
           className="font-display font-medium text-xl md:text-2xl leading-relaxed mb-8"
-          style={{ color: "#ccc", letterSpacing: "-0.01em" }}
+          style={{ color: "#C2BAAA", letterSpacing: "-0.01em" }}
         >
           {quote.text}
         </blockquote>
         <div className="flex items-center gap-4">
           <div
             className="w-8 h-8 flex items-center justify-center font-mono text-xs font-bold"
-            style={{ background: quote.accent, color: "#0a0a0a" }}
+            style={{ background: quote.accent, color: "#15130E" }}
           >
             {quote.name[0]}
           </div>
           <div>
-            <div className="font-display font-bold text-sm" style={{ color: "#e8e8e8" }}>{quote.name}</div>
-            <div className="font-mono text-xs" style={{ color: "#e8e8e8" }}>{quote.role}</div>
+            <div className="font-display font-bold text-sm" style={{ color: "#ECE7DC" }}>{quote.name}</div>
+            <div className="font-mono text-xs" style={{ color: "#ECE7DC" }}>{quote.role}</div>
           </div>
           <div className="ml-auto">
             <div className="flex gap-1.5">
@@ -76,7 +76,7 @@ function QuoteCard({ quote, index, scrollYProgress }) {
                 <div
                   key={i}
                   className="w-1.5 h-1.5 rounded-full transition-all duration-300"
-                  style={{ background: i === index ? quote.accent : "#1e1e1e" }}
+                  style={{ background: i === index ? quote.accent : "#262219" }}
                 />
               ))}
             </div>
@@ -107,14 +107,14 @@ export default function SocialProofScene() {
     <div ref={ref} style={{ height: "650vh" }}>
       <div
         className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center"
-        style={{ background: "#0a0a0a", paddingTop: "8vh" }}
+        style={{ background: "#15130E", paddingTop: "8vh" }}
       >
         {/* Parallax noise/grain bg */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 80% 60% at 30% 40%, rgba(184,255,0,0.03) 0%, transparent 60%)",
+              background: "radial-gradient(ellipse 80% 60% at 30% 40%, rgba(232,163,60,0.03) 0%, transparent 60%)",
             }}
           />
         </motion.div>
@@ -142,12 +142,12 @@ export default function SocialProofScene() {
             animate={{ y: ["0%", "100%"] }}
             transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
             className="absolute left-0 right-0 h-px opacity-10"
-            style={{ background: "linear-gradient(90deg, transparent, #b8ff00 40%, #b8ff00 60%, transparent)" }}
+            style={{ background: "linear-gradient(90deg, transparent, #E8A33C 40%, #E8A33C 60%, transparent)" }}
           />
         </div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-16 text-center" style={{ color: "#e8e8e8" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-16 text-center" style={{ color: "#ECE7DC" }}>
             § FROM THE COMMUNITY
           </div>
 
@@ -160,26 +160,26 @@ export default function SocialProofScene() {
 
           {/* Milestone timeline — fades in near end of scene */}
           <motion.div style={{ opacity: milestonesOpacity }}>
-            <div className="font-mono text-xs tracking-widest uppercase mb-8 text-center" style={{ color: "#e8e8e8" }}>
+            <div className="font-mono text-xs tracking-widest uppercase mb-8 text-center" style={{ color: "#ECE7DC" }}>
               YOUR TIMELINE
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-0" style={{ border: "1px solid #1a1a1a" }}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-0" style={{ border: "1px solid #262219" }}>
               {MILESTONES.map((m, i) => (
                 <div
                   key={m.step}
                   className="p-6 relative"
-                  style={{ borderRight: i < 3 ? "1px solid #1a1a1a" : "none" }}
+                  style={{ borderRight: i < 3 ? "1px solid #262219" : "none" }}
                 >
-                  <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#b8ff00" }}>
+                  <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#E8A33C" }}>
                     {m.step}
                   </div>
-                  <p className="font-display text-sm leading-relaxed" style={{ color: "#c4c4c4", fontWeight: 400 }}>
+                  <p className="font-display text-sm leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
                     {m.text}
                   </p>
                   {/* connector dot */}
                   <div
                     className="absolute top-1/2 -right-1 w-2 h-2 -translate-y-1/2"
-                    style={{ background: i < 3 ? "#b8ff00" : "transparent", zIndex: 2 }}
+                    style={{ background: i < 3 ? "#E8A33C" : "transparent", zIndex: 2 }}
                   />
                 </div>
               ))}
@@ -188,10 +188,10 @@ export default function SocialProofScene() {
         </motion.div>
 
         {/* Scroll-driven bottom ticker */}
-        <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none" style={{ borderTop: "1px solid #111" }}>
+        <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none" style={{ borderTop: "1px solid #1C1A14" }}>
           <motion.div style={{ x: tickerX }} className="flex whitespace-nowrap py-3">
             {[...Array(4)].map((_, ri) => (
-              <span key={ri} className="font-mono text-xs tracking-widest uppercase mr-16" style={{ color: "#e8e8e8" }}>
+              <span key={ri} className="font-mono text-xs tracking-widest uppercase mr-16" style={{ color: "#ECE7DC" }}>
                 STRUCTURE · PROJECTS · AI TRACK · CODE · BUILD · DEPLOY · LEARN · SHIP · STRUCTURE · PROJECTS · AI TRACK · CODE · BUILD · DEPLOY · LEARN · SHIP &nbsp;
               </span>
             ))}

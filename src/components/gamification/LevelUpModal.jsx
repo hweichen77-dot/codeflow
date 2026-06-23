@@ -21,7 +21,7 @@ export default function LevelUpModal({ show, level, onClose }) {
         particleCount: 80,
         spread: 70,
         origin: { y: 0.55 },
-        colors: [lvl.color, "#ffffff", "#b8ff00"],
+        colors: [lvl.color, "#ffffff", "#E8A33C"],
       });
     };
     burst();
@@ -65,7 +65,7 @@ export default function LevelUpModal({ show, level, onClose }) {
               width: "100%",
               textAlign: "center",
               padding: "48px 40px 40px",
-              background: "#0a0a0a",
+              background: "#15130E",
               border: `1px solid ${lvl.color}55`,
               boxShadow: `0 0 80px ${lvl.color}22`,
             }}
@@ -77,7 +77,7 @@ export default function LevelUpModal({ show, level, onClose }) {
 
             <div
               className="font-mono text-xs tracking-widest uppercase mb-6"
-              style={{ color: "#c4c4c4" }}
+              style={{ color: "#BBB3A4" }}
             >
               § LEVEL UP
             </div>
@@ -115,7 +115,7 @@ export default function LevelUpModal({ show, level, onClose }) {
 
             <h2
               style={{
-                fontFamily: "'Syne', Georgia, serif",
+                fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
                 fontSize: "2.25rem",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
@@ -127,7 +127,7 @@ export default function LevelUpModal({ show, level, onClose }) {
             </h2>
             <p
               className="font-display text-sm"
-              style={{ color: "#d4d4d4", fontWeight: 400, margin: "0 0 32px" }}
+              style={{ color: "#C9C1B2", fontWeight: 400, margin: "0 0 32px" }}
             >
               You've reached a new level. Keep building.
             </p>
@@ -135,7 +135,7 @@ export default function LevelUpModal({ show, level, onClose }) {
             <button
               onClick={onClose}
               className="font-mono text-xs tracking-widest uppercase px-8 py-4 transition-all duration-150"
-              style={{ background: lvl.color, color: "#0a0a0a", fontWeight: 700, width: "100%" }}
+              style={{ background: lvl.color, color: "#15130E", fontWeight: 700, width: "100%" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow = `0 8px 32px ${lvl.color}33`;

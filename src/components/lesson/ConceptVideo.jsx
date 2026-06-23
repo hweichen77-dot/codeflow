@@ -61,7 +61,7 @@ export default function ConceptVideo({ youtubeId, title, caption }) {
             />
             <div
               className="relative z-10 flex items-center justify-center w-14 h-14 rounded-full transition-all duration-200 group-hover:scale-110"
-              style={{ background: trace.lime, boxShadow: "0 0 30px rgba(184,255,0,0.3)" }}
+              style={{ background: trace.lime, boxShadow: "0 0 30px rgba(232,163,60,0.3)" }}
             >
               <Play size={20} fill={trace.bg} style={{ color: trace.bg, marginLeft: "2px" }} />
             </div>
