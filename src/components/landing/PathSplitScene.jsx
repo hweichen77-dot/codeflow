@@ -21,10 +21,10 @@ function LeftPanel({ scrollYProgress }) {
           className="absolute pointer-events-none select-none"
           style={{
             fontSize: "clamp(5rem, 12vw, 11rem)",
-            fontFamily: "'Syne', sans-serif",
+            fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
             fontWeight: 900,
             color: "transparent",
-            WebkitTextStroke: "1px #161616",
+            WebkitTextStroke: "1px #221F18",
             letterSpacing: "-0.05em",
             top: "-2rem",
             left: "-1rem",
@@ -35,21 +35,21 @@ function LeftPanel({ scrollYProgress }) {
           CODE
         </div>
         <div className="relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#c4c4c4" }}>PATH 01</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>PATH 01</div>
           <h3
             className="font-display font-black mb-4"
-            style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+            style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
           >
             Coding
           </h3>
-          <p className="font-display text-base mb-6" style={{ color: "#e8e8e8", fontWeight: 400 }}>
+          <p className="font-display text-base mb-6" style={{ color: "#ECE7DC", fontWeight: 400 }}>
             From HTML & JavaScript to React and algorithms. Build real projects, not toy examples.
           </p>
           <motion.div style={{ opacity: contentOpacity }} className="space-y-2.5 mb-8">
             {CODING_TOPICS.map((t) => (
               <div key={t} className="flex items-center gap-3">
-                <span className="font-mono text-xs" style={{ color: "#b8ff0066" }}>→</span>
-                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{t}</span>
+                <span className="font-mono text-xs" style={{ color: "#E8A33C66" }}>→</span>
+                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{t}</span>
               </div>
             ))}
           </motion.div>
@@ -57,9 +57,9 @@ function LeftPanel({ scrollYProgress }) {
             <Link to={createPageUrl("Projects")}>
               <button
                 className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all duration-200"
-                style={{ border: "1px solid #b8ff0033", color: "#b8ff00", background: "#b8ff0010" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#b8ff0020"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#b8ff0010"; }}
+                style={{ border: "1px solid #E8A33C33", color: "#E8A33C", background: "#E8A33C10" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#E8A33C20"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#E8A33C10"; }}
               >
                 View Projects →
               </button>
@@ -87,10 +87,10 @@ function RightPanel({ scrollYProgress }) {
           className="absolute pointer-events-none select-none"
           style={{
             fontSize: "clamp(5rem, 12vw, 11rem)",
-            fontFamily: "'Syne', sans-serif",
+            fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
             fontWeight: 900,
             color: "transparent",
-            WebkitTextStroke: "1px #161616",
+            WebkitTextStroke: "1px #221F18",
             letterSpacing: "-0.05em",
             top: "-2rem",
             right: "-1rem",
@@ -101,21 +101,21 @@ function RightPanel({ scrollYProgress }) {
           AI
         </div>
         <div className="relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#c4c4c4" }}>PATH 02</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>PATH 02</div>
           <h3
             className="font-display font-black mb-4"
-            style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+            style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
           >
             AI / ML
           </h3>
-          <p className="font-display text-base mb-6" style={{ color: "#e8e8e8", fontWeight: 400 }}>
+          <p className="font-display text-base mb-6" style={{ color: "#ECE7DC", fontWeight: 400 }}>
             From neural network basics to fine-tuning LLMs. Deploy real AI-powered apps.
           </p>
           <motion.div style={{ opacity: contentOpacity }} className="space-y-2.5 mb-8">
             {AI_TOPICS.map((t) => (
               <div key={t} className="flex items-center justify-end gap-3">
-                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{t}</span>
-                <span className="font-mono text-xs" style={{ color: "#b8ff0066" }}>→</span>
+                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{t}</span>
+                <span className="font-mono text-xs" style={{ color: "#E8A33C66" }}>→</span>
               </div>
             ))}
           </motion.div>
@@ -123,9 +123,9 @@ function RightPanel({ scrollYProgress }) {
             <Link to={createPageUrl("AITrack")}>
               <button
                 className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all duration-200"
-                style={{ border: "1px solid #b8ff0033", color: "#b8ff00", background: "#b8ff0010" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#b8ff0020"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#b8ff0010"; }}
+                style={{ border: "1px solid #E8A33C33", color: "#E8A33C", background: "#E8A33C10" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#E8A33C20"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#E8A33C10"; }}
               >
                 View AI Track →
               </button>
@@ -146,8 +146,8 @@ function Divider({ scrollYProgress }) {
       style={{ opacity }}
       className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px pointer-events-none z-20"
     >
-      <motion.div style={{ scaleY }} className="w-full h-full origin-top" style2={{ background: "linear-gradient(to bottom, transparent, #b8ff0055, #b8ff00, #b8ff0055, transparent)" }}>
-        <div className="w-full h-full" style={{ background: "linear-gradient(to bottom, transparent, #b8ff0055, #b8ff00, #b8ff0055, transparent)" }} />
+      <motion.div style={{ scaleY }} className="w-full h-full origin-top" style2={{ background: "linear-gradient(to bottom, transparent, #E8A33C55, #E8A33C, #E8A33C55, transparent)" }}>
+        <div className="w-full h-full" style={{ background: "linear-gradient(to bottom, transparent, #E8A33C55, #E8A33C, #E8A33C55, transparent)" }} />
       </motion.div>
     </motion.div>
   );
@@ -161,10 +161,10 @@ function IntroLabel({ scrollYProgress }) {
       className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none"
     >
       <div style={{ paddingTop: "8vh" }}>
-        <div className="font-mono text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#b8ff00" }}>§ CHOOSE YOUR PATH</div>
+        <div className="font-mono text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#E8A33C" }}>§ CHOOSE YOUR PATH</div>
         <h2
           className="font-display font-black text-center"
-          style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+          style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
         >
           Two tracks.<br />One platform.
         </h2>
@@ -192,14 +192,14 @@ export default function PathSplitScene() {
     <div ref={ref} style={{ height: "500vh" }}>
       <div
         className="sticky top-0 h-screen overflow-hidden"
-        style={{ background: "#0a0a0a" }}
+        style={{ background: "#15130E" }}
       >
         {/* Parallax glow */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 90% 60% at 50% 60%, rgba(184,255,0,0.045) 0%, transparent 65%)",
+              background: "radial-gradient(ellipse 90% 60% at 50% 60%, rgba(232,163,60,0.045) 0%, transparent 65%)",
             }}
           />
         </motion.div>
@@ -219,9 +219,9 @@ export default function PathSplitScene() {
           <motion.div
             style={{ x: lineX }}
             className="absolute top-1/2 -translate-y-1/2 w-full h-px opacity-20"
-            style2={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }}
+            style2={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }}
           >
-            <div className="w-full h-full" style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }} />
+            <div className="w-full h-full" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
           </motion.div>
         </div>
 
@@ -230,7 +230,7 @@ export default function PathSplitScene() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `linear-gradient(rgba(184,255,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(184,255,0,0.03) 1px, transparent 1px)`,
+              backgroundImage: `linear-gradient(rgba(232,163,60,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,163,60,0.03) 1px, transparent 1px)`,
               backgroundSize: "120px 120px",
             }}
           />

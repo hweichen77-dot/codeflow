@@ -16,9 +16,9 @@ const TRACKS = [
 ];
 
 const DIFF_COLOR = {
-  beginner: { color: "#b8ff00", border: "#b8ff0033", bg: "#b8ff0010" },
-  intermediate: { color: "#ffb300", border: "#ffb30033", bg: "#ffb30010" },
-  advanced: { color: "#ff6b6b", border: "#ff6b6b33", bg: "#ff6b6b10" },
+  beginner: { color: "#E8A33C", border: "#E8A33C33", bg: "#E8A33C10" },
+  intermediate: { color: "#E0B341", border: "#E0B34133", bg: "#E0B34110" },
+  advanced: { color: "#FF6B5C", border: "#FF6B5C33", bg: "#FF6B5C10" },
 };
 
 export default function APCS() {
@@ -63,17 +63,17 @@ export default function APCS() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
+    <div className="min-h-screen" style={{ background: "#15130E" }}>
       {/* Hero */}
-      <div className="relative px-8 lg:px-16 pt-28 pb-12" style={{ borderBottom: "1px solid #1a1a1a" }}>
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }} />
+      <div className="relative px-8 lg:px-16 pt-28 pb-12" style={{ borderBottom: "1px solid #262219" }}>
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
-          <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#c4c4c4" }}>§ AP COMPUTER SCIENCE</div>
-          <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: "0 0 20px" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4" }}>§ AP COMPUTER SCIENCE</div>
+          <h1 style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 20px" }}>
             Pass the exam.<br />
-            <span style={{ WebkitTextStroke: "1.5px #b8ff00", color: "transparent" }}>Actually learn it.</span>
+            <span style={{ WebkitTextStroke: "1.5px #E8A33C", color: "transparent" }}>Actually learn it.</span>
           </h1>
-          <p className="font-display text-base max-w-prose" style={{ color: "#d4d4d4", fontWeight: 400 }}>
+          <p className="font-display text-base max-w-prose" style={{ color: "#C9C1B2", fontWeight: 400 }}>
             Two College-Board-aligned tracks with real code execution at every step — CSP in Python, CSA in Java — plus exam-style multiple choice and free-response practice.
           </p>
         </div>
@@ -88,9 +88,9 @@ export default function APCS() {
               onClick={() => setTrack(t.key)}
               className="font-mono text-xs tracking-widest uppercase px-5 py-3 transition-all duration-150"
               style={{
-                color: track === t.key ? "#0a0a0a" : "#d4d4d4",
-                background: track === t.key ? "#b8ff00" : "transparent",
-                border: `1px solid ${track === t.key ? "#b8ff00" : "#1e1e1e"}`,
+                color: track === t.key ? "#15130E" : "#C9C1B2",
+                background: track === t.key ? "#E8A33C" : "transparent",
+                border: `1px solid ${track === t.key ? "#E8A33C" : "#262219"}`,
                 fontWeight: 700,
               }}
             >
@@ -98,8 +98,8 @@ export default function APCS() {
             </button>
           ))}
         </div>
-        <p className="font-display text-sm mt-4 mb-1" style={{ color: "#d4d4d4" }}>
-          <span className="font-mono text-xs uppercase tracking-widest" style={{ color: "#b8ff00" }}>{active.lang}</span>
+        <p className="font-display text-sm mt-4 mb-1" style={{ color: "#C9C1B2" }}>
+          <span className="font-mono text-xs uppercase tracking-widest" style={{ color: "#E8A33C" }}>{active.lang}</span>
           &nbsp;·&nbsp; {active.blurb}
         </p>
       </div>
@@ -107,16 +107,16 @@ export default function APCS() {
       {/* Curriculum grouped by unit */}
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12 space-y-12">
         {trackProjects.length === 0 ? (
-          <div className="font-mono text-sm py-20 text-center" style={{ color: "#666" }}>
+          <div className="font-mono text-sm py-20 text-center" style={{ color: "#6E665A" }}>
             {active.label} curriculum is coming soon.
           </div>
         ) : (
           units.map((unit) => (
             <div key={unit}>
-              <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#b8ff00" }}>
+              <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#E8A33C" }}>
                 {unit}
               </div>
-              <div style={{ borderTop: "1px solid #1a1a1a" }}>
+              <div style={{ borderTop: "1px solid #262219" }}>
                 {byUnit.get(unit).map((p, i) => {
                   const dc = DIFF_COLOR[p.difficulty] || DIFF_COLOR.beginner;
                   const pct = modulePct(p.id);
@@ -129,36 +129,36 @@ export default function APCS() {
                     >
                       <div
                         className="grid gap-8 px-6 py-6 transition-all duration-200"
-                        style={{ gridTemplateColumns: "3rem 1fr auto", borderBottom: "1px solid #111" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "#0d0d0d"; e.currentTarget.style.paddingLeft = "1.75rem"; }}
+                        style={{ gridTemplateColumns: "3rem 1fr auto", borderBottom: "1px solid #1C1A14" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "#131009"; e.currentTarget.style.paddingLeft = "1.75rem"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; }}
                       >
                         <div className="flex items-center" style={{ minWidth: "3rem" }}>
                           {pct > 0 ? (
-                            <ProgressRing percent={pct} size={38} color="#b8ff00" />
+                            <ProgressRing percent={pct} size={38} color="#E8A33C" />
                           ) : (
-                            <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#e8e8e8", letterSpacing: "-0.05em" }}>
+                            <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}>
                               {String(i + 1).padStart(2, "0")}
                             </span>
                           )}
                         </div>
                         <div>
                           <div className="flex items-center gap-3 mb-1">
-                            <span className="font-display font-bold text-base" style={{ color: done ? "#b8ff00" : "#ccc", letterSpacing: "-0.02em" }}>
+                            <span className="font-display font-bold text-base" style={{ color: done ? "#E8A33C" : "#C2BAAA", letterSpacing: "-0.02em" }}>
                               {p.title}
                             </span>
                             {done && (
-                              <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
+                              <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
                                 DONE
                               </span>
                             )}
                           </div>
-                          <p className="font-display text-sm mb-3" style={{ color: "#d4d4d4", fontWeight: 400 }}>
+                          <p className="font-display text-sm mb-3" style={{ color: "#C9C1B2", fontWeight: 400 }}>
                             {p.description}
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {(p.tags || []).slice(0, 4).map((c) => (
-                              <span key={c} className="font-mono text-xs px-2 py-0.5" style={{ color: "#c4c4c4", border: "1px solid #2a2a2a" }}>
+                              <span key={c} className="font-mono text-xs px-2 py-0.5" style={{ color: "#BBB3A4", border: "1px solid #34302A" }}>
                                 {c}
                               </span>
                             ))}

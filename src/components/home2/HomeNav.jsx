@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 export default function HomeNav() {
   const navigate = useNavigate();
   return (
-    <nav style={{ borderBottom: "1px solid #1a1a1a", padding: "0 2rem" }}>
+    <nav style={{ borderBottom: "1px solid #262219", padding: "0 2rem" }}>
       <div style={{
         maxWidth: "1200px",
         margin: "0 auto",
@@ -16,7 +16,7 @@ export default function HomeNav() {
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <span style={{ color: "#f59e0b", fontSize: "18px", fontWeight: 800, lineHeight: 1 }}>•</span>
-          <span style={{ color: "#f0f0f0", fontSize: "17px", fontWeight: 700, letterSpacing: "-0.3px" }}>CodeFlow</span>
+          <span style={{ color: "#F2EDE2", fontSize: "17px", fontWeight: 700, letterSpacing: "-0.3px" }}>CodeFlow</span>
         </div>
 
         {/* Nav links */}
@@ -26,9 +26,9 @@ export default function HomeNav() {
               <a
                 key={link}
                 href={`#${link.toLowerCase()}`}
-                style={{ color: "#d4d4d4", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
-                onMouseEnter={e => e.currentTarget.style.color = "#f0f0f0"}
-                onMouseLeave={e => e.currentTarget.style.color = "#d4d4d4"}
+                style={{ color: "#C9C1B2", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}
+                onMouseEnter={e => e.currentTarget.style.color = "#F2EDE2"}
+                onMouseLeave={e => e.currentTarget.style.color = "#C9C1B2"}
               >
                 {link}
               </a>
@@ -38,7 +38,7 @@ export default function HomeNav() {
             onClick={() => navigate("/login")}
             style={{
             background: "#f59e0b",
-            color: "#0a0a0a",
+            color: "#15130E",
             border: "none",
             borderRadius: "999px",
             padding: "8px 18px",

@@ -32,7 +32,7 @@ export default function LessonCompletionCelebration({ show, lessonTitle, xpEarne
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 350, damping: 22 }}
             className="text-center px-12 py-10"
-            style={{ background: trace.terminal, border: `1px solid ${trace.lime}`, boxShadow: "0 0 60px rgba(184,255,0,0.2)", maxWidth: "420px" }}
+            style={{ background: trace.terminal, border: `1px solid ${trace.lime}`, boxShadow: "0 0 60px rgba(232,163,60,0.2)", maxWidth: "420px" }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ fontSize: "3rem", marginBottom: "12px" }}></div>

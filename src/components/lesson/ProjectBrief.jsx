@@ -11,45 +11,45 @@ export default function ProjectBrief({ brief }) {
   if (!brief) return null;
 
   return (
-    <div className="mb-6" style={{ border: "1px solid #1e1e1e", background: "#0d0d0d", borderLeft: "2px solid #b8ff00" }}>
+    <div className="mb-6" style={{ border: "1px solid #262219", background: "#131009", borderLeft: "2px solid #E8A33C" }}>
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between px-5 py-4 transition-all"
         style={{ background: "transparent", border: "none", cursor: "pointer" }}
       >
         <div className="text-left">
-          <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#b8ff00" }}>PROJECT BRIEF</div>
-          <div className="font-display text-sm" style={{ color: "#ccc", fontWeight: 500 }}>{brief.tagline}</div>
+          <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>PROJECT BRIEF</div>
+          <div className="font-display text-sm" style={{ color: "#C2BAAA", fontWeight: 500 }}>{brief.tagline}</div>
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
           {brief.estimatedHours != null && (
-            <span className="hidden sm:flex items-center gap-1.5 font-mono text-xs" style={{ color: "#c4c4c4" }}>
+            <span className="hidden sm:flex items-center gap-1.5 font-mono text-xs" style={{ color: "#BBB3A4" }}>
               <Clock size={12} /> ~{brief.estimatedHours}h
             </span>
           )}
-          <ChevronDown size={16} style={{ color: "#888", transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
+          <ChevronDown size={16} style={{ color: "#8F8779", transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
         </div>
       </button>
 
       {open && (
-        <div className="px-5 pb-5" style={{ borderTop: "1px solid #1a1a1a" }}>
-          <p className="font-display text-sm leading-relaxed mt-4 mb-5" style={{ color: "#d4d4d4" }}>{brief.overview}</p>
+        <div className="px-5 pb-5" style={{ borderTop: "1px solid #262219" }}>
+          <p className="font-display text-sm leading-relaxed mt-4 mb-5" style={{ color: "#C9C1B2" }}>{brief.overview}</p>
 
           <div className="grid md:grid-cols-2 gap-5">
-            <Section icon={<Target size={13} />} label="What you'll build" accent="#b8ff00">
+            <Section icon={<Target size={13} />} label="What you'll build" accent="#E8A33C">
               <ul className="space-y-1.5">
                 {brief.whatYouBuild?.map((w, i) => (
-                  <li key={i} className="font-display text-sm flex gap-2" style={{ color: "#bbb" }}>
-                    <span style={{ color: "#b8ff00" }}>—</span> {w}
+                  <li key={i} className="font-display text-sm flex gap-2" style={{ color: "#A8A092" }}>
+                    <span style={{ color: "#E8A33C" }}>—</span> {w}
                   </li>
                 ))}
               </ul>
             </Section>
 
-            <Section icon={<Wrench size={13} />} label="Skills" accent="#60a5fa">
+            <Section icon={<Wrench size={13} />} label="Skills" accent="#C2643C">
               <div className="flex flex-wrap gap-1.5">
                 {brief.skills?.map((s, i) => (
-                  <span key={i} className="font-mono text-xs px-2 py-1" style={{ background: "#60a5fa14", border: "1px solid #60a5fa33", color: "#60a5fa" }}>{s}</span>
+                  <span key={i} className="font-mono text-xs px-2 py-1" style={{ background: "#C2643C14", border: "1px solid #C2643C33", color: "#C2643C" }}>{s}</span>
                 ))}
               </div>
             </Section>
@@ -61,7 +61,7 @@ export default function ProjectBrief({ brief }) {
                     <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#cc66ff" }}>{String(i + 1).padStart(2, "0")}</span>
                     <div>
                       <div className="font-display text-sm font-medium" style={{ color: "#ddd" }}>{m.title}</div>
-                      <div className="font-display text-xs" style={{ color: "#d4d4d4" }}>{m.detail}</div>
+                      <div className="font-display text-xs" style={{ color: "#C9C1B2" }}>{m.detail}</div>
                     </div>
                   </li>
                 ))}
@@ -73,7 +73,7 @@ export default function ProjectBrief({ brief }) {
                 {brief.rubric?.map((r, i) => (
                   <li key={i}>
                     <div className="font-display text-sm font-medium" style={{ color: "#ddd" }}>{r.criterion}</div>
-                    <div className="font-display text-xs" style={{ color: "#d4d4d4" }}>{r.description}</div>
+                    <div className="font-display text-xs" style={{ color: "#C9C1B2" }}>{r.description}</div>
                   </li>
                 ))}
               </ul>

@@ -51,17 +51,17 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
           ACHIEVEMENTS
         </div>
-        <div className="font-mono text-xs" style={{ color: "#c4c4c4" }}>
+        <div className="font-mono text-xs" style={{ color: "#BBB3A4" }}>
           {unlockedCount} / {achievements.length}
         </div>
       </div>
 
       <div
         className="grid grid-cols-2 sm:grid-cols-4 gap-0"
-        style={{ border: "1px solid #1a1a1a" }}
+        style={{ border: "1px solid #262219" }}
       >
         {achievements.map((a, i) => {
           const cols = 4;
@@ -75,9 +75,9 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
               transition={{ delay: i * 0.04 }}
               className="p-5 flex flex-col items-center text-center"
               style={{
-                borderRight: (i % cols !== cols - 1) ? "1px solid #1a1a1a" : "none",
-                borderBottom: row < lastRow ? "1px solid #1a1a1a" : "none",
-                background: a.unlocked ? "#0d0d0d" : "transparent",
+                borderRight: (i % cols !== cols - 1) ? "1px solid #262219" : "none",
+                borderBottom: row < lastRow ? "1px solid #262219" : "none",
+                background: a.unlocked ? "#131009" : "transparent",
                 opacity: a.unlocked ? 1 : 0.4,
               }}
               title={a.desc}
@@ -93,13 +93,13 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
               </div>
               <div
                 className="font-display text-sm font-bold mb-1"
-                style={{ color: a.unlocked ? "#e8e8e8" : "#c4c4c4", letterSpacing: "-0.01em" }}
+                style={{ color: a.unlocked ? "#ECE7DC" : "#BBB3A4", letterSpacing: "-0.01em" }}
               >
                 {a.title}
               </div>
               <div
                 className="font-mono"
-                style={{ fontSize: "0.65rem", color: a.unlocked ? "#d4d4d4" : "#c4c4c4", lineHeight: 1.4 }}
+                style={{ fontSize: "0.65rem", color: a.unlocked ? "#C9C1B2" : "#BBB3A4", lineHeight: 1.4 }}
               >
                 {a.unlocked ? a.desc : "LOCKED"}
               </div>
