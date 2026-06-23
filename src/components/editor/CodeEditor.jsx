@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { api, aiAvailable } from "@/api/apiClient";
-import { Loader2 } from "lucide-react";
-import { runCodeInSandbox } from "@/lib/codeRunner";
 import CodeAnalysis from "./CodeAnalysis";
 import AIExplainModal from "./AIExplainModal";
 
@@ -127,14 +125,14 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
             </div>
-            <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>
+            <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>
               ~/codeflow/{filename}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopy}
-              className="font-mono text-xs px-3 py-1.5 transition-all duration-150"
+              className="font-sans text-xs px-3 py-1.5 transition-all duration-150"
               style={{
                 color: copied ? "#E8A33C" : "#BBB3A4",
                 border: `1px solid ${copied ? "#E8A33C33" : "#262219"}`,
@@ -145,7 +143,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
             </button>
             <button
               onClick={() => onChange("")}
-              className="font-mono text-xs px-3 py-1.5 transition-all duration-150"
+              className="font-sans text-xs px-3 py-1.5 transition-all duration-150"
               style={{ color: "#ECE7DC", border: "1px solid #262219" }}
               onMouseEnter={e => { e.currentTarget.style.color = "#C9C1B2"; e.currentTarget.style.borderColor = "#34302A"; }}
               onMouseLeave={e => { e.currentTarget.style.color = "#ECE7DC"; e.currentTarget.style.borderColor = "#262219"; }}
@@ -155,7 +153,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
             <button
               onClick={onRun}
               disabled={isRunning}
-              className="font-mono text-xs tracking-widest uppercase px-5 py-1.5 transition-all duration-150 disabled:opacity-50"
+              className="font-sans text-xs tracking-widest uppercase px-5 py-1.5 transition-all duration-150 disabled:opacity-50"
               style={{ background: "#E8A33C", color: "#15130E", fontWeight: 700, border: "1px solid #E8A33C" }}
               onMouseEnter={e => { if (!isRunning) { e.currentTarget.style.boxShadow = "0 0 20px rgba(232,163,60,0.2)"; e.currentTarget.style.transform = "translateY(-1px)"; } }}
               onMouseLeave={e => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.transform = ""; }}
@@ -209,7 +207,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
           <div role="status" aria-live="polite" style={{ borderTop: "1px solid #262219" }}>
             <div className="flex items-center gap-3 px-5 py-2.5" style={{ background: "#15130E", borderBottom: "1px solid #262219" }}>
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#E8A33C" }} />
-              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>output</span>
+              <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>output</span>
             </div>
             <div
               className="font-mono py-5 px-5 overflow-auto"

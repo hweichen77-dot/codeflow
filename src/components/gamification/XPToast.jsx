@@ -44,7 +44,7 @@ export default function XPToastContainer() {
           >
             <span style={{ fontSize: "1.25rem" }}>{toast.emoji}</span>
             <div>
-              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
+              <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
                 +{toast.xp} XP
               </div>
               <div className="font-display text-xs" style={{ color: "#C9C1B2", fontWeight: 400 }}>

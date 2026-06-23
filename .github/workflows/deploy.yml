@@ -36,7 +36,17 @@ jobs:
         run: npm run validate:content
       - name: Verify reference solutions
         run: npm run verify:solutions
-      - run: npm run build
+      - name: Build
+        run: npm run build
+        env:
+          # Inject production config from repo secrets so the GitHub Pages build
+          # ships with Supabase/PostHog/Sentry live instead of dormant. All are
+          # optional — missing ones leave that integration disabled, not broken.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}
+          VITE_POSTHOG_HOST: ${{ secrets.VITE_POSTHOG_HOST }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

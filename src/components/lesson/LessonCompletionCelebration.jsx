@@ -36,7 +36,7 @@ export default function LessonCompletionCelebration({ show, lessonTitle, xpEarne
             onClick={e => e.stopPropagation()}
           >
             <div style={{ fontSize: "3rem", marginBottom: "12px" }}></div>
-            <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: trace.lime }}>
+            <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: trace.lime }}>
               Lesson Complete
             </div>
             <h2
@@ -44,12 +44,12 @@ export default function LessonCompletionCelebration({ show, lessonTitle, xpEarne
             >
               {lessonTitle}
             </h2>
-            <div className="font-mono text-sm mt-4 mb-6" style={{ color: trace.dim }}>
+            <div className="font-sans text-sm mt-4 mb-6" style={{ color: trace.dim }}>
               +{xpEarned} XP earned
             </div>
             <button
               onClick={onClose}
-              className="font-mono text-xs tracking-widest uppercase px-8 py-3 w-full"
+              className="font-sans text-xs tracking-widest uppercase px-8 py-3 w-full"
               style={{ background: trace.lime, color: trace.bg, fontWeight: 700, border: "none" }}
             >
               Continue →

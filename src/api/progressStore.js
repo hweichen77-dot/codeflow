@@ -28,13 +28,31 @@ const readArr = (key) => {
   }
 }
 
+// One-shot signal so a student in private-mode / full-storage learns their work
+// isn't being saved instead of silently losing it. App mounts a listener.
+let storageErrorNotified = false
 const writeArr = (key, arr) => {
   if (typeof window === 'undefined') return
   try {
     window.localStorage.setItem(key, JSON.stringify(arr))
     emitChange()
   } catch {
-    /* ignore */
+    if (!storageErrorNotified) {
+      storageErrorNotified = true
+      try { window.dispatchEvent(new Event('codeflow:storage-error')) } catch { /* ignore */ }
+    }
+  }
+}
+
+/**
+ * Wipe all local progress data. Called on explicit sign-out so a second user on
+ * a shared/lab browser never inherits — or cloud-merges — the first user's
+ * lessons, challenges, and capstones.
+ */
+export function clearAllProgress() {
+  if (typeof window === 'undefined') return
+  for (const key of [PROGRESS_KEY, CAPSTONE_KEY, CHALLENGES_KEY]) {
+    try { window.localStorage.removeItem(key) } catch { /* ignore */ }
   }
 }
 

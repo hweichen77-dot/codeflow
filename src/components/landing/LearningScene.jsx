@@ -54,11 +54,11 @@ function StepIndicator({ index, step, scrollYProgress }) {
     <div className="flex items-center gap-2">
       <motion.div
         style={{ background: bg, color }}
-        className="w-6 h-6 flex items-center justify-center font-mono text-xs font-bold"
+        className="w-6 h-6 flex items-center justify-center font-sans text-xs font-bold"
       >
         {index + 1}
       </motion.div>
-      <span className="font-mono text-xs hidden sm:block" style={{ color: "#ECE7DC" }}>
+      <span className="font-sans text-xs hidden sm:block" style={{ color: "#ECE7DC" }}>
         {step.label.split("—")[1]?.trim()}
       </span>
     </div>
@@ -84,7 +84,7 @@ function StepCard({ index, step, scrollYProgress }) {
       style={{ opacity, y, position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none" }}
     >
       <div className="p-6 md:p-8">
-        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#E8A33C" }}>
+        <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#E8A33C" }}>
           {step.label}
         </div>
         <div className="mb-6">
@@ -103,7 +103,7 @@ function StepCard({ index, step, scrollYProgress }) {
         {step.outputLabel && (
           <div className="flex items-center gap-3 px-3 py-2" style={{ border: "1px solid #262219" }}>
             <span
-              className="font-mono text-xs tracking-widest uppercase px-2 py-0.5"
+              className="font-sans text-xs tracking-widest uppercase px-2 py-0.5"
               style={{
                 color: step.isResult ? "#E8A33C" : "#8F8779",
                 border: `1px solid ${step.isResult ? "#E8A33C33" : "#34302A"}`,
@@ -113,7 +113,7 @@ function StepCard({ index, step, scrollYProgress }) {
               {step.outputLabel}
             </span>
             {step.output && (
-              <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{step.output}</span>
+              <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>{step.output}</span>
             )}
           </div>
         )}
@@ -205,7 +205,7 @@ export default function LearningScene() {
         </motion.div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto px-6 relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-10 text-center" style={{ color: "#ECE7DC" }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-10 text-center" style={{ color: "#ECE7DC" }}>
             § THE LEARNING EXPERIENCE
           </div>
 
@@ -223,7 +223,7 @@ export default function LearningScene() {
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#E8A33C" }} />
-              <span className="font-mono text-xs ml-4" style={{ color: "#ECE7DC" }}>lesson_01.py</span>
+              <span className="font-sans text-xs ml-4" style={{ color: "#ECE7DC" }}>lesson_01.py</span>
             </div>
             <div className="relative" style={{ minHeight: "340px" }}>
               {STEPS.map((s, i) => (

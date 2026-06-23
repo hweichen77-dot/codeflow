@@ -25,8 +25,8 @@ function SkillBar({ bar, index, scrollYProgress }) {
   return (
     <motion.div style={{ opacity }}>
       <div className="flex items-center justify-between mb-2">
-        <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{bar.label}</span>
-        <span className="font-mono text-xs" style={{ color: bar.color }}>{bar.width}%</span>
+        <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>{bar.label}</span>
+        <span className="font-sans text-xs" style={{ color: bar.color }}>{bar.width}%</span>
       </div>
       <div className="h-0.5 w-full" style={{ background: "#1C1A14" }}>
         <motion.div
@@ -150,7 +150,7 @@ export default function ProgressScene() {
         </div>
 
         <div className="w-full max-w-5xl mx-auto relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-12 text-center" style={{ color: "#ECE7DC" }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-12 text-center" style={{ color: "#ECE7DC" }}>
             § YOUR GROWTH
           </div>
 

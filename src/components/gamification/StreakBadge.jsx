@@ -36,7 +36,7 @@ export default function StreakBadge({ completedCount }) {
       >
         <span style={{ fontSize: "0.75rem" }}>{streakEmoji}</span>
         <div>
-          <div className="font-mono text-xs font-bold" style={{ color: streakDays >= 3 ? "#E8A33C" : "#C9C1B2" }}>
+          <div className="font-sans text-xs font-bold" style={{ color: streakDays >= 3 ? "#E8A33C" : "#C9C1B2" }}>
             {streakDays}d streak
           </div>
         </div>
@@ -45,7 +45,7 @@ export default function StreakBadge({ completedCount }) {
       {/* Lessons done */}
       <div className="flex items-center gap-2 px-3 py-1.5" style={{ border: "1px solid #262219", background: "#131009" }}>
         <span style={{ fontSize: "0.75rem" }}></span>
-        <div className="font-mono text-xs font-bold" style={{ color: "#C9C1B2" }}>
+        <div className="font-sans text-xs font-bold" style={{ color: "#C9C1B2" }}>
           {completedCount} done
         </div>
       </div>

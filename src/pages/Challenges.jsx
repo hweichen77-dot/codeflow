@@ -65,7 +65,7 @@ export default function Challenges() {
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#BBB3A4" }}>§ CHALLENGES</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#BBB3A4" }}>§ CHALLENGES</span>
           </div>
           <h1
             style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
@@ -83,7 +83,7 @@ export default function Challenges() {
         <div className="flex flex-wrap items-center gap-4 mb-12">
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span
-              className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs pointer-events-none"
+              className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none"
               style={{ color: "#BBB3A4" }}
             >
               /search
@@ -92,7 +92,7 @@ export default function Challenges() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="filter challenges..."
-              className="w-full font-mono text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
+              className="w-full font-sans text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
               style={{ border: "1px solid #262219", color: "#ECE7DC", caretColor: "#E8A33C" }}
             />
           </div>
@@ -101,7 +101,7 @@ export default function Challenges() {
               <button
                 key={d}
                 onClick={() => setDifficulty(d)}
-                className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                 style={{
                   border: `1px solid ${difficulty === d ? "#E8A33C" : "#262219"}`,
                   color: difficulty === d ? "#E8A33C" : "#BBB3A4",
@@ -119,7 +119,7 @@ export default function Challenges() {
               <button
                 key={s.key}
                 onClick={() => setSort(s.key)}
-                className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                 style={{
                   border: `1px solid ${sort === s.key ? "#E8A33C" : "#262219"}`,
                   color: sort === s.key ? "#E8A33C" : "#BBB3A4",
@@ -141,7 +141,7 @@ export default function Challenges() {
             {["LVL", "CHALLENGE", "TOPIC", "XP"].map(h => (
               <div
                 key={h}
-                className={`font-mono text-xs tracking-widest uppercase${h === "TOPIC" ? " hidden sm:block" : ""}`}
+                className={`font-sans text-xs tracking-widest uppercase${h === "TOPIC" ? " hidden sm:block" : ""}`}
                 style={{ color: "#BBB3A4" }}
               >
                 {h}
@@ -159,7 +159,7 @@ export default function Challenges() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
-            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>NO RESULTS</div>
+            <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>NO RESULTS</div>
             <p className="font-display text-base" style={{ color: "#C9C1B2" }}>No challenges match your filter.</p>
           </div>
         ) : (
@@ -178,7 +178,7 @@ export default function Challenges() {
                   >
                     {/* Level */}
                     <div
-                      className="font-mono font-bold"
+                      className="font-sans font-bold"
                       style={{ fontSize: "1.25rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}
                     >
                       {DIFF_NUM[challenge.difficulty] || "01"}
@@ -188,7 +188,7 @@ export default function Challenges() {
                     <div>
                       {challenge.project_title && (
                         <div
-                          className="font-mono text-xs tracking-wide mb-1"
+                          className="font-sans text-xs tracking-wide mb-1"
                           style={{ color: "#7a7a7a" }}
                         >
                           {challenge.project_title}
@@ -213,7 +213,7 @@ export default function Challenges() {
                     {/* Topic */}
                     <div className="hidden sm:block">
                       <span
-                        className="font-mono text-xs tracking-widest uppercase px-2.5 py-1"
+                        className="font-sans text-xs tracking-widest uppercase px-2.5 py-1"
                         style={{ color: "#C9C1B2", border: "1px solid #34302A" }}
                       >
                         {CATEGORY_LABELS[challenge.topic] || challenge.topic || challenge.category}
@@ -222,7 +222,7 @@ export default function Challenges() {
 
                     {/* XP */}
                     <div className="text-right">
-                      <span className="font-mono text-xs" style={{ color: "#E8A33C" }}>
+                      <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>
                         +{challenge.xp || 15}xp
                       </span>
                     </div>

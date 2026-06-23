@@ -53,7 +53,7 @@ export default function FinalCTAScene() {
       {/* Content */}
       <motion.div style={{ opacity, scale, y }} className="relative z-10 text-center max-w-3xl mx-auto">
         <div
-          className="font-mono text-xs tracking-widest uppercase mb-8"
+          className="font-sans text-xs tracking-widest uppercase mb-8"
           style={{ color: "#E8A33C" }}
         >
           § READY TO START
@@ -83,7 +83,7 @@ export default function FinalCTAScene() {
         <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
           <Link to={createPageUrl("Projects")}>
             <button
-              className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
+              className="font-sans text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{
                 background: "#E8A33C",
                 color: "#15130E",
@@ -105,7 +105,7 @@ export default function FinalCTAScene() {
 
           <Link to={createPageUrl("AITrack")}>
             <button
-              className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
+              className="font-sans text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{ color: "#BBB3A4", border: "1px solid #262219" }}
               onMouseEnter={e => {
                 e.currentTarget.style.borderColor = "#3A352D";
@@ -130,14 +130,14 @@ export default function FinalCTAScene() {
           ].map(([top, bot]) => (
             <div key={top} className="text-center">
               <div className="font-display font-bold text-sm" style={{ color: "#C2BAAA" }}>{top}</div>
-              <div className="font-mono text-xs" style={{ color: "#ECE7DC" }}>{bot}</div>
+              <div className="font-sans text-xs" style={{ color: "#ECE7DC" }}>{bot}</div>
             </div>
           ))}
         </div>
 
         {/* Footer */}
         <div
-          className="mt-20 font-mono text-xs tracking-widest"
+          className="mt-20 font-sans text-xs tracking-widest"
           style={{ color: "#ECE7DC" }}
         >
           © 2026 codeflow &nbsp;·&nbsp; crafted with insomnia and strong opinions

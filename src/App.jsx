@@ -1,5 +1,6 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Toaster } from "@/components/ui/toaster"
+import { toast } from "@/components/ui/use-toast"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
@@ -9,6 +10,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import AuthGate from '@/components/AuthGate';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import RouteErrorBoundary from '@/components/RouteErrorBoundary';
 import FeedbackWidget from '@/components/FeedbackWidget';
 import WelcomeModal from '@/components/WelcomeModal';
 
@@ -42,6 +44,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Suspense fallback={<RouteFallback />}>
+      <RouteErrorBoundary>
       <Routes>
         {/* Home: marketing for visitors, personalized progress home once signed in. */}
         <Route path="/" element={
@@ -75,8 +78,25 @@ const AuthenticatedApp = () => {
         <Route path="/LessonExpander" element={<LayoutWrapper currentPageName="LessonExpander"><LessonExpander /></LayoutWrapper>} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
+      </RouteErrorBoundary>
     </Suspense>
   );
+};
+
+// Surfaces a single toast when localStorage writes start failing (private mode /
+// quota full) so a student knows their progress isn't being saved instead of
+// silently losing it. Fired at most once per session by progressStore.
+const StorageWatcher = () => {
+  useEffect(() => {
+    const onErr = () => toast({
+      title: "Progress may not be saving",
+      description: "Your browser is blocking local storage (private mode or full disk). Free up space or exit private browsing to keep your progress.",
+      variant: "destructive",
+    });
+    window.addEventListener('codeflow:storage-error', onErr);
+    return () => window.removeEventListener('codeflow:storage-error', onErr);
+  }, []);
+  return null;
 };
 
 const Gate = () => {
@@ -96,6 +116,7 @@ const Gate = () => {
       <AuthenticatedApp />
       <WelcomeModal />
       <FeedbackWidget />
+      <StorageWatcher />
     </Router>
   );
 };

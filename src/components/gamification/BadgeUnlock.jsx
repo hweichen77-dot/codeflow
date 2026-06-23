@@ -39,13 +39,13 @@ export default function BadgeUnlock({ completedCount }) {
         >
           <span style={{ fontSize: "2rem" }}>{newBadge.icon}</span>
           <div>
-            <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
+            <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
               Badge Unlocked!
             </div>
             <div className="font-display font-bold text-sm" style={{ color: "#ECE7DC" }}>
               {newBadge.label}
             </div>
-            <div className="font-mono text-xs" style={{ color: "#BBB3A4" }}>
+            <div className="font-sans text-xs" style={{ color: "#BBB3A4" }}>
               {newBadge.desc}
             </div>
           </div>

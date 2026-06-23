@@ -57,18 +57,19 @@ export const traceStyles = Object.freeze({
     border: `1px solid ${trace.border}`,
     borderRadius: '4px',
   },
-  // The "§ LABEL" uppercase mono tag used on every activity header.
+  // The "§ LABEL" uppercase tag used on every activity header. Decorative label —
+  // uses the humanist sans (Hanken), not the code mono, despite the legacy name.
   monoLabel: {
-    fontFamily: trace.mono,
+    fontFamily: trace.sans,
     fontSize: '0.6875rem',
     fontWeight: 700,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
     color: trace.lime,
   },
-  // Small pill (difficulty, xp, status).
+  // Small pill (difficulty, xp, status). Decorative metadata → humanist sans.
   pill: {
-    fontFamily: trace.mono,
+    fontFamily: trace.sans,
     fontSize: '0.625rem',
     letterSpacing: '0.08em',
     textTransform: 'uppercase',

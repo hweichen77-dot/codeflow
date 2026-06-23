@@ -2,7 +2,6 @@ import React from "react";
 
 const display = "'Bricolage Grotesque', system-ui, sans-serif";
 const body = "'Hanken Grotesk', system-ui, sans-serif";
-const mono = "'Spline Sans Mono', monospace";
 
 const tracks = [
   {
@@ -40,7 +39,7 @@ export default function HowItWorks() {
         {/* section head */}
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
           <span style={{
-            fontFamily: mono,
+            fontFamily: body,
             fontSize: "0.72rem",
             letterSpacing: "0.18em",
             color: "#D4882E",
@@ -92,7 +91,7 @@ function TrackRow({ n, title, desc, badge, clay, last }) {
       }}
     >
       <div style={{
-        fontFamily: mono,
+        fontFamily: body,
         fontSize: "0.92rem",
         color: hover ? "#E8A33C" : "#756C5C",
         width: "2.4em",
@@ -109,7 +108,7 @@ function TrackRow({ n, title, desc, badge, clay, last }) {
         </div>
       </div>
       <div style={{
-        fontFamily: mono,
+        fontFamily: body,
         fontSize: "0.68rem",
         textTransform: "uppercase",
         letterSpacing: "0.08em",

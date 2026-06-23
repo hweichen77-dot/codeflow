@@ -49,7 +49,7 @@ function Section({ label, children }) {
   if (!children) return null;
   return (
     <div className="mb-6">
-      <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>
+      <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>
         {label}
       </div>
       {children}
@@ -107,17 +107,17 @@ export default function ProblemStatement({ problem }) {
                 <div key={i} style={{ border: "1px solid #262219" }}>
                   <div className="grid grid-cols-2" style={{ borderBottom: ex.explanation ? "1px solid #262219" : "none" }}>
                     <div className="px-4 py-3" style={{ borderRight: "1px solid #262219" }}>
-                      <div className="font-mono text-xs uppercase tracking-widest mb-1.5" style={{ color: "#7A7264" }}>input</div>
+                      <div className="font-sans text-xs uppercase tracking-widest mb-1.5" style={{ color: "#7A7264" }}>input</div>
                       <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: "#ddd", margin: 0 }}>{ex.input || "(none)"}</pre>
                     </div>
                     <div className="px-4 py-3">
-                      <div className="font-mono text-xs uppercase tracking-widest mb-1.5" style={{ color: "#7A7264" }}>output</div>
+                      <div className="font-sans text-xs uppercase tracking-widest mb-1.5" style={{ color: "#7A7264" }}>output</div>
                       <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: "#E8A33C", margin: 0 }}>{ex.output}</pre>
                     </div>
                   </div>
                   {ex.explanation && (
                     <div className="px-4 py-2.5">
-                      <span className="font-mono text-xs uppercase tracking-widest mr-2" style={{ color: "#7A7264" }}>note</span>
+                      <span className="font-sans text-xs uppercase tracking-widest mr-2" style={{ color: "#7A7264" }}>note</span>
                       <span className="font-display text-xs" style={{ color: "#A39B8C" }}>{ex.explanation}</span>
                     </div>
                   )}

@@ -47,10 +47,10 @@ export default function InteractiveTokenizer() {
   return (
     <div className="my-7" style={{ border: `1px solid ${trace.border}`, background: trace.raised }}>
       <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${trace.border}` }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: trace.lime }}>
+        <span className="font-sans text-xs tracking-widest uppercase" style={{ color: trace.lime }}>
           TOOL — TOKENIZER PLAYGROUND
         </span>
-        <span className="font-mono text-xs" style={{ color: trace.faint }}>approximate</span>
+        <span className="font-sans text-xs" style={{ color: trace.faint }}>approximate</span>
       </div>
 
       <div className="p-5">
@@ -90,7 +90,7 @@ export default function InteractiveTokenizer() {
             </span>
           ))}
           {visible.length === 0 && (
-            <span className="font-mono text-xs" style={{ color: trace.faint }}>type something above…</span>
+            <span className="font-sans text-xs" style={{ color: trace.faint }}>type something above…</span>
           )}
         </div>
 
@@ -101,7 +101,7 @@ export default function InteractiveTokenizer() {
           <Stat label="Chars / token" value={ratio} />
           <Stat label="Input cost" value={`$${inCost.toFixed(6)}`} accent={trace.info} last />
         </div>
-        <p className="font-mono text-xs mt-3" style={{ color: trace.faint }}>
+        <p className="font-sans text-xs mt-3" style={{ color: trace.faint }}>
           Notice: rare/long words shatter into many tiny pieces, while common words stay whole.
         </p>
       </div>
@@ -115,7 +115,7 @@ function Stat({ label, value, accent, last }) {
       <div className="font-display font-black" style={{ fontSize: "1.4rem", color: accent || trace.text, letterSpacing: "-0.03em", lineHeight: 1 }}>
         {value}
       </div>
-      <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: trace.faint }}>{label}</div>
+      <div className="font-sans text-xs tracking-widest uppercase mt-1" style={{ color: trace.faint }}>{label}</div>
     </div>
   );
 }

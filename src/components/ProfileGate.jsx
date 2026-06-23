@@ -22,7 +22,7 @@ export default function ProfileGate() {
         style={{ border: '1px solid #262219', background: '#131009' }}
       >
         <div
-          className="font-mono text-xs tracking-widest uppercase mb-3"
+          className="font-sans text-xs tracking-widest uppercase mb-3"
           style={{ color: '#BBB3A4' }}
         >
           § WELCOME
@@ -49,8 +49,8 @@ export default function ProfileGate() {
 
         <form onSubmit={handleStart}>
           <label
-            className="font-mono text-xs tracking-widest uppercase block mb-2"
-            style={{ color: '#BBB3A4', fontFamily: "'Spline Sans Mono', ui-monospace, monospace" }}
+            className="font-sans text-xs tracking-widest uppercase block mb-2"
+            style={{ color: '#BBB3A4', fontFamily: "'Hanken Grotesk', system-ui, sans-serif" }}
           >
             Your name
           </label>
@@ -72,13 +72,13 @@ export default function ProfileGate() {
           <button
             type="submit"
             disabled={!name.trim()}
-            className="w-full font-mono text-sm tracking-widest uppercase px-8 py-4 transition-all duration-150"
+            className="w-full font-sans text-sm tracking-widest uppercase px-8 py-4 transition-all duration-150"
             style={{
               background: name.trim() ? '#E8A33C' : '#262219',
               color: name.trim() ? '#15130E' : '#BBB3A4',
               fontWeight: 700,
               cursor: name.trim() ? 'pointer' : 'not-allowed',
-              fontFamily: "'Spline Sans Mono', ui-monospace, monospace",
+              fontFamily: "'Hanken Grotesk', system-ui, sans-serif",
             }}
             onMouseEnter={(e) => {
               if (!name.trim()) return;

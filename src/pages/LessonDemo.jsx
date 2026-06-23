@@ -44,7 +44,7 @@ function InlineCheck({ question, options, correct, explain }) {
   return (
     <div className="my-7" style={{ border: "1px solid #262219", background: "#131009" }}>
       <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#C2643C" }}>CHECK YOURSELF</span>
+        <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C2643C" }}>CHECK YOURSELF</span>
       </div>
       <div className="p-5">
         <p className="font-display text-sm mb-4" style={{ color: "#ddd", fontWeight: 500 }}>{question}</p>
@@ -63,7 +63,7 @@ function InlineCheck({ question, options, correct, explain }) {
                 className="w-full text-left flex items-center gap-3 px-4 py-2.5 font-display text-sm transition-all"
                 style={{ background: bg, border: `1px solid ${border}`, color, cursor: done ? "default" : "pointer" }}
               >
-                <span className="font-mono text-xs" style={{ opacity: 0.6 }}>{String.fromCharCode(65 + i)}</span>
+                <span className="font-sans text-xs" style={{ opacity: 0.6 }}>{String.fromCharCode(65 + i)}</span>
                 {o}
               </button>
             );
@@ -95,7 +95,7 @@ function ReadingBox({ children }) {
 
 function SectionLabel({ children }) {
   return (
-    <div className="font-mono text-xs tracking-widest uppercase mt-12 mb-3" style={{ color: "#5A554B" }}>
+    <div className="font-sans text-xs tracking-widest uppercase mt-12 mb-3" style={{ color: "#5A554B" }}>
       <span style={{ color: "#E8A33C" }}>//</span> {children}
     </div>
   );
@@ -106,16 +106,16 @@ export default function LessonDemo() {
     <div className="min-h-screen px-6 lg:px-10 pt-24 pb-24" style={{ background: "#15130E" }}>
       <div className="max-w-3xl mx-auto">
         {/* prototype banner */}
-        <div className="mb-6 px-4 py-2 font-mono text-xs tracking-widest uppercase" style={{ background: "#cc66ff14", border: "1px solid #cc66ff44", color: "#cc66ff" }}>
+        <div className="mb-6 px-4 py-2 font-sans text-xs tracking-widest uppercase" style={{ background: "#cc66ff14", border: "1px solid #cc66ff44", color: "#cc66ff" }}>
           PROTOTYPE — proposed lesson content style (not yet rolled out)
         </div>
 
         {/* header */}
-        <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>MODULE 1 · LESSON 2 · CONCEPT: TOKENS</div>
+        <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>MODULE 1 · LESSON 2 · CONCEPT: TOKENS</div>
         <h1 className="font-display font-black mb-3" style={{ fontSize: "2.3rem", lineHeight: 1.05, letterSpacing: "-0.03em", color: "#f5f5f5" }}>
           Tokens: The Model Doesn't See Words
         </h1>
-        <div className="flex flex-wrap items-center gap-4 font-mono text-xs mb-8" style={{ color: "#6E665A" }}>
+        <div className="flex flex-wrap items-center gap-4 font-sans text-xs mb-8" style={{ color: "#6E665A" }}>
           <span className="flex items-center gap-1.5"><Clock size={12} /> 12 min read</span>
           <span className="flex items-center gap-1.5"><RefreshCw size={12} /> Updated Jun 2026</span>
           <span style={{ color: "#E8A33C" }}>+10 XP</span>
@@ -123,7 +123,7 @@ export default function LessonDemo() {
 
         {/* what you'll learn */}
         <div className="px-5 py-4 mb-8" style={{ border: "1px solid #262219", background: "#131009", borderLeft: "2px solid #E8A33C" }}>
-          <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>WHAT YOU'LL LEARN</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>WHAT YOU'LL LEARN</div>
           <ul className="space-y-1 font-display text-sm" style={{ color: "#A8A092" }}>
             <li>— What a token is and why models use them instead of words or letters</li>
             <li>— How tokenization drives cost, context limits, and weird failures</li>
@@ -237,7 +237,7 @@ export default function LessonDemo() {
           ].map((x) => (
             <div key={x.t} className="flex items-center justify-between px-4 py-3 group cursor-pointer transition-all" style={{ border: "1px solid #262219", background: "#131009" }}>
               <div>
-                <div className="font-mono text-xs tracking-widest uppercase mb-0.5" style={{ color: x.c }}>{x.k}</div>
+                <div className="font-sans text-xs tracking-widest uppercase mb-0.5" style={{ color: x.c }}>{x.k}</div>
                 <div className="font-display text-sm font-medium" style={{ color: "#ddd" }}>{x.t}</div>
               </div>
               <ArrowRight size={15} style={{ color: "#4A453C" }} />

@@ -18,12 +18,12 @@ export default function ProjectBrief({ brief }) {
         style={{ background: "transparent", border: "none", cursor: "pointer" }}
       >
         <div className="text-left">
-          <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>PROJECT BRIEF</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>PROJECT BRIEF</div>
           <div className="font-display text-sm" style={{ color: "#C2BAAA", fontWeight: 500 }}>{brief.tagline}</div>
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
           {brief.estimatedHours != null && (
-            <span className="hidden sm:flex items-center gap-1.5 font-mono text-xs" style={{ color: "#BBB3A4" }}>
+            <span className="hidden sm:flex items-center gap-1.5 font-sans text-xs" style={{ color: "#BBB3A4" }}>
               <Clock size={12} /> ~{brief.estimatedHours}h
             </span>
           )}
@@ -49,7 +49,7 @@ export default function ProjectBrief({ brief }) {
             <Section icon={<Wrench size={13} />} label="Skills" accent="#C2643C">
               <div className="flex flex-wrap gap-1.5">
                 {brief.skills?.map((s, i) => (
-                  <span key={i} className="font-mono text-xs px-2 py-1" style={{ background: "#C2643C14", border: "1px solid #C2643C33", color: "#C2643C" }}>{s}</span>
+                  <span key={i} className="font-sans text-xs px-2 py-1" style={{ background: "#C2643C14", border: "1px solid #C2643C33", color: "#C2643C" }}>{s}</span>
                 ))}
               </div>
             </Section>
@@ -58,7 +58,7 @@ export default function ProjectBrief({ brief }) {
               <ol className="space-y-2">
                 {brief.milestones?.map((m, i) => (
                   <li key={i} className="flex gap-3">
-                    <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#cc66ff" }}>{String(i + 1).padStart(2, "0")}</span>
+                    <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#cc66ff" }}>{String(i + 1).padStart(2, "0")}</span>
                     <div>
                       <div className="font-display text-sm font-medium" style={{ color: "#ddd" }}>{m.title}</div>
                       <div className="font-display text-xs" style={{ color: "#C9C1B2" }}>{m.detail}</div>
@@ -88,7 +88,7 @@ export default function ProjectBrief({ brief }) {
 function Section({ icon, label, accent, children }) {
   return (
     <div>
-      <div className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase mb-2.5" style={{ color: accent }}>
+      <div className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase mb-2.5" style={{ color: accent }}>
         {icon} {label}
       </div>
       {children}

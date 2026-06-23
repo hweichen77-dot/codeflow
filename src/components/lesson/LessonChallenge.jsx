@@ -57,7 +57,7 @@ export default function LessonChallenge({ lesson }) {
         style={{ borderBottom: `1px solid ${trace.border}`, background: trace.surface, borderTopLeftRadius: 4, borderTopRightRadius: 4 }}
       >
         <div
-          className="font-mono text-xs tracking-widest uppercase px-2 py-1"
+          className="font-sans text-xs tracking-widest uppercase px-2 py-1"
           style={{ color: trace.lime, border: `1px solid ${trace.lime}44`, background: trace.limeFaint, borderRadius: 3 }}
         >
           ▸ RUN
@@ -65,7 +65,7 @@ export default function LessonChallenge({ lesson }) {
         <span className="font-display text-sm font-semibold" style={{ color: trace.text }}>
           {lesson.challenge_title}
         </span>
-        <span className="font-mono ml-auto" style={{ fontSize: "0.625rem", letterSpacing: "0.08em", textTransform: "uppercase", color: trace.faint }}>
+        <span className="font-sans ml-auto" style={{ fontSize: "0.625rem", letterSpacing: "0.08em", textTransform: "uppercase", color: trace.faint }}>
           {lang}
         </span>
       </div>
@@ -119,19 +119,19 @@ export default function LessonChallenge({ lesson }) {
           <div className="mb-4 grid sm:grid-cols-2 gap-3">
             {lesson.challenge_input_format && (
               <div>
-                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Input</div>
+                <div className="font-sans text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Input</div>
                 <div className="lc-md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.challenge_input_format}</ReactMarkdown></div>
               </div>
             )}
             {lesson.challenge_output_format && (
               <div>
-                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Output</div>
+                <div className="font-sans text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Output</div>
                 <div className="lc-md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.challenge_output_format}</ReactMarkdown></div>
               </div>
             )}
             {Array.isArray(lesson.challenge_constraints) && lesson.challenge_constraints.length > 0 && (
               <div className="sm:col-span-2">
-                <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Constraints</div>
+                <div className="font-sans text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Constraints</div>
                 <ul className="space-y-0.5">
                   {lesson.challenge_constraints.map((c, i) => (
                     <li key={i} className="font-mono text-xs flex gap-2" style={{ color: trace.dim }}>
@@ -148,7 +148,7 @@ export default function LessonChallenge({ lesson }) {
         {lesson.challenge_test_cases?.length > 0 && (
           <div className="mb-5" style={{ ...traceStyles.terminal, overflow: "hidden" }}>
             <div
-              className="px-4 py-2 font-mono text-xs tracking-widest uppercase"
+              className="px-4 py-2 font-sans text-xs tracking-widest uppercase"
               style={{ borderBottom: `1px solid ${trace.border}`, color: trace.faint, background: trace.surface }}
             >
               test cases
@@ -204,7 +204,7 @@ export default function LessonChallenge({ lesson }) {
           <div>
             <button
               onClick={() => setShowSolution(!showSolution)}
-              className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150 mb-3"
+              className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150 mb-3"
               style={{
                 borderRadius: "4px",
                 border: `1px solid ${showSolution ? `${trace.lime}33` : trace.borderStrong}`,
@@ -224,7 +224,7 @@ export default function LessonChallenge({ lesson }) {
                 >
                   <div style={{ ...traceStyles.terminal, overflow: "hidden" }}>
                     <div className="px-4 py-2.5" style={{ borderBottom: `1px solid ${trace.border}`, background: trace.surface }}>
-                      <span className="font-mono text-xs tracking-widest uppercase" style={{ color: trace.faint }}>solution.{ext}</span>
+                      <span className="font-sans text-xs tracking-widest uppercase" style={{ color: trace.faint }}>solution.{ext}</span>
                     </div>
                     <pre
                       className="font-mono overflow-x-auto p-5"

@@ -13,6 +13,11 @@
 const PYODIDE_VERSION = "0.26.4";
 const PYODIDE_BASE = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
 const EXEC_TIMEOUT_MS = 5000;
+// First run downloads + initializes Pyodide from the CDN (multi-second on slow
+// school wifi). That must NOT count against the 5s infinite-loop guard, or a
+// correct program "times out" on cold start. The worker acks `ready` once the
+// runtime is loaded; only then does the strict exec clock start.
+const LOAD_TIMEOUT_MS = 45000;
 
 // ---------------------------------------------------------------------------
 // Worker source. Built as a Blob so we don't need a separate file in the bundle.
@@ -48,6 +53,10 @@ self.onmessage = async (e) => {
     });
     return;
   }
+
+  // Runtime is loaded — tell the main thread to stop the cold-load timer and
+  // start the strict execution timer for the actual run below.
+  self.postMessage({ id, ready: true });
 
   let out = "";
   try {
@@ -106,11 +115,11 @@ function spawnWorker() {
   URL.revokeObjectURL(url);
   w.onmessage = (e) => {
     const msg = e.data || {};
-    if (pending && msg.id === pending.id) {
-      const p = pending;
-      pending = null;
-      p.resolve(msg);
-    }
+    if (!pending || msg.id !== pending.id) return;
+    if (msg.ready) { pending.onReady?.(); return; }
+    const p = pending;
+    pending = null;
+    p.resolve(msg);
   };
   return w;
 }
@@ -150,27 +159,40 @@ function execOnce(code, stdin) {
     const w = getWorker();
     const id = nextId++;
     let settled = false;
+    let execTimer = null;
 
-    const timer = setTimeout(() => {
+    const kill = (output) => {
       if (settled) return;
       settled = true;
+      clearTimeout(loadTimer);
+      if (execTimer) clearTimeout(execTimer);
       pending = null;
-      // Hard-kill the runaway interpreter and respawn for the next run.
+      // Hard-kill the runaway / stuck interpreter and respawn for the next run.
       try { w.terminate(); } catch (_) {}
       worker = null;
-      resolve({
-        output: `Error: Execution timed out (${EXEC_TIMEOUT_MS / 1000}s limit)`,
-        isError: true,
-        empty: false,
-      });
-    }, EXEC_TIMEOUT_MS);
+      resolve({ output, isError: true, empty: false });
+    };
+
+    // Generous cold-load budget; replaced by the strict exec timer once `ready`.
+    const loadTimer = setTimeout(
+      () => kill("Error: The Python runtime took too long to load. Check your connection and try again."),
+      LOAD_TIMEOUT_MS,
+    );
 
     pending = {
       id,
+      onReady: () => {
+        clearTimeout(loadTimer);
+        execTimer = setTimeout(
+          () => kill(`Error: Execution timed out (${EXEC_TIMEOUT_MS / 1000}s limit)`),
+          EXEC_TIMEOUT_MS,
+        );
+      },
       resolve: (msg) => {
         if (settled) return;
         settled = true;
-        clearTimeout(timer);
+        clearTimeout(loadTimer);
+        if (execTimer) clearTimeout(execTimer);
         resolve(msg);
       },
     };

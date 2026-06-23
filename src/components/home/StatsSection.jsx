@@ -39,7 +39,7 @@ export default function StatsSection() {
 
         <div className="flex items-start gap-8 mb-20">
           <div
-            className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
+            className="font-sans text-xs tracking-widest uppercase pt-1 flex-shrink-0"
             style={{ color: "#ECE7DC", width: "4rem" }}
           >
             § 02
@@ -78,7 +78,7 @@ export default function StatsSection() {
 
                 <div className="flex items-start gap-5">
                   <span
-                    className="font-mono font-bold text-4xl leading-none flex-shrink-0"
+                    className="font-sans font-bold text-4xl leading-none flex-shrink-0"
                     style={{
                       color: active === i ? "#ECE7DC" : "#1F1C15",
                       letterSpacing: "-0.05em",
@@ -88,7 +88,7 @@ export default function StatsSection() {
                   </span>
                   <div>
                     <div
-                      className="font-mono text-xs tracking-widest uppercase mb-1"
+                      className="font-sans text-xs tracking-widest uppercase mb-1"
                       style={{ color: active === i ? "#E8A33C" : "#ECE7DC" }}
                     >
                       {path.label}
@@ -107,7 +107,7 @@ export default function StatsSection() {
 
           <div className="p-10" style={{ background: "#131009" }}>
             <div
-              className="font-mono text-xs tracking-widest uppercase mb-6"
+              className="font-sans text-xs tracking-widest uppercase mb-6"
               style={{ color: "#E8A33C" }}
             >
               PATH {PATHS[active].level} — {PATHS[active].label}
@@ -122,7 +122,7 @@ export default function StatsSection() {
 
             <div className="mb-8">
               <div
-                className="font-mono text-xs tracking-widest uppercase mb-4"
+                className="font-sans text-xs tracking-widest uppercase mb-4"
                 style={{ color: "#ECE7DC" }}
               >
                 INCLUDED PROJECTS
@@ -130,7 +130,7 @@ export default function StatsSection() {
               <div className="space-y-2">
                 {PATHS[active].projects.map((project, i) => (
                   <div key={project} className="flex items-center gap-4">
-                    <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>
+                    <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <div className="flex-1 h-px" style={{ background: "#262219" }} />
@@ -149,8 +149,8 @@ export default function StatsSection() {
               className="inline-flex items-center gap-3 px-4 py-2"
               style={{ border: "1px solid #262219", background: "#15130E" }}
             >
-              <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>EST. DURATION</span>
-              <span className="font-mono text-sm font-bold" style={{ color: "#E8A33C" }}>
+              <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>EST. DURATION</span>
+              <span className="font-sans text-sm font-bold" style={{ color: "#E8A33C" }}>
                 {PATHS[active].time}
               </span>
             </div>

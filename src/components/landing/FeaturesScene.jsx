@@ -74,13 +74,13 @@ function FeatureCard({ feature, index, scrollYProgress }) {
         <div className="flex items-start justify-between mb-8">
           <div>
             <div
-              className="font-mono font-bold mb-4"
+              className="font-sans font-bold mb-4"
               style={{ fontSize: "3.5rem", color: "#ECE7DC", letterSpacing: "-0.05em", lineHeight: 1 }}
             >
               {feature.num}
             </div>
             <span
-              className="font-mono text-xs tracking-widest uppercase px-2.5 py-1"
+              className="font-sans text-xs tracking-widest uppercase px-2.5 py-1"
               style={{ color: feature.accent, border: `1px solid ${feature.accent}33`, background: `${feature.accent}10` }}
             >
               {feature.tag}
@@ -120,7 +120,7 @@ function FeatureCard({ feature, index, scrollYProgress }) {
               />
             ))}
           </div>
-          <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>
+          <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>
             {index + 1} / {FEATURES.length}
           </span>
         </div>
@@ -192,7 +192,7 @@ export default function FeaturesScene() {
         </motion.div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-6 text-center" style={{ color: "#ECE7DC" }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-6 text-center" style={{ color: "#ECE7DC" }}>
             § WHAT YOU GET
           </div>
           <div className="relative" style={{ minHeight: "460px" }}>

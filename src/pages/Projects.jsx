@@ -108,7 +108,7 @@ export default function Projects() {
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#C9C1B2" }}>§ PROJECTS</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#C9C1B2" }}>§ PROJECTS</span>
           </div>
           <h1
             style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
@@ -127,7 +127,7 @@ export default function Projects() {
           {/* Search */}
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span
-              className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs pointer-events-none"
+              className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none"
               style={{ color: "#BBB3A4" }}
             >
               /search
@@ -136,7 +136,7 @@ export default function Projects() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="filter projects..."
-              className="w-full font-mono text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
+              className="w-full font-sans text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
               style={{
                 border: "1px solid #262219",
                 color: "#ECE7DC",
@@ -151,7 +151,7 @@ export default function Projects() {
               <button
                 key={cat.value}
                 onClick={() => setCategory(cat.value)}
-                className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                 style={{
                   border: `1px solid ${category === cat.value ? "#E8A33C" : "#262219"}`,
                   color: category === cat.value ? "#E8A33C" : "#C9C1B2",
@@ -183,7 +183,7 @@ export default function Projects() {
               style={{ borderBottom: "1px solid #262219" }}
             >
               {["LVL", "PROJECT", "LESSONS", "STATUS"].map(h => (
-                <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
+                <div key={h} className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
                   {h}
                 </div>
               ))}
@@ -196,13 +196,13 @@ export default function Projects() {
                   className="flex items-baseline gap-3 px-6 pt-8 pb-3"
                   style={{ borderBottom: "1px solid #1F1C15" }}
                 >
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
+                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
                     §
                   </span>
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
+                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
                     {section.label}
                   </span>
-                  <span className="font-mono text-xs" style={{ color: "#5A554B" }}>
+                  <span className="font-sans text-xs" style={{ color: "#5A554B" }}>
                     {section.items.length}
                   </span>
                 </div>
@@ -235,7 +235,7 @@ export default function Projects() {
                         >
                           {/* Level */}
                           <div
-                            className="font-mono font-bold"
+                            className="font-sans font-bold"
                             style={{
                               fontSize: "1.5rem",
                               color: "#ECE7DC",
@@ -256,10 +256,10 @@ export default function Projects() {
                               </div>
                               {gated && (
                                 <span
-                                  className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap"
+                                  className="font-sans text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap"
                                   style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}
                                 >
-                                  🔒 Finish Foundations first
+                                  Finish Foundations first
                                 </span>
                               )}
                             </div>
@@ -284,7 +284,7 @@ export default function Projects() {
                                     />
                                   ))}
                                 </div>
-                                <span className="font-mono text-xs" style={{ color: "#E8A33C" }}>
+                                <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>
                                   {pct}%
                                 </span>
                               </div>
@@ -293,12 +293,12 @@ export default function Projects() {
 
                           {/* Lessons count */}
                           <div
-                            className="font-mono text-sm text-right"
+                            className="font-sans text-sm text-right"
                             style={{ color: "#A8A092" }}
                           >
                             {project.lessons_count ? `${project.lessons_count}` : "—"}
                             {project.estimated_time ? (
-                              <div className="font-mono text-xs" style={{ color: "#C9C1B2" }}>
+                              <div className="font-sans text-xs" style={{ color: "#C9C1B2" }}>
                                 {project.estimated_time}min
                               </div>
                             ) : null}
@@ -308,7 +308,7 @@ export default function Projects() {
                           <div>
                             {gated && (
                               <span
-                                className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                                className="font-sans text-xs tracking-widest uppercase px-3 py-1"
                                 style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}
                               >
                                 LOCKED
@@ -316,7 +316,7 @@ export default function Projects() {
                             )}
                             {!gated && status === "completed" && (
                               <span
-                                className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                                className="font-sans text-xs tracking-widest uppercase px-3 py-1"
                                 style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}
                               >
                                 DONE
@@ -324,7 +324,7 @@ export default function Projects() {
                             )}
                             {!gated && status === "in_progress" && (
                               <span
-                                className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                                className="font-sans text-xs tracking-widest uppercase px-3 py-1"
                                 style={{ color: "#C9C1B2", border: "1px solid #34302A", background: "#131009" }}
                               >
                                 ACTIVE
@@ -332,7 +332,7 @@ export default function Projects() {
                             )}
                             {!gated && status === "not_started" && (
                               <span
-                                className="font-mono text-xs tracking-widest uppercase px-3 py-1"
+                                className="font-sans text-xs tracking-widest uppercase px-3 py-1"
                                 style={{ color: "#C9C1B2", border: "1px solid #34302A" }}
                               >
                                 START
@@ -379,7 +379,7 @@ export default function Projects() {
             {filtered.length === 0 && (
               <div className="text-center py-24">
                 <div
-                  className="font-mono text-xs tracking-widest uppercase mb-4"
+                  className="font-sans text-xs tracking-widest uppercase mb-4"
                   style={{ color: "#C9C1B2" }}
                   >
                    NO RESULTS
@@ -396,11 +396,11 @@ export default function Projects() {
       {/* Locked-module nudge */}
       {nudge && (
         <div
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-mono text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-sans text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
           style={{ color: "#E0B341", border: "1px solid #E0B34155", background: "#1a1407" }}
           role="status"
         >
-          🔒 Finish the Foundations modules to unlock “{nudge}”
+          Finish the Foundations modules to unlock “{nudge}”
         </div>
       )}
     </div>

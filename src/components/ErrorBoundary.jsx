@@ -2,6 +2,7 @@ import React from 'react'
 import { captureError } from '@/lib/monitoring'
 
 const MONO = "'Spline Sans Mono', ui-monospace, monospace"
+const LABEL = "'Hanken Grotesk', system-ui, sans-serif"
 const SERIF = "'Bricolage Grotesque', system-ui, sans-serif"
 
 // Top-level crash guard. Without it, any render-time exception unmounts the
@@ -43,8 +44,8 @@ export default class ErrorBoundary extends React.Component {
           style={{ border: '1px solid #262219', background: '#131009' }}
         >
           <div
-            className="font-mono text-xs tracking-widest uppercase mb-3"
-            style={{ color: '#FF6B5C', fontFamily: MONO }}
+            className="font-sans text-xs tracking-widest uppercase mb-3"
+            style={{ color: '#FF6B5C', fontFamily: LABEL }}
           >
             § SOMETHING BROKE
           </div>
@@ -70,15 +71,15 @@ export default class ErrorBoundary extends React.Component {
           <div className="flex gap-3 justify-center">
             <button
               onClick={this.handleReset}
-              className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
-              style={{ background: '#E8A33C', color: '#15130E', fontWeight: 700, fontFamily: MONO }}
+              className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
+              style={{ background: '#E8A33C', color: '#15130E', fontWeight: 700, fontFamily: LABEL }}
             >
               Try again
             </button>
             <button
               onClick={this.handleReload}
-              className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
-              style={{ color: '#C9C1B2', border: '1px solid #34302A', fontFamily: MONO }}
+              className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
+              style={{ color: '#C9C1B2', border: '1px solid #34302A', fontFamily: LABEL }}
             >
               Go home
             </button>

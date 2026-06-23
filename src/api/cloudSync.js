@@ -9,6 +9,7 @@
 // Guest mode and the unconfigured static build never touch the network: every
 // entry point bails unless Supabase is configured AND a user id is active.
 import { supabase, auth as supaAuth } from './supabaseClient'
+import { queryClientInstance } from '../lib/query-client'
 import {
   PROGRESS_KEY,
   CAPSTONE_KEY,
@@ -23,6 +24,7 @@ let activeUserId = null
 let detachListener = null
 let pushTimer = null
 let pushing = false
+let dirty = false // a change landed mid-push; re-sync after the in-flight push
 
 const readArr = (key) => {
   try {
@@ -69,11 +71,33 @@ const mergeChallenges = (a = [], b = []) => {
   return [...out.values()]
 }
 
+// Progress rows get a device-local generated id, so the same lesson completed on
+// two devices produces two rows with different ids — a plain id-union would keep
+// both, double-counting XP and mis-firing project-completion gates. Collapse by
+// lesson_id (the stable natural key), keeping the completed/earliest version.
+const mergeProgress = (a = [], b = []) => {
+  const byLesson = new Map()
+  for (const row of mergeById(a, b)) {
+    if (!row) continue
+    const key = row.lesson_id ?? row.id
+    const prev = byLesson.get(key)
+    if (!prev) { byLesson.set(key, row); continue }
+    const stamps = [prev.completed_date, row.completed_date].filter(Boolean).sort()
+    byLesson.set(key, {
+      ...prev,
+      ...row,
+      completed: Boolean(prev.completed || row.completed),
+      completed_date: stamps[0] || prev.completed_date || row.completed_date,
+    })
+  }
+  return [...byLesson.values()]
+}
+
 const mergeState = (local, remote) => {
   if (!remote) return local
   return {
     version: STATE_VERSION,
-    progress: mergeById(local.progress, remote.progress),
+    progress: mergeProgress(local.progress, remote.progress),
     capstones: mergeById(local.capstones, remote.capstones),
     challenges: mergeChallenges(local.challenges, remote.challenges),
   }
@@ -95,12 +119,17 @@ async function upsertRemote(userId, state) {
 
 /** Push current local state to the cloud (debounced via scheduleSync). */
 export async function pushState() {
-  if (!activeUserId || pushing) return
+  if (!activeUserId) return
+  // A push is already running — flag that newer state exists so we re-sync after,
+  // instead of silently dropping the change that arrived mid-flight.
+  if (pushing) { dirty = true; return }
   pushing = true
+  dirty = false
   try {
     await upsertRemote(activeUserId, collectLocalState())
   } catch { /* offline / transient — next change reschedules */ } finally {
     pushing = false
+    if (dirty) scheduleSync()
   }
 }
 
@@ -120,6 +149,11 @@ export async function pullAndMerge(userId) {
   writeArr(PROGRESS_KEY, merged.progress)
   writeArr(CAPSTONE_KEY, merged.capstones)
   writeArr(CHALLENGES_KEY, merged.challenges)
+  // The page's React Query caches mounted with the pre-merge (often empty) local
+  // data and won't refetch on their own (refetchOnWindowFocus is off). Invalidate
+  // so the freshly-pulled cloud progress actually renders, instead of the user
+  // seeing "0 complete" on a new device and assuming their work was lost.
+  try { queryClientInstance.invalidateQueries() } catch { /* ignore */ }
   // Push the merged result so the cloud reflects local-only progress too.
   try { await upsertRemote(userId, merged) } catch { /* ignore */ }
   return true
@@ -144,8 +178,12 @@ export async function activateSync(userId) {
 }
 
 /** Turn off sync (called on sign-out). Flushes any pending push first. */
-export function deactivateSync() {
+export async function deactivateSync() {
   if (pushTimer) { clearTimeout(pushTimer); pushTimer = null }
+  // Flush the latest local state up before we drop the active user, so a logout
+  // right after an action doesn't strand that action un-synced.
+  try { await pushState() } catch { /* ignore */ }
   if (detachListener) { detachListener(); detachListener = null }
   activeUserId = null
+  dirty = false
 }

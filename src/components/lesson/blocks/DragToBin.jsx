@@ -40,11 +40,11 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
   return (
     <div className="my-7" style={{ border: `1px solid ${trace.border}`, background: trace.raised }}>
       <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${trace.border}` }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: trace.lime }}>
+        <span className="font-sans text-xs tracking-widest uppercase" style={{ color: trace.lime }}>
           SORT IT — {title}
         </span>
         {checked && (
-          <span className="font-mono text-xs" style={{ color: correctCount === items.length ? trace.ok : trace.fail }}>
+          <span className="font-sans text-xs" style={{ color: correctCount === items.length ? trace.ok : trace.fail }}>
             {correctCount}/{items.length} correct
           </span>
         )}
@@ -68,7 +68,7 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
               {it.text}
             </button>
           ))}
-          {allPlaced && <span className="font-mono text-xs" style={{ color: trace.dim }}>all sorted — check your answer</span>}
+          {allPlaced && <span className="font-sans text-xs" style={{ color: trace.dim }}>all sorted — check your answer</span>}
         </div>
 
         {/* bins */}
@@ -87,7 +87,7 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
                   cursor: selected ? "pointer" : "default",
                 }}
               >
-                <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: trace.dim }}>{bin.label}</div>
+                <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: trace.dim }}>{bin.label}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {binItems.map((it) => {
                     const ok = it.bin === bin.id;
@@ -118,12 +118,12 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
           <button
             onClick={check}
             disabled={!allPlaced}
-            className="font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all disabled:opacity-30"
+            className="font-sans text-xs tracking-widest uppercase px-4 py-2 transition-all disabled:opacity-30"
             style={{ background: trace.lime, color: trace.bg, fontWeight: 700, border: "none", cursor: allPlaced ? "pointer" : "not-allowed" }}
           >
             Check answer
           </button>
-          <button onClick={reset} className="font-mono text-xs tracking-widest uppercase px-3 py-2" style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: trace.dim, cursor: "pointer" }}>
+          <button onClick={reset} className="font-sans text-xs tracking-widest uppercase px-3 py-2" style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: trace.dim, cursor: "pointer" }}>
             Reset
           </button>
         </div>
