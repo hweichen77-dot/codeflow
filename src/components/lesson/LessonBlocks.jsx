@@ -26,7 +26,7 @@ const TOOL_REGISTRY = {
 
 function Label({ children, accent = "#9A6A1F" }) {
   return (
-    <div className="font-mono text-xs tracking-widest uppercase mt-10 mb-2" style={{ color: "#756C5C" }}>
+    <div className="font-sans text-xs tracking-widest uppercase mt-10 mb-2" style={{ color: "#756C5C" }}>
       <span style={{ color: accent }}>//</span> {children}
     </div>
   );

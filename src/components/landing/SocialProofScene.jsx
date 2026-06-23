@@ -61,14 +61,14 @@ function QuoteCard({ quote, index, scrollYProgress }) {
         </blockquote>
         <div className="flex items-center gap-4">
           <div
-            className="w-8 h-8 flex items-center justify-center font-mono text-xs font-bold"
+            className="w-8 h-8 flex items-center justify-center font-sans text-xs font-bold"
             style={{ background: quote.accent, color: "#15130E" }}
           >
             {quote.name[0]}
           </div>
           <div>
             <div className="font-display font-bold text-sm" style={{ color: "#ECE7DC" }}>{quote.name}</div>
-            <div className="font-mono text-xs" style={{ color: "#ECE7DC" }}>{quote.role}</div>
+            <div className="font-sans text-xs" style={{ color: "#ECE7DC" }}>{quote.role}</div>
           </div>
           <div className="ml-auto">
             <div className="flex gap-1.5">
@@ -147,7 +147,7 @@ export default function SocialProofScene() {
         </div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-16 text-center" style={{ color: "#ECE7DC" }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-16 text-center" style={{ color: "#ECE7DC" }}>
             § FROM THE COMMUNITY
           </div>
 
@@ -160,7 +160,7 @@ export default function SocialProofScene() {
 
           {/* Milestone timeline — fades in near end of scene */}
           <motion.div style={{ opacity: milestonesOpacity }}>
-            <div className="font-mono text-xs tracking-widest uppercase mb-8 text-center" style={{ color: "#ECE7DC" }}>
+            <div className="font-sans text-xs tracking-widest uppercase mb-8 text-center" style={{ color: "#ECE7DC" }}>
               YOUR TIMELINE
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-0" style={{ border: "1px solid #262219" }}>
@@ -170,7 +170,7 @@ export default function SocialProofScene() {
                   className="p-6 relative"
                   style={{ borderRight: i < 3 ? "1px solid #262219" : "none" }}
                 >
-                  <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#E8A33C" }}>
+                  <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#E8A33C" }}>
                     {m.step}
                   </div>
                   <p className="font-display text-sm leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
@@ -191,7 +191,7 @@ export default function SocialProofScene() {
         <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none" style={{ borderTop: "1px solid #1C1A14" }}>
           <motion.div style={{ x: tickerX }} className="flex whitespace-nowrap py-3">
             {[...Array(4)].map((_, ri) => (
-              <span key={ri} className="font-mono text-xs tracking-widest uppercase mr-16" style={{ color: "#ECE7DC" }}>
+              <span key={ri} className="font-sans text-xs tracking-widest uppercase mr-16" style={{ color: "#ECE7DC" }}>
                 STRUCTURE · PROJECTS · AI TRACK · CODE · BUILD · DEPLOY · LEARN · SHIP · STRUCTURE · PROJECTS · AI TRACK · CODE · BUILD · DEPLOY · LEARN · SHIP &nbsp;
               </span>
             ))}

@@ -30,7 +30,7 @@ export default function CTASection() {
 
       <div className="relative max-w-7xl mx-auto px-8 lg:px-16 text-center">
         <div
-          className="font-mono text-xs tracking-widest uppercase mb-8"
+          className="font-sans text-xs tracking-widest uppercase mb-8"
           style={{ color: "#E8A33C" }}
         >
           § 03 — START NOW
@@ -61,7 +61,7 @@ export default function CTASection() {
         <div className="flex flex-wrap items-center justify-center gap-5">
           <Link to={createPageUrl("Projects")}>
             <button
-              className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
+              className="font-sans text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{
                 background: "#E8A33C",
                 color: "#15130E",
@@ -82,7 +82,7 @@ export default function CTASection() {
           </Link>
           <Link to={createPageUrl("Challenges")}>
             <button
-              className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
+              className="font-sans text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{
                 background: "transparent",
                 color: "#BBB3A4",
@@ -105,7 +105,7 @@ export default function CTASection() {
         </div>
 
         <div
-          className="mt-20 font-mono text-xs tracking-widest"
+          className="mt-20 font-sans text-xs tracking-widest"
           style={{ color: "#ECE7DC" }}
         >
           © 2026 codeflow &nbsp;·&nbsp; crafted with insomnia and strong opinions

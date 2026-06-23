@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 const display = "'Bricolage Grotesque', system-ui, sans-serif";
 const body = "'Hanken Grotesk', system-ui, sans-serif";
-const mono = "'Spline Sans Mono', monospace";
 
 export default function FinalCTA() {
   const navigate = useNavigate();
@@ -22,7 +21,7 @@ export default function FinalCTA() {
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
             <span style={{ height: "1px", width: "46px", background: "#E8A33C" }} />
             <span style={{
-              fontFamily: mono,
+              fontFamily: body,
               fontSize: "0.72rem",
               letterSpacing: "0.18em",
               textTransform: "uppercase",

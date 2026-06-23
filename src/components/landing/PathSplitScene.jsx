@@ -35,7 +35,7 @@ function LeftPanel({ scrollYProgress }) {
           CODE
         </div>
         <div className="relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>PATH 01</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>PATH 01</div>
           <h3
             className="font-display font-black mb-4"
             style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
@@ -48,15 +48,15 @@ function LeftPanel({ scrollYProgress }) {
           <motion.div style={{ opacity: contentOpacity }} className="space-y-2.5 mb-8">
             {CODING_TOPICS.map((t) => (
               <div key={t} className="flex items-center gap-3">
-                <span className="font-mono text-xs" style={{ color: "#E8A33C66" }}>→</span>
-                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{t}</span>
+                <span className="font-sans text-xs" style={{ color: "#E8A33C66" }}>→</span>
+                <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>{t}</span>
               </div>
             ))}
           </motion.div>
           <motion.div style={{ opacity: contentOpacity }}>
             <Link to={createPageUrl("Projects")}>
               <button
-                className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all duration-200"
+                className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all duration-200"
                 style={{ border: "1px solid #E8A33C33", color: "#E8A33C", background: "#E8A33C10" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "#E8A33C20"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "#E8A33C10"; }}
@@ -101,7 +101,7 @@ function RightPanel({ scrollYProgress }) {
           AI
         </div>
         <div className="relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>PATH 02</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>PATH 02</div>
           <h3
             className="font-display font-black mb-4"
             style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
@@ -114,15 +114,15 @@ function RightPanel({ scrollYProgress }) {
           <motion.div style={{ opacity: contentOpacity }} className="space-y-2.5 mb-8">
             {AI_TOPICS.map((t) => (
               <div key={t} className="flex items-center justify-end gap-3">
-                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{t}</span>
-                <span className="font-mono text-xs" style={{ color: "#E8A33C66" }}>→</span>
+                <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>{t}</span>
+                <span className="font-sans text-xs" style={{ color: "#E8A33C66" }}>→</span>
               </div>
             ))}
           </motion.div>
           <motion.div style={{ opacity: contentOpacity }} className="flex justify-end">
             <Link to={createPageUrl("AITrack")}>
               <button
-                className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all duration-200"
+                className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all duration-200"
                 style={{ border: "1px solid #E8A33C33", color: "#E8A33C", background: "#E8A33C10" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "#E8A33C20"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "#E8A33C10"; }}
@@ -161,7 +161,7 @@ function IntroLabel({ scrollYProgress }) {
       className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none"
     >
       <div style={{ paddingTop: "8vh" }}>
-        <div className="font-mono text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#E8A33C" }}>§ CHOOSE YOUR PATH</div>
+        <div className="font-sans text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#E8A33C" }}>§ CHOOSE YOUR PATH</div>
         <h2
           className="font-display font-black text-center"
           style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}

@@ -34,7 +34,7 @@ export default function Competitive() {
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#BBB3A4" }}>§ COMPETITIVE</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#BBB3A4" }}>§ COMPETITIVE</span>
           </div>
           <h1 style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}>
             Implement the algorithm.
@@ -46,7 +46,7 @@ export default function Competitive() {
             className="mt-6 flex items-start gap-3 px-4 py-3 max-w-2xl"
             style={{ border: "1px solid #34302A", background: "#E8A33C08", borderRadius: "4px" }}
           >
-            <span className="font-mono text-xs tracking-widest uppercase mt-px" style={{ color: "#E8A33C" }}>
+            <span className="font-sans text-xs tracking-widest uppercase mt-px" style={{ color: "#E8A33C" }}>
               Optional · Advanced
             </span>
             <p className="font-display text-xs leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
@@ -61,12 +61,12 @@ export default function Competitive() {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
           <div className="relative flex-1 min-w-48 max-w-xs">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs pointer-events-none" style={{ color: "#BBB3A4" }}>/search</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none" style={{ color: "#BBB3A4" }}>/search</span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="filter problems..."
-              className="w-full font-mono text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
+              className="w-full font-sans text-sm py-3 pl-16 pr-4 bg-transparent outline-none"
               style={{ border: "1px solid #262219", color: "#ECE7DC", caretColor: "#E8A33C" }}
             />
           </div>
@@ -75,7 +75,7 @@ export default function Competitive() {
               <button
                 key={d}
                 onClick={() => setDifficulty(d)}
-                className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                 style={{
                   border: `1px solid ${difficulty === d ? "#E8A33C" : "#262219"}`,
                   color: difficulty === d ? "#E8A33C" : "#BBB3A4",
@@ -94,7 +94,7 @@ export default function Competitive() {
             <button
               key={t.key}
               onClick={() => setTopic(t.key)}
-              className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+              className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
               style={{
                 border: `1px solid ${topic === t.key ? "#E8A33C" : "#262219"}`,
                 color: topic === t.key ? "#E8A33C" : "#C9C1B2",
@@ -110,7 +110,7 @@ export default function Competitive() {
         {filtered.length > 0 && (
           <div className="grid items-center gap-8 px-6 py-3 mb-px" style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #262219" }}>
             {["LVL", "PROBLEM", "TOPIC", "LANG"].map((h) => (
-              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>{h}</div>
+              <div key={h} className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>{h}</div>
             ))}
           </div>
         )}
@@ -118,7 +118,7 @@ export default function Competitive() {
         {/* List */}
         {filtered.length === 0 ? (
           <div className="text-center py-24">
-            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>NO RESULTS</div>
+            <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>NO RESULTS</div>
             <p className="font-display text-base" style={{ color: "#C9C1B2" }}>No problems match your filter.</p>
           </div>
         ) : (
@@ -132,7 +132,7 @@ export default function Competitive() {
                     onMouseEnter={(e) => { e.currentTarget.style.background = "#131009"; e.currentTarget.style.paddingLeft = "1.75rem"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; }}
                   >
-                    <div className="font-mono font-bold" style={{ fontSize: "1.25rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}>
+                    <div className="font-sans font-bold" style={{ fontSize: "1.25rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}>
                       {DIFF_NUM[p.difficulty] || "01"}
                     </div>
                     <div>
@@ -144,12 +144,12 @@ export default function Competitive() {
                       </div>
                     </div>
                     <div>
-                      <span className="font-mono text-xs tracking-widest uppercase px-2.5 py-1" style={{ color: "#C9C1B2", border: "1px solid #34302A" }}>
+                      <span className="font-sans text-xs tracking-widest uppercase px-2.5 py-1" style={{ color: "#C9C1B2", border: "1px solid #34302A" }}>
                         {TOPIC_LABEL[p.topic] || p.topic}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="font-mono text-xs" style={{ color: "#E8A33C" }}>C++</span>
+                      <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>C++</span>
                     </div>
                   </div>
                 </Link>

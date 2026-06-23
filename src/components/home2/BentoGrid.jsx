@@ -5,7 +5,7 @@ const body = "'Hanken Grotesk', system-ui, sans-serif";
 const mono = "'Spline Sans Mono', monospace";
 
 const idx = {
-  fontFamily: mono,
+  fontFamily: body,
   fontSize: "0.72rem",
   letterSpacing: "0.18em",
   color: "#D4882E",
@@ -71,7 +71,7 @@ export default function BentoGrid() {
             }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}>
                 <span style={{
-                  fontFamily: mono,
+                  fontFamily: body,
                   fontSize: "0.7rem",
                   color: "#15130E",
                   background: "#E8A33C",
@@ -156,7 +156,7 @@ function Opt({ k, children, correct }) {
       borderRadius: "3px",
       ...(correct ? { background: "rgba(232,163,60,0.10)" } : {}),
     }}>
-      <span style={{ fontFamily: mono, fontSize: "0.78rem", color: correct ? "#E8A33C" : "#756C5C", width: "1.2em" }}>
+      <span style={{ fontFamily: body, fontSize: "0.78rem", color: correct ? "#E8A33C" : "#756C5C", width: "1.2em" }}>
         {k}
       </span>
       <span style={{ fontFamily: body, color: "#ECE7DC", fontSize: "0.95rem" }}>{children}</span>
@@ -167,7 +167,7 @@ function Opt({ k, children, correct }) {
 function Pillar({ n, title, children }) {
   return (
     <div style={{ borderTop: "1px solid #221F18", paddingTop: "24px" }}>
-      <div style={{ fontFamily: mono, fontSize: "0.92rem", color: "#756C5C", marginBottom: "16px" }}>{n}</div>
+      <div style={{ fontFamily: body, fontSize: "0.92rem", color: "#756C5C", marginBottom: "16px" }}>{n}</div>
       <h4 style={{
         fontFamily: display,
         fontWeight: 700,

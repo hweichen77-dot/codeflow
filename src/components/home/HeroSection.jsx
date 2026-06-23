@@ -27,7 +27,7 @@ export default function HeroSection() {
       />
 
       <div
-        className="absolute left-8 top-1/2 -translate-y-1/2 -translate-x-1/2 rotate-90 font-mono text-xs tracking-widest"
+        className="absolute left-8 top-1/2 -translate-y-1/2 -translate-x-1/2 rotate-90 font-sans text-xs tracking-widest"
         style={{ color: "#ECE7DC", whiteSpace: "nowrap" }}
       >
         § 00 — INTRO
@@ -54,11 +54,11 @@ export default function HeroSection() {
 
           <div>
             <div className="flex items-center gap-3 mb-12">
-              <span className="font-mono text-xs tracking-[0.25em] uppercase" style={{ color: "#E8A33C" }}>
+              <span className="font-sans text-xs tracking-[0.25em] uppercase" style={{ color: "#E8A33C" }}>
                 CodeFlow
               </span>
-              <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>///</span>
-              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>
+              <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>///</span>
+              <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>
                 Learn by building
               </span>
             </div>
@@ -98,7 +98,7 @@ export default function HeroSection() {
             <div className="flex flex-wrap gap-4 mb-16">
               <Link to={createPageUrl("Projects")}>
                 <button
-                  className="font-mono text-sm tracking-widest uppercase px-8 py-4 transition-all duration-200"
+                  className="font-sans text-sm tracking-widest uppercase px-8 py-4 transition-all duration-200"
                   style={{
                     background: "#E8A33C",
                     color: "#15130E",
@@ -119,7 +119,7 @@ export default function HeroSection() {
               </Link>
               <Link to={createPageUrl("Challenges")}>
                 <button
-                  className="font-mono text-sm tracking-widest uppercase px-8 py-4 transition-all duration-200"
+                  className="font-sans text-sm tracking-widest uppercase px-8 py-4 transition-all duration-200"
                   style={{
                     background: "transparent",
                     color: "#C9C1B2",
@@ -157,7 +157,7 @@ export default function HeroSection() {
                     >
                       {stat.val}
                     </div>
-                    <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>
+                    <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>
                       {stat.label}
                     </div>
                   </div>
@@ -269,7 +269,7 @@ export default function HeroSection() {
             </div>
 
             <div
-              className="absolute -right-4 top-1/3 font-mono text-xs rotate-90 origin-right"
+              className="absolute -right-4 top-1/3 font-sans text-xs rotate-90 origin-right"
               style={{ color: "#ECE7DC", whiteSpace: "nowrap" }}
             >
               lesson_01.js — 10 lines

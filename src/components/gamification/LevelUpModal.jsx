@@ -76,7 +76,7 @@ export default function LevelUpModal({ show, level, onClose }) {
             />
 
             <div
-              className="font-mono text-xs tracking-widest uppercase mb-6"
+              className="font-sans text-xs tracking-widest uppercase mb-6"
               style={{ color: "#BBB3A4" }}
             >
               § LEVEL UP
@@ -100,13 +100,13 @@ export default function LevelUpModal({ show, level, onClose }) {
               }}
             >
               <div
-                className="font-mono"
+                className="font-sans"
                 style={{ fontSize: "0.7rem", color: lvl.color, letterSpacing: "0.1em" }}
               >
                 LVL
               </div>
               <div
-                className="font-mono font-bold"
+                className="font-sans font-bold"
                 style={{ fontSize: "2.75rem", color: lvl.color, lineHeight: 1 }}
               >
                 {lvl.level}
@@ -134,7 +134,7 @@ export default function LevelUpModal({ show, level, onClose }) {
 
             <button
               onClick={onClose}
-              className="font-mono text-xs tracking-widest uppercase px-8 py-4 transition-all duration-150"
+              className="font-sans text-xs tracking-widest uppercase px-8 py-4 transition-all duration-150"
               style={{ background: lvl.color, color: "#15130E", fontWeight: 700, width: "100%" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-2px)";

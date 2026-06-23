@@ -68,7 +68,7 @@ export default function APCS() {
       <div className="relative px-8 lg:px-16 pt-28 pb-12" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
-          <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4" }}>§ AP COMPUTER SCIENCE</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4" }}>§ AP COMPUTER SCIENCE</div>
           <h1 style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 20px" }}>
             Pass the exam.<br />
             <span style={{ WebkitTextStroke: "1.5px #E8A33C", color: "transparent" }}>Actually learn it.</span>
@@ -86,7 +86,7 @@ export default function APCS() {
             <button
               key={t.key}
               onClick={() => setTrack(t.key)}
-              className="font-mono text-xs tracking-widest uppercase px-5 py-3 transition-all duration-150"
+              className="font-sans text-xs tracking-widest uppercase px-5 py-3 transition-all duration-150"
               style={{
                 color: track === t.key ? "#15130E" : "#C9C1B2",
                 background: track === t.key ? "#E8A33C" : "transparent",
@@ -99,7 +99,7 @@ export default function APCS() {
           ))}
         </div>
         <p className="font-display text-sm mt-4 mb-1" style={{ color: "#C9C1B2" }}>
-          <span className="font-mono text-xs uppercase tracking-widest" style={{ color: "#E8A33C" }}>{active.lang}</span>
+          <span className="font-sans text-xs uppercase tracking-widest" style={{ color: "#E8A33C" }}>{active.lang}</span>
           &nbsp;·&nbsp; {active.blurb}
         </p>
       </div>
@@ -107,13 +107,13 @@ export default function APCS() {
       {/* Curriculum grouped by unit */}
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12 space-y-12">
         {trackProjects.length === 0 ? (
-          <div className="font-mono text-sm py-20 text-center" style={{ color: "#6E665A" }}>
+          <div className="font-sans text-sm py-20 text-center" style={{ color: "#6E665A" }}>
             {active.label} curriculum is coming soon.
           </div>
         ) : (
           units.map((unit) => (
             <div key={unit}>
-              <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#E8A33C" }}>
+              <div className="font-sans text-xs tracking-widest uppercase mb-5" style={{ color: "#E8A33C" }}>
                 {unit}
               </div>
               <div style={{ borderTop: "1px solid #262219" }}>
@@ -137,7 +137,7 @@ export default function APCS() {
                           {pct > 0 ? (
                             <ProgressRing percent={pct} size={38} color="#E8A33C" />
                           ) : (
-                            <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}>
+                            <span className="font-sans font-bold" style={{ fontSize: "1.5rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}>
                               {String(i + 1).padStart(2, "0")}
                             </span>
                           )}
@@ -148,7 +148,7 @@ export default function APCS() {
                               {p.title}
                             </span>
                             {done && (
-                              <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
+                              <span className="font-sans text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
                                 DONE
                               </span>
                             )}
@@ -158,7 +158,7 @@ export default function APCS() {
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {(p.tags || []).slice(0, 4).map((c) => (
-                              <span key={c} className="font-mono text-xs px-2 py-0.5" style={{ color: "#BBB3A4", border: "1px solid #34302A" }}>
+                              <span key={c} className="font-sans text-xs px-2 py-0.5" style={{ color: "#BBB3A4", border: "1px solid #34302A" }}>
                                 {c}
                               </span>
                             ))}
@@ -166,7 +166,7 @@ export default function APCS() {
                         </div>
                         <div>
                           <span
-                            className="font-mono text-xs tracking-widest uppercase px-2.5 py-1"
+                            className="font-sans text-xs tracking-widest uppercase px-2.5 py-1"
                             style={{ color: dc.color, border: `1px solid ${dc.border}`, background: dc.bg }}
                           >
                             {p.difficulty}

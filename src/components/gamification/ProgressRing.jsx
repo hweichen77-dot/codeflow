@@ -51,7 +51,7 @@ export default function ProgressRing({
       </svg>
       {showLabel && (
         <div
-          className="font-mono"
+          className="font-sans"
           style={{
             position: "absolute",
             inset: 0,

@@ -27,7 +27,7 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
     >
       {/* Level badge */}
       <div
-        className="font-mono font-bold text-center flex-shrink-0"
+        className="font-sans font-bold text-center flex-shrink-0"
         style={{
           width: "38px", height: "38px", borderRadius: "4px",
           background: lvl.color + "22", border: `1px solid ${lvl.color}44`,
@@ -40,10 +40,10 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
 
       <div style={{ flex: 1 }}>
         <div className="flex items-center justify-between mb-1.5">
-          <div className="font-mono text-xs" style={{ color: lvl.color }}>
+          <div className="font-sans text-xs" style={{ color: lvl.color }}>
             {lvl.name}
           </div>
-          <div className="font-mono text-xs" style={{ color: "#BBB3A4" }}>
+          <div className="font-sans text-xs" style={{ color: "#BBB3A4" }}>
             {totalXP} / {lvl.max === Infinity ? "∞" : lvl.max} XP
           </div>
         </div>
@@ -61,7 +61,7 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="font-mono text-xs flex-shrink-0"
+          className="font-sans text-xs flex-shrink-0"
           style={{ color: "#E8A33C", background: "#E8A33C10", border: "1px solid #E8A33C33", padding: "3px 8px" }}
         >
           +{earnedThisLesson} this lesson

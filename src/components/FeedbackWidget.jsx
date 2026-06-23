@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { track } from '@/lib/analytics'
 
-const MONO = "'Spline Sans Mono', ui-monospace, monospace"
+const LABEL = "'Hanken Grotesk', system-ui, sans-serif"
 const REPO = 'hweichen77-dot/codeflow'
 
 const KINDS = [
@@ -50,7 +50,7 @@ export default function FeedbackWidget() {
         onClick={toggle}
         aria-label="Send feedback"
         aria-expanded={open}
-        className="fixed z-[80] font-mono text-xs tracking-widest uppercase transition-all duration-150"
+        className="fixed z-[80] font-sans text-xs tracking-widest uppercase transition-all duration-150"
         style={{
           right: '20px',
           bottom: '20px',
@@ -59,7 +59,7 @@ export default function FeedbackWidget() {
           color: open ? '#E8A33C' : '#15130E',
           border: '1px solid #E8A33C55',
           fontWeight: 700,
-          fontFamily: MONO,
+          fontFamily: LABEL,
           boxShadow: '0 6px 24px rgba(0,0,0,0.5)',
         }}
       >
@@ -82,8 +82,8 @@ export default function FeedbackWidget() {
         >
           <form onSubmit={submit} style={{ padding: '20px' }}>
             <div
-              className="font-mono text-xs tracking-widest uppercase mb-3"
-              style={{ color: '#BBB3A4', fontFamily: MONO }}
+              className="font-sans text-xs tracking-widest uppercase mb-3"
+              style={{ color: '#BBB3A4', fontFamily: LABEL }}
             >
               Tell us what's up
             </div>
@@ -94,7 +94,7 @@ export default function FeedbackWidget() {
                   key={k.key}
                   type="button"
                   onClick={() => setKind(k.key)}
-                  className="font-mono px-3 py-2 transition-all"
+                  className="font-sans px-3 py-2 transition-all"
                   style={{
                     fontSize: '10px',
                     letterSpacing: '0.08em',
@@ -102,7 +102,7 @@ export default function FeedbackWidget() {
                     color: kind === k.key ? '#15130E' : '#8F8779',
                     background: kind === k.key ? '#E8A33C' : 'transparent',
                     border: '1px solid #34302A',
-                    fontFamily: MONO,
+                    fontFamily: LABEL,
                   }}
                 >
                   {k.label}
@@ -129,21 +129,21 @@ export default function FeedbackWidget() {
             <div className="flex items-center justify-between">
               <a
                 href="mailto:hello@codeflow.app"
-                className="font-mono text-xs"
-                style={{ color: '#8F8779', fontFamily: MONO }}
+                className="font-sans text-xs"
+                style={{ color: '#8F8779', fontFamily: LABEL }}
               >
                 or email us
               </a>
               <button
                 type="submit"
                 disabled={!text.trim()}
-                className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 transition-all"
+                className="font-sans text-xs tracking-widest uppercase px-5 py-2.5 transition-all"
                 style={{
                   background: text.trim() ? '#E8A33C' : '#262219',
                   color: text.trim() ? '#15130E' : '#8F8779',
                   fontWeight: 700,
                   cursor: text.trim() ? 'pointer' : 'not-allowed',
-                  fontFamily: MONO,
+                  fontFamily: LABEL,
                 }}
               >
                 Send →
