@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { track } from '@/lib/analytics'
 
-const MONO = "'Space Mono', monospace"
+const MONO = "'Spline Sans Mono', ui-monospace, monospace"
 const REPO = 'hweichen77-dot/codeflow'
 
 const KINDS = [
@@ -55,9 +55,9 @@ export default function FeedbackWidget() {
           right: '20px',
           bottom: '20px',
           padding: '12px 16px',
-          background: open ? '#1a1a1a' : '#b8ff00',
-          color: open ? '#b8ff00' : '#0a0a0a',
-          border: '1px solid #b8ff0055',
+          background: open ? '#262219' : '#E8A33C',
+          color: open ? '#E8A33C' : '#15130E',
+          border: '1px solid #E8A33C55',
           fontWeight: 700,
           fontFamily: MONO,
           boxShadow: '0 6px 24px rgba(0,0,0,0.5)',
@@ -75,15 +75,15 @@ export default function FeedbackWidget() {
             right: '20px',
             bottom: '72px',
             width: 'min(360px, calc(100vw - 40px))',
-            background: '#0d0d0d',
-            border: '1px solid #1f1f1f',
+            background: '#131009',
+            border: '1px solid #2A261E',
             boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
           }}
         >
           <form onSubmit={submit} style={{ padding: '20px' }}>
             <div
               className="font-mono text-xs tracking-widest uppercase mb-3"
-              style={{ color: '#c4c4c4', fontFamily: MONO }}
+              style={{ color: '#BBB3A4', fontFamily: MONO }}
             >
               Tell us what's up
             </div>
@@ -99,9 +99,9 @@ export default function FeedbackWidget() {
                     fontSize: '10px',
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
-                    color: kind === k.key ? '#0a0a0a' : '#888',
-                    background: kind === k.key ? '#b8ff00' : 'transparent',
-                    border: '1px solid #2a2a2a',
+                    color: kind === k.key ? '#15130E' : '#8F8779',
+                    background: kind === k.key ? '#E8A33C' : 'transparent',
+                    border: '1px solid #34302A',
                     fontFamily: MONO,
                   }}
                 >
@@ -123,14 +123,14 @@ export default function FeedbackWidget() {
                   : 'What would make CodeFlow better?'
               }
               className="w-full px-3 py-2 font-display text-sm outline-none mb-3"
-              style={{ background: '#0a0a0a', border: '1px solid #2a2a2a', color: '#e8e8e8', resize: 'vertical' }}
+              style={{ background: '#15130E', border: '1px solid #34302A', color: '#ECE7DC', resize: 'vertical' }}
             />
 
             <div className="flex items-center justify-between">
               <a
                 href="mailto:hello@codeflow.app"
                 className="font-mono text-xs"
-                style={{ color: '#888', fontFamily: MONO }}
+                style={{ color: '#8F8779', fontFamily: MONO }}
               >
                 or email us
               </a>
@@ -139,8 +139,8 @@ export default function FeedbackWidget() {
                 disabled={!text.trim()}
                 className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 transition-all"
                 style={{
-                  background: text.trim() ? '#b8ff00' : '#1a1a1a',
-                  color: text.trim() ? '#0a0a0a' : '#888',
+                  background: text.trim() ? '#E8A33C' : '#262219',
+                  color: text.trim() ? '#15130E' : '#8F8779',
                   fontWeight: 700,
                   cursor: text.trim() ? 'pointer' : 'not-allowed',
                   fontFamily: MONO,

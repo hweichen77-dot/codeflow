@@ -48,8 +48,8 @@ XP earned: +25`,
 
 function StepIndicator({ index, step, scrollYProgress }) {
   const start = index * 0.25;
-  const bg = useTransform(scrollYProgress, [start + 0.02, start + 0.12], ["#1e1e1e", "#b8ff00"]);
-  const color = useTransform(scrollYProgress, [start + 0.02, start + 0.12], ["#333", "#0a0a0a"]);
+  const bg = useTransform(scrollYProgress, [start + 0.02, start + 0.12], ["#262219", "#E8A33C"]);
+  const color = useTransform(scrollYProgress, [start + 0.02, start + 0.12], ["#3A352D", "#15130E"]);
   return (
     <div className="flex items-center gap-2">
       <motion.div
@@ -58,7 +58,7 @@ function StepIndicator({ index, step, scrollYProgress }) {
       >
         {index + 1}
       </motion.div>
-      <span className="font-mono text-xs hidden sm:block" style={{ color: "#e8e8e8" }}>
+      <span className="font-mono text-xs hidden sm:block" style={{ color: "#ECE7DC" }}>
         {step.label.split("—")[1]?.trim()}
       </span>
     </div>
@@ -84,36 +84,36 @@ function StepCard({ index, step, scrollYProgress }) {
       style={{ opacity, y, position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none" }}
     >
       <div className="p-6 md:p-8">
-        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#b8ff00" }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#E8A33C" }}>
           {step.label}
         </div>
         <div className="mb-6">
-          <h3 className="font-display font-bold text-2xl mb-2" style={{ color: "#e8e8e8", letterSpacing: "-0.02em" }}>
+          <h3 className="font-display font-bold text-2xl mb-2" style={{ color: "#ECE7DC", letterSpacing: "-0.02em" }}>
             {step.title}
           </h3>
-          <p className="font-display text-base" style={{ color: "#c4c4c4", fontWeight: 400 }}>
+          <p className="font-display text-base" style={{ color: "#BBB3A4", fontWeight: 400 }}>
             {step.body}
           </p>
         </div>
-        <div className="p-5 mb-4" style={{ background: "#080808", border: "1px solid #1a1a1a" }}>
-          <pre className="font-mono text-xs leading-relaxed overflow-x-auto" style={{ color: step.isResult ? "#b8ff00" : "#888" }}>
+        <div className="p-5 mb-4" style={{ background: "#080808", border: "1px solid #262219" }}>
+          <pre className="font-mono text-xs leading-relaxed overflow-x-auto" style={{ color: step.isResult ? "#E8A33C" : "#8F8779" }}>
             {step.code}
           </pre>
         </div>
         {step.outputLabel && (
-          <div className="flex items-center gap-3 px-3 py-2" style={{ border: "1px solid #1e1e1e" }}>
+          <div className="flex items-center gap-3 px-3 py-2" style={{ border: "1px solid #262219" }}>
             <span
               className="font-mono text-xs tracking-widest uppercase px-2 py-0.5"
               style={{
-                color: step.isResult ? "#b8ff00" : "#888",
-                border: `1px solid ${step.isResult ? "#b8ff0033" : "#2a2a2a"}`,
-                background: step.isResult ? "#b8ff0010" : "transparent",
+                color: step.isResult ? "#E8A33C" : "#8F8779",
+                border: `1px solid ${step.isResult ? "#E8A33C33" : "#34302A"}`,
+                background: step.isResult ? "#E8A33C10" : "transparent",
               }}
             >
               {step.outputLabel}
             </span>
             {step.output && (
-              <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{step.output}</span>
+              <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{step.output}</span>
             )}
           </div>
         )}
@@ -148,8 +148,8 @@ export default function LearningScene() {
             className="absolute inset-0"
             style={{
               backgroundImage: `
-                linear-gradient(rgba(184,255,0,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(184,255,0,0.025) 1px, transparent 1px)
+                linear-gradient(rgba(232,163,60,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(232,163,60,0.025) 1px, transparent 1px)
               `,
               backgroundSize: "100px 100px",
             }}
@@ -173,7 +173,7 @@ export default function LearningScene() {
         >
           <div
             className="w-[600px] h-[600px] rounded-full"
-            style={{ border: "1px solid rgba(184,255,0,0.04)" }}
+            style={{ border: "1px solid rgba(232,163,60,0.04)" }}
           />
         </motion.div>
         <motion.div
@@ -187,7 +187,7 @@ export default function LearningScene() {
           {/* dot on ring */}
           <div
             className="absolute w-1.5 h-1.5 rounded-full"
-            style={{ background: "#b8ff00", top: "calc(50% - 300px)", left: "50%", transform: "translateX(-50%)", boxShadow: "0 0 8px #b8ff00" }}
+            style={{ background: "#E8A33C", top: "calc(50% - 300px)", left: "50%", transform: "translateX(-50%)", boxShadow: "0 0 8px #E8A33C" }}
           />
         </motion.div>
 
@@ -197,7 +197,7 @@ export default function LearningScene() {
             <motion.div
               key={i}
               className="absolute left-0 right-0 h-px"
-              style={{ top: `${pct}%`, background: `linear-gradient(90deg, transparent, rgba(184,255,0,0.04), transparent)` }}
+              style={{ top: `${pct}%`, background: `linear-gradient(90deg, transparent, rgba(232,163,60,0.04), transparent)` }}
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{ duration: 4 + i * 0.8, repeat: Infinity, delay: i * 0.6 }}
             />
@@ -205,7 +205,7 @@ export default function LearningScene() {
         </motion.div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full max-w-5xl mx-auto px-6 relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-10 text-center" style={{ color: "#e8e8e8" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-10 text-center" style={{ color: "#ECE7DC" }}>
             § THE LEARNING EXPERIENCE
           </div>
 
@@ -217,13 +217,13 @@ export default function LearningScene() {
 
           <div
             className="relative mx-auto"
-            style={{ border: "1px solid #1e1e1e", background: "#0d0d0d", maxWidth: "700px", boxShadow: "0 40px 100px rgba(0,0,0,0.7)" }}
+            style={{ border: "1px solid #262219", background: "#131009", maxWidth: "700px", boxShadow: "0 40px 100px rgba(0,0,0,0.7)" }}
           >
-            <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#b8ff00" }} />
-              <span className="font-mono text-xs ml-4" style={{ color: "#e8e8e8" }}>lesson_01.py</span>
+            <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: "1px solid #262219" }}>
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#E8A33C" }} />
+              <span className="font-mono text-xs ml-4" style={{ color: "#ECE7DC" }}>lesson_01.py</span>
             </div>
             <div className="relative" style={{ minHeight: "340px" }}>
               {STEPS.map((s, i) => (

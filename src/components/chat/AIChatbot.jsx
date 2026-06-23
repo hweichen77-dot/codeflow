@@ -111,11 +111,11 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               onClick={() => setIsOpen(true)}
               aria-label="Open AI tutor chat"
               className="w-14 h-14 flex items-center justify-center transition-all duration-200"
-              style={{ background: "#b8ff00", border: "1px solid #b8ff00", boxShadow: "0 4px 24px rgba(184,255,0,0.2)" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(184,255,0,0.3)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 24px rgba(184,255,0,0.2)"; }}
+              style={{ background: "#E8A33C", border: "1px solid #E8A33C", boxShadow: "0 4px 24px rgba(232,163,60,0.2)" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(232,163,60,0.3)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 24px rgba(232,163,60,0.2)"; }}
             >
-              <MessageCircle size={20} style={{ color: "#0a0a0a" }} />
+              <MessageCircle size={20} style={{ color: "#15130E" }} />
             </button>
           </motion.div>
         )}
@@ -130,34 +130,34 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
             className="fixed bottom-6 right-6 w-96 max-w-[calc(100vw-2rem)] flex flex-col z-50 overflow-hidden"
             style={{
               height: "520px",
-              background: "#0d0d0d",
-              border: "1px solid #2a2a2a",
+              background: "#131009",
+              border: "1px solid #34302A",
               boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
             }}
           >
             {/* Header */}
             <div
               className="flex items-center justify-between px-5 py-3 flex-shrink-0"
-              style={{ borderBottom: "1px solid #1a1a1a", background: "#0a0a0a" }}
+              style={{ borderBottom: "1px solid #262219", background: "#15130E" }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-6 h-6 flex items-center justify-center" style={{ background: "#b8ff0015", border: "1px solid #b8ff0033" }}>
-                  <Brain size={12} style={{ color: "#b8ff00" }} />
+                <div className="w-6 h-6 flex items-center justify-center" style={{ background: "#E8A33C15", border: "1px solid #E8A33C33" }}>
+                  <Brain size={12} style={{ color: "#E8A33C" }} />
                 </div>
-                <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>
+                <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
                   AI Tutor
                 </span>
-                <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>·</span>
-                <span className="font-mono text-xs" style={{ color: "#c4c4c4" }} title={lessonTitle}>
+                <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>·</span>
+                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }} title={lessonTitle}>
                   {lessonTitle?.length > 18 ? lessonTitle.slice(0, 18) + "…" : lessonTitle}
                 </span>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
                 aria-label="Close AI tutor chat"
-                style={{ color: "#e8e8e8" }}
-                onMouseEnter={e => e.currentTarget.style.color = "#d4d4d4"}
-                onMouseLeave={e => e.currentTarget.style.color = "#e8e8e8"}
+                style={{ color: "#ECE7DC" }}
+                onMouseEnter={e => e.currentTarget.style.color = "#C9C1B2"}
+                onMouseLeave={e => e.currentTarget.style.color = "#ECE7DC"}
               >
                 <X size={14} />
               </button>
@@ -166,16 +166,16 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
             {/* Mode toggle */}
             <div
               className="flex items-center gap-3 px-5 py-2.5 flex-shrink-0"
-              style={{ borderBottom: "1px solid #111", background: "#080808" }}
+              style={{ borderBottom: "1px solid #1C1A14", background: "#080808" }}
             >
-              <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>mode:</span>
+              <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>mode:</span>
               <button
                 onClick={() => setSocraticMode(true)}
                 className="font-mono text-xs px-3 py-1 transition-all duration-150"
                 style={{
-                  color: socraticMode ? "#b8ff00" : "#e8e8e8",
-                  border: `1px solid ${socraticMode ? "#b8ff0033" : "#1a1a1a"}`,
-                  background: socraticMode ? "#b8ff0010" : "transparent",
+                  color: socraticMode ? "#E8A33C" : "#ECE7DC",
+                  border: `1px solid ${socraticMode ? "#E8A33C33" : "#262219"}`,
+                  background: socraticMode ? "#E8A33C10" : "transparent",
                 }}
               >
                 Socratic
@@ -184,15 +184,15 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 onClick={() => setSocraticMode(false)}
                 className="font-mono text-xs px-3 py-1 transition-all duration-150"
                 style={{
-                  color: !socraticMode ? "#b8ff00" : "#e8e8e8",
-                  border: `1px solid ${!socraticMode ? "#b8ff0033" : "#1a1a1a"}`,
-                  background: !socraticMode ? "#b8ff0010" : "transparent",
+                  color: !socraticMode ? "#E8A33C" : "#ECE7DC",
+                  border: `1px solid ${!socraticMode ? "#E8A33C33" : "#262219"}`,
+                  background: !socraticMode ? "#E8A33C10" : "transparent",
                 }}
               >
                 Direct
               </button>
               {currentCode && (
-                <span className="ml-auto font-mono text-xs flex items-center gap-1" style={{ color: "#e8e8e8" }}>
+                <span className="ml-auto font-mono text-xs flex items-center gap-1" style={{ color: "#ECE7DC" }}>
                   <Zap size={9} />
                   code-aware
                 </span>
@@ -206,9 +206,9 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                   <div
                     className="max-w-[85%] px-4 py-2.5 font-display text-sm leading-relaxed"
                     style={{
-                      background: msg.role === "user" ? "#1a1a1a" : "#141414",
-                      border: `1px solid ${msg.role === "user" ? "#2a2a2a" : "#1e1e1e"}`,
-                      color: msg.role === "user" ? "#e8e8e8" : "#d4d4d4",
+                      background: msg.role === "user" ? "#262219" : "#1F1C15",
+                      border: `1px solid ${msg.role === "user" ? "#34302A" : "#262219"}`,
+                      color: msg.role === "user" ? "#ECE7DC" : "#C9C1B2",
                       fontWeight: 400,
                     }}
                   >
@@ -218,9 +218,9 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: "#141414", border: "1px solid #1e1e1e" }}>
-                    <Loader2 size={12} className="animate-spin" style={{ color: "#b8ff00" }} />
-                    <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>thinking...</span>
+                  <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: "#1F1C15", border: "1px solid #262219" }}>
+                    <Loader2 size={12} className="animate-spin" style={{ color: "#E8A33C" }} />
+                    <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>thinking...</span>
                   </div>
                 </div>
               )}
@@ -228,7 +228,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
             </div>
 
             {/* Input */}
-            <div className="px-4 py-3 flex-shrink-0" style={{ borderTop: "1px solid #1a1a1a" }}>
+            <div className="px-4 py-3 flex-shrink-0" style={{ borderTop: "1px solid #262219" }}>
               {aiAvailable ? (
                 <div className="flex items-center gap-2">
                   <input
@@ -239,7 +239,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                     placeholder="Ask about this lesson..."
                     aria-label="Ask the AI tutor a question"
                     className="flex-1 font-mono text-xs py-2.5 px-3 bg-transparent outline-none"
-                    style={{ border: "1px solid #1e1e1e", color: "#e8e8e8", caretColor: "#b8ff00" }}
+                    style={{ border: "1px solid #262219", color: "#ECE7DC", caretColor: "#E8A33C" }}
                     disabled={isLoading}
                   />
                   <button
@@ -247,13 +247,13 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                     disabled={!input.trim() || isLoading}
                     aria-label="Send message"
                     className="px-3 py-2.5 transition-all duration-150 disabled:opacity-30"
-                    style={{ background: "#b8ff00", border: "1px solid #b8ff00" }}
+                    style={{ background: "#E8A33C", border: "1px solid #E8A33C" }}
                   >
-                    <Send size={12} style={{ color: "#0a0a0a" }} />
+                    <Send size={12} style={{ color: "#15130E" }} />
                   </button>
                 </div>
               ) : (
-                <p className="font-mono text-xs leading-relaxed" style={{ color: "#c4c4c4" }}>
+                <p className="font-mono text-xs leading-relaxed" style={{ color: "#BBB3A4" }}>
                   AI tutor is offline in this build — it lights up when the app is connected to its AI backend.
                 </p>
               )}

@@ -251,9 +251,9 @@ export default function ProjectDetail() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: "#0a0a0a" }}
+        style={{ background: "#15130E" }}
       >
-        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#e8e8e8" }}>
+        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#ECE7DC" }}>
           Loading module...
         </div>
       </div>
@@ -262,10 +262,10 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#0a0a0a" }}>
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>404 — NOT FOUND</div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#15130E" }}>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>404 — NOT FOUND</div>
         <Link to={createPageUrl("Projects")}>
-          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#b8ff00", border: "1px solid #b8ff0033" }}>
+          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33" }}>
             ← Back to Projects
           </button>
         </Link>
@@ -294,21 +294,21 @@ export default function ProjectDetail() {
 
   if (moduleGated) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-8 text-center" style={{ background: "#0a0a0a" }}>
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ffb300" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-8 text-center" style={{ background: "#15130E" }}>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E0B341" }}>
           🔒 Module Locked
         </div>
         <h1
-          style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.15, maxWidth: "32rem" }}
+          style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.15, maxWidth: "32rem" }}
         >
           Finish the Foundations first.
         </h1>
-        <p className="font-display text-base" style={{ color: "#bbb", maxWidth: "32rem" }}>
+        <p className="font-display text-base" style={{ color: "#A8A092", maxWidth: "32rem" }}>
           “{project.title}” builds on the beginner modules. Complete most of the
           Foundations track and this unlocks automatically.
         </p>
         <Link to={createPageUrl("Projects")}>
-          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 mt-2" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
+          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 mt-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
             ← Back to Foundations
           </button>
         </Link>
@@ -317,7 +317,7 @@ export default function ProjectDetail() {
   }
 
   return (
-    <div style={{ background: "#0a0a0a", minHeight: "100vh" }}>
+    <div style={{ background: "#15130E", minHeight: "100vh" }}>
       <XPToastContainer />
       <BadgeUnlock completedCount={completedCount} />
       <LessonCompletionCelebration
@@ -329,18 +329,18 @@ export default function ProjectDetail() {
       {/* Project header — full width banner */}
       <div
         className="relative pt-20"
-        style={{ borderBottom: "1px solid #1a1a1a" }}
+        style={{ borderBottom: "1px solid #262219" }}
       >
         {/* Top accent */}
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }} />
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
 
         <div className="max-w-7xl mx-auto px-8 lg:px-16 py-10">
           <Link
             to={createPageUrl("Projects")}
             className="font-mono text-xs tracking-widest uppercase mb-6 inline-block transition-colors duration-150"
-            style={{ color: "#e8e8e8" }}
-            onMouseEnter={e => e.currentTarget.style.color = "#b8ff00"}
-            onMouseLeave={e => e.currentTarget.style.color = "#333"}
+            style={{ color: "#ECE7DC" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#E8A33C"}
+            onMouseLeave={e => e.currentTarget.style.color = "#3A352D"}
           >
             ← Projects
           </Link>
@@ -350,29 +350,29 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-4 mb-3">
                 <span
                   className="font-mono font-bold"
-                  style={{ fontSize: "4rem", lineHeight: 1, color: "#e8e8e8", letterSpacing: "-0.05em" }}
+                  style={{ fontSize: "4rem", lineHeight: 1, color: "#ECE7DC", letterSpacing: "-0.05em" }}
                 >
                   {DIFFICULTY_NUM[project.difficulty] || "00"}
                 </span>
                 <div>
-                  <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#b8ff00" }}>
+                  <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>
                     {project.difficulty} · {project.category?.replace("_", "/")}
                   </div>
                   <h1
-                    style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: 0 }}
+                    style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: 0 }}
                   >
                     {project.title}
                   </h1>
                 </div>
               </div>
-              <p className="font-display text-sm leading-relaxed" style={{ color: "#c4c4c4", fontWeight: 400, maxWidth: "55ch" }}>
+              <p className="font-display text-sm leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400, maxWidth: "55ch" }}>
                 {project.description}
               </p>
             </div>
 
             {/* Progress indicator — dot trail */}
             <div className="flex flex-col items-end gap-3">
-              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>
+              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>
                 {completedCount}/{totalLessons} complete
               </div>
               <div className="flex gap-1.5">
@@ -386,16 +386,16 @@ export default function ProjectDetail() {
                       width: "8px",
                       height: "8px",
                       background: isCompleted(l.id)
-                        ? "#b8ff00"
+                        ? "#E8A33C"
                         : l.id === activeLessonId
-                        ? "#888"
-                        : "#1e1e1e",
-                      border: l.id === activeLessonId ? "1px solid #888" : "1px solid transparent",
+                        ? "#8F8779"
+                        : "#262219",
+                      border: l.id === activeLessonId ? "1px solid #8F8779" : "1px solid transparent",
                     }}
                   />
                 ))}
               </div>
-              <div className="font-mono text-xs" style={{ color: "#e8e8e8" }}>
+              <div className="font-mono text-xs" style={{ color: "#ECE7DC" }}>
                 {project.estimated_time ? `~${project.estimated_time}min` : ""}
               </div>
             </div>
@@ -418,7 +418,7 @@ export default function ProjectDetail() {
           <div className="relative" style={{ width: "220px" }}>
             <div
               className="sticky top-20"
-              style={{ borderLeft: "1px solid #1a1a1a", paddingLeft: "1.25rem" }}
+              style={{ borderLeft: "1px solid #262219", paddingLeft: "1.25rem" }}
             >
               {/* Streak badges */}
               <StreakBadge completedCount={completedCount} />
@@ -426,7 +426,7 @@ export default function ProjectDetail() {
               {/* Vertical label */}
               <div
                 className="font-mono text-xs tracking-widest uppercase mb-5"
-                style={{ color: "#c4c4c4" }}
+                style={{ color: "#BBB3A4" }}
               >
                 LESSONS
               </div>
@@ -440,19 +440,19 @@ export default function ProjectDetail() {
                       key={lesson.id}
                       onClick={() => setActiveLessonId(lesson.id)}
                       className="w-full text-left py-3 transition-all duration-150 group relative"
-                      style={{ borderBottom: "1px solid #111" }}
+                      style={{ borderBottom: "1px solid #1C1A14" }}
                     >
                       {/* Active left accent */}
                       {active && (
                         <div
                           className="absolute left-[-1.25rem] top-0 bottom-0 w-px"
-                          style={{ background: "#b8ff00" }}
+                          style={{ background: "#E8A33C" }}
                         />
                       )}
                       <div className="flex items-start gap-3">
                         <span
                           className="font-mono text-xs flex-shrink-0 mt-0.5"
-                          style={{ color: completed ? "#b8ff00" : active ? "#aaa" : "#555" }}
+                          style={{ color: completed ? "#E8A33C" : active ? "#A39B8C" : "#5A554B" }}
                         >
                           {completed ? "✓" : String(i + 1).padStart(2, "0")}
                         </span>
@@ -460,13 +460,13 @@ export default function ProjectDetail() {
                           <span
                             className="font-display text-xs leading-snug transition-colors duration-150 block"
                             style={{
-                              color: active ? "#e8e8e8" : completed ? "#888" : "#aaa",
+                              color: active ? "#ECE7DC" : completed ? "#8F8779" : "#A39B8C",
                               fontWeight: active ? 600 : 400,
                             }}
                           >
                             {lesson.title}
                           </span>
-                          <span className="font-mono" style={{ fontSize: "9px", color: completed ? "#b8ff00" : "#666" }}>
+                          <span className="font-mono" style={{ fontSize: "9px", color: completed ? "#E8A33C" : "#6E665A" }}>
                             {lesson.xp_reward || 10} pts
                           </span>
                         </div>
@@ -487,7 +487,7 @@ export default function ProjectDetail() {
                 <button
                   onClick={dismissNavHint}
                   className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
-                  style={{ color: "#c4c4c4", border: "1px solid #1a1a1a", background: "#0d0d0d" }}
+                  style={{ color: "#BBB3A4", border: "1px solid #262219", background: "#131009" }}
                   title="Dismiss hint"
                 >
                   ← → to navigate lessons
@@ -497,9 +497,9 @@ export default function ProjectDetail() {
                 onClick={toggleFocusMode}
                 className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
                 style={{
-                  color: focusMode ? "#b8ff00" : "#666",
-                  border: `1px solid ${focusMode ? "#b8ff0033" : "#1a1a1a"}`,
-                  background: focusMode ? "#b8ff0010" : "#0d0d0d",
+                  color: focusMode ? "#E8A33C" : "#6E665A",
+                  border: `1px solid ${focusMode ? "#E8A33C33" : "#262219"}`,
+                  background: focusMode ? "#E8A33C10" : "#131009",
                 }}
                 title="Toggle focus mode"
               >
@@ -668,8 +668,8 @@ export default function ProjectDetail() {
                           disabled={expandingLesson}
                           className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                           style={{
-                            color: "#60a5fa", border: "1px solid #60a5fa33",
-                            background: "#60a5fa10", opacity: expandingLesson ? 0.5 : 1,
+                            color: "#C2643C", border: "1px solid #C2643C33",
+                            background: "#C2643C10", opacity: expandingLesson ? 0.5 : 1,
                           }}
                         >
                           {expandingLesson ? " Expanding..." : " Expand with AI"}
@@ -692,9 +692,9 @@ export default function ProjectDetail() {
                         onClick={() => setShowHints(!showHints)}
                         className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                         style={{
-                          color: showHints ? "#b8ff00" : "#444",
-                          border: `1px solid ${showHints ? "#b8ff0033" : "#1e1e1e"}`,
-                          background: showHints ? "#b8ff0010" : "transparent",
+                          color: showHints ? "#E8A33C" : "#4A453C",
+                          border: `1px solid ${showHints ? "#E8A33C33" : "#262219"}`,
+                          background: showHints ? "#E8A33C10" : "transparent",
                         }}
                       >
                         {showHints ? "— Hints" : "+ Hints"}
@@ -705,8 +705,8 @@ export default function ProjectDetail() {
                         onClick={() => setShowSolution(!showSolution)}
                         className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                         style={{
-                          color: showSolution ? "#888" : "#333",
-                          border: `1px solid ${showSolution ? "#2a2a2a" : "#1a1a1a"}`,
+                          color: showSolution ? "#8F8779" : "#3A352D",
+                          border: `1px solid ${showSolution ? "#34302A" : "#262219"}`,
                         }}
                       >
                         {showSolution ? "— Solution" : "Show Solution"}
@@ -719,13 +719,13 @@ export default function ProjectDetail() {
                       <button
                         onClick={handleComplete}
                         className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 transition-all duration-150"
-                        style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}
+                        style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}
                         onMouseEnter={e => {
-                          e.currentTarget.style.background = "#b8ff0020";
+                          e.currentTarget.style.background = "#E8A33C20";
                           e.currentTarget.style.transform = "translateY(-1px)";
                         }}
                         onMouseLeave={e => {
-                          e.currentTarget.style.background = "#b8ff0010";
+                          e.currentTarget.style.background = "#E8A33C10";
                           e.currentTarget.style.transform = "";
                         }}
                       >
@@ -736,10 +736,10 @@ export default function ProjectDetail() {
                       <button
                         onClick={goToNextLesson}
                         className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 transition-all duration-150"
-                        style={{ color: "#0a0a0a", background: "#b8ff00", border: "1px solid #b8ff00", fontWeight: 700 }}
+                        style={{ color: "#15130E", background: "#E8A33C", border: "1px solid #E8A33C", fontWeight: 700 }}
                         onMouseEnter={e => {
                           e.currentTarget.style.transform = "translateY(-1px)";
-                          e.currentTarget.style.boxShadow = "0 6px 24px rgba(184,255,0,0.2)";
+                          e.currentTarget.style.boxShadow = "0 6px 24px rgba(232,163,60,0.2)";
                         }}
                         onMouseLeave={e => {
                           e.currentTarget.style.transform = "";
@@ -760,19 +760,19 @@ export default function ProjectDetail() {
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                       >
-                        <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-                          <div className="px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#b8ff00" }}>
+                        <div style={{ border: "1px solid #262219", background: "#131009" }}>
+                          <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
+                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
                               Hints
                             </span>
                           </div>
                           <div className="px-5 py-4 space-y-3">
                             {activeLesson.hints.map((hint, i) => (
                               <div key={i} className="flex items-start gap-3">
-                                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#e8e8e8" }}>
+                                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#ECE7DC" }}>
                                   {String(i + 1).padStart(2, "0")}
                                 </span>
-                                <p className="font-display text-sm leading-relaxed" style={{ color: "#c4c4c4", fontWeight: 400 }}>
+                                <p className="font-display text-sm leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
                                   {hint}
                                 </p>
                               </div>
@@ -792,18 +792,18 @@ export default function ProjectDetail() {
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                       >
-                        <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-                          <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>
+                        <div style={{ border: "1px solid #262219", background: "#131009" }}>
+                          <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
+                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
                               Solution
                             </span>
-                            <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
+                            <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
                               JS
                             </span>
                           </div>
                           <pre
                             className="font-mono overflow-x-auto p-5"
-                            style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#d4d4d4" }}
+                            style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#C9C1B2" }}
                           >
                             {activeLesson.solution_code}
                           </pre>

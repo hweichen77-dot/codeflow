@@ -115,19 +115,19 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
 
   return (
     <>
-      <div className="overflow-hidden" style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
+      <div className="overflow-hidden" style={{ border: "1px solid #262219", background: "#131009" }}>
         {/* Terminal header */}
         <div
           className="flex items-center justify-between px-5 py-3"
-          style={{ borderBottom: "1px solid #1a1a1a", background: "#0a0a0a" }}
+          style={{ borderBottom: "1px solid #262219", background: "#15130E" }}
         >
           <div className="flex items-center gap-4">
             <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
             </div>
-            <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>
+            <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>
               ~/codeflow/{filename}
             </span>
           </div>
@@ -136,9 +136,9 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
               onClick={handleCopy}
               className="font-mono text-xs px-3 py-1.5 transition-all duration-150"
               style={{
-                color: copied ? "#b8ff00" : "#c4c4c4",
-                border: `1px solid ${copied ? "#b8ff0033" : "#1e1e1e"}`,
-                background: copied ? "#b8ff0010" : "transparent",
+                color: copied ? "#E8A33C" : "#BBB3A4",
+                border: `1px solid ${copied ? "#E8A33C33" : "#262219"}`,
+                background: copied ? "#E8A33C10" : "transparent",
               }}
             >
               {copied ? "copied!" : "copy"}
@@ -146,9 +146,9 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
             <button
               onClick={() => onChange("")}
               className="font-mono text-xs px-3 py-1.5 transition-all duration-150"
-              style={{ color: "#e8e8e8", border: "1px solid #1e1e1e" }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#d4d4d4"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "#e8e8e8"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
+              style={{ color: "#ECE7DC", border: "1px solid #262219" }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#C9C1B2"; e.currentTarget.style.borderColor = "#34302A"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "#ECE7DC"; e.currentTarget.style.borderColor = "#262219"; }}
             >
               reset
             </button>
@@ -156,13 +156,13 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
               onClick={onRun}
               disabled={isRunning}
               className="font-mono text-xs tracking-widest uppercase px-5 py-1.5 transition-all duration-150 disabled:opacity-50"
-              style={{ background: "#b8ff00", color: "#0a0a0a", fontWeight: 700, border: "1px solid #b8ff00" }}
-              onMouseEnter={e => { if (!isRunning) { e.currentTarget.style.boxShadow = "0 0 20px rgba(184,255,0,0.2)"; e.currentTarget.style.transform = "translateY(-1px)"; } }}
+              style={{ background: "#E8A33C", color: "#15130E", fontWeight: 700, border: "1px solid #E8A33C" }}
+              onMouseEnter={e => { if (!isRunning) { e.currentTarget.style.boxShadow = "0 0 20px rgba(232,163,60,0.2)"; e.currentTarget.style.transform = "translateY(-1px)"; } }}
               onMouseLeave={e => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.transform = ""; }}
             >
               {isRunning ? (
                 <span className="flex items-center gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: "#0a0a0a" }} />
+                  <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: "#15130E" }} />
                   running
                 </span>
               ) : "▶ run"}
@@ -175,7 +175,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
           <div
             ref={lineNumbersRef}
             className="font-mono text-right select-none overflow-hidden flex-shrink-0 py-5 px-4"
-            style={{ fontSize: "0.75rem", lineHeight: "1.6rem", color: "#e8e8e8", borderRight: "1px solid #1a1a1a", width: "3rem" }}
+            style={{ fontSize: "0.75rem", lineHeight: "1.6rem", color: "#ECE7DC", borderRight: "1px solid #262219", width: "3rem" }}
           >
             {lines.map((_, i) => <div key={i}>{i + 1}</div>)}
           </div>
@@ -187,7 +187,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
             onScroll={handleScroll}
             aria-label={`Code editor for ${filename}`}
             className="flex-1 bg-transparent font-mono py-5 pl-4 pr-5 resize-none outline-none overflow-auto"
-            style={{ fontSize: "0.8125rem", lineHeight: "1.6rem", color: "#c8c8c8", caretColor: "#b8ff00" }}
+            style={{ fontSize: "0.8125rem", lineHeight: "1.6rem", color: "#c8c8c8", caretColor: "#E8A33C" }}
             spellCheck={false}
             autoComplete="off"
             autoCorrect="off"
@@ -206,10 +206,10 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
 
         {/* Output panel */}
         {output !== undefined && output !== null && (
-          <div role="status" aria-live="polite" style={{ borderTop: "1px solid #1a1a1a" }}>
-            <div className="flex items-center gap-3 px-5 py-2.5" style={{ background: "#0a0a0a", borderBottom: "1px solid #1a1a1a" }}>
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#b8ff00" }} />
-              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#e8e8e8" }}>output</span>
+          <div role="status" aria-live="polite" style={{ borderTop: "1px solid #262219" }}>
+            <div className="flex items-center gap-3 px-5 py-2.5" style={{ background: "#15130E", borderBottom: "1px solid #262219" }}>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#E8A33C" }} />
+              <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>output</span>
             </div>
             <div
               className="font-mono py-5 px-5 overflow-auto"
@@ -218,7 +218,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
               {output.split("\n").map((line, i) => (
                 <div
                   key={i}
-                  style={{ color: line.startsWith("Error") || line.startsWith("[error]") ? "#ff6b6b" : "#b8ff00" }}
+                  style={{ color: line.startsWith("Error") || line.startsWith("[error]") ? "#FF6B5C" : "#E8A33C" }}
                 >
                   {line || "\u00a0"}
                 </div>

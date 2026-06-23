@@ -39,8 +39,8 @@ export default function HeroScene() {
             className="absolute inset-0"
             style={{
               backgroundImage: `
-                linear-gradient(rgba(184,255,0,0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(184,255,0,0.05) 1px, transparent 1px)
+                linear-gradient(rgba(232,163,60,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(232,163,60,0.05) 1px, transparent 1px)
               `,
               backgroundSize: "80px 80px",
             }}
@@ -54,7 +54,7 @@ export default function HeroScene() {
         >
           <div
             className="w-96 h-96 rounded-full"
-            style={{ border: "1px solid #b8ff00" }}
+            style={{ border: "1px solid #E8A33C" }}
           />
         </motion.div>
 
@@ -66,7 +66,7 @@ export default function HeroScene() {
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 100% 70% at 50% 60%, rgba(184,255,0,0.09) 0%, transparent 65%)",
+              background: "radial-gradient(ellipse 100% 70% at 50% 60%, rgba(232,163,60,0.09) 0%, transparent 65%)",
             }}
           />
         </motion.div>
@@ -80,7 +80,7 @@ export default function HeroScene() {
               style={{
                 width: (i % 3 === 0 ? 3 : i % 3 === 1 ? 2 : 1) + "px",
                 height: (i % 3 === 0 ? 3 : i % 3 === 1 ? 2 : 1) + "px",
-                background: i % 4 === 0 ? "#00d4ff" : "#b8ff00",
+                background: i % 4 === 0 ? "#00d4ff" : "#E8A33C",
                 left: (7 * i + 5) % 100 + "%",
                 top: (11 * i + 10) % 100 + "%",
                 opacity: 0.25,
@@ -104,7 +104,7 @@ export default function HeroScene() {
               className="absolute left-0 right-0 h-px"
               style={{
                 top: `${pct}%`,
-                background: `linear-gradient(90deg, transparent, rgba(184,255,0,0.06), transparent)`,
+                background: `linear-gradient(90deg, transparent, rgba(232,163,60,0.06), transparent)`,
               }}
               animate={{ opacity: [0.3, 0.8, 0.3] }}
               transition={{ duration: 3 + i * 0.7, repeat: Infinity, delay: i * 0.5 }}
@@ -122,7 +122,7 @@ export default function HeroScene() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             className="font-mono text-xs tracking-widest uppercase mb-8"
-            style={{ color: "#b8ff00" }}
+            style={{ color: "#E8A33C" }}
           >
             § CodeFlow — The Learning Platform
           </motion.div>
@@ -135,11 +135,11 @@ export default function HeroScene() {
             style={{
               fontSize: "clamp(3.5rem, 9vw, 8rem)",
               letterSpacing: "-0.03em",
-              color: "#e8e8e8",
+              color: "#ECE7DC",
             }}
           >
             Master Coding<br />
-            <span style={{ WebkitTextStroke: "2px #b8ff00", color: "transparent" }}>
+            <span style={{ WebkitTextStroke: "2px #E8A33C", color: "transparent" }}>
               and AI
             </span>{" "}
             in One Place.
@@ -150,7 +150,7 @@ export default function HeroScene() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.65, duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="font-display text-lg md:text-xl mb-12 mx-auto"
-            style={{ color: "#c4c4c4", maxWidth: "50ch", fontWeight: 400, lineHeight: 1.7 }}
+            style={{ color: "#BBB3A4", maxWidth: "50ch", fontWeight: 400, lineHeight: 1.7 }}
           >
             Not courses. Not theory dumps. A hands-on progression from first principles to deployed AI — with code at every step.
           </motion.p>
@@ -164,10 +164,10 @@ export default function HeroScene() {
             <Link to={createPageUrl("Projects")}>
               <button
                 className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
-                style={{ background: "#b8ff00", color: "#0a0a0a", fontWeight: 700 }}
+                style={{ background: "#E8A33C", color: "#15130E", fontWeight: 700 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = "translateY(-3px)";
-                  e.currentTarget.style.boxShadow = "0 16px 48px rgba(184,255,0,0.35)";
+                  e.currentTarget.style.boxShadow = "0 16px 48px rgba(232,163,60,0.35)";
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = "";
@@ -180,14 +180,14 @@ export default function HeroScene() {
             <Link to={createPageUrl("AITrack")}>
               <button
                 className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
-                style={{ color: "#c4c4c4", border: "1px solid #1e1e1e" }}
+                style={{ color: "#BBB3A4", border: "1px solid #262219" }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.color = "#e8e8e8";
-                  e.currentTarget.style.borderColor = "#333";
+                  e.currentTarget.style.color = "#ECE7DC";
+                  e.currentTarget.style.borderColor = "#3A352D";
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.color = "#c4c4c4";
-                  e.currentTarget.style.borderColor = "#1e1e1e";
+                  e.currentTarget.style.color = "#BBB3A4";
+                  e.currentTarget.style.borderColor = "#262219";
                 }}
               >
                 View AI Track
@@ -202,12 +202,12 @@ export default function HeroScene() {
             transition={{ delay: 2, duration: 1 }}
             className="mt-20 flex flex-col items-center gap-2"
           >
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#e8e8e8" }}>SCROLL</span>
+            <span className="font-mono text-xs tracking-widest" style={{ color: "#ECE7DC" }}>SCROLL</span>
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
               className="w-px h-10"
-              style={{ background: "linear-gradient(to bottom, #b8ff00, transparent)" }}
+              style={{ background: "linear-gradient(to bottom, #E8A33C, transparent)" }}
             />
           </motion.div>
         </motion.div>

@@ -8,7 +8,7 @@ const PATHS = [
     desc: "HTML, CSS, and vanilla JavaScript. Build a portfolio site and a working calculator from scratch.",
     projects: ["Portfolio Site", "JavaScript Calculator", "Weather App"],
     time: "~4 weeks",
-    accent: "#b8ff00",
+    accent: "#E8A33C",
   },
   {
     level: "01",
@@ -17,7 +17,7 @@ const PATHS = [
     desc: "React fundamentals, hooks, and state management. Build a full Todo app with persistent storage.",
     projects: ["React Todo App", "CSS Animation Lab"],
     time: "~3 weeks",
-    accent: "#b8ff00",
+    accent: "#E8A33C",
   },
   {
     level: "02",
@@ -26,7 +26,7 @@ const PATHS = [
     desc: "Async JavaScript, APIs, and real-world patterns. Connect to live data sources and deploy.",
     projects: ["Quiz Platform", "API-powered app"],
     time: "~4 weeks",
-    accent: "#b8ff00",
+    accent: "#E8A33C",
   },
 ];
 
@@ -34,45 +34,45 @@ export default function StatsSection() {
   const [active, setActive] = useState(0);
 
   return (
-    <section className="relative py-32" style={{ background: "#080808", borderTop: "1px solid #1a1a1a" }}>
+    <section className="relative py-32" style={{ background: "#080808", borderTop: "1px solid #262219" }}>
       <div className="max-w-7xl mx-auto px-8 lg:px-16">
 
         <div className="flex items-start gap-8 mb-20">
           <div
             className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
-            style={{ color: "#e8e8e8", width: "4rem" }}
+            style={{ color: "#ECE7DC", width: "4rem" }}
           >
             § 02
           </div>
           <div>
             <h2
               className="font-display font-black leading-none mb-4"
-              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
             >
               Learning paths
             </h2>
-            <p className="font-display text-base" style={{ color: "#c4c4c4" }}>
+            <p className="font-display text-base" style={{ color: "#BBB3A4" }}>
               Pick your level. Every path ends with something deployed.
             </p>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_1.4fr] gap-0" style={{ border: "1px solid #1a1a1a" }}>
-          <div style={{ borderRight: "1px solid #1a1a1a" }}>
+        <div className="grid lg:grid-cols-[1fr_1.4fr] gap-0" style={{ border: "1px solid #262219" }}>
+          <div style={{ borderRight: "1px solid #262219" }}>
             {PATHS.map((path, i) => (
               <button
                 key={path.level}
                 onClick={() => setActive(i)}
                 className="w-full text-left p-8 transition-all duration-200 relative group"
                 style={{
-                  background: active === i ? "#0d0d0d" : "transparent",
-                  borderBottom: i < PATHS.length - 1 ? "1px solid #1a1a1a" : "none",
+                  background: active === i ? "#131009" : "transparent",
+                  borderBottom: i < PATHS.length - 1 ? "1px solid #262219" : "none",
                 }}
               >
                 {active === i && (
                   <div
                     className="absolute left-0 top-0 bottom-0 w-px"
-                    style={{ background: "#b8ff00" }}
+                    style={{ background: "#E8A33C" }}
                   />
                 )}
 
@@ -80,7 +80,7 @@ export default function StatsSection() {
                   <span
                     className="font-mono font-bold text-4xl leading-none flex-shrink-0"
                     style={{
-                      color: active === i ? "#e8e8e8" : "#141414",
+                      color: active === i ? "#ECE7DC" : "#1F1C15",
                       letterSpacing: "-0.05em",
                     }}
                   >
@@ -89,13 +89,13 @@ export default function StatsSection() {
                   <div>
                     <div
                       className="font-mono text-xs tracking-widest uppercase mb-1"
-                      style={{ color: active === i ? "#b8ff00" : "#e8e8e8" }}
+                      style={{ color: active === i ? "#E8A33C" : "#ECE7DC" }}
                     >
                       {path.label}
                     </div>
                     <div
                       className="font-display font-bold text-lg leading-snug"
-                      style={{ color: active === i ? "#e8e8e8" : "#e8e8e8", letterSpacing: "-0.02em" }}
+                      style={{ color: active === i ? "#ECE7DC" : "#ECE7DC", letterSpacing: "-0.02em" }}
                     >
                       {path.title}
                     </div>
@@ -105,17 +105,17 @@ export default function StatsSection() {
             ))}
           </div>
 
-          <div className="p-10" style={{ background: "#0d0d0d" }}>
+          <div className="p-10" style={{ background: "#131009" }}>
             <div
               className="font-mono text-xs tracking-widest uppercase mb-6"
-              style={{ color: "#b8ff00" }}
+              style={{ color: "#E8A33C" }}
             >
               PATH {PATHS[active].level} — {PATHS[active].label}
             </div>
 
             <p
               className="font-display text-lg leading-relaxed mb-10"
-              style={{ color: "#d4d4d4", fontWeight: 400 }}
+              style={{ color: "#C9C1B2", fontWeight: 400 }}
             >
               {PATHS[active].desc}
             </p>
@@ -123,20 +123,20 @@ export default function StatsSection() {
             <div className="mb-8">
               <div
                 className="font-mono text-xs tracking-widest uppercase mb-4"
-                style={{ color: "#e8e8e8" }}
+                style={{ color: "#ECE7DC" }}
               >
                 INCLUDED PROJECTS
               </div>
               <div className="space-y-2">
                 {PATHS[active].projects.map((project, i) => (
                   <div key={project} className="flex items-center gap-4">
-                    <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>
+                    <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <div className="flex-1 h-px" style={{ background: "#1e1e1e" }} />
+                    <div className="flex-1 h-px" style={{ background: "#262219" }} />
                     <span
                       className="font-display text-sm font-medium"
-                      style={{ color: "#e8e8e8" }}
+                      style={{ color: "#ECE7DC" }}
                     >
                       {project}
                     </span>
@@ -147,10 +147,10 @@ export default function StatsSection() {
 
             <div
               className="inline-flex items-center gap-3 px-4 py-2"
-              style={{ border: "1px solid #1e1e1e", background: "#0a0a0a" }}
+              style={{ border: "1px solid #262219", background: "#15130E" }}
             >
-              <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>EST. DURATION</span>
-              <span className="font-mono text-sm font-bold" style={{ color: "#b8ff00" }}>
+              <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>EST. DURATION</span>
+              <span className="font-mono text-sm font-bold" style={{ color: "#E8A33C" }}>
                 {PATHS[active].time}
               </span>
             </div>

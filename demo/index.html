@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CodeFlow — UI direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Display: Bricolage Grotesque (expressive, art-directed). Body: Hanken Grotesk (humanist).
+     Mono: Spline Sans Mono — ONLY inside code. None are the usual "robotic AI" defaults. -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Warm near-black, tinted toward the amber accent hue (~75) — not cold #0a0a0a. */
+    --bg:        oklch(0.165 0.008 75);
+    --bg-raised: oklch(0.205 0.010 75);
+    --bg-inset:  oklch(0.235 0.012 75);
+    --terminal:  oklch(0.145 0.010 70);
+    --line:      oklch(0.300 0.010 75);
+    --line-soft: oklch(0.250 0.008 75);
+    --ink:       oklch(0.940 0.010 80);
+    --ink-2:     oklch(0.760 0.012 78);
+    --ink-3:     oklch(0.560 0.012 76);
+    /* One confident accent: muted amber. Secondary clay used sparingly. */
+    --amber:     oklch(0.820 0.130 78);
+    --amber-dim: oklch(0.700 0.110 70);
+    --clay:      oklch(0.640 0.120 42);
+    --amber-wash:oklch(0.820 0.130 78 / 0.10);
+
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+    --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px; --space-24:96px;
+
+    --display:'Bricolage Grotesque', serif;
+    --body:'Hanken Grotesk', system-ui, sans-serif;
+    --mono:'Spline Sans Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--body);
+    font-weight:400; line-height:1.6; -webkit-font-smoothing:antialiased;
+    font-size:16px;
+  }
+  ::selection{background:var(--amber); color:var(--bg)}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 var(--space-8)}
+
+  /* ── Index number motif (recurring editorial detail) ─────────────── */
+  .idx{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.18em; color:var(--amber-dim);
+       text-transform:uppercase; font-weight:500}
+
+  /* ── Nav ─────────────────────────────────────────────────────────── */
+  nav{position:sticky; top:0; z-index:50; background:color-mix(in oklch, var(--bg) 86%, transparent);
+      backdrop-filter:blur(8px); border-bottom:1px solid var(--line-soft)}
+  .nav-in{display:flex; align-items:center; justify-content:space-between; height:64px}
+  .mark{display:flex; align-items:baseline; gap:10px; font-family:var(--display);
+        font-weight:800; font-size:1.18rem; letter-spacing:-0.02em}
+  .mark .dot{width:9px; height:9px; background:var(--amber); border-radius:1px; transform:translateY(-1px)}
+  .nav-links{display:flex; align-items:center; gap:var(--space-8)}
+  .nav-links a{color:var(--ink-2); text-decoration:none; font-size:0.92rem; font-weight:500;
+               transition:color .15s}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-links a.cta{color:var(--bg); background:var(--amber); padding:8px 18px; border-radius:2px;
+                   font-weight:600}
+
+  /* ── Hero ────────────────────────────────────────────────────────── */
+  .hero{padding:var(--space-24) 0 var(--space-16); border-bottom:1px solid var(--line-soft);
+        position:relative; overflow:hidden}
+  .hero-grid{display:grid; grid-template-columns:1fr; gap:var(--space-12)}
+  @media(min-width:880px){ .hero-grid{grid-template-columns:1.35fr 1fr; align-items:end} }
+  .eyebrow{display:flex; align-items:center; gap:var(--space-3); margin-bottom:var(--space-6)}
+  .eyebrow .rule{height:1px; width:46px; background:var(--amber)}
+  h1{font-family:var(--display); font-weight:760; letter-spacing:-0.035em; line-height:0.98;
+     font-size:clamp(3rem, 8vw, 6.2rem); color:var(--ink)}
+  h1 em{font-style:italic; font-weight:500; color:var(--amber)}
+  .lede{margin-top:var(--space-8); max-width:48ch; color:var(--ink-2); font-size:1.12rem; line-height:1.62}
+  .hero-actions{margin-top:var(--space-12); display:flex; gap:var(--space-4); align-items:center; flex-wrap:wrap}
+
+  .btn{font-family:var(--body); font-weight:600; font-size:0.95rem; border-radius:2px; cursor:pointer;
+       padding:13px 26px; border:1px solid transparent; transition:transform .15s, background .15s, border-color .15s}
+  .btn-primary{background:var(--amber); color:var(--bg)}
+  .btn-primary:hover{transform:translateY(-2px)}
+  .btn-ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+  .btn-ghost:hover{border-color:var(--ink-3)}
+  .btn-text{background:none; border:none; color:var(--ink-2); font-weight:600; cursor:pointer;
+            text-decoration:underline; text-underline-offset:4px; text-decoration-color:var(--line)}
+  .btn-text:hover{color:var(--amber); text-decoration-color:var(--amber)}
+
+  /* terminal card in hero */
+  .term{background:var(--terminal); border:1px solid var(--line); border-radius:4px; overflow:hidden;
+        font-family:var(--mono); font-size:0.84rem; box-shadow:0 24px 60px -30px oklch(0 0 0 / 0.7)}
+  .term-bar{display:flex; align-items:center; gap:7px; padding:11px 14px; border-bottom:1px solid var(--line-soft)}
+  .term-bar i{width:9px; height:9px; border-radius:50%; background:var(--line); display:inline-block}
+  .term-bar i:first-child{background:var(--clay)}
+  .term-bar span{margin-left:8px; color:var(--ink-3); font-size:0.74rem; letter-spacing:0.04em}
+  .term-body{padding:18px 18px 20px; line-height:1.85}
+  .term-body .c{color:var(--ink-3)}
+  .term-body .k{color:var(--amber)}
+  .term-body .s{color:oklch(0.78 0.07 150)}
+  .term-body .o{color:var(--ink); display:block; margin-top:6px; padding-top:8px; border-top:1px dashed var(--line-soft)}
+
+  /* ── Section heading ─────────────────────────────────────────────── */
+  section{padding:var(--space-24) 0; border-bottom:1px solid var(--line-soft)}
+  .sec-head{display:flex; align-items:baseline; gap:var(--space-4); margin-bottom:var(--space-12)}
+  .sec-head h2{font-family:var(--display); font-weight:720; letter-spacing:-0.025em; font-size:clamp(1.9rem,3.5vw,2.8rem)}
+
+  /* ── Lesson surface ──────────────────────────────────────────────── */
+  .lesson{display:grid; grid-template-columns:1fr; gap:var(--space-8)}
+  @media(min-width:880px){ .lesson{grid-template-columns:64px 1fr} }
+  .lesson .gutter{display:none}
+  @media(min-width:880px){ .lesson .gutter{display:block; font-family:var(--display); font-weight:800;
+        font-size:2.6rem; color:var(--line); line-height:1; letter-spacing:-0.04em} }
+  .lesson h3{font-family:var(--display); font-weight:700; font-size:1.7rem; letter-spacing:-0.02em; margin-bottom:var(--space-4)}
+  .lesson p{max-width:68ch; color:var(--ink-2); margin-bottom:var(--space-6)}
+  .lesson p b{color:var(--ink); font-weight:600}
+  .lesson code{font-family:var(--mono); font-size:0.86em; background:var(--bg-inset); color:var(--amber);
+               padding:1px 6px; border-radius:3px; border:1px solid var(--line-soft)}
+
+  /* check interaction — NOT a colored side-stripe, NOT the orange zybooks bar */
+  .check{margin:var(--space-8) 0; background:var(--bg-raised); border:1px solid var(--line); border-radius:4px; padding:var(--space-8)}
+  .check .tag{display:inline-flex; align-items:center; gap:8px; margin-bottom:var(--space-6)}
+  .check .tag .num{font-family:var(--mono); font-size:0.7rem; color:var(--bg); background:var(--amber);
+                   padding:2px 7px; border-radius:2px; font-weight:500; letter-spacing:0.04em}
+  .check .tag .lbl{font-family:var(--display); font-weight:700; font-size:0.95rem; letter-spacing:0.01em}
+  .check .q{font-weight:500; margin-bottom:var(--space-4); color:var(--ink)}
+  .opts{display:grid; gap:var(--space-3)}
+  .opt{display:flex; align-items:center; gap:var(--space-4); padding:13px 16px; background:var(--bg);
+       border:1px solid var(--line-soft); border-radius:3px; cursor:pointer; transition:border-color .15s, background .15s}
+  .opt:hover{border-color:var(--ink-3)}
+  .opt.correct{border-color:var(--amber); background:var(--amber-wash)}
+  .opt .key{font-family:var(--mono); font-size:0.78rem; color:var(--ink-3); width:1.2em}
+  .opt.correct .key{color:var(--amber)}
+
+  /* ── Track index (editorial table, NOT identical card grid) ──────── */
+  .track{display:flex; flex-direction:column}
+  .track .row{display:grid; grid-template-columns:auto 1fr auto; gap:var(--space-8); align-items:center;
+              padding:var(--space-8) 0; border-top:1px solid var(--line-soft); transition:padding .2s}
+  .track .row:hover{padding-left:var(--space-3)}
+  .track .row:last-child{border-bottom:1px solid var(--line-soft)}
+  .track .n{font-family:var(--mono); font-size:0.92rem; color:var(--ink-3); width:2.4em}
+  .track .row:hover .n{color:var(--amber)}
+  .track .t{font-family:var(--display); font-weight:700; font-size:1.22rem; letter-spacing:-0.01em}
+  .track .d{color:var(--ink-3); font-size:0.92rem; margin-top:3px; max-width:60ch}
+  .track .badge{font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em;
+                color:var(--ink-2); border:1px solid var(--line); padding:4px 10px; border-radius:2px; white-space:nowrap}
+  .track .badge.java{color:var(--clay); border-color:color-mix(in oklch, var(--clay) 40%, var(--line))}
+
+  /* ── Download cards (for the marketing site) ─────────────────────── */
+  .dl{display:grid; grid-template-columns:1fr; gap:var(--space-6)}
+  @media(min-width:720px){ .dl{grid-template-columns:1fr 1fr} }
+  .dl-card{background:var(--bg-raised); border:1px solid var(--line); border-radius:5px; padding:var(--space-12)}
+  .dl-card .os{font-family:var(--display); font-weight:760; font-size:1.5rem; letter-spacing:-0.02em; margin-bottom:var(--space-2)}
+  .dl-card .meta{color:var(--ink-3); font-size:0.86rem; font-family:var(--mono); margin-bottom:var(--space-8)}
+  .dl-card .btn{width:100%; text-align:center}
+
+  footer{padding:var(--space-16) 0 var(--space-24)}
+  .foot{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:var(--space-8)}
+  .foot p{color:var(--ink-3); font-size:0.86rem; max-width:42ch}
+  .foot a{color:var(--ink-2); text-decoration:none; font-size:0.9rem; display:block; margin-bottom:8px}
+  .foot a:hover{color:var(--amber)}
+
+  /* ── Load motion: staggered fade-up, reduced-motion safe ─────────── */
+  @media(prefers-reduced-motion:no-preference){
+    .rise{opacity:0; transform:translateY(14px); animation:rise .9s cubic-bezier(.16,1,.3,1) forwards}
+    .d1{animation-delay:.05s}.d2{animation-delay:.13s}.d3{animation-delay:.21s}.d4{animation-delay:.29s}.d5{animation-delay:.37s}
+    @keyframes rise{to{opacity:1; transform:none}}
+  }
+  .note{font-family:var(--mono); font-size:0.72rem; color:var(--ink-3); letter-spacing:0.04em;
+        text-align:center; padding:var(--space-8); border-top:1px solid var(--line-soft)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <div class="mark"><span class="dot"></span>CodeFlow</div>
+    <div class="nav-links">
+      <a href="#">Tracks</a>
+      <a href="#">AP CS</a>
+      <a href="#">Compete</a>
+      <a href="#" class="cta">Open app →</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow rise d1"><span class="rule"></span><span class="idx">No. 01 — Learn by building</span></div>
+      <h1 class="rise d2">Learn the<br>machine, not<br>the <em>syntax.</em></h1>
+      <p class="lede rise d3">A hands-on path from your first variable to shipping real software — AI engineering, AP Computer Science Principles, and AP CS A, with code you actually run at every step.</p>
+      <div class="hero-actions rise d4">
+        <button class="btn btn-primary">Start a track</button>
+        <button class="btn btn-ghost">Download for desktop</button>
+        <button class="btn-text">See the curriculum</button>
+      </div>
+    </div>
+    <div class="term rise d5">
+      <div class="term-bar"><i></i><i></i><i></i><span>pointers.py — lesson 03</span></div>
+      <div class="term-body">
+        <span class="c"># a pointer holds an address, not a value</span><br>
+        x <span class="k">=</span> <span class="s">42</span><br>
+        p <span class="k">=</span> <span class="k">id</span>(x)<br>
+        <span class="k">print</span>(<span class="s">"x lives at"</span>, p)
+        <span class="o">x lives at 140422…</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">02 — The reading surface</span></div>
+    <div class="lesson">
+      <div class="gutter">03</div>
+      <div>
+        <h3>Pointers</h3>
+        <p>Every variable in your program lives somewhere in memory. A <b>pointer</b> is simply a value that holds <em>where</em> something is — its address — rather than the thing itself. Once you can pass an address around, you can share and mutate data without copying it.</p>
+        <p>Reading a pointer is called <b>dereferencing</b>: follow the address to the value it points at. In Python you rarely do this by hand, but the model underneath every list, object, and function call is exactly this — names bound to locations.</p>
+
+        <div class="check">
+          <div class="tag"><span class="num">03.1</span><span class="lbl">Check</span></div>
+          <div class="q">What does a pointer actually store?</div>
+          <div class="opts">
+            <div class="opt"><span class="key">A</span><span>A copy of the value</span></div>
+            <div class="opt correct"><span class="key">B</span><span>The memory address of the value</span></div>
+            <div class="opt"><span class="key">C</span><span>The variable's name as text</span></div>
+          </div>
+        </div>
+
+        <p>Next you'll <b>trace</b> how two names can point at the same list — and why changing one appears to change the other.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="idx">03</span>
+      <h2>AP Computer Science</h2>
+    </div>
+    <div class="track">
+      <div class="row">
+        <div class="n">01</div>
+        <div><div class="t">Primitive Types</div><div class="d">int, double, boolean, casting, and the arithmetic that trips everyone up.</div></div>
+        <div class="badge java">Java</div>
+      </div>
+      <div class="row">
+        <div class="n">04</div>
+        <div><div class="t">Iteration</div><div class="d">while and for loops, nested traversals, and reasoning about what a loop leaves behind.</div></div>
+        <div class="badge java">Java</div>
+      </div>
+      <div class="row">
+        <div class="n">10</div>
+        <div><div class="t">Recursion</div><div class="d">Base cases, the call stack, and recursive search and sort — the unit that makes it click.</div></div>
+        <div class="badge java">Java</div>
+      </div>
+      <div class="row">
+        <div class="n">B2</div>
+        <div><div class="t">Data &amp; Binary</div><div class="d">CSP Big Idea 2 — how numbers, text, and images become bits, and what compression costs.</div></div>
+        <div class="badge">Python</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="idx">04</span>
+      <h2>Get the desktop app</h2>
+    </div>
+    <div class="dl">
+      <div class="dl-card">
+        <div class="os">macOS</div>
+        <div class="meta">Universal · Apple Silicon + Intel · .dmg</div>
+        <button class="btn btn-primary">Download for macOS</button>
+      </div>
+      <div class="dl-card">
+        <div class="os">Windows</div>
+        <div class="meta">64-bit · Windows 10/11 · .msi</div>
+        <button class="btn btn-ghost">Download for Windows</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <div class="mark" style="margin-bottom:12px"><span class="dot"></span>CodeFlow</div>
+      <p>Built for people who learn by doing. Open-source curriculum, real code execution, no fluff.</p>
+    </div>
+    <div>
+      <div class="idx" style="margin-bottom:14px">Product</div>
+      <a href="#">AI track</a><a href="#">AP CS</a><a href="#">Compete</a><a href="#">Download</a>
+    </div>
+    <div>
+      <div class="idx" style="margin-bottom:14px">About</div>
+      <a href="#">Our story</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<div class="note">DEMO — refined dark direction · Bricolage Grotesque / Hanken Grotesk · warm amber accent · no lime, no glow, no mono-as-identity</div>
+
+</body>
+</html>

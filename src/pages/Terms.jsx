@@ -2,16 +2,16 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { createPageUrl } from '../utils'
 
-const MONO = "'Space Mono', monospace"
-const SERIF = "Georgia, 'Times New Roman', serif"
+const MONO = "'Spline Sans Mono', ui-monospace, monospace"
+const SERIF = "'Bricolage Grotesque', system-ui, sans-serif"
 
 function Section({ title, children }) {
   return (
     <section className="mb-10">
-      <h2 style={{ fontFamily: SERIF, fontSize: '1.35rem', fontWeight: 700, color: '#f0f0f0', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
+      <h2 style={{ fontFamily: SERIF, fontSize: '1.35rem', fontWeight: 700, color: '#F2EDE2', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
         {title}
       </h2>
-      <div className="font-display text-sm space-y-3" style={{ color: '#c4c4c4', lineHeight: 1.7 }}>
+      <div className="font-display text-sm space-y-3" style={{ color: '#BBB3A4', lineHeight: 1.7 }}>
         {children}
       </div>
     </section>
@@ -20,15 +20,15 @@ function Section({ title, children }) {
 
 export default function Terms() {
   return (
-    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-20" style={{ background: '#0a0a0a' }}>
+    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-20" style={{ background: '#15130E' }}>
       <div className="max-w-2xl mx-auto">
-        <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#b8ff00', fontFamily: MONO }}>
+        <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: '#E8A33C', fontFamily: MONO }}>
           § TERMS
         </div>
-        <h1 style={{ fontFamily: SERIF, fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#f0f0f0', margin: '0 0 8px', lineHeight: 1.08 }}>
+        <h1 style={{ fontFamily: SERIF, fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F2EDE2', margin: '0 0 8px', lineHeight: 1.08 }}>
           Terms of Service
         </h1>
-        <p className="font-mono text-xs mb-12" style={{ color: '#888', fontFamily: MONO }}>
+        <p className="font-mono text-xs mb-12" style={{ color: '#8F8779', fontFamily: MONO }}>
           Last updated: June 2026
         </p>
 
@@ -71,8 +71,8 @@ export default function Terms() {
         <Section title="Changes & contact">
           <p>
             We may update these terms; continued use means you accept the changes. Questions?{' '}
-            <a href="mailto:hello@codeflow.app" style={{ color: '#b8ff00' }}>hello@codeflow.app</a>.
-            See also our <Link to={createPageUrl('Privacy')} style={{ color: '#b8ff00' }}>Privacy Policy</Link>.
+            <a href="mailto:hello@codeflow.app" style={{ color: '#E8A33C' }}>hello@codeflow.app</a>.
+            See also our <Link to={createPageUrl('Privacy')} style={{ color: '#E8A33C' }}>Privacy Policy</Link>.
           </p>
         </Section>
       </div>

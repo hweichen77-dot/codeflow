@@ -9,9 +9,9 @@ const STATS = [
 ];
 
 const BARS = [
-  { label: "HTML & CSS", width: 95, color: "#b8ff00" },
-  { label: "JavaScript", width: 88, color: "#b8ff00" },
-  { label: "React", width: 80, color: "#b8ff00" },
+  { label: "HTML & CSS", width: 95, color: "#E8A33C" },
+  { label: "JavaScript", width: 88, color: "#E8A33C" },
+  { label: "React", width: 80, color: "#E8A33C" },
   { label: "AI Fundamentals", width: 75, color: "#00d4ff" },
   { label: "Prompt Engineering", width: 70, color: "#00d4ff" },
   { label: "RAG & Embeddings", width: 62, color: "#00d4ff" },
@@ -25,10 +25,10 @@ function SkillBar({ bar, index, scrollYProgress }) {
   return (
     <motion.div style={{ opacity }}>
       <div className="flex items-center justify-between mb-2">
-        <span className="font-mono text-xs" style={{ color: "#c4c4c4" }}>{bar.label}</span>
+        <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{bar.label}</span>
         <span className="font-mono text-xs" style={{ color: bar.color }}>{bar.width}%</span>
       </div>
-      <div className="h-0.5 w-full" style={{ background: "#111" }}>
+      <div className="h-0.5 w-full" style={{ background: "#1C1A14" }}>
         <motion.div
           className="h-full"
           style={{
@@ -51,21 +51,21 @@ function StatCard({ stat, index, scrollYProgress }) {
       style={{
         opacity,
         y,
-        borderRight: index % 2 === 0 ? "1px solid #1a1a1a" : "none",
-        borderBottom: index < 2 ? "1px solid #1a1a1a" : "none",
+        borderRight: index % 2 === 0 ? "1px solid #262219" : "none",
+        borderBottom: index < 2 ? "1px solid #262219" : "none",
       }}
       className="p-6 md:p-8"
     >
       <div
         className="font-display font-black mb-1"
-        style={{ fontSize: "3rem", letterSpacing: "-0.04em", color: "#b8ff00", lineHeight: 1 }}
+        style={{ fontSize: "3rem", letterSpacing: "-0.04em", color: "#E8A33C", lineHeight: 1 }}
       >
         {stat.value}
       </div>
-      <div className="font-display font-bold text-sm mb-1" style={{ color: "#ccc" }}>
+      <div className="font-display font-bold text-sm mb-1" style={{ color: "#C2BAAA" }}>
         {stat.label}
       </div>
-      <div className="font-display text-xs" style={{ color: "#e8e8e8", fontWeight: 400 }}>
+      <div className="font-display text-xs" style={{ color: "#ECE7DC", fontWeight: 400 }}>
         {stat.description}
       </div>
     </motion.div>
@@ -102,7 +102,7 @@ export default function ProgressScene() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `linear-gradient(rgba(184,255,0,0.025) 1px, transparent 1px)`,
+              backgroundImage: `linear-gradient(rgba(232,163,60,0.025) 1px, transparent 1px)`,
               backgroundSize: "100% 80px",
             }}
           />
@@ -113,7 +113,7 @@ export default function ProgressScene() {
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 110% 70% at 50% 115%, rgba(184,255,0,0.07) 0%, transparent 65%)",
+              background: "radial-gradient(ellipse 110% 70% at 50% 115%, rgba(232,163,60,0.07) 0%, transparent 65%)",
             }}
           />
         </motion.div>
@@ -125,7 +125,7 @@ export default function ProgressScene() {
         >
           <div
             className="w-96 h-96 rounded-full"
-            style={{ border: "1px solid #b8ff00" }}
+            style={{ border: "1px solid #E8A33C" }}
           />
         </motion.div>
 
@@ -138,7 +138,7 @@ export default function ProgressScene() {
               style={{
                 width: "2px",
                 height: "2px",
-                background: i % 2 === 0 ? "#b8ff00" : "#00d4ff",
+                background: i % 2 === 0 ? "#E8A33C" : "#00d4ff",
                 left: (13 * i + 8) % 100 + "%",
                 top: (17 * i + 5) % 100 + "%",
                 borderRadius: "50%",
@@ -150,7 +150,7 @@ export default function ProgressScene() {
         </div>
 
         <div className="w-full max-w-5xl mx-auto relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-12 text-center" style={{ color: "#e8e8e8" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-12 text-center" style={{ color: "#ECE7DC" }}>
             § YOUR GROWTH
           </div>
 
@@ -159,10 +159,10 @@ export default function ProgressScene() {
               <motion.div style={{ opacity: headingOpacity, y: headingY }}>
                 <h2
                   className="font-display font-black mb-10"
-                  style={{ fontSize: "clamp(1.8rem, 3vw, 2.8rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+                  style={{ fontSize: "clamp(1.8rem, 3vw, 2.8rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
                 >
                   Skills you'll gain.<br />
-                  <span style={{ WebkitTextStroke: "1px #b8ff00", color: "transparent" }}>Measurably.</span>
+                  <span style={{ WebkitTextStroke: "1px #E8A33C", color: "transparent" }}>Measurably.</span>
                 </h2>
               </motion.div>
               <div className="space-y-5">
@@ -172,7 +172,7 @@ export default function ProgressScene() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-0" style={{ border: "1px solid #1a1a1a" }}>
+            <div className="grid grid-cols-2 gap-0" style={{ border: "1px solid #262219" }}>
               {STATS.map((stat, i) => (
                 <StatCard key={stat.label} stat={stat} index={i} scrollYProgress={scrollYProgress} />
               ))}

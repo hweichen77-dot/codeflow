@@ -7,7 +7,7 @@ const FEATURES = [
     title: "Structured Curriculum",
     body: "Every topic is sequenced for maximum retention. No random YouTube rabbit holes. Just a clear path from zero to deployed.",
     tag: "LEARNING",
-    accent: "#b8ff00",
+    accent: "#E8A33C",
   },
   {
     num: "02",
@@ -21,7 +21,7 @@ const FEATURES = [
     title: "AI Tutor Built In",
     body: "Stuck? An AI tutor is watching your code and ready to guide — not give away the answer, but push you toward it.",
     tag: "SUPPORT",
-    accent: "#b8ff00",
+    accent: "#E8A33C",
   },
   {
     num: "04",
@@ -66,8 +66,8 @@ function FeatureCard({ feature, index, scrollYProgress }) {
       <div
         className="max-w-2xl mx-auto p-10 md:p-14"
         style={{
-          background: "#0d0d0d",
-          border: "1px solid #1e1e1e",
+          background: "#131009",
+          border: "1px solid #262219",
           boxShadow: `0 0 80px rgba(0,0,0,0.7), 0 0 2px ${feature.accent}18`,
         }}
       >
@@ -75,7 +75,7 @@ function FeatureCard({ feature, index, scrollYProgress }) {
           <div>
             <div
               className="font-mono font-bold mb-4"
-              style={{ fontSize: "3.5rem", color: "#e8e8e8", letterSpacing: "-0.05em", lineHeight: 1 }}
+              style={{ fontSize: "3.5rem", color: "#ECE7DC", letterSpacing: "-0.05em", lineHeight: 1 }}
             >
               {feature.num}
             </div>
@@ -96,13 +96,13 @@ function FeatureCard({ feature, index, scrollYProgress }) {
 
         <h3
           className="font-display font-black mb-5"
-          style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+          style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
         >
           {feature.title}
         </h3>
         <p
           className="font-display text-lg leading-relaxed"
-          style={{ color: "#c4c4c4", fontWeight: 400, maxWidth: "52ch" }}
+          style={{ color: "#BBB3A4", fontWeight: 400, maxWidth: "52ch" }}
         >
           {feature.body}
         </p>
@@ -115,12 +115,12 @@ function FeatureCard({ feature, index, scrollYProgress }) {
                 className="h-0.5 transition-all duration-500"
                 style={{
                   width: i <= index ? "28px" : "8px",
-                  background: i <= index ? feature.accent : "#1e1e1e",
+                  background: i <= index ? feature.accent : "#262219",
                 }}
               />
             ))}
           </div>
-          <span className="font-mono text-xs" style={{ color: "#e8e8e8" }}>
+          <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>
             {index + 1} / {FEATURES.length}
           </span>
         </div>
@@ -147,14 +147,14 @@ export default function FeaturesScene() {
     <div ref={ref} style={{ height: "700vh" }}>
       <div
         className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center px-6"
-        style={{ background: "#0a0a0a", paddingTop: "8vh" }}
+        style={{ background: "#15130E", paddingTop: "8vh" }}
       >
         {/* Parallax bg glow */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 70% 50% at 50% 55%, rgba(184,255,0,0.035) 0%, transparent 60%)",
+              background: "radial-gradient(ellipse 70% 50% at 50% 55%, rgba(232,163,60,0.035) 0%, transparent 60%)",
             }}
           />
         </motion.div>
@@ -165,7 +165,7 @@ export default function FeaturesScene() {
             background: "radial-gradient(circle at 0% 0%, rgba(0,212,255,0.04) 0%, transparent 60%)"
           }} />
           <div className="absolute bottom-0 right-0 w-64 h-64" style={{
-            background: "radial-gradient(circle at 100% 100%, rgba(184,255,0,0.04) 0%, transparent 60%)"
+            background: "radial-gradient(circle at 100% 100%, rgba(232,163,60,0.04) 0%, transparent 60%)"
           }} />
         </motion.div>
 
@@ -174,9 +174,9 @@ export default function FeaturesScene() {
           <motion.div
             style={{ x: stripeX }}
             className="absolute inset-y-0 w-px opacity-10"
-            style2={{ left: "50%", background: "linear-gradient(to bottom, transparent, #b8ff00 30%, #b8ff00 70%, transparent)" }}
+            style2={{ left: "50%", background: "linear-gradient(to bottom, transparent, #E8A33C 30%, #E8A33C 70%, transparent)" }}
           >
-            <div className="absolute inset-y-0 left-0 w-px" style={{ background: "linear-gradient(to bottom, transparent, #b8ff00 30%, #b8ff00 70%, transparent)" }} />
+            <div className="absolute inset-y-0 left-0 w-px" style={{ background: "linear-gradient(to bottom, transparent, #E8A33C 30%, #E8A33C 70%, transparent)" }} />
           </motion.div>
         </div>
 
@@ -185,14 +185,14 @@ export default function FeaturesScene() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `radial-gradient(circle, rgba(184,255,0,0.12) 1px, transparent 1px)`,
+              backgroundImage: `radial-gradient(circle, rgba(232,163,60,0.12) 1px, transparent 1px)`,
               backgroundSize: "60px 60px",
             }}
           />
         </motion.div>
 
         <motion.div style={{ opacity: sceneOpacity }} className="w-full relative z-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-6 text-center" style={{ color: "#e8e8e8" }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-6 text-center" style={{ color: "#ECE7DC" }}>
             § WHAT YOU GET
           </div>
           <div className="relative" style={{ minHeight: "460px" }}>
