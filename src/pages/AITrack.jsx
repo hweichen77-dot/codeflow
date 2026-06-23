@@ -100,7 +100,7 @@ export default function AITrack() {
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
-          <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4" }}>§ AI TRACK</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4" }}>§ AI TRACK</div>
           <h1
             style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 20px" }}
           >
@@ -117,7 +117,7 @@ export default function AITrack() {
 
         {/* Curriculum */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#BBB3A4" }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-8" style={{ color: "#BBB3A4" }}>
             CURRICULUM — {trackItems.length} MODULES
           </div>
 
@@ -127,7 +127,7 @@ export default function AITrack() {
             style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #262219" }}
           >
             {["MOD", "PROJECT", "LEVEL", "TIME"].map(h => (
-              <div key={h} className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>{h}</div>
+              <div key={h} className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>{h}</div>
             ))}
           </div>
 
@@ -153,7 +153,7 @@ export default function AITrack() {
                     {pct > 0 ? (
                       <ProgressRing percent={pct} size={38} color="#E8A33C" />
                     ) : (
-                      <span className="font-mono font-bold" style={{ fontSize: "1.5rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}>
+                      <span className="font-sans font-bold" style={{ fontSize: "1.5rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}>
                         {item.number}
                       </span>
                     )}
@@ -164,13 +164,13 @@ export default function AITrack() {
                         {item.title}
                       </span>
                       {done && (
-                        <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
+                        <span className="font-sans text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
                           DONE
                         </span>
                       )}
                       {gated && (
-                        <span className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap" style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}>
-                          🔒 Finish Foundations first
+                        <span className="font-sans text-xs tracking-widest uppercase px-2 py-0.5 whitespace-nowrap" style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}>
+                          Finish Foundations first
                         </span>
                       )}
                     </div>
@@ -179,7 +179,7 @@ export default function AITrack() {
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {item.concepts.map(c => (
-                        <span key={c} className="font-mono text-xs px-2 py-0.5" style={{ color: "#BBB3A4", border: "1px solid #34302A" }}>
+                        <span key={c} className="font-sans text-xs px-2 py-0.5" style={{ color: "#BBB3A4", border: "1px solid #34302A" }}>
                           {c}
                         </span>
                       ))}
@@ -187,13 +187,13 @@ export default function AITrack() {
                   </div>
                   <div>
                     <span
-                      className="font-mono text-xs tracking-widest uppercase px-2.5 py-1"
+                      className="font-sans text-xs tracking-widest uppercase px-2.5 py-1"
                       style={{ color: dc.color, border: `1px solid ${dc.border}`, background: dc.bg }}
                     >
                       {item.difficulty}
                     </span>
                   </div>
-                  <div className="font-mono text-sm text-right" style={{ color: "#C9C1B2" }}>
+                  <div className="font-sans text-sm text-right" style={{ color: "#C9C1B2" }}>
                     {item.time}
                   </div>
                 </div>
@@ -231,7 +231,7 @@ export default function AITrack() {
 
         {/* Capstone projects */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-8" style={{ color: "#BBB3A4" }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-8" style={{ color: "#BBB3A4" }}>
             CAPSTONE PROJECTS — WHAT YOU WILL BUILD
           </div>
           <div className="grid md:grid-cols-3 gap-0" style={{ border: "1px solid #262219" }}>
@@ -244,7 +244,7 @@ export default function AITrack() {
                   style={{ borderRight: i < 2 ? "1px solid #262219" : "none" }}
                 >
                   <span
-                    className="inline-block font-mono text-xs tracking-widest uppercase px-2.5 py-1 mb-5"
+                    className="inline-block font-sans text-xs tracking-widest uppercase px-2.5 py-1 mb-5"
                     style={{ color: dc.color, border: `1px solid ${dc.border}`, background: dc.bg }}
                   >
                     {cap.level}
@@ -261,8 +261,8 @@ export default function AITrack() {
                   <div className="space-y-1.5">
                     {cap.skills.map(s => (
                       <div key={s} className="flex items-center gap-2">
-                        <span className="font-mono text-xs" style={{ color: "#E8A33C" }}>→</span>
-                        <span className="font-mono text-xs" style={{ color: "#C9C1B2" }}>{s}</span>
+                        <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>→</span>
+                        <span className="font-sans text-xs" style={{ color: "#C9C1B2" }}>{s}</span>
                       </div>
                     ))}
                   </div>
@@ -274,7 +274,7 @@ export default function AITrack() {
 
         {/* CTA */}
         <div className="text-center py-12" style={{ border: "1px solid #262219" }}>
-          <div className="font-mono text-xs tracking-widest uppercase mb-5" style={{ color: "#BBB3A4" }}>READY?</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-5" style={{ color: "#BBB3A4" }}>READY?</div>
           <h2
             style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", margin: "0 0 16px" }}
           >
@@ -285,7 +285,7 @@ export default function AITrack() {
           </p>
           <Link to={createPageUrl("Projects")}>
             <button
-              className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
+              className="font-sans text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{ background: "#E8A33C", color: "#15130E", border: "1px solid #E8A33C", fontWeight: 700 }}
               onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(232,163,60,0.3)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
@@ -299,11 +299,11 @@ export default function AITrack() {
       {/* Locked-module nudge */}
       {nudge && (
         <div
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-mono text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-sans text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
           style={{ color: "#E0B341", border: "1px solid #E0B34155", background: "#1a1407" }}
           role="status"
         >
-          🔒 Finish the Foundations modules to unlock “{nudge}”
+          Finish the Foundations modules to unlock “{nudge}”
         </div>
       )}
     </div>

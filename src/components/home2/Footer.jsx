@@ -4,10 +4,9 @@ import { createPageUrl } from "@/utils";
 
 const display = "'Bricolage Grotesque', system-ui, sans-serif";
 const body = "'Hanken Grotesk', system-ui, sans-serif";
-const mono = "'Spline Sans Mono', monospace";
 
 const idx = {
-  fontFamily: mono,
+  fontFamily: body,
   fontSize: "0.72rem",
   letterSpacing: "0.18em",
   color: "#D4882E",
@@ -89,7 +88,7 @@ export default function Footer() {
           marginTop: "64px",
           paddingTop: "24px",
           borderTop: "1px solid #221F18",
-          fontFamily: mono,
+          fontFamily: body,
           fontSize: "0.72rem",
           color: "#756C5C",
           letterSpacing: "0.04em",

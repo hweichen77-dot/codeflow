@@ -59,7 +59,7 @@ export function ConceptCallout({ type = "tip", title, children, collapsible = fa
       >
         <div className="flex items-center gap-2">
           <Icon size={13} style={{ color: style.accent, flexShrink: 0 }} />
-          <span className="font-mono text-xs tracking-widest uppercase" style={{ color: style.labelColor }}>
+          <span className="font-sans text-xs tracking-widest uppercase" style={{ color: style.labelColor }}>
             {style.label}
             {title && <span style={{ color: trace.faint, marginLeft: "0.5rem", textTransform: "none", fontFamily: "inherit", letterSpacing: 0 }}>— {title}</span>}
           </span>
@@ -101,17 +101,17 @@ export function KeyTerms({ terms }) {
   if (!terms?.length) return null;
   return (
     <div className="my-5 p-4 rounded" style={{ background: trace.raised, border: `1px solid ${trace.border}` }}>
-      <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: trace.faint }}>
+      <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: trace.faint }}>
         Key Terms
       </div>
       <div className="space-y-2">
         {terms.map((term, i) => (
           <div key={i} className="flex items-start gap-3">
-            <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: trace.lime }}>
+            <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: trace.lime }}>
               {String(i + 1).padStart(2, "0")}
             </span>
             <div>
-              <span className="font-mono text-xs font-bold" style={{ color: trace.text }}>
+              <span className="font-sans text-xs font-bold" style={{ color: trace.text }}>
                 {term.term}
               </span>
               <span className="font-display text-xs leading-relaxed ml-2" style={{ color: trace.dim }}>
@@ -130,7 +130,7 @@ export function ConceptDiagram({ steps, title }) {
   return (
     <div className="my-5 p-4 rounded" style={{ background: trace.raised, border: `1px solid ${trace.border}` }}>
       {title && (
-        <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: trace.faint }}>
+        <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: trace.faint }}>
           {title}
         </div>
       )}
@@ -141,7 +141,7 @@ export function ConceptDiagram({ steps, title }) {
               className="px-3 py-2 text-center rounded"
               style={{ background: trace.surface, border: `1px solid ${trace.border}`, minWidth: "80px" }}
             >
-              <div className="font-mono text-xs font-bold" style={{ color: trace.lime }}>
+              <div className="font-sans text-xs font-bold" style={{ color: trace.lime }}>
                 {step.label}
               </div>
               {step.desc && (
@@ -151,7 +151,7 @@ export function ConceptDiagram({ steps, title }) {
               )}
             </div>
             {i < steps.length - 1 && (
-              <span className="font-mono text-xs" style={{ color: trace.faint }}>→</span>
+              <span className="font-sans text-xs" style={{ color: trace.faint }}>→</span>
             )}
           </React.Fragment>
         ))}

@@ -23,6 +23,7 @@ import BadgeUnlock from "../components/gamification/BadgeUnlock";
 import OutputComparison from "../components/lesson/OutputComparison";
 import LessonCompletionCelebration from "../components/lesson/LessonCompletionCelebration";
 import { foundationsAreFinished, isModuleGated } from "@/lib/foundationsGate";
+import { track } from "@/lib/analytics";
 
 const DIFFICULTY_NUM = { beginner: "00", intermediate: "01", advanced: "02" };
 
@@ -110,6 +111,7 @@ export default function ProjectDetail() {
       setEarnedPoints(saved?.points_earned || 0);
       lessonStartTime.current = Date.now();
       wrongAttempts.current = 0;
+      try { track('lesson_start', { lesson_id: activeLesson.id, project_id: projectId }); } catch { /* ignore */ }
     }
   }, [activeLessonId, activeLesson?.id]);
 
@@ -134,6 +136,11 @@ export default function ProjectDetail() {
         await api.entities.UserProgress.create({
           user_email: user.email, lesson_id: lessonId, project_id: projectId, ...progressData,
         });
+      }
+      // Fire only on first completion so the funnel metric tracks real activations,
+      // not re-visits of an already-finished lesson.
+      if (!existing?.completed) {
+        try { track('lesson_complete', { lesson_id: lessonId, project_id: projectId, time_spent_seconds: timeSpent }); } catch { /* ignore */ }
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["user-progress", projectId] }),
@@ -253,7 +260,7 @@ export default function ProjectDetail() {
         className="min-h-screen flex items-center justify-center"
         style={{ background: "#15130E" }}
       >
-        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#ECE7DC" }}>
+        <div className="font-sans text-xs tracking-widest uppercase animate-pulse" style={{ color: "#ECE7DC" }}>
           Loading module...
         </div>
       </div>
@@ -263,9 +270,9 @@ export default function ProjectDetail() {
   if (!project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#15130E" }}>
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>404 — NOT FOUND</div>
+        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>404 — NOT FOUND</div>
         <Link to={createPageUrl("Projects")}>
-          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33" }}>
+          <button className="font-sans text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33" }}>
             ← Back to Projects
           </button>
         </Link>
@@ -295,8 +302,8 @@ export default function ProjectDetail() {
   if (moduleGated) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-8 text-center" style={{ background: "#15130E" }}>
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E0B341" }}>
-          🔒 Module Locked
+        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E0B341" }}>
+          Module Locked
         </div>
         <h1
           style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.15, maxWidth: "32rem" }}
@@ -308,7 +315,7 @@ export default function ProjectDetail() {
           Foundations track and this unlocks automatically.
         </p>
         <Link to={createPageUrl("Projects")}>
-          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 mt-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
+          <button className="font-sans text-xs tracking-widest uppercase px-5 py-2.5 mt-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
             ← Back to Foundations
           </button>
         </Link>
@@ -337,7 +344,7 @@ export default function ProjectDetail() {
         <div className="max-w-7xl mx-auto px-8 lg:px-16 py-10">
           <Link
             to={createPageUrl("Projects")}
-            className="font-mono text-xs tracking-widest uppercase mb-6 inline-block transition-colors duration-150"
+            className="font-sans text-xs tracking-widest uppercase mb-6 inline-block transition-colors duration-150"
             style={{ color: "#ECE7DC" }}
             onMouseEnter={e => e.currentTarget.style.color = "#E8A33C"}
             onMouseLeave={e => e.currentTarget.style.color = "#3A352D"}
@@ -349,13 +356,13 @@ export default function ProjectDetail() {
             <div>
               <div className="flex items-center gap-4 mb-3">
                 <span
-                  className="font-mono font-bold"
+                  className="font-sans font-bold"
                   style={{ fontSize: "4rem", lineHeight: 1, color: "#ECE7DC", letterSpacing: "-0.05em" }}
                 >
                   {DIFFICULTY_NUM[project.difficulty] || "00"}
                 </span>
                 <div>
-                  <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>
+                  <div className="font-sans text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>
                     {project.difficulty} · {project.category?.replace("_", "/")}
                   </div>
                   <h1
@@ -372,7 +379,7 @@ export default function ProjectDetail() {
 
             {/* Progress indicator — dot trail */}
             <div className="flex flex-col items-end gap-3">
-              <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>
+              <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>
                 {completedCount}/{totalLessons} complete
               </div>
               <div className="flex gap-1.5">
@@ -395,7 +402,7 @@ export default function ProjectDetail() {
                   />
                 ))}
               </div>
-              <div className="font-mono text-xs" style={{ color: "#ECE7DC" }}>
+              <div className="font-sans text-xs" style={{ color: "#ECE7DC" }}>
                 {project.estimated_time ? `~${project.estimated_time}min` : ""}
               </div>
             </div>
@@ -425,7 +432,7 @@ export default function ProjectDetail() {
 
               {/* Vertical label */}
               <div
-                className="font-mono text-xs tracking-widest uppercase mb-5"
+                className="font-sans text-xs tracking-widest uppercase mb-5"
                 style={{ color: "#BBB3A4" }}
               >
                 LESSONS
@@ -451,7 +458,7 @@ export default function ProjectDetail() {
                       )}
                       <div className="flex items-start gap-3">
                         <span
-                          className="font-mono text-xs flex-shrink-0 mt-0.5"
+                          className="font-sans text-xs flex-shrink-0 mt-0.5"
                           style={{ color: completed ? "#E8A33C" : active ? "#A39B8C" : "#5A554B" }}
                         >
                           {completed ? "✓" : String(i + 1).padStart(2, "0")}
@@ -466,7 +473,7 @@ export default function ProjectDetail() {
                           >
                             {lesson.title}
                           </span>
-                          <span className="font-mono" style={{ fontSize: "9px", color: completed ? "#E8A33C" : "#6E665A" }}>
+                          <span className="font-sans" style={{ fontSize: "9px", color: completed ? "#E8A33C" : "#6E665A" }}>
                             {lesson.xp_reward || 10} pts
                           </span>
                         </div>
@@ -486,7 +493,7 @@ export default function ProjectDetail() {
               {showNavHint ? (
                 <button
                   onClick={dismissNavHint}
-                  className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
+                  className="font-sans text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
                   style={{ color: "#BBB3A4", border: "1px solid #262219", background: "#131009" }}
                   title="Dismiss hint"
                 >
@@ -495,7 +502,7 @@ export default function ProjectDetail() {
               ) : <span />}
               <button
                 onClick={toggleFocusMode}
-                className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
+                className="font-sans text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
                 style={{
                   color: focusMode ? "#E8A33C" : "#6E665A",
                   border: `1px solid ${focusMode ? "#E8A33C33" : "#262219"}`,
@@ -527,7 +534,7 @@ export default function ProjectDetail() {
 
                   {/* TRACE section header: § NN / TITLE  ▸ XP */}
                   <div style={{ marginBottom: "8px" }}>
-                    <div className="font-mono" style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: trace.lime, marginBottom: "6px" }}>
+                    <div className="font-sans" style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: trace.lime, marginBottom: "6px" }}>
                       § {String(activeLessonIndex + 1).padStart(2, "0")} &nbsp;▸&nbsp; {activeLesson.xp_reward || 10} XP
                     </div>
                     <h2 style={{
@@ -556,7 +563,7 @@ export default function ProjectDetail() {
                       <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: `1px solid ${trace.border}` }}>
                         <button
                           onClick={() => { setReadingDone(true); setEarnedPoints(p => p + 2); showXPToast("Reading complete!", 2, ""); }}
-                          className="font-mono"
+                          className="font-sans"
                           style={{
                             background: "transparent", color: trace.lime, border: `1px solid ${trace.lime}55`, borderRadius: "3px",
                             padding: "10px 28px", fontSize: "0.8125rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer",
@@ -567,7 +574,7 @@ export default function ProjectDetail() {
                       </div>
                     )}
                     {readingDone && (
-                      <div className="font-mono" style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: `1px solid ${trace.border}`, color: trace.ok, fontSize: "0.8125rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                      <div className="font-sans" style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: `1px solid ${trace.border}`, color: trace.ok, fontSize: "0.8125rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
                         ✓ read (+2 XP)
                       </div>
                     )}
@@ -666,7 +673,7 @@ export default function ProjectDetail() {
                         <button
                           onClick={handleExpandLesson}
                           disabled={expandingLesson}
-                          className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                          className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                           style={{
                             color: "#C2643C", border: "1px solid #C2643C33",
                             background: "#C2643C10", opacity: expandingLesson ? 0.5 : 1,
@@ -677,7 +684,7 @@ export default function ProjectDetail() {
                         <button
                           onClick={handleEnrichLesson}
                           disabled={enrichingLesson}
-                          className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                          className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                           style={{
                             color: "#cc66ff", border: "1px solid #cc66ff33",
                             background: "#cc66ff10", opacity: enrichingLesson ? 0.5 : 1,
@@ -690,7 +697,7 @@ export default function ProjectDetail() {
                     {activeLesson.hints && activeLesson.hints.length > 0 && (
                       <button
                         onClick={() => setShowHints(!showHints)}
-                        className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                        className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                         style={{
                           color: showHints ? "#E8A33C" : "#4A453C",
                           border: `1px solid ${showHints ? "#E8A33C33" : "#262219"}`,
@@ -703,7 +710,7 @@ export default function ProjectDetail() {
                     {activeLesson.solution_code && (
                       <button
                         onClick={() => setShowSolution(!showSolution)}
-                        className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
+                        className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150"
                         style={{
                           color: showSolution ? "#8F8779" : "#3A352D",
                           border: `1px solid ${showSolution ? "#34302A" : "#262219"}`,
@@ -718,7 +725,7 @@ export default function ProjectDetail() {
                     {user && !isCompleted(activeLesson.id) && (
                       <button
                         onClick={handleComplete}
-                        className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 transition-all duration-150"
+                        className="font-sans text-xs tracking-widest uppercase px-5 py-2.5 transition-all duration-150"
                         style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}
                         onMouseEnter={e => {
                           e.currentTarget.style.background = "#E8A33C20";
@@ -735,7 +742,7 @@ export default function ProjectDetail() {
                     {activeLessonIndex < lessons.length - 1 && (
                       <button
                         onClick={goToNextLesson}
-                        className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 transition-all duration-150"
+                        className="font-sans text-xs tracking-widest uppercase px-5 py-2.5 transition-all duration-150"
                         style={{ color: "#15130E", background: "#E8A33C", border: "1px solid #E8A33C", fontWeight: 700 }}
                         onMouseEnter={e => {
                           e.currentTarget.style.transform = "translateY(-1px)";
@@ -762,14 +769,14 @@ export default function ProjectDetail() {
                       >
                         <div style={{ border: "1px solid #262219", background: "#131009" }}>
                           <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
-                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
+                            <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
                               Hints
                             </span>
                           </div>
                           <div className="px-5 py-4 space-y-3">
                             {activeLesson.hints.map((hint, i) => (
                               <div key={i} className="flex items-start gap-3">
-                                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: "#ECE7DC" }}>
+                                <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#ECE7DC" }}>
                                   {String(i + 1).padStart(2, "0")}
                                 </span>
                                 <p className="font-display text-sm leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
@@ -794,10 +801,10 @@ export default function ProjectDetail() {
                       >
                         <div style={{ border: "1px solid #262219", background: "#131009" }}>
                           <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
-                            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
+                            <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
                               Solution
                             </span>
-                            <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
+                            <span className="font-sans text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
                               JS
                             </span>
                           </div>

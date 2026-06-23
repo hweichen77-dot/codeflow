@@ -22,7 +22,7 @@ export default function InlineQuiz({ question, options, correctIndex, explanatio
       {/* Header */}
       <div className="px-4 py-2.5 flex items-center gap-2" style={{ borderBottom: `1px solid ${trace.border}` }}>
         <span
-          className="font-mono text-xs tracking-widest uppercase flex items-center gap-1.5"
+          className="font-sans text-xs tracking-widest uppercase flex items-center gap-1.5"
           style={{ color: trace.lime, fontWeight: 700, letterSpacing: "0.12em" }}
         >
           ▸ CHECK
@@ -57,7 +57,7 @@ export default function InlineQuiz({ question, options, correctIndex, explanatio
                 className="w-full text-left px-3 py-2.5 rounded transition-all duration-150 font-display text-sm"
                 style={{ background: bg, border: `1px solid ${border}`, color, cursor: revealed ? "default" : "pointer" }}
               >
-                <span className="font-mono text-xs mr-2" style={{ color: trace.faint }}>
+                <span className="font-sans text-xs mr-2" style={{ color: trace.faint }}>
                   {String.fromCharCode(65 + i)}.
                 </span>
                 {opt}
@@ -69,7 +69,7 @@ export default function InlineQuiz({ question, options, correctIndex, explanatio
         {selected !== null && !revealed && (
           <button
             onClick={() => setRevealed(true)}
-            className="mt-3 font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all duration-150"
+            className="mt-3 font-sans text-xs tracking-widest uppercase px-4 py-2 transition-all duration-150"
             style={{ color: trace.bg, border: `1px solid ${trace.lime}`, background: trace.lime }}
           >
             Check Answer
@@ -88,7 +88,7 @@ export default function InlineQuiz({ question, options, correctIndex, explanatio
               }}
             >
               <div
-                className="font-mono text-xs font-bold mb-1 flex items-center gap-1.5"
+                className="font-sans text-xs font-bold mb-1 flex items-center gap-1.5"
                 style={{ color: isCorrect ? trace.ok : trace.fail }}
               >
                 {isCorrect ? <CheckCircle size={13} /> : <XCircle size={13} />}

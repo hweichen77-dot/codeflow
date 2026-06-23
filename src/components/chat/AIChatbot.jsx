@@ -144,11 +144,11 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 <div className="w-6 h-6 flex items-center justify-center" style={{ background: "#E8A33C15", border: "1px solid #E8A33C33" }}>
                   <Brain size={12} style={{ color: "#E8A33C" }} />
                 </div>
-                <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
+                <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
                   AI Tutor
                 </span>
-                <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>·</span>
-                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }} title={lessonTitle}>
+                <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>·</span>
+                <span className="font-sans text-xs" style={{ color: "#BBB3A4" }} title={lessonTitle}>
                   {lessonTitle?.length > 18 ? lessonTitle.slice(0, 18) + "…" : lessonTitle}
                 </span>
               </div>
@@ -168,10 +168,10 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               className="flex items-center gap-3 px-5 py-2.5 flex-shrink-0"
               style={{ borderBottom: "1px solid #1C1A14", background: "#080808" }}
             >
-              <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>mode:</span>
+              <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>mode:</span>
               <button
                 onClick={() => setSocraticMode(true)}
-                className="font-mono text-xs px-3 py-1 transition-all duration-150"
+                className="font-sans text-xs px-3 py-1 transition-all duration-150"
                 style={{
                   color: socraticMode ? "#E8A33C" : "#ECE7DC",
                   border: `1px solid ${socraticMode ? "#E8A33C33" : "#262219"}`,
@@ -182,7 +182,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               </button>
               <button
                 onClick={() => setSocraticMode(false)}
-                className="font-mono text-xs px-3 py-1 transition-all duration-150"
+                className="font-sans text-xs px-3 py-1 transition-all duration-150"
                 style={{
                   color: !socraticMode ? "#E8A33C" : "#ECE7DC",
                   border: `1px solid ${!socraticMode ? "#E8A33C33" : "#262219"}`,
@@ -192,7 +192,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 Direct
               </button>
               {currentCode && (
-                <span className="ml-auto font-mono text-xs flex items-center gap-1" style={{ color: "#ECE7DC" }}>
+                <span className="ml-auto font-sans text-xs flex items-center gap-1" style={{ color: "#ECE7DC" }}>
                   <Zap size={9} />
                   code-aware
                 </span>
@@ -220,7 +220,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 <div className="flex justify-start">
                   <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: "#1F1C15", border: "1px solid #262219" }}>
                     <Loader2 size={12} className="animate-spin" style={{ color: "#E8A33C" }} />
-                    <span className="font-mono text-xs" style={{ color: "#ECE7DC" }}>thinking...</span>
+                    <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>thinking...</span>
                   </div>
                 </div>
               )}
@@ -238,7 +238,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                     onKeyPress={(e) => e.key === "Enter" && handleSend()}
                     placeholder="Ask about this lesson..."
                     aria-label="Ask the AI tutor a question"
-                    className="flex-1 font-mono text-xs py-2.5 px-3 bg-transparent outline-none"
+                    className="flex-1 font-sans text-xs py-2.5 px-3 bg-transparent outline-none"
                     style={{ border: "1px solid #262219", color: "#ECE7DC", caretColor: "#E8A33C" }}
                     disabled={isLoading}
                   />
@@ -253,7 +253,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                   </button>
                 </div>
               ) : (
-                <p className="font-mono text-xs leading-relaxed" style={{ color: "#BBB3A4" }}>
+                <p className="font-sans text-xs leading-relaxed" style={{ color: "#BBB3A4" }}>
                   AI tutor is offline in this build — it lights up when the app is connected to its AI backend.
                 </p>
               )}

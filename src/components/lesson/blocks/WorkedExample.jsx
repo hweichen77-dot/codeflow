@@ -28,18 +28,18 @@ export default function WorkedExample({ number, difficulty = "easy", prompt, ste
         <span style={{ ...traceStyles.monoLabel }}>
           WORKED EXAMPLE {number}
         </span>
-        <span className="font-mono text-xs px-2 py-0.5" style={{ color: d.c, border: `1px solid ${d.c}44`, fontFamily: trace.mono }}>{d.label}</span>
+        <span className="font-sans text-xs px-2 py-0.5" style={{ color: d.c, border: `1px solid ${d.c}44`, fontFamily: trace.sans }}>{d.label}</span>
       </div>
 
       <div className="p-5">
-        <div className="font-mono text-xs tracking-widest uppercase mb-1.5" style={{ color: trace.faint, fontFamily: trace.mono }}>INPUT</div>
+        <div className="font-sans text-xs tracking-widest uppercase mb-1.5" style={{ color: trace.faint, fontFamily: trace.sans }}>INPUT</div>
         <pre className="px-4 py-3 mb-4 overflow-x-auto font-mono text-xs" style={{ ...traceStyles.terminal, color: trace.text, whiteSpace: "pre-wrap", fontFamily: trace.mono }}>{prompt}</pre>
 
-        <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: trace.faint, fontFamily: trace.mono }}>REASONING</div>
+        <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: trace.faint, fontFamily: trace.sans }}>REASONING</div>
         <div className="space-y-2 mb-3">
           {steps.slice(0, revealed).map((s, i) => (
             <div key={i} className="flex gap-3 font-display text-sm" style={{ color: trace.dim }}>
-              <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: trace.lime, fontFamily: trace.mono }}>{i + 1}.</span>
+              <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: trace.lime, fontFamily: trace.sans }}>{i + 1}.</span>
               <span>{s}</span>
             </div>
           ))}
@@ -47,8 +47,8 @@ export default function WorkedExample({ number, difficulty = "easy", prompt, ste
         {revealed < steps.length ? (
           <button
             onClick={() => setRevealed((r) => r + 1)}
-            className="flex items-center gap-1.5 font-mono text-xs tracking-widest uppercase px-3 py-1.5 mb-4"
-            style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: trace.lime, cursor: "pointer", fontFamily: trace.mono }}
+            className="flex items-center gap-1.5 font-sans text-xs tracking-widest uppercase px-3 py-1.5 mb-4"
+            style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: trace.lime, cursor: "pointer", fontFamily: trace.sans }}
           >
             <ChevronDown size={12} /> Reveal next step
           </button>
@@ -56,11 +56,11 @@ export default function WorkedExample({ number, difficulty = "easy", prompt, ste
 
         {revealed >= steps.length && (
           <>
-            <div className="font-mono text-xs tracking-widest uppercase mb-1.5 mt-2" style={{ color: trace.faint, fontFamily: trace.mono }}>OUTPUT</div>
+            <div className="font-sans text-xs tracking-widest uppercase mb-1.5 mt-2" style={{ color: trace.faint, fontFamily: trace.sans }}>OUTPUT</div>
             {showOut ? (
               <pre className="px-4 py-3 overflow-x-auto font-mono text-xs" style={{ background: trace.terminal, border: `1px solid ${trace.lime}33`, color: trace.lime, whiteSpace: "pre-wrap", borderRadius: "4px", fontFamily: trace.mono }}>{output}</pre>
             ) : (
-              <button onClick={() => setShowOut(true)} className="font-mono text-xs tracking-widest uppercase px-3 py-1.5" style={{ background: "transparent", border: `1px solid ${trace.lime}55`, color: trace.lime, cursor: "pointer", fontFamily: trace.mono }}>
+              <button onClick={() => setShowOut(true)} className="font-sans text-xs tracking-widest uppercase px-3 py-1.5" style={{ background: "transparent", border: `1px solid ${trace.lime}55`, color: trace.lime, cursor: "pointer", fontFamily: trace.sans }}>
                 Reveal output
               </button>
             )}

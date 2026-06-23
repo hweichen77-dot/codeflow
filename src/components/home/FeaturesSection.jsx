@@ -38,7 +38,7 @@ export default function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-8 lg:px-16">
         <div className="flex items-start gap-8 mb-20">
           <div
-            className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
+            className="font-sans text-xs tracking-widest uppercase pt-1 flex-shrink-0"
             style={{ color: "#ECE7DC", width: "4rem" }}
           >
             § 01
@@ -75,7 +75,7 @@ export default function FeaturesSection() {
 
               <div className="flex items-start gap-6">
                 <div
-                  className="font-mono font-bold flex-shrink-0"
+                  className="font-sans font-bold flex-shrink-0"
                   style={{ fontSize: "3rem", lineHeight: 1, color: "#ECE7DC", letterSpacing: "-0.05em" }}
                 >
                   {f.num}
@@ -83,7 +83,7 @@ export default function FeaturesSection() {
 
                 <div>
                   <div
-                    className="font-mono text-xs tracking-widest uppercase mb-4"
+                    className="font-sans text-xs tracking-widest uppercase mb-4"
                     style={{ color: "#E8A33C" }}
                   >
                     {f.tag}

@@ -37,14 +37,14 @@ export default function Reflection({ prompt, sampleAnswer, onComplete }) {
           <button
             onClick={submit}
             disabled={text.trim().length < 8}
-            className="mt-3 font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all disabled:opacity-30"
-            style={{ background: trace.lime, color: trace.bg, fontWeight: 700, border: "none", cursor: text.trim().length < 8 ? "not-allowed" : "pointer", fontFamily: trace.mono }}
+            className="mt-3 font-sans text-xs tracking-widest uppercase px-4 py-2 transition-all disabled:opacity-30"
+            style={{ background: trace.lime, color: trace.bg, fontWeight: 700, border: "none", cursor: text.trim().length < 8 ? "not-allowed" : "pointer", fontFamily: trace.sans }}
           >
             Submit
           </button>
         ) : (
           <div className="mt-4">
-            <div className="font-mono text-xs tracking-widest uppercase mb-1.5" style={{ color: trace.lime, fontFamily: trace.mono }}>✓ Logged — one way to put it</div>
+            <div className="font-sans text-xs tracking-widest uppercase mb-1.5" style={{ color: trace.lime, fontFamily: trace.sans }}>✓ Logged — one way to put it</div>
             <p className="font-display text-sm leading-relaxed px-4 py-3" style={{ color: trace.dim, background: trace.surface, border: `1px solid ${trace.lime}33`, borderRadius: "4px" }}>{sampleAnswer}</p>
           </div>
         )}

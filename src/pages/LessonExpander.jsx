@@ -5,7 +5,7 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
   return (
     <div style={{ border: "1px solid #262219" }}>
       <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219", background: "#131009" }}>
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
+        <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
           {items.length} items
         </span>
       </div>
@@ -18,7 +18,7 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
             style={{ borderBottom: "1px solid #1C1A14" }}
           >
             <div className="flex items-center gap-4">
-              <span className="font-mono text-xs w-6 text-right flex-shrink-0" style={{ color: "#ECE7DC" }}>
+              <span className="font-sans text-xs w-6 text-right flex-shrink-0" style={{ color: "#ECE7DC" }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
               <div>
@@ -26,29 +26,29 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
                   {item[labelKey]}
                 </div>
                 {subKey && item[subKey] && (
-                  <div className="font-mono text-xs" style={{ color: "#BBB3A4" }}>{item[subKey]}</div>
+                  <div className="font-sans text-xs" style={{ color: "#BBB3A4" }}>{item[subKey]}</div>
                 )}
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               {status === "running" && (
-                <span className="font-mono text-xs animate-pulse" style={{ color: "#C2643C" }}> running...</span>
+                <span className="font-sans text-xs animate-pulse" style={{ color: "#C2643C" }}> running...</span>
               )}
               {status === "done" && (
-                <span className="font-mono text-xs" style={{ color: "#E8A33C" }}>✓ done</span>
+                <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>✓ done</span>
               )}
               {status === "error" && (
-                <span className="font-mono text-xs" style={{ color: "#FF6B5C" }}>✗ error</span>
+                <span className="font-sans text-xs" style={{ color: "#FF6B5C" }}>✗ error</span>
               )}
               {status === "already_expanded" && (
-                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>✓ already expanded</span>
+                <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>✓ already expanded</span>
               )}
               {!running && (
                 <button
                   onClick={() => onRunOne(item)}
                   disabled={status === "running"}
-                  className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 transition-all"
+                  className="font-sans text-xs tracking-widest uppercase px-3 py-1.5 transition-all"
                   style={{ color: "#C9C1B2", border: "1px solid #262219", background: "transparent", cursor: "pointer" }}
                   onMouseEnter={e => { e.currentTarget.style.color = "#E8A33C"; e.currentTarget.style.borderColor = "#E8A33C33"; }}
                   onMouseLeave={e => { e.currentTarget.style.color = "#C9C1B2"; e.currentTarget.style.borderColor = "#262219"; }}
@@ -200,7 +200,7 @@ export default function LessonExpander() {
   if (!user || user.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#15130E" }}>
-        <p className="font-mono text-sm" style={{ color: "#C9C1B2" }}>Admin access required.</p>
+        <p className="font-sans text-sm" style={{ color: "#C9C1B2" }}>Admin access required.</p>
       </div>
     );
   }
@@ -215,7 +215,7 @@ export default function LessonExpander() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
+          <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
             ADMIN TOOL
           </span>
           <h1 className="font-display font-bold text-3xl mt-2 mb-1" style={{ color: "#F2EDE2" }}>
@@ -232,7 +232,7 @@ export default function LessonExpander() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
+              className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
               style={{
                 color: tab === t ? "#E8A33C" : "#BBB3A4",
                 borderBottom: tab === t ? "2px solid #E8A33C" : "2px solid transparent",
@@ -252,7 +252,7 @@ export default function LessonExpander() {
               <button
                 onClick={runAllEnrich}
                 disabled={enrichRunning}
-                className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
+                className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
                 style={{
                   background: enrichRunning ? "#262219" : "#cc66ff",
                   color: enrichRunning ? "#BBB3A4" : "#15130E",
@@ -262,7 +262,7 @@ export default function LessonExpander() {
               >
                 {enrichRunning ? ` Enriching ${enrichIndex + 1}/${lessons.length}...` : ` Enrich All Lessons (${lessons.length})`}
               </button>
-              <div className="font-mono text-xs" style={{ color: "#C9C1B2" }}>
+              <div className="font-sans text-xs" style={{ color: "#C9C1B2" }}>
                 Adds key terms, callouts, diagrams, inline quizzes, quizzes & participation activities
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function LessonExpander() {
           <button
             onClick={isLessonsTab ? runAllLessons : runAllProjects}
             disabled={running || !loaded}
-            className="font-mono text-xs tracking-widest uppercase px-6 py-3 transition-all"
+            className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
             style={{
               background: running ? "#262219" : "#E8A33C",
               color: running ? "#BBB3A4" : "#15130E",
@@ -298,14 +298,14 @@ export default function LessonExpander() {
           </button>
 
           {isLessonsTab && Object.keys(lessonStatuses).length > 0 && (
-            <div className="font-mono text-xs" style={{ color: "#C9C1B2" }}>
+            <div className="font-sans text-xs" style={{ color: "#C9C1B2" }}>
               <span style={{ color: "#E8A33C" }}>{lessonDone} done</span>
               {lessonErrors > 0 && <span style={{ color: "#FF6B5C", marginLeft: "12px" }}>{lessonErrors} errors</span>}
               {" / "}{lessons.length} total
             </div>
           )}
           {!isLessonsTab && Object.keys(projectStatuses).length > 0 && (
-            <div className="font-mono text-xs" style={{ color: "#C9C1B2" }}>
+            <div className="font-sans text-xs" style={{ color: "#C9C1B2" }}>
               <span style={{ color: "#E8A33C" }}>{projectDone} done</span>
               {projectErrors > 0 && <span style={{ color: "#FF6B5C", marginLeft: "12px" }}>{projectErrors} errors</span>}
               {" / "}{projects.length} total

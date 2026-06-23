@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; connect-src 'self' https://*.supabase.co https://godbolt.org https://cdn.jsdelivr.net https://us.i.posthog.com https://*.posthog.com https://*.sentry.io https://*.ingest.sentry.io; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
     }
   },
   "bundle": {

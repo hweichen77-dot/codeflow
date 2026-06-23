@@ -2,7 +2,6 @@ import React from "react";
 
 const display = "'Bricolage Grotesque', system-ui, sans-serif";
 const body = "'Hanken Grotesk', system-ui, sans-serif";
-const mono = "'Spline Sans Mono', monospace";
 
 export default function Testimonials() {
   return (
@@ -11,18 +10,18 @@ export default function Testimonials() {
         {/* section head */}
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
           <span style={{
-            fontFamily: mono,
+            fontFamily: body,
             fontSize: "0.72rem",
             letterSpacing: "0.18em",
             color: "#D4882E",
             textTransform: "uppercase",
             fontWeight: 500,
           }}>
-            04 — In their words
+            04 — What we're building
           </span>
         </div>
 
-        {/* lead pull-quote — large, asymmetric */}
+        {/* mission statement — large, asymmetric */}
         <div className="cf-quotes" style={{
           display: "grid",
           gridTemplateColumns: "1.5fr 1fr",
@@ -42,23 +41,24 @@ export default function Testimonials() {
               color: "#ECE7DC",
               margin: "8px 0 24px",
             }}>
-              Two months of YouTube and I built nothing. Two weeks on CodeFlow
-              and I had an AI tool I <em style={{ fontStyle: "italic", color: "#E8A33C", fontWeight: 500 }}>actually use.</em>
+              Most people who try to learn to code never ship anything. We're
+              building the opposite: a place where you learn by{" "}
+              <em style={{ fontStyle: "italic", color: "#E8A33C", fontWeight: 500 }}>building real things</em>.
             </blockquote>
-            <figcaption style={{ fontFamily: mono, fontSize: "0.8rem", color: "#756C5C", letterSpacing: "0.04em" }}>
-              Marcus T. — freelance designer
+            <figcaption style={{ fontFamily: body, fontSize: "0.8rem", color: "#756C5C", letterSpacing: "0.04em" }}>
+              The CodeFlow mission
             </figcaption>
           </figure>
 
-          {/* two smaller stacked quotes */}
+          {/* two smaller stacked principles */}
           <div style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
             <SmallQuote
-              quote="The tutor doesn't give you the answer — it makes you think it through. That's the difference between learning and copying."
-              who="Priya S. — PM, fintech"
+              quote="A tutor that makes you think it through instead of handing over the answer. That's the difference between learning and copying."
+              who="How we teach"
             />
             <SmallQuote
-              quote="I was intimidated by AI APIs. Now I've shipped three projects with them. Approachable without dumbing it down."
-              who="Daniel W. — engineering student"
+              quote="Run real Python, Java, and C++ right in the browser. No setup, no toy sandboxes — the same code you'd write for a real project."
+              who="What you'll use"
             />
           </div>
         </div>
@@ -79,7 +79,7 @@ function SmallQuote({ quote, who }) {
       }}>
         {quote}
       </blockquote>
-      <figcaption style={{ fontFamily: mono, fontSize: "0.78rem", color: "#756C5C", letterSpacing: "0.04em" }}>
+      <figcaption style={{ fontFamily: body, fontSize: "0.78rem", color: "#756C5C", letterSpacing: "0.04em" }}>
         {who}
       </figcaption>
     </figure>

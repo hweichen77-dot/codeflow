@@ -26,14 +26,14 @@ function CodeBlock({ children, className }) {
         style={{ borderBottom: `1px solid ${trace.border}`, background: trace.terminal }}
       >
         <span
-          className="font-mono text-xs"
+          className="font-sans text-xs"
           style={{ color: trace.lime, letterSpacing: "0.08em" }}
         >
           {lang}
         </span>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1 font-mono text-xs transition-colors"
+          className="flex items-center gap-1 font-sans text-xs transition-colors"
           style={{ color: copied ? trace.lime : trace.faint }}
           onMouseEnter={(e) => {
             if (!copied) e.currentTarget.style.color = trace.lime;

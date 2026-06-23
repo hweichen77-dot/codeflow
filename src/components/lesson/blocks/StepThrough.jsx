@@ -52,7 +52,7 @@ export default function StepThrough({ title, steps = [], onComplete }) {
         <span style={{ ...traceStyles.monoLabel }}>
           TRACE — {title}
         </span>
-        <span className="font-mono text-xs" style={{ color: trace.faint, fontFamily: trace.mono }}>
+        <span className="font-sans text-xs" style={{ color: trace.faint, fontFamily: trace.sans }}>
           STEP {i + 1} / {steps.length}
         </span>
       </div>
@@ -102,15 +102,15 @@ export default function StepThrough({ title, steps = [], onComplete }) {
         <Ctl onClick={() => { setPlaying(false); setI((v) => Math.max(v - 1, 0)); }} disabled={i === 0} aria-label="Previous"><ChevronLeft size={15} /></Ctl>
         <button
           onClick={() => { if (atEnd) { setI(0); setPlaying(true); } else setPlaying((p) => !p); }}
-          className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase px-4 py-2 transition-all"
-          style={{ background: trace.lime, color: trace.bg, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: trace.mono }}
+          className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase px-4 py-2 transition-all"
+          style={{ background: trace.lime, color: trace.bg, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: trace.sans }}
         >
           {playing ? <Pause size={13} /> : <Play size={13} />}
           {playing ? "Pause" : atEnd ? "Replay" : "Auto-step"}
         </button>
         <Ctl onClick={() => { setPlaying(false); setI((v) => Math.min(v + 1, steps.length - 1)); }} disabled={atEnd} aria-label="Next"><ChevronRight size={15} /></Ctl>
         {seen.size === steps.length && (
-          <span className="ml-auto font-mono text-xs tracking-widest uppercase" style={{ color: trace.lime, fontFamily: trace.mono }}>
+          <span className="ml-auto font-sans text-xs tracking-widest uppercase" style={{ color: trace.lime, fontFamily: trace.sans }}>
             ✓ viewed
           </span>
         )}

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getProfile, setProfile, clear as clearProfile } from '@/api/localProfile';
+import { clearAllProgress } from '@/api/progressStore';
 import { auth as supaAuth } from '@/api/supabaseClient';
 import { activateSync, deactivateSync } from '@/api/cloudSync';
 import { namespacedKey } from '@/lib/progressStats';
@@ -26,6 +27,17 @@ export const AuthProvider = ({ children }) => {
   const adoptSupabaseUser = (sUser) => {
     const p = profileFromSupabase(sUser);
     if (!p) return;
+    // Shared-browser guard: if a DIFFERENT real account's progress is sitting in
+    // localStorage (prior user didn't log out, or session was swapped), clear it
+    // before adopting so we neither show nor cloud-merge their data into this
+    // account. A guest profile (…@local) is preserved — that's the normal
+    // "try as guest, then sign up" upgrade path, which should keep its progress.
+    try {
+      const prevEmail = getProfile()?.email;
+      if (prevEmail && !prevEmail.endsWith('@local') && prevEmail !== p.email) {
+        clearAllProgress();
+      }
+    } catch { /* ignore */ }
     setProfile({ name: p.name, email: p.email });
     setUser({ ...p });
     setIsAuthenticated(true);
@@ -62,7 +74,20 @@ export const AuthProvider = ({ children }) => {
     const { data: sub } = supaAuth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) adoptSupabaseUser(session.user);
       if (event === 'SIGNED_OUT') {
-        // Only clear if we were in email mode; guest is independent.
+        // Supabase ended the session — either our own logout(), or a SILENT death
+        // (token/refresh expiry, password change, sign-out in another tab). Tear
+        // down auth + sync state so the UI stops pretending the user is signed in
+        // and subsequent writes don't 401 into the void. Deliberately do NOT wipe
+        // local progress here: on a silent expiry the last edits may be unsynced,
+        // and clearing would lose them. The shared-browser case is covered when
+        // the NEXT real account signs in (adoptSupabaseUser's mismatch guard) and
+        // by explicit logout() below.
+        deactivateSync();
+        resetIdentity();
+        setMonitoringUser(null);
+        setUser(null);
+        setIsAuthenticated(false);
+        setAuthMode(null);
       }
     });
 
@@ -73,6 +98,7 @@ export const AuthProvider = ({ children }) => {
   const signUpEmail = async ({ email, password, name }) => {
     const { data, error } = await supaAuth.signUp(email, password, name);
     if (error) return { error };
+    track('sign_up', { method: 'email' });
     // If email confirmation is OFF, a session is returned immediately.
     if (data?.session?.user) adoptSupabaseUser(data.session.user);
     return { data, needsConfirmation: !data?.session };
@@ -112,12 +138,15 @@ export const AuthProvider = ({ children }) => {
   const signInLocal = signInGuest;
 
   const logout = async () => {
-    deactivateSync();
+    // Flush any pending change to the cloud before tearing sync down, so the last
+    // few seconds of work aren't lost on an immediate logout.
+    await deactivateSync();
     resetIdentity();
     setMonitoringUser(null);
     try { await supaAuth.signOut(); } catch { /* ignore */ }
-    // Clear this account's namespaced progress keys BEFORE wiping the profile,
+    // Clear this account's progress + namespaced keys BEFORE wiping the profile,
     // so a second user on this browser doesn't inherit the first user's state.
+    clearAllProgress();
     try {
       const id = user?.email || user?.id;
       if (id && typeof window !== 'undefined') {

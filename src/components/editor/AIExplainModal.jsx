@@ -81,7 +81,7 @@ Be direct and educational. Use code examples where helpful. Total response under
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #262219" }}>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs tracking-widest uppercase px-2 py-1" style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}>
+              <span className="font-sans text-xs tracking-widest uppercase px-2 py-1" style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}>
                 HOW DID I CATCH THIS?
               </span>
             </div>
@@ -92,8 +92,8 @@ Be direct and educational. Use code examples where helpful. Total response under
 
           {/* Flagged hint */}
           <div className="px-6 py-4" style={{ borderBottom: "1px solid #262219", background: "#131009" }}>
-            <p className="font-mono text-xs" style={{ color: "#BBB3A4" }}>Flagged issue:</p>
-            <p className="font-mono text-sm mt-1" style={{ color: "#E0B341" }}>"{hint}"</p>
+            <p className="font-sans text-xs" style={{ color: "#BBB3A4" }}>Flagged issue:</p>
+            <p className="font-sans text-sm mt-1" style={{ color: "#E0B341" }}>"{hint}"</p>
           </div>
 
           {/* Explanation */}
@@ -101,7 +101,7 @@ Be direct and educational. Use code examples where helpful. Total response under
             {loading ? (
               <div className="flex items-center gap-3">
                 <Loader2 size={14} className="animate-spin" style={{ color: "#E0B341" }} />
-                <span className="font-mono text-xs" style={{ color: "#BBB3A4" }}>Analyzing your code...</span>
+                <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>Analyzing your code...</span>
               </div>
             ) : (
               <div className="font-display text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#C9C1B2", fontWeight: 400 }}>
@@ -111,7 +111,7 @@ Be direct and educational. Use code examples where helpful. Total response under
           </div>
 
           <div className="px-6 py-3" style={{ borderTop: "1px solid #262219" }}>
-            <p className="font-mono text-xs" style={{ color: "#ECE7DC" }}>
+            <p className="font-sans text-xs" style={{ color: "#ECE7DC" }}>
               The AI analyzed your code against the expected solution pattern to surface this.
             </p>
           </div>

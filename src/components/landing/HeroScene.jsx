@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../../utils";
@@ -121,7 +121,7 @@ export default function HeroScene() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="font-mono text-xs tracking-widest uppercase mb-8"
+            className="font-sans text-xs tracking-widest uppercase mb-8"
             style={{ color: "#E8A33C" }}
           >
             § CodeFlow — The Learning Platform
@@ -163,7 +163,7 @@ export default function HeroScene() {
           >
             <Link to={createPageUrl("Projects")}>
               <button
-                className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
+                className="font-sans text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
                 style={{ background: "#E8A33C", color: "#15130E", fontWeight: 700 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = "translateY(-3px)";
@@ -179,7 +179,7 @@ export default function HeroScene() {
             </Link>
             <Link to={createPageUrl("AITrack")}>
               <button
-                className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
+                className="font-sans text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
                 style={{ color: "#BBB3A4", border: "1px solid #262219" }}
                 onMouseEnter={e => {
                   e.currentTarget.style.color = "#ECE7DC";
@@ -202,7 +202,7 @@ export default function HeroScene() {
             transition={{ delay: 2, duration: 1 }}
             className="mt-20 flex flex-col items-center gap-2"
           >
-            <span className="font-mono text-xs tracking-widest" style={{ color: "#ECE7DC" }}>SCROLL</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#ECE7DC" }}>SCROLL</span>
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}

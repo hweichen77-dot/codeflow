@@ -5,19 +5,19 @@ import { createPageUrl } from "../utils";
 import { useAuth } from "../lib/AuthContext";
 import { summarize, touchStreak } from "../lib/progressStats";
 
-const MONO = "'Spline Sans Mono', ui-monospace, monospace";
+const LABEL = "'Hanken Grotesk', system-ui, sans-serif";
 const SERIF = "'Bricolage Grotesque', system-ui, sans-serif";
 
 function StatCard({ label, value, sub, accent = "#E8A33C" }) {
   return (
     <div className="p-6" style={{ border: "1px solid #262219", background: "#131009" }}>
-      <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4", fontFamily: MONO }}>
+      <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
         {label}
       </div>
-      <div className="font-mono font-bold" style={{ fontSize: "2rem", lineHeight: 1, color: accent, letterSpacing: "-0.03em" }}>
+      <div className="font-sans font-bold" style={{ fontSize: "2rem", lineHeight: 1, color: accent, letterSpacing: "-0.03em" }}>
         {value}
       </div>
-      {sub && <div className="font-mono text-xs mt-2" style={{ color: "#8F8779", fontFamily: MONO }}>{sub}</div>}
+      {sub && <div className="font-sans text-xs mt-2" style={{ color: "#8F8779", fontFamily: LABEL }}>{sub}</div>}
     </div>
   );
 }
@@ -69,7 +69,7 @@ export default function AuthHome() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#15130E" }}>
-        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#8F8779", fontFamily: MONO }}>
+        <div className="font-sans text-xs tracking-widest uppercase animate-pulse" style={{ color: "#8F8779", fontFamily: LABEL }}>
           Loading your progress…
         </div>
       </div>
@@ -81,7 +81,7 @@ export default function AuthHome() {
       <div className="max-w-5xl mx-auto">
         {/* Greeting */}
         <div className="mb-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C", fontFamily: MONO }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C", fontFamily: LABEL }}>
             {greeting}
           </div>
           <h1 style={{ fontFamily: SERIF, fontSize: "2.6rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#F2EDE2", margin: 0, lineHeight: 1.05 }}>
@@ -105,10 +105,10 @@ export default function AuthHome() {
         {/* Level progress bar */}
         <div className="p-6 mb-10" style={{ border: "1px solid #262219", background: "#131009" }}>
           <div className="flex items-center justify-between mb-3">
-            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4", fontFamily: MONO }}>
+            <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
               Level {lvl.name}
             </span>
-            <span className="font-mono text-xs" style={{ color: "#8F8779", fontFamily: MONO }}>
+            <span className="font-sans text-xs" style={{ color: "#8F8779", fontFamily: LABEL }}>
               {lvl.max === Infinity ? "MAX" : `${lvl.max - totalXP} XP to ${nextLvl.name}`}
             </span>
           </div>
@@ -120,7 +120,7 @@ export default function AuthHome() {
         {/* Continue learning */}
         {resume && (
           <div className="mb-10">
-            <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#8F8779", fontFamily: MONO }}>
+            <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#8F8779", fontFamily: LABEL }}>
               {resume.done > 0 ? "Continue learning" : "Start here"}
             </div>
             <Link
@@ -135,12 +135,12 @@ export default function AuthHome() {
                   <div style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: "#F2EDE2", letterSpacing: "-0.01em" }}>
                     {resume.title}
                   </div>
-                  <div className="font-mono text-xs mt-2" style={{ color: "#BBB3A4", fontFamily: MONO }}>
+                  <div className="font-sans text-xs mt-2" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
                     {resume.done}/{resume.total} lessons · {resume.pct}% complete
                   </div>
                 </div>
-                <span className="font-mono text-sm tracking-widest uppercase px-5 py-3 flex-shrink-0"
-                  style={{ background: "#E8A33C", color: "#15130E", fontWeight: 700, fontFamily: MONO }}>
+                <span className="font-sans text-sm tracking-widest uppercase px-5 py-3 flex-shrink-0"
+                  style={{ background: "#E8A33C", color: "#15130E", fontWeight: 700, fontFamily: LABEL }}>
                   {resume.done > 0 ? "Resume →" : "Begin →"}
                 </span>
               </div>
@@ -150,7 +150,7 @@ export default function AuthHome() {
 
         {/* All tracks/projects */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#8F8779", fontFamily: MONO }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#8F8779", fontFamily: LABEL }}>
             Your projects
           </div>
           <div className="space-y-0">
@@ -165,7 +165,7 @@ export default function AuthHome() {
                   onMouseEnter={(e) => { e.currentTarget.style.background = "#131009"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
-                  <span className="font-mono text-xs w-7 flex-shrink-0" style={{ color: "#6E665A", fontFamily: MONO }}>
+                  <span className="font-sans text-xs w-7 flex-shrink-0" style={{ color: "#6E665A", fontFamily: LABEL }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -177,7 +177,7 @@ export default function AuthHome() {
                     <div className="flex-1" style={{ height: "5px", background: "#262219", borderRadius: "3px", overflow: "hidden" }}>
                       <div style={{ width: `${p.pct}%`, height: "100%", background: isDone ? "#E8A33C" : "#9A6A1F", borderRadius: "3px" }} />
                     </div>
-                    <span className="font-mono text-xs w-12 text-right" style={{ color: "#BBB3A4", fontFamily: MONO }}>
+                    <span className="font-sans text-xs w-12 text-right" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
                       {p.pct}%
                     </span>
                   </div>
