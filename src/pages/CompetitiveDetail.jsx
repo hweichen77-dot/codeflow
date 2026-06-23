@@ -48,10 +48,10 @@ export default function CompetitiveDetail() {
 
   if (!problem) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#0a0a0a" }}>
-        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4" }}>404 — NOT FOUND</div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#15130E" }}>
+        <div className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>404 — NOT FOUND</div>
         <Link to={createPageUrl("Competitive")}>
-          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#b8ff00", border: "1px solid #b8ff0033" }}>
+          <button className="font-mono text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33" }}>
             ← Back to Competitive
           </button>
         </Link>
@@ -60,29 +60,29 @@ export default function CompetitiveDetail() {
   }
 
   return (
-    <div style={{ background: "#0a0a0a", minHeight: "100vh" }}>
+    <div style={{ background: "#15130E", minHeight: "100vh" }}>
       {/* Header */}
-      <div className="relative pt-20" style={{ borderBottom: "1px solid #1a1a1a" }}>
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #b8ff00, transparent)" }} />
+      <div className="relative pt-20" style={{ borderBottom: "1px solid #262219" }}>
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10">
-          <Link to={createPageUrl("Competitive")} className="font-mono text-xs tracking-widest uppercase mb-8 inline-block" style={{ color: "#d4d4d4" }}>
+          <Link to={createPageUrl("Competitive")} className="font-mono text-xs tracking-widest uppercase mb-8 inline-block" style={{ color: "#C9C1B2" }}>
             ← Competitive
           </Link>
           <div className="flex items-start gap-5">
-            <span className="font-mono font-bold flex-shrink-0" style={{ fontSize: "3.5rem", lineHeight: 1, color: "#e8e8e8", letterSpacing: "-0.05em" }}>
+            <span className="font-mono font-bold flex-shrink-0" style={{ fontSize: "3.5rem", lineHeight: 1, color: "#ECE7DC", letterSpacing: "-0.05em" }}>
               {DIFF_NUM[problem.difficulty] || "01"}
             </span>
             <div>
               <div className="flex items-center gap-3 mb-2 flex-wrap">
-                <span className="font-mono text-xs tracking-widest uppercase px-2.5 py-1" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>
+                <span className="font-mono text-xs tracking-widest uppercase px-2.5 py-1" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
                   {problem.difficulty}
                 </span>
-                <span className="font-mono text-xs" style={{ color: "#d4d4d4" }}>{problem.algorithm_focus}</span>
+                <span className="font-mono text-xs" style={{ color: "#C9C1B2" }}>{problem.algorithm_focus}</span>
               </div>
-              <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#f0f0f0", lineHeight: 1.12, margin: 0 }}>
+              <h1 style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: 0 }}>
                 {problem.title}
               </h1>
-              <div className="flex items-center gap-4 mt-3 font-mono text-xs" style={{ color: "#888" }}>
+              <div className="flex items-center gap-4 mt-3 font-mono text-xs" style={{ color: "#8F8779" }}>
                 {problem.time_limit_ms && <span>⏱ {problem.time_limit_ms} ms</span>}
                 {problem.memory_limit_mb && <span>▤ {problem.memory_limit_mb} MB</span>}
                 <span>C++17</span>
@@ -109,11 +109,11 @@ export default function CompetitiveDetail() {
         {/* Passed banner */}
         <AnimatePresence>
           {passed && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-4 px-6 py-5" style={{ border: "1px solid #b8ff0033", background: "#b8ff0008" }}>
-              <span className="font-mono text-sm" style={{ color: "#b8ff00" }}>✓</span>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-4 px-6 py-5" style={{ border: "1px solid #E8A33C33", background: "#E8A33C08" }}>
+              <span className="font-mono text-sm" style={{ color: "#E8A33C" }}>✓</span>
               <div>
-                <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#b8ff00" }}>Accepted</div>
-                <div className="font-display text-sm" style={{ color: "#c4c4c4", fontWeight: 400 }}>All test cases passed. Clean.</div>
+                <div className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>Accepted</div>
+                <div className="font-display text-sm" style={{ color: "#BBB3A4", fontWeight: 400 }}>All test cases passed. Clean.</div>
               </div>
             </motion.div>
           )}
@@ -122,12 +122,12 @@ export default function CompetitiveDetail() {
         {/* Actions */}
         <div className="flex flex-wrap gap-3">
           {problem.editorial && (
-            <button onClick={() => setShowEditorial(!showEditorial)} className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150" style={{ color: showEditorial ? "#b8ff00" : "#c4c4c4", border: `1px solid ${showEditorial ? "#b8ff0033" : "#1e1e1e"}`, background: showEditorial ? "#b8ff0010" : "transparent" }}>
+            <button onClick={() => setShowEditorial(!showEditorial)} className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150" style={{ color: showEditorial ? "#E8A33C" : "#BBB3A4", border: `1px solid ${showEditorial ? "#E8A33C33" : "#262219"}`, background: showEditorial ? "#E8A33C10" : "transparent" }}>
               {showEditorial ? "— Editorial" : "+ Editorial"}
             </button>
           )}
           {problem.solution_cpp && (
-            <button onClick={() => setShowSolution(!showSolution)} className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150" style={{ color: "#e8e8e8", border: "1px solid #1a1a1a" }}>
+            <button onClick={() => setShowSolution(!showSolution)} className="font-mono text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150" style={{ color: "#ECE7DC", border: "1px solid #262219" }}>
               {showSolution ? "— Solution" : "Show Solution"}
             </button>
           )}
@@ -137,11 +137,11 @@ export default function CompetitiveDetail() {
         <AnimatePresence>
           {showEditorial && problem.editorial && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-                <div className="px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#b8ff00" }}>Editorial</span>
+              <div style={{ border: "1px solid #262219", background: "#131009" }}>
+                <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
+                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>Editorial</span>
                 </div>
-                <p className="font-display text-sm leading-relaxed px-5 py-4" style={{ color: "#bbb", fontWeight: 400 }}>
+                <p className="font-display text-sm leading-relaxed px-5 py-4" style={{ color: "#A8A092", fontWeight: 400 }}>
                   {problem.editorial}
                 </p>
               </div>
@@ -153,12 +153,12 @@ export default function CompetitiveDetail() {
         <AnimatePresence>
           {showSolution && problem.solution_cpp && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div style={{ border: "1px solid #1e1e1e", background: "#0d0d0d" }}>
-                <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#d4d4d4" }}>Solution</span>
-                  <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#b8ff00", border: "1px solid #b8ff0033", background: "#b8ff0010" }}>C++</span>
+              <div style={{ border: "1px solid #262219", background: "#131009" }}>
+                <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
+                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>Solution</span>
+                  <span className="font-mono text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>C++</span>
                 </div>
-                <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#ccc" }}>
+                <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#C2BAAA" }}>
                   {problem.solution_cpp}
                 </pre>
               </div>

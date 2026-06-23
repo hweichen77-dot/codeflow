@@ -10,8 +10,8 @@ import { motion } from "framer-motion";
 export default function ProgressRing({
   percent = 0,
   size = 44,
-  color = "#b8ff00",
-  track = "#1a1a1a",
+  color = "#E8A33C",
+  track = "#262219",
   strokeWidth,
   showLabel = true,
 }) {
@@ -59,7 +59,7 @@ export default function ProgressRing({
             alignItems: "center",
             justifyContent: "center",
             fontSize: size * 0.26,
-            color: pct === 100 ? color : "#d4d4d4",
+            color: pct === 100 ? color : "#C9C1B2",
             fontWeight: 700,
             letterSpacing: "-0.03em",
           }}

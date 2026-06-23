@@ -24,9 +24,9 @@ const TOOL_REGISTRY = {
   tokenizer: InteractiveTokenizer,
 };
 
-function Label({ children, accent = "#4d7c0f" }) {
+function Label({ children, accent = "#9A6A1F" }) {
   return (
-    <div className="font-mono text-xs tracking-widest uppercase mt-10 mb-2" style={{ color: "#6b7280" }}>
+    <div className="font-mono text-xs tracking-widest uppercase mt-10 mb-2" style={{ color: "#756C5C" }}>
       <span style={{ color: accent }}>//</span> {children}
     </div>
   );
@@ -56,7 +56,7 @@ export default function LessonBlocks({ lesson, onActivity }) {
 
       {step_throughs?.map((s, i) => (
         <div key={`step-${i}`}>
-          <Label accent="#2563eb">Watch it happen</Label>
+          <Label accent="#C2643C">Watch it happen</Label>
           <StepThrough title={s.title} steps={s.steps} onComplete={() => onActivity?.("step")} />
         </div>
       ))}
@@ -86,7 +86,7 @@ export default function LessonBlocks({ lesson, onActivity }) {
 
       {reflections?.map((r, i) => (
         <div key={`ref-${i}`}>
-          <Label accent="#059669">Reflect</Label>
+          <Label accent="#C2643C">Reflect</Label>
           <Reflection prompt={r.prompt} sampleAnswer={r.sampleAnswer} onComplete={() => onActivity?.("reflect")} />
         </div>
       ))}

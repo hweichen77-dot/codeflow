@@ -5,19 +5,19 @@ import { createPageUrl } from "../utils";
 import { useAuth } from "../lib/AuthContext";
 import { summarize, touchStreak } from "../lib/progressStats";
 
-const MONO = "'Space Mono', monospace";
-const SERIF = "Georgia, 'Times New Roman', serif";
+const MONO = "'Spline Sans Mono', ui-monospace, monospace";
+const SERIF = "'Bricolage Grotesque', system-ui, sans-serif";
 
-function StatCard({ label, value, sub, accent = "#b8ff00" }) {
+function StatCard({ label, value, sub, accent = "#E8A33C" }) {
   return (
-    <div className="p-6" style={{ border: "1px solid #1a1a1a", background: "#0d0d0d" }}>
-      <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#c4c4c4", fontFamily: MONO }}>
+    <div className="p-6" style={{ border: "1px solid #262219", background: "#131009" }}>
+      <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4", fontFamily: MONO }}>
         {label}
       </div>
       <div className="font-mono font-bold" style={{ fontSize: "2rem", lineHeight: 1, color: accent, letterSpacing: "-0.03em" }}>
         {value}
       </div>
-      {sub && <div className="font-mono text-xs mt-2" style={{ color: "#888", fontFamily: MONO }}>{sub}</div>}
+      {sub && <div className="font-mono text-xs mt-2" style={{ color: "#8F8779", fontFamily: MONO }}>{sub}</div>}
     </div>
   );
 }
@@ -68,8 +68,8 @@ export default function AuthHome() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0a0a" }}>
-        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#888", fontFamily: MONO }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#15130E" }}>
+        <div className="font-mono text-xs tracking-widest uppercase animate-pulse" style={{ color: "#8F8779", fontFamily: MONO }}>
           Loading your progress…
         </div>
       </div>
@@ -77,17 +77,17 @@ export default function AuthHome() {
   }
 
   return (
-    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-20" style={{ background: "#0a0a0a" }}>
+    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-20" style={{ background: "#15130E" }}>
       <div className="max-w-5xl mx-auto">
         {/* Greeting */}
         <div className="mb-10">
-          <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#b8ff00", fontFamily: MONO }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C", fontFamily: MONO }}>
             {greeting}
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "2.6rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#f0f0f0", margin: 0, lineHeight: 1.05 }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: "2.6rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#F2EDE2", margin: 0, lineHeight: 1.05 }}>
             Welcome back, {firstName}.
           </h1>
-          <p className="font-display text-sm mt-3" style={{ color: "#d4d4d4" }}>
+          <p className="font-display text-sm mt-3" style={{ color: "#C9C1B2" }}>
             {completed.length > 0
               ? `You've completed ${completed.length} lesson${completed.length === 1 ? "" : "s"} and earned ${totalXP} XP. Keep the streak alive.`
               : "Let's start your first lesson and begin tracking your progress."}
@@ -96,51 +96,51 @@ export default function AuthHome() {
 
         {/* Stat cards */}
         <div className="grid gap-4 mb-10" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
-          <StatCard label="Level" value={lvl.name} sub={`${totalXP} XP total`} accent={lvl.color || "#b8ff00"} />
-          <StatCard label="Day streak" value={streak} sub={streak > 0 ? "Don't break it" : "Start today"} accent="#ffb300" />
+          <StatCard label="Level" value={lvl.name} sub={`${totalXP} XP total`} accent={lvl.color || "#E8A33C"} />
+          <StatCard label="Day streak" value={streak} sub={streak > 0 ? "Don't break it" : "Start today"} accent="#E0B341" />
           <StatCard label="Lessons done" value={completed.length} sub={`${lessons.length} total`} />
-          <StatCard label="Projects done" value={projectsCompleted} sub={`${projects.length} total`} accent="#60a5fa" />
+          <StatCard label="Projects done" value={projectsCompleted} sub={`${projects.length} total`} accent="#C2643C" />
         </div>
 
         {/* Level progress bar */}
-        <div className="p-6 mb-10" style={{ border: "1px solid #1a1a1a", background: "#0d0d0d" }}>
+        <div className="p-6 mb-10" style={{ border: "1px solid #262219", background: "#131009" }}>
           <div className="flex items-center justify-between mb-3">
-            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#c4c4c4", fontFamily: MONO }}>
+            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: "#BBB3A4", fontFamily: MONO }}>
               Level {lvl.name}
             </span>
-            <span className="font-mono text-xs" style={{ color: "#888", fontFamily: MONO }}>
+            <span className="font-mono text-xs" style={{ color: "#8F8779", fontFamily: MONO }}>
               {lvl.max === Infinity ? "MAX" : `${lvl.max - totalXP} XP to ${nextLvl.name}`}
             </span>
           </div>
-          <div style={{ height: "8px", background: "#1a1a1a", borderRadius: "4px", overflow: "hidden" }}>
-            <div style={{ width: `${lvlPct}%`, height: "100%", background: "linear-gradient(90deg, #4d7c0f, #b8ff00)", borderRadius: "4px", transition: "width .6s ease" }} />
+          <div style={{ height: "8px", background: "#262219", borderRadius: "4px", overflow: "hidden" }}>
+            <div style={{ width: `${lvlPct}%`, height: "100%", background: "linear-gradient(90deg, #9A6A1F, #E8A33C)", borderRadius: "4px", transition: "width .6s ease" }} />
           </div>
         </div>
 
         {/* Continue learning */}
         {resume && (
           <div className="mb-10">
-            <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#888", fontFamily: MONO }}>
+            <div className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: "#8F8779", fontFamily: MONO }}>
               {resume.done > 0 ? "Continue learning" : "Start here"}
             </div>
             <Link
               to={`${createPageUrl("ProjectDetail")}?id=${resume.id}`}
               className="block p-6 transition-all duration-150"
-              style={{ border: "1px solid #b8ff0033", background: "#b8ff0008" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#b8ff0014"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "#b8ff0008"; e.currentTarget.style.transform = ""; }}
+              style={{ border: "1px solid #E8A33C33", background: "#E8A33C08" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#E8A33C14"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#E8A33C08"; e.currentTarget.style.transform = ""; }}
             >
               <div className="flex items-center justify-between gap-6">
                 <div>
-                  <div style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: "#f0f0f0", letterSpacing: "-0.01em" }}>
+                  <div style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: "#F2EDE2", letterSpacing: "-0.01em" }}>
                     {resume.title}
                   </div>
-                  <div className="font-mono text-xs mt-2" style={{ color: "#c4c4c4", fontFamily: MONO }}>
+                  <div className="font-mono text-xs mt-2" style={{ color: "#BBB3A4", fontFamily: MONO }}>
                     {resume.done}/{resume.total} lessons · {resume.pct}% complete
                   </div>
                 </div>
                 <span className="font-mono text-sm tracking-widest uppercase px-5 py-3 flex-shrink-0"
-                  style={{ background: "#b8ff00", color: "#0a0a0a", fontWeight: 700, fontFamily: MONO }}>
+                  style={{ background: "#E8A33C", color: "#15130E", fontWeight: 700, fontFamily: MONO }}>
                   {resume.done > 0 ? "Resume →" : "Begin →"}
                 </span>
               </div>
@@ -150,7 +150,7 @@ export default function AuthHome() {
 
         {/* All tracks/projects */}
         <div>
-          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#888", fontFamily: MONO }}>
+          <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "#8F8779", fontFamily: MONO }}>
             Your projects
           </div>
           <div className="space-y-0">
@@ -161,23 +161,23 @@ export default function AuthHome() {
                   key={p.id}
                   to={`${createPageUrl("ProjectDetail")}?id=${p.id}`}
                   className="flex items-center gap-4 px-5 py-4 transition-all duration-150"
-                  style={{ borderBottom: "1px solid #141414", background: "transparent" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#0d0d0d"; }}
+                  style={{ borderBottom: "1px solid #1F1C15", background: "transparent" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#131009"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
-                  <span className="font-mono text-xs w-7 flex-shrink-0" style={{ color: "#666", fontFamily: MONO }}>
+                  <span className="font-mono text-xs w-7 flex-shrink-0" style={{ color: "#6E665A", fontFamily: MONO }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-display text-sm font-medium truncate" style={{ color: isDone ? "#b8ff00" : "#e8e8e8" }}>
+                    <div className="font-display text-sm font-medium truncate" style={{ color: isDone ? "#E8A33C" : "#ECE7DC" }}>
                       {p.title}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0" style={{ width: "180px" }}>
-                    <div className="flex-1" style={{ height: "5px", background: "#1a1a1a", borderRadius: "3px", overflow: "hidden" }}>
-                      <div style={{ width: `${p.pct}%`, height: "100%", background: isDone ? "#b8ff00" : "#4d7c0f", borderRadius: "3px" }} />
+                    <div className="flex-1" style={{ height: "5px", background: "#262219", borderRadius: "3px", overflow: "hidden" }}>
+                      <div style={{ width: `${p.pct}%`, height: "100%", background: isDone ? "#E8A33C" : "#9A6A1F", borderRadius: "3px" }} />
                     </div>
-                    <span className="font-mono text-xs w-12 text-right" style={{ color: "#c4c4c4", fontFamily: MONO }}>
+                    <span className="font-mono text-xs w-12 text-right" style={{ color: "#BBB3A4", fontFamily: MONO }}>
                       {p.pct}%
                     </span>
                   </div>

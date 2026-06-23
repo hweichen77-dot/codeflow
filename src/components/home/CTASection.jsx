@@ -6,16 +6,16 @@ export default function CTASection() {
   return (
     <section
       className="relative py-40 overflow-hidden"
-      style={{ borderTop: "1px solid #1a1a1a", background: "#0a0a0a" }}
+      style={{ borderTop: "1px solid #262219", background: "#15130E" }}
     >
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
         style={{
           fontSize: "clamp(8rem, 20vw, 20rem)",
-          fontFamily: "'Syne', sans-serif",
+          fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
           fontWeight: 900,
           color: "transparent",
-          WebkitTextStroke: "1px #1a1a1a",
+          WebkitTextStroke: "1px #262219",
           letterSpacing: "-0.05em",
           lineHeight: 1,
         }}
@@ -25,13 +25,13 @@ export default function CTASection() {
 
       <div
         className="absolute left-16 right-16 top-1/2 -translate-y-1/2 h-px pointer-events-none"
-        style={{ background: "linear-gradient(90deg, transparent, #b8ff0020, transparent)" }}
+        style={{ background: "linear-gradient(90deg, transparent, #E8A33C20, transparent)" }}
       />
 
       <div className="relative max-w-7xl mx-auto px-8 lg:px-16 text-center">
         <div
           className="font-mono text-xs tracking-widest uppercase mb-8"
-          style={{ color: "#b8ff00" }}
+          style={{ color: "#E8A33C" }}
         >
           § 03 — START NOW
         </div>
@@ -41,19 +41,19 @@ export default function CTASection() {
           style={{
             fontSize: "clamp(2rem, 4vw, 3.5rem)",
             letterSpacing: "-0.02em",
-            color: "#e8e8e8",
+            color: "#ECE7DC",
             maxWidth: "14ch",
           }}
         >
           Stop watching.<br />
-          <span style={{ WebkitTextStroke: "1.5px #b8ff00", color: "transparent" }}>
+          <span style={{ WebkitTextStroke: "1.5px #E8A33C", color: "transparent" }}>
             Start building.
           </span>
         </h2>
 
         <p
           className="font-display text-lg mb-14 mx-auto"
-          style={{ color: "#c4c4c4", maxWidth: "40ch", fontWeight: 400 }}
+          style={{ color: "#BBB3A4", maxWidth: "40ch", fontWeight: 400 }}
         >
           Free forever. No setup. Open your first lesson in under 30 seconds.
         </p>
@@ -63,14 +63,14 @@ export default function CTASection() {
             <button
               className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{
-                background: "#b8ff00",
-                color: "#0a0a0a",
-                border: "1px solid #b8ff00",
+                background: "#E8A33C",
+                color: "#15130E",
+                border: "1px solid #E8A33C",
                 fontWeight: 700,
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.transform = "translateY(-3px)";
-                e.currentTarget.style.boxShadow = "0 12px 40px rgba(184,255,0,0.3)";
+                e.currentTarget.style.boxShadow = "0 12px 40px rgba(232,163,60,0.3)";
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.transform = "";
@@ -85,17 +85,17 @@ export default function CTASection() {
               className="font-mono text-sm tracking-widest uppercase px-10 py-5 transition-all duration-200"
               style={{
                 background: "transparent",
-                color: "#c4c4c4",
-                border: "1px solid #1e1e1e",
+                color: "#BBB3A4",
+                border: "1px solid #262219",
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.borderColor = "#333";
-                e.currentTarget.style.color = "#e8e8e8";
+                e.currentTarget.style.borderColor = "#3A352D";
+                e.currentTarget.style.color = "#ECE7DC";
                 e.currentTarget.style.transform = "translateY(-3px)";
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.borderColor = "#1e1e1e";
-                e.currentTarget.style.color = "#c4c4c4";
+                e.currentTarget.style.borderColor = "#262219";
+                e.currentTarget.style.color = "#BBB3A4";
                 e.currentTarget.style.transform = "";
               }}
             >
@@ -106,19 +106,19 @@ export default function CTASection() {
 
         <div
           className="mt-20 font-mono text-xs tracking-widest"
-          style={{ color: "#e8e8e8" }}
+          style={{ color: "#ECE7DC" }}
         >
           © 2026 codeflow &nbsp;·&nbsp; crafted with insomnia and strong opinions
           <span
             className="ml-4 cursor-pointer select-none transition-all duration-500"
-            style={{ color: "#e8e8e8" }}
+            style={{ color: "#ECE7DC" }}
             title="you found it"
             onMouseEnter={e => {
-              e.currentTarget.style.color = "#b8ff00";
+              e.currentTarget.style.color = "#E8A33C";
               e.currentTarget.style.letterSpacing = "0.4em";
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.color = "#e8e8e8";
+              e.currentTarget.style.color = "#ECE7DC";
               e.currentTarget.style.letterSpacing = "";
             }}
           >▸</span>

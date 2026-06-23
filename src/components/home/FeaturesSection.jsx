@@ -29,28 +29,28 @@ const FEATURES = [
 
 export default function FeaturesSection() {
   return (
-    <section className="relative py-32" style={{ background: "#0a0a0a" }}>
+    <section className="relative py-32" style={{ background: "#15130E" }}>
       <div
         className="absolute left-0 top-0 bottom-0 w-px"
-        style={{ background: "#1a1a1a" }}
+        style={{ background: "#262219" }}
       />
 
       <div className="max-w-7xl mx-auto px-8 lg:px-16">
         <div className="flex items-start gap-8 mb-20">
           <div
             className="font-mono text-xs tracking-widest uppercase pt-1 flex-shrink-0"
-            style={{ color: "#e8e8e8", width: "4rem" }}
+            style={{ color: "#ECE7DC", width: "4rem" }}
           >
             § 01
           </div>
           <div>
             <h2
               className="font-display font-black leading-none mb-4"
-              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)", color: "#e8e8e8", letterSpacing: "-0.03em" }}
+              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)", color: "#ECE7DC", letterSpacing: "-0.03em" }}
             >
               How it works
             </h2>
-            <p className="font-display text-base" style={{ color: "#c4c4c4" }}>
+            <p className="font-display text-base" style={{ color: "#BBB3A4" }}>
               Four principles. One outcome: you can actually code.
             </p>
           </div>
@@ -62,21 +62,21 @@ export default function FeaturesSection() {
               key={f.num}
               className="relative p-10 group transition-colors duration-300"
               style={{
-                borderTop: "1px solid #1a1a1a",
-                borderRight: i % 2 === 0 ? "1px solid #1a1a1a" : "none",
+                borderTop: "1px solid #262219",
+                borderRight: i % 2 === 0 ? "1px solid #262219" : "none",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "#0d0d0d"}
+              onMouseEnter={e => e.currentTarget.style.background = "#131009"}
               onMouseLeave={e => e.currentTarget.style.background = ""}
             >
               <div
                 className="absolute left-0 top-0 bottom-0 w-px transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-                style={{ background: "#b8ff00" }}
+                style={{ background: "#E8A33C" }}
               />
 
               <div className="flex items-start gap-6">
                 <div
                   className="font-mono font-bold flex-shrink-0"
-                  style={{ fontSize: "3rem", lineHeight: 1, color: "#e8e8e8", letterSpacing: "-0.05em" }}
+                  style={{ fontSize: "3rem", lineHeight: 1, color: "#ECE7DC", letterSpacing: "-0.05em" }}
                 >
                   {f.num}
                 </div>
@@ -84,19 +84,19 @@ export default function FeaturesSection() {
                 <div>
                   <div
                     className="font-mono text-xs tracking-widest uppercase mb-4"
-                    style={{ color: "#b8ff00" }}
+                    style={{ color: "#E8A33C" }}
                   >
                     {f.tag}
                   </div>
                   <h3
                     className="font-display font-bold text-xl mb-3 leading-snug"
-                    style={{ color: "#e8e8e8", letterSpacing: "-0.02em" }}
+                    style={{ color: "#ECE7DC", letterSpacing: "-0.02em" }}
                   >
                     {f.title}
                   </h3>
                   <p
                     className="font-display text-sm leading-relaxed"
-                    style={{ color: "#c4c4c4", fontWeight: 400 }}
+                    style={{ color: "#BBB3A4", fontWeight: 400 }}
                   >
                     {f.body}
                   </p>
@@ -106,7 +106,7 @@ export default function FeaturesSection() {
           ))}
         </div>
 
-        <div className="mt-0" style={{ borderTop: "1px solid #1a1a1a" }} />
+        <div className="mt-0" style={{ borderTop: "1px solid #262219" }} />
       </div>
     </section>
   );
