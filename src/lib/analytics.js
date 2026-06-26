@@ -3,6 +3,31 @@ const HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com'
 
 export const analyticsEnabled = Boolean(KEY) && typeof window !== 'undefined'
 
+// Strip OAuth tokens / secrets and the URL fragment before anything leaves the
+// browser. After a Supabase OAuth redirect window.location.href briefly carries
+// `#access_token=...`; never let that (or query-string secrets) reach PostHog.
+const SENSITIVE_PARAMS = ['access_token', 'refresh_token', 'provider_token', 'provider_refresh_token', 'id_token', 'token', 'code']
+function sanitizeUrl(value) {
+  if (typeof value !== 'string' || !value) return value
+  try {
+    const u = new URL(value, window.location.origin)
+    u.hash = ''
+    for (const p of SENSITIVE_PARAMS) u.searchParams.delete(p)
+    return u.toString()
+  } catch {
+    return value.split('#')[0]
+  }
+}
+function sanitizeProperties(props) {
+  if (!props) return props
+  for (const k of Object.keys(props)) {
+    if (typeof props[k] === 'string' && /url|referrer|pathname|href/i.test(k)) {
+      props[k] = sanitizeUrl(props[k])
+    }
+  }
+  return props
+}
+
 let posthog = null
 let started = false
 const queue = []
@@ -32,6 +57,8 @@ export function initAnalytics() {
         capture_pageview: false,
         persistence: 'localStorage',
         autocapture: false,
+        disable_session_recording: true,
+        sanitize_properties: sanitizeProperties,
       })
       flush()
     })
@@ -52,5 +79,5 @@ export function resetIdentity() {
 }
 
 export function trackPageview(name) {
-  enqueue('capture', '$pageview', { $current_url: window.location.href, page: name || undefined })
+  enqueue('capture', '$pageview', { $current_url: sanitizeUrl(window.location.href), page: name || undefined })
 }
