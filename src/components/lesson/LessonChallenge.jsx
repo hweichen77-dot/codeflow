@@ -21,8 +21,6 @@ export default function LessonChallenge({ lesson }) {
   const hasChallenge = lesson.challenge_title || lesson.challenge_description;
   if (!hasChallenge) return null;
 
-  // Pick the runner by language. Defaults to Python; CSA lessons set
-  // challenge_language/language to "java", competitive-style to "cpp".
   const lang = lesson.challenge_language || lesson.language || "python";
   const grade = lang === "java" ? gradeJava : lang === "cpp" ? gradeCpp : gradePython;
   const ext = EXT[lang] || "py";
@@ -51,7 +49,6 @@ export default function LessonChallenge({ lesson }) {
 
   return (
     <div style={{ ...traceStyles.panel }}>
-      {/* Header */}
       <div
         className="flex items-center gap-3 px-6 py-4"
         style={{ borderBottom: `1px solid ${trace.border}`, background: trace.surface, borderTopLeftRadius: 4, borderTopRightRadius: 4 }}
@@ -81,7 +78,6 @@ export default function LessonChallenge({ lesson }) {
           .lc-md pre { font-family: 'Spline Sans Mono', ui-monospace, monospace; font-size: 0.78rem; background: ${trace.terminal}; border: 1px solid ${trace.border}; padding: 0.75rem 0.9rem; overflow-x: auto; border-radius: 3px; margin: 0 0 0.7rem; color: ${trace.text}; }
         `}</style>
 
-        {/* Story hook (rich problems) */}
         {lesson.challenge_story && (
           <div className="mb-4 px-4 py-3" style={{ borderLeft: `2px solid ${trace.lime}`, background: trace.limeFaint, borderRadius: "2px" }}>
             <div className="lc-md" style={{ fontStyle: "italic" }}>
@@ -90,7 +86,6 @@ export default function LessonChallenge({ lesson }) {
           </div>
         )}
 
-        {/* Statement (rich) or one-line description (legacy) */}
         {lesson.challenge_statement ? (
           <div className="lc-md mb-4">
             <ReactMarkdown
@@ -114,7 +109,6 @@ export default function LessonChallenge({ lesson }) {
           )
         )}
 
-        {/* Input / Output format + constraints (rich) */}
         {(lesson.challenge_input_format || lesson.challenge_output_format || lesson.challenge_constraints) && (
           <div className="mb-4 grid sm:grid-cols-2 gap-3">
             {lesson.challenge_input_format && (
@@ -144,7 +138,6 @@ export default function LessonChallenge({ lesson }) {
           </div>
         )}
 
-        {/* Test cases */}
         {lesson.challenge_test_cases?.length > 0 && (
           <div className="mb-5" style={{ ...traceStyles.terminal, overflow: "hidden" }}>
             <div
@@ -168,7 +161,6 @@ export default function LessonChallenge({ lesson }) {
           </div>
         )}
 
-        {/* Editor */}
         <div className="mb-4">
           <CodeEditor
             code={code}
@@ -180,7 +172,6 @@ export default function LessonChallenge({ lesson }) {
           />
         </div>
 
-        {/* Pass banner */}
         <AnimatePresence>
           {passed && (
             <motion.div
@@ -199,7 +190,6 @@ export default function LessonChallenge({ lesson }) {
           )}
         </AnimatePresence>
 
-        {/* Solution toggle */}
         {lesson.challenge_solution_code && (
           <div>
             <button

@@ -1,6 +1,3 @@
-// Parse the fetched Google Fonts CSS, keep only the `latin` @font-face blocks,
-// download those woff2 into website/fonts, and emit website/fonts/fonts.css that
-// points at the local files. Lets the site ship with font-src 'self' (no CDN).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -16,7 +13,6 @@ const downloads = []
 
 for (const { css, slug } of sources) {
   const text = readFileSync(css, 'utf8')
-  // Each block: a `/* subset */` comment followed by an @font-face {...}
   const re = /\/\*\s*([\w-]+)\s*\*\/\s*(@font-face\s*\{[^}]*\})/g
   let m
   while ((m = re.exec(text))) {

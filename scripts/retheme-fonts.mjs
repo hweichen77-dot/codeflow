@@ -1,7 +1,3 @@
-// One-off: swap inline fontFamily strings from the old stack (Georgia / Space Mono
-// / IBM Plex / Syne) to the new one (Bricolage Grotesque / Hanken Grotesk /
-// Spline Sans Mono). The CSS utilities already point at the new fonts; this fixes
-// the many inline `fontFamily: "..."` literals across components/pages.
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join, extname } from 'node:path'
 

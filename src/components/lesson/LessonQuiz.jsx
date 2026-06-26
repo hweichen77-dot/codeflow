@@ -17,7 +17,6 @@ export default function LessonQuiz({ questions }) {
 
   return (
     <div style={{ border: `1px solid ${trace.border}` }}>
-      {/* Header */}
       <div
         className="flex items-center justify-between px-6 py-4"
         style={{ borderBottom: `1px solid ${trace.border}`, background: trace.terminal }}
@@ -54,7 +53,6 @@ export default function LessonQuiz({ questions }) {
         )}
       </div>
 
-      {/* Questions */}
       <div className="divide-y" style={{ borderColor: trace.border }}>
         {questions.map((q, qi) => {
           const selected = answers[qi];
@@ -118,7 +116,6 @@ export default function LessonQuiz({ questions }) {
                 })}
               </div>
 
-              {/* Explanation */}
               <AnimatePresence>
                 {submitted && q.explanation && (
                   <motion.div
@@ -152,7 +149,6 @@ export default function LessonQuiz({ questions }) {
         })}
       </div>
 
-      {/* Submit */}
       {!submitted && (
         <div className="px-6 py-4" style={{ borderTop: `1px solid ${trace.border}`, background: trace.terminal }}>
           <button

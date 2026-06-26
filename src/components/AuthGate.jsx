@@ -35,8 +35,6 @@ export default function AuthGate() {
   const { signInEmail, signUpEmail, signInGoogle, resetPassword, signInGuest, supabaseConfigured } = useAuth();
   const navigate = useNavigate();
 
-  // 'signin' | 'signup' | 'forgot' | 'guest'
-  // Until Supabase is configured, email auth can't work — lead with guest.
   const [mode, setMode] = useState(supabaseConfigured ? 'signin' : 'guest');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,7 +54,6 @@ export default function AuthGate() {
     setBusy(true);
     const { error } = await signInGoogle();
     if (error) { setError(error.message || 'Could not sign in with Google.'); setBusy(false); }
-    // On success the browser redirects to Google, then back to '/'.
   };
 
   const submit = async (e) => {
@@ -148,7 +145,6 @@ export default function AuthGate() {
           </div>
         )}
 
-        {/* OAuth — only meaningful when Supabase + a Google provider are configured. */}
         {supabaseConfigured && mode !== 'guest' && mode !== 'forgot' && (
           <>
             <button
@@ -176,7 +172,6 @@ export default function AuthGate() {
           </>
         )}
 
-        {/* Tabs */}
         <div className="flex gap-1 mb-7" style={{ borderBottom: '1px solid #262219' }}>
           {tab('signin', 'Sign in')}
           {tab('signup', 'Sign up')}
@@ -243,7 +238,6 @@ export default function AuthGate() {
           </button>
         </form>
 
-        {/* Footer links */}
         <div className="mt-5 flex items-center justify-between">
           {mode === 'signin' ? (
             <button type="button" onClick={() => { setMode('forgot'); setError(''); setNotice(''); }}

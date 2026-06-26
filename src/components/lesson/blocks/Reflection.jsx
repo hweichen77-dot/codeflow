@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { trace, traceStyles } from "@/components/lesson/trace/theme";
 
-/**
- * Reflection — short-answer / "explain in your own words" prompt.
- * Credit for trying; a model answer is revealed after submitting.
- *
- * props: prompt, sampleAnswer, onComplete?
- */
 export default function Reflection({ prompt, sampleAnswer, onComplete }) {
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);

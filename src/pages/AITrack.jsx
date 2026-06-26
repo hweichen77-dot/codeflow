@@ -34,7 +34,6 @@ const DIFF_COLOR = {
 };
 
 export default function AITrack() {
-  // Transient nudge shown when a learner clicks a locked module.
   const [nudge, setNudge] = useState(null);
   useEffect(() => {
     if (!nudge) return;
@@ -42,7 +41,6 @@ export default function AITrack() {
     return () => clearTimeout(t);
   }, [nudge]);
 
-  // Per-module progress: completed lessons / total lessons for that project.
   const { data: user } = useQuery({
     queryKey: ["me"],
     queryFn: () => api.auth.me().catch(() => null),
@@ -71,18 +69,14 @@ export default function AITrack() {
 
   const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "Beginner");
 
-  // This page is the AI track only. AP CSP/CSA modules live on the AP CS hub.
   const aiProjects = projects.filter((p) => (p.track || "ai") === "ai");
 
-  // Hard-gate: intermediate/advanced modules stay locked until most beginner
-  // foundations are complete. Same rule enforced on ProjectDetail deep links.
   const beginnerProjects = aiProjects.filter((p) => p.difficulty === "beginner");
   const foundationsFinished = foundationsAreFinished(
     beginnerProjects,
     (p) => modulePct(p.id) === 100
   );
 
-  // Build the curriculum straight from content so every module is listed.
   const trackItems = aiProjects.map((p, i) => ({
     number: String(i + 1).padStart(2, "0"),
     title: p.title,
@@ -96,7 +90,6 @@ export default function AITrack() {
 
   return (
     <div className="min-h-screen" style={{ background: "#15130E" }}>
-      {/* Hero */}
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
@@ -115,13 +108,11 @@ export default function AITrack() {
 
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-16 space-y-20">
 
-        {/* Curriculum */}
         <div>
           <div className="font-sans text-xs tracking-widest uppercase mb-8" style={{ color: "#BBB3A4" }}>
             CURRICULUM — {trackItems.length} MODULES
           </div>
 
-          {/* Table header */}
           <div
             className="grid gap-8 px-6 py-3 mb-px"
             style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #262219" }}
@@ -135,8 +126,6 @@ export default function AITrack() {
             const dc = DIFF_COLOR[item.difficulty] || DIFF_COLOR.Beginner;
             const pct = modulePct(item.projectId);
             const done = pct === 100;
-            // Hard-gate harder modules until foundations are finished. Clicking
-            // a locked row nudges instead of navigating.
             const gated = isModuleGated({
               finished: foundationsFinished,
               done,
@@ -229,7 +218,6 @@ export default function AITrack() {
           })}
         </div>
 
-        {/* Capstone projects */}
         <div>
           <div className="font-sans text-xs tracking-widest uppercase mb-8" style={{ color: "#BBB3A4" }}>
             CAPSTONE PROJECTS — WHAT YOU WILL BUILD
@@ -272,7 +260,6 @@ export default function AITrack() {
           </div>
         </div>
 
-        {/* CTA */}
         <div className="text-center py-12" style={{ border: "1px solid #262219" }}>
           <div className="font-sans text-xs tracking-widest uppercase mb-5" style={{ color: "#BBB3A4" }}>READY?</div>
           <h2
@@ -296,7 +283,6 @@ export default function AITrack() {
         </div>
       </div>
 
-      {/* Locked-module nudge */}
       {nudge && (
         <div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-sans text-xs tracking-widest uppercase px-5 py-3 shadow-lg"

@@ -1,12 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-/**
- * SVG circular progress ring.
- * @param {number} percent 0-100
- * @param {number} size diameter in px
- * @param {string} color stroke color of the filled arc
- */
 export default function ProgressRing({
   percent = 0,
   size = 44,

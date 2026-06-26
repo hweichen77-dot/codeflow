@@ -1,45 +1,18 @@
-// Supabase Edge Function: run-cpp
-// Compiles and runs C++ for the Competitive Coding section by proxying to the
-// Compiler Explorer (godbolt.org) execution API. Edge Functions run Deno and
-// cannot invoke gcc directly, so compilation + execution happen in Godbolt's
-// sandbox. (The public Piston API went whitelist-only in Feb 2026; Godbolt is a
-// free, no-key, well-funded alternative that supports stdin.)
-//
-// The browser/desktop app calls this via
-//   supabase.functions.invoke('run-cpp', { body: { source, stdin } })
-// and gets back { compile_output, compile_code, stdout, stderr, code }.
-//
-// Deploy (auth required — verify_jwt=true is the default and is set in
-// config.toml; do NOT pass --no-verify-jwt):
-//   supabase functions deploy run-cpp
-//   supabase secrets set ALLOWED_ORIGIN=https://<your-site>     # CORS lock
-//   supabase secrets set FUNCTION_SHARED_SECRET=<random>         # optional
-// No Anthropic/Godbolt secret required. To swap to a self-hosted Judge0/Piston
-// later, only this file and src/lib/cppRunner.js change.
-//
-// With no Supabase configured, the client never calls this — cppRunner returns
-// an "unavailable" message and the rest of the app is unaffected.
-//
-// Hardening: this is a public compile relay, so it is gated by a valid Supabase
-// JWT (or a shared-secret header), a per-caller rate limit, source/stdin size
-// caps, and an origin-locked CORS policy.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const COMPILER = "g132"; // gcc 13.2 on Compiler Explorer
+const COMPILER = "g132";
 const GODBOLT_URL = `https://godbolt.org/api/compiler/${COMPILER}/compile`;
 const MAX_SOURCE_BYTES = 50_000;
-const MAX_STDIN_BYTES = 64_000; // 64KB stdin cap
+const MAX_STDIN_BYTES = 64_000;
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const FUNCTION_SHARED_SECRET = Deno.env.get("FUNCTION_SHARED_SECRET");
-// Lock CORS to the site origin. Falls back to the deployed GitHub Pages site.
 const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://hweichen77-dot.github.io";
 
-// Per-caller fixed-window rate limit (best-effort; in-memory per edge worker).
-const RATE_LIMIT_MAX = 20; // requests
-const RATE_LIMIT_WINDOW_MS = 60_000; // per minute
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000;
 const hits = new Map<string, { count: number; resetAt: number }>();
 
 function rateLimited(key: string): boolean {
@@ -67,8 +40,6 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-// Validate the caller: a shared-secret header OR a verifiable Supabase JWT.
-// Returns the user id (or "secret") on success, null on failure.
 async function authenticate(req: Request): Promise<string | null> {
   if (FUNCTION_SHARED_SECRET) {
     const provided = req.headers.get("x-function-secret");
@@ -80,8 +51,6 @@ async function authenticate(req: Request): Promise<string | null> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
 
   const token = authHeader.slice("Bearer ".length).trim();
-  // The anon key is also sent as a Bearer token by supabase-js; reject it so a
-  // bare anon key cannot stand in for a logged-in user.
   if (token === SUPABASE_ANON_KEY) return null;
 
   try {
@@ -96,7 +65,6 @@ async function authenticate(req: Request): Promise<string | null> {
   }
 }
 
-// Godbolt returns stdout/stderr as arrays of { text } lines.
 function joinLines(arr: unknown): string {
   if (!Array.isArray(arr)) return "";
   return arr.map((l) => (l && typeof l === "object" ? (l as { text?: string }).text ?? "" : String(l))).join("\n");
@@ -106,11 +74,9 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
 
-  // Require a valid caller before doing any work.
   const caller = await authenticate(req);
   if (!caller) return json({ error: "unauthorized" }, 401);
 
-  // Best-effort per-caller rate limit (per edge worker / in-memory).
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   const rlKey = caller === "secret" ? `ip:${ip}` : `user:${caller}`;
   if (rateLimited(rlKey)) return json({ error: "rate limit exceeded" }, 429);
@@ -151,7 +117,7 @@ Deno.serve(async (req: Request) => {
 
     const data = await resp.json();
     const compileCode = data?.code ?? 0;
-    const compileOut = joinLines(data?.stderr).trim(); // compiler diagnostics live in top-level stderr
+    const compileOut = joinLines(data?.stderr).trim();
     const exec = data?.execResult ?? {};
 
     return json({

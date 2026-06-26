@@ -41,7 +41,6 @@ export default function LessonPointsSummary({
 
   return (
     <div style={{ ...traceStyles.terminal, overflow: "hidden", fontFamily: trace.mono }}>
-      {/* Header */}
       <div style={{ padding: "20px 28px", borderBottom: `1px solid ${trace.border}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
@@ -71,7 +70,6 @@ export default function LessonPointsSummary({
           </div>
         </div>
 
-        {/* Animated progress bar */}
         <div style={{ height: "6px", background: trace.surface, borderRadius: "3px", marginTop: "14px", overflow: "hidden", border: `1px solid ${trace.border}` }}>
           <motion.div
             initial={{ width: "0%" }}
@@ -86,7 +84,6 @@ export default function LessonPointsSummary({
         </div>
       </div>
 
-      {/* Task list */}
       <div style={{ padding: "16px 28px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {items.map((item, i) => (
@@ -124,7 +121,6 @@ export default function LessonPointsSummary({
         </div>
       </div>
 
-      {/* Next section */}
       {nextLessonTitle && (
         <div style={{ padding: "14px 28px", borderTop: `1px solid ${trace.border}`, textAlign: "right" }}>
           <button

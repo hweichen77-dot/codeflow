@@ -12,9 +12,6 @@ export default {
     cover_image: ""
   },
   lessons: [
-    // ------------------------------------------------------------------
-    // Lesson 1 — System Prompts
-    // ------------------------------------------------------------------
     {
       id: "ai-03-l1",
       project_id: "ai-03",
@@ -246,9 +243,6 @@ response = client.messages.create(
 )
 print(response.content[0].text)
 print("System prompt set:", system_prompt != "")`,
-      // Real Anthropic SDK call: cannot run in the in-browser sandbox and the
-      // model's reply is non-deterministic. Marked illustrative — the pirate
-      // line below is one example, not a gradable target. See schema.js.
       illustrative: true,
       expected_output: `(example reply — actual output will vary)
 Arrr, the skies be clear and the winds be fair, matey!
@@ -337,9 +331,6 @@ main()
       ]
     },
 
-    // ------------------------------------------------------------------
-    // Lesson 2 — Tokens
-    // ------------------------------------------------------------------
     {
       id: "ai-03-l2",
       project_id: "ai-03",
@@ -639,9 +630,6 @@ main()
       ]
     },
 
-    // ------------------------------------------------------------------
-    // Lesson 3 — Temperature
-    // ------------------------------------------------------------------
     {
       id: "ai-03-l3",
       project_id: "ai-03",
@@ -929,9 +917,6 @@ main()
       ]
     },
 
-    // ------------------------------------------------------------------
-    // Lesson 4 — Few-Shot Prompting
-    // ------------------------------------------------------------------
     {
       id: "ai-03-l4",
       project_id: "ai-03",
@@ -1237,9 +1222,6 @@ main()
       ]
     },
 
-    // ------------------------------------------------------------------
-    // Lesson 5 — Structured Output
-    // ------------------------------------------------------------------
     {
       id: "ai-03-l5",
       project_id: "ai-03",
@@ -1555,9 +1537,6 @@ main()
       ]
     },
 
-    // ------------------------------------------------------------------
-    // Lesson 6 — Role and Persona Prompting
-    // ------------------------------------------------------------------
     {
       id: "ai-03-l6",
       project_id: "ai-03",
@@ -1849,9 +1828,6 @@ main()
       ]
     },
 
-    // ------------------------------------------------------------------
-    // Lesson 7 — Delimiters and Prompt Structure
-    // ------------------------------------------------------------------
     {
       id: "ai-03-l7",
       project_id: "ai-03",
@@ -2131,9 +2107,6 @@ main()
       ]
     },
 
-    // ------------------------------------------------------------------
-    // Lesson 8 — Iterating and Debugging Prompts
-    // ------------------------------------------------------------------
     {
       id: "ai-03-l8",
       project_id: "ai-03",

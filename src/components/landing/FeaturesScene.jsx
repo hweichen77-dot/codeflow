@@ -140,7 +140,6 @@ export default function FeaturesScene() {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
   const bgY2 = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
 
-  // Scroll-driven diagonal stripe animation
   const stripeX = useTransform(scrollYProgress, [0, 1], ["-60%", "60%"]);
 
   return (
@@ -149,7 +148,6 @@ export default function FeaturesScene() {
         className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center px-6"
         style={{ background: "#15130E", paddingTop: "8vh" }}
       >
-        {/* Parallax bg glow */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -159,7 +157,6 @@ export default function FeaturesScene() {
           />
         </motion.div>
 
-        {/* Corner accents — slower parallax */}
         <motion.div style={{ y: bgY2 }} className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 w-64 h-64" style={{
             background: "radial-gradient(circle at 0% 0%, rgba(0,212,255,0.04) 0%, transparent 60%)"
@@ -169,7 +166,6 @@ export default function FeaturesScene() {
           }} />
         </motion.div>
 
-        {/* Scroll-driven diagonal stripe */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
             style={{ x: stripeX }}
@@ -180,7 +176,6 @@ export default function FeaturesScene() {
           </motion.div>
         </div>
 
-        {/* Animated dot grid */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none opacity-40">
           <div
             className="absolute inset-0"

@@ -1,5 +1,3 @@
-// Competitive Coding — Search topic.
-// Problems that teach AI search/retrieval algorithms through C++ implementation.
 
 export default [
   {

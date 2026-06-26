@@ -46,7 +46,6 @@ function QuoteCard({ quote, index, scrollYProgress }) {
   return (
     <motion.div style={{ opacity, y, position: "absolute", top: 0, left: 0, right: 0 }}>
       <div className="max-w-2xl mx-auto px-6">
-        {/* Opening quote mark */}
         <div
           className="font-display font-black mb-6 leading-none"
           style={{ fontSize: "6rem", color: quote.accent, opacity: 0.15, lineHeight: 1 }}
@@ -98,7 +97,6 @@ export default function SocialProofScene() {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
   const bgY2 = useTransform(scrollYProgress, [0, 1], ["0%", "42%"]);
 
-  // Ticker scrolls horizontally driven by scroll
   const tickerX = useTransform(scrollYProgress, [0, 1], ["0%", "-40%"]);
 
   const milestonesOpacity = useTransform(scrollYProgress, [0.75, 0.88], [0, 1]);
@@ -109,7 +107,6 @@ export default function SocialProofScene() {
         className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center"
         style={{ background: "#15130E", paddingTop: "8vh" }}
       >
-        {/* Parallax noise/grain bg */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -126,7 +123,6 @@ export default function SocialProofScene() {
               background: "radial-gradient(ellipse 60% 50% at 70% 70%, rgba(0,212,255,0.03) 0%, transparent 60%)",
             }}
           />
-          {/* Horizontal lines */}
           <div
             className="absolute inset-0"
             style={{
@@ -136,7 +132,6 @@ export default function SocialProofScene() {
           />
         </motion.div>
 
-        {/* Animated scan line */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
             animate={{ y: ["0%", "100%"] }}
@@ -151,14 +146,12 @@ export default function SocialProofScene() {
             § FROM THE COMMUNITY
           </div>
 
-          {/* Quotes */}
           <div className="relative mb-24" style={{ minHeight: "260px" }}>
             {QUOTES.map((q, i) => (
               <QuoteCard key={i} quote={q} index={i} scrollYProgress={scrollYProgress} />
             ))}
           </div>
 
-          {/* Milestone timeline — fades in near end of scene */}
           <motion.div style={{ opacity: milestonesOpacity }}>
             <div className="font-sans text-xs tracking-widest uppercase mb-8 text-center" style={{ color: "#ECE7DC" }}>
               YOUR TIMELINE
@@ -176,7 +169,6 @@ export default function SocialProofScene() {
                   <p className="font-display text-sm leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
                     {m.text}
                   </p>
-                  {/* connector dot */}
                   <div
                     className="absolute top-1/2 -right-1 w-2 h-2 -translate-y-1/2"
                     style={{ background: i < 3 ? "#E8A33C" : "transparent", zIndex: 2 }}
@@ -187,7 +179,6 @@ export default function SocialProofScene() {
           </motion.div>
         </motion.div>
 
-        {/* Scroll-driven bottom ticker */}
         <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none" style={{ borderTop: "1px solid #1C1A14" }}>
           <motion.div style={{ x: tickerX }} className="flex whitespace-nowrap py-3">
             {[...Array(4)].map((_, ri) => (

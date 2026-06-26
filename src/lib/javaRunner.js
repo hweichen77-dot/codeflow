@@ -1,26 +1,8 @@
-/**
- * Java execution for the AP Computer Science A track. Mirrors cppRunner.js.
- *
- * Two transports, same normalized result:
- *  1. If Supabase is configured, route through the `run-java` Edge Function
- *     (server-side proxy → reliable stdin-driven execution via a real judge,
- *     central rate-limiting). This is the PRIMARY path for CSA.
- *  2. Otherwise call the Compiler Explorer (godbolt.org) OpenJDK execute API
- *     DIRECTLY from the browser (no backend). Godbolt returns
- *     `Access-Control-Allow-Origin: *`, so the static site can grade Java with
- *     no server — with the constraint that the public class must be `Main`.
- *
- * Reference solutions are additionally compiled+run with real javac/java in CI
- * (scripts/verify-solutions.mjs), so content correctness never depends on the
- * browser transport.
- */
 import { supabase, auth } from "../api/supabaseClient";
 
-// OpenJDK on Compiler Explorer. Configurable; Java executor runs the `Main` class.
 const COMPILER = "java2100";
 const GODBOLT_URL = `https://godbolt.org/api/compiler/${COMPILER}/compile`;
 
-// Godbolt returns stdout/stderr as arrays of { text } lines.
 function joinLines(arr) {
   if (!Array.isArray(arr)) return "";
   return arr.map((l) => (l && typeof l === "object" ? l.text ?? "" : String(l))).join("\n");
@@ -28,9 +10,6 @@ function joinLines(arr) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Distinct sentinel thrown when the judge service is overloaded/unreachable
-// after retries. The grader treats this as "could not grade — retry", NOT as a
-// wrong answer, so a flaky upstream never produces a false FAIL verdict.
 class InfraError extends Error {
   constructor(message) {
     super(message);
@@ -39,9 +18,6 @@ class InfraError extends Error {
   }
 }
 
-// Call Compiler Explorer (OpenJDK) directly and return the same shape the Edge
-// Function does. Retries 429/503 with exponential backoff honoring Retry-After;
-// a persistent overload surfaces as an InfraError.
 async function runViaGodbolt(source, stdin) {
   const MAX_ATTEMPTS = 4;
   let lastStatus = 0;
@@ -85,15 +61,13 @@ async function runViaGodbolt(source, stdin) {
       const retryAfter = Number(resp.headers.get("retry-after"));
       const backoff = Number.isFinite(retryAfter) && retryAfter > 0
         ? retryAfter * 1000
-        : 500 * Math.pow(2, attempt); // 500ms, 1s, 2s
+        : 500 * Math.pow(2, attempt);
       await sleep(backoff);
     }
   }
   throw new InfraError(`java judge overloaded (${lastStatus})`);
 }
 
-// Turn the raw { compile_output, compile_code, stdout, stderr, code, timed_out }
-// into { output, isError, compileError, timedOut, runtimeError, empty }.
 function normalize(data) {
   if (data?.error) return { output: `Runner error: ${data.error}`, isError: true, empty: false };
 
@@ -127,11 +101,6 @@ function normalize(data) {
   return { output: raw, isError: false, empty: raw.length === 0 };
 }
 
-/**
- * Compile + run Java source with optional stdin. Source should declare
- * `public class Main` with a `main` method.
- * Returns { output, isError, compileError, timedOut, runtimeError, empty }.
- */
 export async function runJava(source, stdin = "") {
   try {
     let data;
@@ -153,7 +122,6 @@ export async function runJava(source, stdin = "") {
         if (e2 && e2.infra) {
           return { output: "Java judge is busy. Please try again in a moment.", isError: true, infra: true, empty: false };
         }
-        /* fall through */
       }
     }
     if (e && e.infra) {
@@ -163,7 +131,6 @@ export async function runJava(source, stdin = "") {
   }
 }
 
-// Same normalization as the other runners (preserve leading whitespace).
 const norm = (s) =>
   String(s ?? "")
     .replace(/\r/g, "")
@@ -171,10 +138,6 @@ const norm = (s) =>
     .replace(/[ \t]+$/, "")
     .replace(/\n$/, "");
 
-/**
- * Grade Java against test cases. Same return shape as gradePython/gradeCpp:
- * { output, passed, results: [{ ok, expected, got }], ran, isError }.
- */
 export async function gradeJava(source, testCases = []) {
   const cases = (testCases || []).filter((t) => t && t.expected_output != null);
 

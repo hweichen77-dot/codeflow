@@ -1,5 +1,3 @@
-// Competitive Coding — Probability topic.
-// Problems that teach probabilistic AI algorithms through C++ implementation.
 
 export default [
   {

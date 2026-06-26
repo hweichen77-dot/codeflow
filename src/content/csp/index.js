@@ -1,6 +1,3 @@
-// AP Computer Science Principles — module aggregator.
-// Each module exports default { project, lessons } with project.track === 'apcsp'.
-// Explicit static imports (Node validate/verify scripts import this).
 import csp_crd from './module-csp-crd.js'
 import csp_dat from './module-csp-dat.js'
 import csp_aap1 from './module-csp-aap1.js'

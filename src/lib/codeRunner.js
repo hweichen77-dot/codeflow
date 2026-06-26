@@ -1,7 +1,3 @@
-/**
- * Real sandboxed JavaScript execution using a hidden iframe.
- * This replaces the LLM-simulated execution approach.
- */
 
 export function runCodeInSandbox(code, timeoutMs = 5000) {
   return new Promise((resolve) => {

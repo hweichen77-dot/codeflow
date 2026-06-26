@@ -36,7 +36,6 @@ export default function HowItWorks() {
   return (
     <section id="how" style={{ borderBottom: "1px solid #221F18" }}>
       <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "96px 2rem" }}>
-        {/* section head */}
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
           <span style={{
             fontFamily: body,
@@ -60,7 +59,6 @@ export default function HowItWorks() {
           </h2>
         </div>
 
-        {/* editorial track index — table, not card grid */}
         <div className="cf-track" style={{ display: "flex", flexDirection: "column" }}>
           {tracks.map((t, i) => (
             <TrackRow key={t.n} {...t} last={i === tracks.length - 1} />

@@ -1,25 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { trace } from "@/components/lesson/trace/theme";
 
-/**
- * InteractiveTokenizer — a live "tool" (zyBooks-style) for the Tokens lesson.
- * Type text → see an approximate token split, counts, and cost. Pure client-side
- * heuristic (NOT a real BPE tokenizer, but close enough to build intuition).
- */
 
-// Rough heuristic: whitespace+punct boundaries, then chop long word-pieces ~4 chars.
 function tokenize(text) {
   if (!text) return [];
   const raw = text.match(/\s+|[a-zA-Z]+|[0-9]+|[^\sa-zA-Z0-9]/g) || [];
   const out = [];
   for (const chunk of raw) {
     if (/^\s+$/.test(chunk)) {
-      // attach a leading space to the *next* token the way real tokenizers do
       out.push({ t: chunk.replace(/\n/g, "·").replace(/ /g, "␣"), kind: "space" });
     } else if (chunk.length <= 4) {
       out.push({ t: chunk, kind: "word" });
     } else {
-      // split long words into ~4-char pieces
       for (let k = 0; k < chunk.length; k += 4) {
         out.push({ t: chunk.slice(k, k + 4), kind: "piece" });
       }
@@ -41,7 +33,7 @@ export default function InteractiveTokenizer() {
   const visible = tokens.filter((t) => t.kind !== "space" || t.t.trim() !== "");
   const tokenCount = tokens.length;
   const charCount = text.length;
-  const inCost = (tokenCount / 1_000_000) * 3; // $3 / M input tokens
+  const inCost = (tokenCount / 1_000_000) * 3;
   const ratio = charCount ? (charCount / Math.max(tokenCount, 1)).toFixed(1) : "0";
 
   return (
@@ -63,7 +55,6 @@ export default function InteractiveTokenizer() {
           style={{ background: trace.surface, border: `1px solid ${trace.borderStrong}`, color: trace.text }}
         />
 
-        {/* presets */}
         <div className="flex flex-wrap gap-2 mt-3">
           {PRESETS.map((p) => (
             <button
@@ -77,7 +68,6 @@ export default function InteractiveTokenizer() {
           ))}
         </div>
 
-        {/* token chips */}
         <div className="flex flex-wrap gap-1.5 mt-5">
           {visible.map((tok, idx) => (
             <span
@@ -94,7 +84,6 @@ export default function InteractiveTokenizer() {
           )}
         </div>
 
-        {/* stats */}
         <div className="grid grid-cols-4 gap-0 mt-5" style={{ border: `1px solid ${trace.border}` }}>
           <Stat label="Tokens" value={tokenCount} accent={trace.lime} />
           <Stat label="Characters" value={charCount} />

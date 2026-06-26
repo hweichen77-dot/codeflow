@@ -1,4 +1,3 @@
-// localStorage-backed entity stores that mimic the api entity API shape.
 import { touchStreak } from '../lib/progressStats'
 import { track } from '../lib/analytics'
 
@@ -6,13 +5,10 @@ export const PROGRESS_KEY = 'codeflow_progress_v1'
 export const CAPSTONE_KEY = 'codeflow_capstones_v1'
 export const CHALLENGES_KEY = 'codeflow_challenges_v1'
 
-// Cloud sync (when signed in) listens for this so a local write is mirrored to
-// Supabase. Dispatched after every successful localStorage write; harmless when
-// nobody is listening (guest / unconfigured build).
 export const PROGRESS_CHANGED_EVENT = 'codeflow:progress-changed'
 const emitChange = () => {
   if (typeof window === 'undefined') return
-  try { window.dispatchEvent(new Event(PROGRESS_CHANGED_EVENT)) } catch { /* ignore */ }
+  try { window.dispatchEvent(new Event(PROGRESS_CHANGED_EVENT)) } catch {  }
 }
 
 let counter = 0
@@ -28,8 +24,6 @@ const readArr = (key) => {
   }
 }
 
-// One-shot signal so a student in private-mode / full-storage learns their work
-// isn't being saved instead of silently losing it. App mounts a listener.
 let storageErrorNotified = false
 const writeArr = (key, arr) => {
   if (typeof window === 'undefined') return
@@ -39,20 +33,15 @@ const writeArr = (key, arr) => {
   } catch {
     if (!storageErrorNotified) {
       storageErrorNotified = true
-      try { window.dispatchEvent(new Event('codeflow:storage-error')) } catch { /* ignore */ }
+      try { window.dispatchEvent(new Event('codeflow:storage-error')) } catch {  }
     }
   }
 }
 
-/**
- * Wipe all local progress data. Called on explicit sign-out so a second user on
- * a shared/lab browser never inherits — or cloud-merges — the first user's
- * lessons, challenges, and capstones.
- */
 export function clearAllProgress() {
   if (typeof window === 'undefined') return
   for (const key of [PROGRESS_KEY, CAPSTONE_KEY, CHALLENGES_KEY]) {
-    try { window.localStorage.removeItem(key) } catch { /* ignore */ }
+    try { window.localStorage.removeItem(key) } catch {  }
   }
 }
 
@@ -105,14 +94,7 @@ export const UserProgress = {
   },
 }
 
-/**
- * Guest-friendly, localStorage-backed challenge completion store.
- * Records form: { id, status: 'completed' | 'in_progress', completed_at }.
- * Used by ChallengeDetail (write) and Dashboard (read) so guest mode shows
- * real numbers instead of the Supabase-only path that returns nothing.
- */
 
-/** Mark a challenge as completed (idempotent). Also advances the day streak. */
 export function markChallengeComplete(id) {
   if (!id) return null
   const rows = readArr(CHALLENGES_KEY)
@@ -125,14 +107,11 @@ export function markChallengeComplete(id) {
     rows[idx] = { ...rows[idx], status: 'completed', completed_at }
   }
   writeArr(CHALLENGES_KEY, rows)
-  // Real learning activity → keep the streak alive on completion, not just on
-  // visiting the home route.
-  try { touchStreak() } catch { /* ignore */ }
-  if (wasNew) { try { track('challenge_complete', { id }) } catch { /* ignore */ } }
+  try { touchStreak() } catch {  }
+  if (wasNew) { try { track('challenge_complete', { id }) } catch {  } }
   return rows.find((r) => r.id === id) || null
 }
 
-/** Mark a challenge as in-progress (only if not already completed). */
 export function markChallengeInProgress(id) {
   if (!id) return null
   const rows = readArr(CHALLENGES_KEY)
@@ -146,7 +125,6 @@ export function markChallengeInProgress(id) {
   return rows.find((r) => r.id === id) || null
 }
 
-/** Aggregate challenge counts + a completion-date streak for the Dashboard. */
 export function getChallengeStats() {
   const rows = readArr(CHALLENGES_KEY)
   const completed = rows.filter((r) => r.status === 'completed').length

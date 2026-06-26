@@ -27,7 +27,6 @@ export default function AIChatbot({ context = "", lessonTitle = "", lessonId = "
     }
   });
 
-  // Persist messages per lesson
   useEffect(() => {
     if (lessonId && messages.length > 1) {
       try {
@@ -36,7 +35,6 @@ export default function AIChatbot({ context = "", lessonTitle = "", lessonId = "
     }
   }, [messages, lessonId]);
 
-  // Reset when lesson changes
   useEffect(() => {
     if (!lessonId) return;
     try {
@@ -135,7 +133,6 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
             }}
           >
-            {/* Header */}
             <div
               className="flex items-center justify-between px-5 py-3 flex-shrink-0"
               style={{ borderBottom: "1px solid #262219", background: "#15130E" }}
@@ -163,7 +160,6 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               </button>
             </div>
 
-            {/* Mode toggle */}
             <div
               className="flex items-center gap-3 px-5 py-2.5 flex-shrink-0"
               style={{ borderBottom: "1px solid #1C1A14", background: "#080808" }}
@@ -199,7 +195,6 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               )}
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -227,7 +222,6 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
             <div className="px-4 py-3 flex-shrink-0" style={{ borderTop: "1px solid #262219" }}>
               {aiAvailable ? (
                 <div className="flex items-center gap-2">

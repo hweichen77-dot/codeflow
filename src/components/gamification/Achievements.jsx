@@ -15,16 +15,11 @@ function readSeen() {
   }
 }
 
-/**
- * Achievement badge grid. Computes from {progress, projects, streak, capstones}.
- * Fires an XP-style toast for any newly-unlocked achievement (vs localStorage).
- */
 export default function Achievements({ progress = [], projects = [], streak = 0, capstones = [] }) {
   const achievements = computeAchievements({ progress, projects, streak, capstones });
   const announced = useRef(false);
 
   useEffect(() => {
-    // Wait until data has loaded to avoid false "unlocks" on empty first render.
     if (announced.current) return;
     if (!projects.length) return;
     announced.current = true;
@@ -42,7 +37,6 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
     try {
       localStorage.setItem(SEEN_KEY, JSON.stringify(unlockedIds));
     } catch {
-      /* ignore */
     }
   }, [achievements, projects.length]);
 

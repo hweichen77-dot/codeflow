@@ -79,7 +79,6 @@ export default function AuthHome() {
   return (
     <div className="min-h-screen px-8 lg:px-16 pt-28 pb-20" style={{ background: "#15130E" }}>
       <div className="max-w-5xl mx-auto">
-        {/* Greeting */}
         <div className="mb-10">
           <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C", fontFamily: LABEL }}>
             {greeting}
@@ -94,7 +93,6 @@ export default function AuthHome() {
           </p>
         </div>
 
-        {/* Stat cards */}
         <div className="grid gap-4 mb-10" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
           <StatCard label="Level" value={lvl.name} sub={`${totalXP} XP total`} accent={lvl.color || "#E8A33C"} />
           <StatCard label="Day streak" value={streak} sub={streak > 0 ? "Don't break it" : "Start today"} accent="#E0B341" />
@@ -102,7 +100,6 @@ export default function AuthHome() {
           <StatCard label="Projects done" value={projectsCompleted} sub={`${projects.length} total`} accent="#C2643C" />
         </div>
 
-        {/* Level progress bar */}
         <div className="p-6 mb-10" style={{ border: "1px solid #262219", background: "#131009" }}>
           <div className="flex items-center justify-between mb-3">
             <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
@@ -117,7 +114,6 @@ export default function AuthHome() {
           </div>
         </div>
 
-        {/* Continue learning */}
         {resume && (
           <div className="mb-10">
             <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#8F8779", fontFamily: LABEL }}>
@@ -148,7 +144,6 @@ export default function AuthHome() {
           </div>
         )}
 
-        {/* All tracks/projects */}
         <div>
           <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#8F8779", fontFamily: LABEL }}>
             Your projects

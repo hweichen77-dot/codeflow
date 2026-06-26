@@ -28,7 +28,6 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div style={{ background: "#15130E", minHeight: "100vh" }}>
-      {/* Skip link */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] font-sans text-xs tracking-widest uppercase px-4 py-2"
@@ -36,7 +35,6 @@ export default function Layout({ children, currentPageName }) {
       >
         Skip to content
       </a>
-      {/* Sticky nav */}
       <nav
         aria-label="Primary"
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
@@ -50,7 +48,6 @@ export default function Layout({ children, currentPageName }) {
         <div
           className="max-w-7xl mx-auto flex items-center justify-between h-full px-8 lg:px-16"
         >
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div
               className="font-sans font-bold text-sm tracking-widest uppercase transition-all duration-200"
@@ -70,7 +67,6 @@ export default function Layout({ children, currentPageName }) {
             </span>
           </Link>
 
-          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-0">
             {navLinks.map((link) => (
               <Link
@@ -113,7 +109,6 @@ export default function Layout({ children, currentPageName }) {
             ))}
           </div>
 
-          {/* Right side */}
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
@@ -158,7 +153,6 @@ export default function Layout({ children, currentPageName }) {
             )}
           </div>
 
-          {/* Mobile toggle */}
           <button
             className="md:hidden font-sans text-xs tracking-widest uppercase p-2 transition-colors"
             style={{ color: mobileOpen ? "#E8A33C" : "#ECE7DC" }}
@@ -171,7 +165,6 @@ export default function Layout({ children, currentPageName }) {
           </button>
         </div>
 
-        {/* Mobile menu */}
         {mobileOpen && (
           <div
             id="mobile-nav-menu"
@@ -237,7 +230,6 @@ export default function Layout({ children, currentPageName }) {
         )}
       </nav>
 
-      {/* Page content */}
       <main id="main-content">{children}</main>
     </div>
   );

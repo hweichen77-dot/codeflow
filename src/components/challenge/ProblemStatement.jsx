@@ -2,16 +2,6 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-/**
- * Renders a USACO / Codeforces-style problem statement for both AI challenges
- * and Competitive Coding problems. All sections are optional — pass only what a
- * problem has. Dark theme, lime accent, matching the challenge pages.
- *
- * problem: {
- *   story, statement, input_format, output_format,
- *   constraints: string[], examples: [{input, output, explanation}], notes
- * }
- */
 
 function MD({ children }) {
   if (!children) return null;
@@ -20,8 +10,6 @@ function MD({ children }) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          // react-markdown v9 dropped the `inline` prop: treat as a block only
-          // when it carries a language class or spans multiple lines.
           code: ({ className, children }) => {
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             return isBlock ? (

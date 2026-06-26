@@ -61,7 +61,6 @@ export default function CompetitiveDetail() {
 
   return (
     <div style={{ background: "#15130E", minHeight: "100vh" }}>
-      {/* Header */}
       <div className="relative pt-20" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10">
@@ -93,10 +92,8 @@ export default function CompetitiveDetail() {
       </div>
 
       <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8">
-        {/* Problem statement */}
         <ProblemStatement problem={problem} />
 
-        {/* Editor */}
         <CodeEditor
           code={code}
           onChange={setCode}
@@ -106,7 +103,6 @@ export default function CompetitiveDetail() {
           filename="solution.cpp"
         />
 
-        {/* Passed banner */}
         <AnimatePresence>
           {passed && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-4 px-6 py-5" style={{ border: "1px solid #E8A33C33", background: "#E8A33C08" }}>
@@ -119,7 +115,6 @@ export default function CompetitiveDetail() {
           )}
         </AnimatePresence>
 
-        {/* Actions */}
         <div className="flex flex-wrap gap-3">
           {problem.editorial && (
             <button onClick={() => setShowEditorial(!showEditorial)} className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150" style={{ color: showEditorial ? "#E8A33C" : "#BBB3A4", border: `1px solid ${showEditorial ? "#E8A33C33" : "#262219"}`, background: showEditorial ? "#E8A33C10" : "transparent" }}>
@@ -133,7 +128,6 @@ export default function CompetitiveDetail() {
           )}
         </div>
 
-        {/* Editorial */}
         <AnimatePresence>
           {showEditorial && problem.editorial && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
@@ -149,7 +143,6 @@ export default function CompetitiveDetail() {
           )}
         </AnimatePresence>
 
-        {/* Solution */}
         <AnimatePresence>
           {showSolution && problem.solution_cpp && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">

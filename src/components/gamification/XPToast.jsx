@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Global XP toast queue
 let toastListeners = [];
 export function showXPToast(message, xp, emoji = "") {
   const id = Date.now() + Math.random();

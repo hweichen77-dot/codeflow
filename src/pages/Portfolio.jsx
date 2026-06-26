@@ -24,7 +24,6 @@ export default function Portfolio() {
 
   return (
     <div className="min-h-screen" style={{ background: "#15130E" }}>
-      {/* Header */}
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-5xl mx-auto">
@@ -119,7 +118,6 @@ export default function Portfolio() {
                     </div>
                   </div>
 
-                  {/* AI Feedback */}
                   {sub.ai_feedback && (
                     <div
                       className="mt-4 px-4 py-3"

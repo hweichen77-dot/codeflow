@@ -133,7 +133,6 @@ export default function LearningScene() {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
   const bgY2 = useTransform(scrollYProgress, [0, 1], ["0%", "38%"]);
 
-  // Orbiting dots
   const orbitRotate = useTransform(scrollYProgress, [0, 1], [0, 180]);
 
   return (
@@ -142,7 +141,6 @@ export default function LearningScene() {
         className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center"
         style={{ background: "#080808", paddingTop: "8vh" }}
       >
-        {/* Parallax bg grid */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -156,7 +154,6 @@ export default function LearningScene() {
           />
         </motion.div>
 
-        {/* Slower glow layer */}
         <motion.div style={{ y: bgY2 }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -166,7 +163,6 @@ export default function LearningScene() {
           />
         </motion.div>
 
-        {/* Orbiting accent rings */}
         <motion.div
           style={{ rotate: orbitRotate }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -184,14 +180,12 @@ export default function LearningScene() {
             className="w-[900px] h-[900px] rounded-full"
             style={{ border: "1px solid rgba(0,212,255,0.025)" }}
           />
-          {/* dot on ring */}
           <div
             className="absolute w-1.5 h-1.5 rounded-full"
             style={{ background: "#E8A33C", top: "calc(50% - 300px)", left: "50%", transform: "translateX(-50%)", boxShadow: "0 0 8px #E8A33C" }}
           />
         </motion.div>
 
-        {/* Scan lines */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           {[30, 60, 75].map((pct, i) => (
             <motion.div

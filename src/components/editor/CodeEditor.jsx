@@ -23,10 +23,8 @@ export default function CodeEditor({
 
   const lines = (code || "").split("\n");
 
-  // AI hints only when an AI backend is actually reachable.
   const aiAnalysisOn = enableAIAnalysis && aiAvailable;
 
-  // Debounced AI analysis
   const triggerAnalysis = useCallback(async (currentCode) => {
     if (!aiAnalysisOn || !solutionCode || currentCode.trim().length < 30) return;
     try {
@@ -52,7 +50,6 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
         setAiHint(result.hint);
       }
     } catch (e) {
-      // Silently ignore AI errors (rate limits, credit limits, etc.)
     }
   }, [aiAnalysisOn, solutionCode, lessonTitle]);
 
@@ -71,7 +68,6 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
   };
 
   const handleKeyDown = (e) => {
-    // Escape moves focus out so keyboard users aren't trapped in the editor.
     if (e.key === "Escape") {
       e.target.blur();
       return;
@@ -83,7 +79,6 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
       const end = target.selectionEnd;
 
       if (e.shiftKey) {
-        // Remove up to two leading spaces from the start of the current line.
         const lineStart = code.lastIndexOf("\n", start - 1) + 1;
         let removed = 0;
         while (removed < 2 && code[lineStart + removed] === " ") removed++;
@@ -95,7 +90,6 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
           target.selectionEnd = Math.max(lineStart, end - removed);
         }, 0);
       } else {
-        // Insert two real spaces at the caret / over the selection.
         const newCode = code.substring(0, start) + "  " + code.substring(end);
         onChange(newCode);
         setTimeout(() => {
@@ -114,7 +108,6 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
   return (
     <>
       <div className="overflow-hidden" style={{ border: "1px solid #262219", background: "#131009" }}>
-        {/* Terminal header */}
         <div
           className="flex items-center justify-between px-5 py-3"
           style={{ borderBottom: "1px solid #262219", background: "#15130E" }}
@@ -168,7 +161,6 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
           </div>
         </div>
 
-        {/* Editor area */}
         <div className="flex relative" style={{ minHeight: "280px", maxHeight: "500px" }}>
           <div
             ref={lineNumbersRef}
@@ -193,7 +185,6 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
           />
         </div>
 
-        {/* AI Analysis strip */}
         {aiAnalysisOn && (
           <CodeAnalysis
             hint={aiHint}
@@ -202,7 +193,6 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
           />
         )}
 
-        {/* Output panel */}
         {output !== undefined && output !== null && (
           <div role="status" aria-live="polite" style={{ borderTop: "1px solid #262219" }}>
             <div className="flex items-center gap-3 px-5 py-2.5" style={{ background: "#15130E", borderBottom: "1px solid #262219" }}>

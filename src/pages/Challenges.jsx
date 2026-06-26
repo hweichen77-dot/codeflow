@@ -54,7 +54,6 @@ export default function Challenges() {
           }
         }
       `}</style>
-      {/* Header */}
       <div
         className="relative px-4 sm:px-8 lg:px-16 pt-28 pb-16"
         style={{ borderBottom: "1px solid #262219" }}
@@ -79,7 +78,6 @@ export default function Challenges() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-12">
-        {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-12">
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span
@@ -113,7 +111,6 @@ export default function Challenges() {
             ))}
           </div>
 
-          {/* Sort toggle */}
           <div className="flex gap-2 flex-wrap sm:ml-auto">
             {SORTS.map(s => (
               <button
@@ -132,7 +129,6 @@ export default function Challenges() {
           </div>
         </div>
 
-        {/* Table header */}
         {!isLoading && filtered.length > 0 && (
           <div
             className="grid items-center gap-4 sm:gap-8 px-4 sm:px-6 py-3 mb-px challenge-row"
@@ -150,7 +146,6 @@ export default function Challenges() {
           </div>
         )}
 
-        {/* List */}
         {isLoading ? (
           <div className="space-y-px">
             {[1, 2, 3, 4].map(i => (
@@ -176,7 +171,6 @@ export default function Challenges() {
                     className="challenge-row challenge-row-link grid items-center gap-4 sm:gap-8 px-4 sm:px-6 py-5 transition-all duration-200 group"
                     style={{ borderBottom: "1px solid #1C1A14" }}
                   >
-                    {/* Level */}
                     <div
                       className="font-sans font-bold"
                       style={{ fontSize: "1.25rem", color: "#ECE7DC", letterSpacing: "-0.05em" }}
@@ -184,7 +178,6 @@ export default function Challenges() {
                       {DIFF_NUM[challenge.difficulty] || "01"}
                     </div>
 
-                    {/* Title */}
                     <div>
                       {challenge.project_title && (
                         <div
@@ -210,7 +203,6 @@ export default function Challenges() {
                       )}
                     </div>
 
-                    {/* Topic */}
                     <div className="hidden sm:block">
                       <span
                         className="font-sans text-xs tracking-widest uppercase px-2.5 py-1"
@@ -220,7 +212,6 @@ export default function Challenges() {
                       </span>
                     </div>
 
-                    {/* XP */}
                     <div className="text-right">
                       <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>
                         +{challenge.xp || 15}xp

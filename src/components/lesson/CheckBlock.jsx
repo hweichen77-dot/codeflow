@@ -28,7 +28,6 @@ export default function CheckBlock({ questions, sectionNumber, onComplete }) {
 
   return (
     <div style={{ ...traceStyles.panel, marginTop: "24px", marginBottom: "24px" }}>
-      {/* Header */}
       <div style={{ display: "flex", alignItems: "stretch", borderBottom: `1px solid ${trace.border}` }}>
         <div style={{ width: "4px", background: trace.lime, flexShrink: 0 }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, padding: "10px 16px" }}>
@@ -70,7 +69,6 @@ export default function CheckBlock({ questions, sectionNumber, onComplete }) {
         </div>
       </div>
 
-      {/* Questions */}
       {questions.map((q, qi) => {
         const isChecked = checked[qi] !== undefined;
         const isCorrect = checked[qi] === true;
@@ -191,7 +189,6 @@ export default function CheckBlock({ questions, sectionNumber, onComplete }) {
         );
       })}
 
-      {/* Footer */}
       {allChecked && (
         <motion.div
           initial={{ opacity: 0 }}

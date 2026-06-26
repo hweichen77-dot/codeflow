@@ -1,6 +1,3 @@
-// AP Computer Science A — module aggregator (Java).
-// Each module exports default { project, lessons } with project.track === 'apcsa'
-// and lessons set language 'java' (solutions declare `public class Main`).
 import csa_01 from './module-csa-01.js'
 import csa_02 from './module-csa-02.js'
 import csa_03 from './module-csa-03.js'

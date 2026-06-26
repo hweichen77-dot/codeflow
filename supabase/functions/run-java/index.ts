@@ -1,26 +1,7 @@
-// Supabase Edge Function: run-java
-// Compiles and runs Java for the AP Computer Science A track by proxying to the
-// Compiler Explorer (godbolt.org) OpenJDK execution API. Edge Functions run Deno
-// and cannot invoke javac directly, so compilation + execution happen in
-// Godbolt's sandbox, which supports stdin. Source must declare `public class Main`.
-//
-// The browser/desktop app calls this via
-//   supabase.functions.invoke('run-java', { body: { source, stdin } })
-// and gets back { compile_output, compile_code, stdout, stderr, code, timed_out }.
-//
-// Deploy (auth required — verify_jwt=true is the default in config.toml):
-//   supabase functions deploy run-java
-//   supabase secrets set ALLOWED_ORIGIN=https://<your-site>     # CORS lock
-//   supabase secrets set FUNCTION_SHARED_SECRET=<random>         # optional
-// To swap to a self-hosted Judge0/Piston later, only this file and
-// src/lib/javaRunner.js change.
-//
-// Mirrors run-cpp: JWT/shared-secret auth, per-caller rate limit, size caps,
-// origin-locked CORS.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const COMPILER = "java2100"; // OpenJDK on Compiler Explorer (runs the Main class)
+const COMPILER = "java2100";
 const GODBOLT_URL = `https://godbolt.org/api/compiler/${COMPILER}/compile`;
 const MAX_SOURCE_BYTES = 50_000;
 const MAX_STDIN_BYTES = 64_000;

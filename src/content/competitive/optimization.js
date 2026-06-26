@@ -1,6 +1,3 @@
-// Competitive Coding — Optimization topic.
-// Problems that teach the optimization math behind training and serving AI models,
-// implemented exactly in integer arithmetic through C++.
 
 export default [
   {

@@ -18,9 +18,7 @@ export default function HeroSection() {
         gap: "48px",
         alignItems: "end",
       }}>
-        {/* LEFT — editorial copy */}
         <div>
-          {/* eyebrow with rule */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px" }}>
             <span style={{ height: "1px", width: "46px", background: "#E8A33C" }} />
             <span style={{
@@ -35,7 +33,6 @@ export default function HeroSection() {
             </span>
           </div>
 
-          {/* headline */}
           <h1 style={{
             fontFamily: display,
             fontWeight: 760,
@@ -48,7 +45,6 @@ export default function HeroSection() {
             From curious<br />to <em style={{ fontStyle: "italic", fontWeight: 500, color: "#E8A33C" }}>capable.</em>
           </h1>
 
-          {/* lede */}
           <p style={{
             fontFamily: body,
             marginTop: "32px",
@@ -62,7 +58,6 @@ export default function HeroSection() {
             you actually run at every step.
           </p>
 
-          {/* actions */}
           <div style={{ marginTop: "44px", display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
             <button
               style={btnPrimary}
@@ -91,7 +86,6 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* RIGHT — terminal card */}
         <div style={{
           background: "#131009",
           border: "1px solid #34302A",

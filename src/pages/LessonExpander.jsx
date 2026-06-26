@@ -94,7 +94,6 @@ export default function LessonExpander() {
         ]).then(([ls, ps]) => {
           setLessons(ls);
           setProjects(ps);
-          // Pre-mark already expanded items
           const initLessonStatuses = {};
           ls.forEach(l => { if (l.explanation) initLessonStatuses[l.id] = "already_expanded"; });
           setLessonStatuses(initLessonStatuses);
@@ -107,7 +106,6 @@ export default function LessonExpander() {
     }).catch(() => {});
   }, []);
 
-  // --- Lessons ---
   const runAllLessons = async () => {
     setLessonRunning(true);
     const toRun = lessons.filter(l => lessonStatuses[l.id] !== "already_expanded" && lessonStatuses[l.id] !== "done");
@@ -136,7 +134,6 @@ export default function LessonExpander() {
     }
   };
 
-  // --- Projects ---
   const runAllProjects = async () => {
     setProjectRunning(true);
     const toRun = projects.filter(p => projectStatuses[p.id] !== "already_expanded" && projectStatuses[p.id] !== "done");
@@ -213,7 +210,6 @@ export default function LessonExpander() {
   return (
     <div className="min-h-screen px-8 lg:px-16 pt-28 pb-16" style={{ background: "#15130E" }}>
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
             ADMIN TOOL
@@ -226,7 +222,6 @@ export default function LessonExpander() {
           </p>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-0 mb-6" style={{ borderBottom: "1px solid #262219" }}>
           {["lessons", "projects", "enrich"].map(t => (
             <button
@@ -245,7 +240,6 @@ export default function LessonExpander() {
           ))}
         </div>
 
-        {/* Enrich tab */}
         {tab === "enrich" && loaded && (
           <div>
             <div className="flex items-center gap-4 mb-6 p-5" style={{ border: "1px solid #262219", background: "#131009" }}>
@@ -277,7 +271,6 @@ export default function LessonExpander() {
           </div>
         )}
 
-        {/* Controls */}
         {tab !== "enrich" && (
         <div className="flex items-center gap-4 mb-6 p-5" style={{ border: "1px solid #262219", background: "#131009" }}>
           <button
@@ -315,7 +308,6 @@ export default function LessonExpander() {
 
         )}
 
-        {/* List */}
         {tab !== "enrich" && loaded && isLessonsTab && (
           <ItemList
             items={lessons}

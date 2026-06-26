@@ -3,10 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle } from "lucide-react";
 import { trace } from "@/components/lesson/trace/theme";
 
-/**
- * A quick inline "check your understanding" mini quiz
- * that can be embedded inside lesson explanations.
- */
 export default function InlineQuiz({ question, options, correctIndex, explanation }) {
   const [selected, setSelected] = useState(null);
   const [revealed, setRevealed] = useState(false);
@@ -19,7 +15,6 @@ export default function InlineQuiz({ question, options, correctIndex, explanatio
       className="my-6 rounded"
       style={{ border: `1px solid ${trace.border}`, background: trace.raised }}
     >
-      {/* Header */}
       <div className="px-4 py-2.5 flex items-center gap-2" style={{ borderBottom: `1px solid ${trace.border}` }}>
         <span
           className="font-sans text-xs tracking-widest uppercase flex items-center gap-1.5"

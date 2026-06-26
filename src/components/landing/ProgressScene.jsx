@@ -83,11 +83,9 @@ export default function ProgressScene() {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "28%"]);
   const bgY2 = useTransform(scrollYProgress, [0, 1], ["0%", "45%"]);
 
-  // Expanding pulse ring on scroll
   const ringScale = useTransform(scrollYProgress, [0.05, 0.6], [0.5, 2.5]);
   const ringOpacity = useTransform(scrollYProgress, [0.05, 0.2, 0.6], [0, 0.08, 0]);
 
-  // Heading fade in
   const headingOpacity = useTransform(scrollYProgress, [0.03, 0.14], [0, 1]);
   const headingY = useTransform(scrollYProgress, [0.03, 0.14], [30, 0]);
 
@@ -97,7 +95,6 @@ export default function ProgressScene() {
         className="sticky top-0 h-screen overflow-hidden flex items-center justify-center px-6"
         style={{ background: "#080808", paddingTop: "8vh" }}
       >
-        {/* Parallax horizontal lines */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -108,7 +105,6 @@ export default function ProgressScene() {
           />
         </motion.div>
 
-        {/* Slower glow */}
         <motion.div style={{ y: bgY2 }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -118,7 +114,6 @@ export default function ProgressScene() {
           />
         </motion.div>
 
-        {/* Scroll-expanding pulse ring */}
         <motion.div
           style={{ scale: ringScale, opacity: ringOpacity }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -129,7 +124,6 @@ export default function ProgressScene() {
           />
         </motion.div>
 
-        {/* Floating particles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {[...Array(8)].map((_, i) => (
             <motion.div

@@ -55,7 +55,6 @@ export default function Footer() {
     <footer style={{ padding: "64px 2rem 96px" }}>
       <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "32px" }}>
-          {/* brand */}
           <div>
             <div style={{ marginBottom: "12px" }}><Wordmark /></div>
             <p style={{ fontFamily: body, color: "#756C5C", fontSize: "0.86rem", maxWidth: "42ch", lineHeight: 1.6 }}>
@@ -64,7 +63,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* product */}
           <div>
             <div style={idx}>Product</div>
             <FootRouterLink to={createPageUrl("Lessons")}>AI track</FootRouterLink>
@@ -73,7 +71,6 @@ export default function Footer() {
             <FootRouterLink to={createPageUrl("Projects")}>Projects</FootRouterLink>
           </div>
 
-          {/* about */}
           <div>
             <div style={idx}>About</div>
             <FootLink href="https://github.com/hweichen77-dot/codeflow" target="_blank" rel="noopener noreferrer">GitHub</FootLink>
@@ -83,7 +80,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* bottom line */}
         <div style={{
           marginTop: "64px",
           paddingTop: "24px",

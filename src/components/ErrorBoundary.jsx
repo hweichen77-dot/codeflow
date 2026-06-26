@@ -5,10 +5,6 @@ const MONO = "'Spline Sans Mono', ui-monospace, monospace"
 const LABEL = "'Hanken Grotesk', system-ui, sans-serif"
 const SERIF = "'Bricolage Grotesque', system-ui, sans-serif"
 
-// Top-level crash guard. Without it, any render-time exception unmounts the
-// whole React tree and leaves users staring at a blank #root — the single
-// worst first-run experience. This catches it, reports to monitoring, and
-// offers a recovery path instead.
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)

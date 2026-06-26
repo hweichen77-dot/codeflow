@@ -180,12 +180,10 @@ export default function PathSplitScene() {
     offset: ["start start", "end start"],
   });
 
-  // Parallax bg
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "28%"]);
   const bgY2 = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
   const sceneOpacity = useTransform(scrollYProgress, [0, 0.04, 0.88, 1], [0, 1, 1, 0]);
 
-  // Animated diagonal lines sweep across on scroll
   const lineX = useTransform(scrollYProgress, [0.05, 0.5], ["-100%", "100%"]);
 
   return (
@@ -194,7 +192,6 @@ export default function PathSplitScene() {
         className="sticky top-0 h-screen overflow-hidden"
         style={{ background: "#15130E" }}
       >
-        {/* Parallax glow */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -204,7 +201,6 @@ export default function PathSplitScene() {
           />
         </motion.div>
 
-        {/* Second slower glow — cyan tint */}
         <motion.div style={{ y: bgY2 }} className="absolute inset-0 pointer-events-none">
           <div
             className="absolute inset-0"
@@ -214,7 +210,6 @@ export default function PathSplitScene() {
           />
         </motion.div>
 
-        {/* Scroll-driven horizontal sweep line */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
             style={{ x: lineX }}
@@ -225,7 +220,6 @@ export default function PathSplitScene() {
           </motion.div>
         </div>
 
-        {/* Grid texture */}
         <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none opacity-30">
           <div
             className="absolute inset-0"

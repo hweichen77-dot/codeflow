@@ -2,18 +2,8 @@ import React, { useState } from "react";
 import { Check, X } from "lucide-react";
 import { trace } from "@/components/lesson/trace/theme";
 
-/**
- * DragToBin — classify activity (zyBooks matching / drag-to-bin).
- * Click an item to select, click a bin to drop it there. Reliable on touch too.
- *
- * props:
- *   title: string
- *   bins: [{ id, label }]
- *   items: [{ id, text, bin }]   // bin = correct bin id
- *   onComplete?: () => void
- */
 export default function DragToBin({ title, bins = [], items = [], onComplete }) {
-  const [placed, setPlaced] = useState({}); // itemId -> binId
+  const [placed, setPlaced] = useState({});
   const [selected, setSelected] = useState(null);
   const [checked, setChecked] = useState(false);
 
@@ -51,7 +41,6 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
       </div>
 
       <div className="p-5">
-        {/* unplaced pool */}
         <div className="flex flex-wrap gap-2 mb-5 min-h-[40px]">
           {unplaced.map((it) => (
             <button
@@ -71,7 +60,6 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
           {allPlaced && <span className="font-sans text-xs" style={{ color: trace.dim }}>all sorted — check your answer</span>}
         </div>
 
-        {/* bins */}
         <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${bins.length}, 1fr)` }}>
           {bins.map((bin) => {
             const binItems = items.filter((it) => placed[it.id] === bin.id);

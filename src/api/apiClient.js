@@ -1,15 +1,7 @@
-// Fully static, offline data layer. No api backend, no Supabase.
-// Preserves the exact `api` shape the ~11 consumer files depend on.
-//
-// The curriculum content barrel (~3MB) is loaded LAZILY via dynamic import so it
-// stays out of the initial/marketing chunk. All entity methods are async, so they
-// await the content module on first access; the promise is cached after that.
 import { UserProgress, CapstoneSubmission } from './progressStore.js'
 import { getProfile, setProfile, clear as clearProfile } from './localProfile.js'
 import { auth } from './supabaseClient'
 
-// Cached dynamic import of the curriculum barrel. Fetched on first entity call,
-// then reused. Keeps PROJECTS/LESSONS/CHALLENGES out of the initial bundle.
 let _contentPromise = null
 const loadContent = () => {
   if (!_contentPromise) _contentPromise = import('@/content/index.js')
@@ -22,13 +14,9 @@ const diffRank = (x) => DIFF_RANK[x?.difficulty] ?? 0
 const sortList = (arr, sort) => {
   if (!sort || typeof sort !== 'string') return arr
   if (sort === 'order') {
-    // Primary key = difficulty tier so a learner never meets advanced material
-    // before finishing easier material even if `order` values drift; `order`
-    // breaks ties within a tier.
     return [...arr].sort((a, b) => (diffRank(a) - diffRank(b)) || ((a.order || 0) - (b.order || 0)))
   }
   if (sort === 'difficulty') {
-    // Easiest-first, used by the Challenges catalog.
     return [...arr].sort((a, b) => (diffRank(a) - diffRank(b)) || ((a.order || 0) - (b.order || 0)))
   }
   const desc = sort.startsWith('-')
@@ -83,14 +71,9 @@ const Challenge = {
   },
 }
 
-// LLM bridge. When Supabase is configured, route prompts through the
-// `invoke-llm` edge function (API key stays server-side). Otherwise degrade
-// to an offline message so the UI never crashes.
 const OFFLINE_MSG =
   "The AI tutor isn't available right now. You can still read the lesson, write code, and run it — your code runs for real."
 
-// True only when Supabase is configured (the AI backend is reachable). The UI
-// checks this to hide AI affordances instead of returning the offline string.
 export const aiAvailable = auth.isConfigured
 
 const InvokeLLM = async ({ prompt, max_tokens } = {}) => {
@@ -103,7 +86,6 @@ const InvokeLLM = async ({ prompt, max_tokens } = {}) => {
       if (!error && data?.text) return data.text
     }
   } catch {
-    /* fall through to offline */
   }
   return OFFLINE_MSG
 }
@@ -120,9 +102,8 @@ export const api = {
       if (typeof window !== 'undefined') window.location.reload()
     },
     redirectToLogin: () => {
-      // Handled by AuthContext local prompt; no-op here.
     },
-    setProfile, // expose for the local sign-in form
+    setProfile,
   },
   entities: { Project, Lesson, Challenge, UserProgress, CapstoneSubmission },
   integrations: { Core: { InvokeLLM } },
@@ -130,6 +111,5 @@ export const api = {
   appLogs: { logUserInApp: async () => {} },
 }
 
-// Named entity exports too, in case any file imports them directly.
 export { Project, Lesson, Challenge }
 export { UserProgress, CapstoneSubmission }

@@ -5,9 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/apiClient";
 import ProgressRing from "../components/gamification/ProgressRing";
 
-// AP Computer Science hub — lists the two exam-aligned tracks built on the same
-// lesson player as the AI track. CSP = Big Ideas (Python/pseudocode); CSA = Units
-// (Java). Modules are grouped by their `unit` label.
 const TRACKS = [
   { key: "apcsp", label: "AP CSP", title: "Computer Science Principles", lang: "Python · pseudocode",
     blurb: "The five Big Ideas of computing — creative development, data, algorithms & programming, systems & networks, and the impact of computing. Runnable Python plus exam-style practice." },
@@ -53,7 +50,6 @@ export default function APCS() {
   const active = TRACKS.find((t) => t.key === track);
   const trackProjects = projects.filter((p) => p.track === track);
 
-  // Group modules by their `unit` label, preserving first-seen order.
   const units = [];
   const byUnit = new Map();
   for (const p of trackProjects) {
@@ -64,7 +60,6 @@ export default function APCS() {
 
   return (
     <div className="min-h-screen" style={{ background: "#15130E" }}>
-      {/* Hero */}
       <div className="relative px-8 lg:px-16 pt-28 pb-12" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
@@ -79,7 +74,6 @@ export default function APCS() {
         </div>
       </div>
 
-      {/* Track tabs */}
       <div className="max-w-7xl mx-auto px-8 lg:px-16 pt-10">
         <div className="flex gap-2 mb-2">
           {TRACKS.map((t) => (
@@ -104,7 +98,6 @@ export default function APCS() {
         </p>
       </div>
 
-      {/* Curriculum grouped by unit */}
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12 space-y-12">
         {trackProjects.length === 0 ? (
           <div className="font-sans text-sm py-20 text-center" style={{ color: "#6E665A" }}>
