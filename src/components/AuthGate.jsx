@@ -32,23 +32,21 @@ function Input({ label, ...props }) {
 }
 
 export default function AuthGate() {
-  const { signInEmail, signUpEmail, signInGoogle, resetPassword, signInGuest, supabaseConfigured } = useAuth();
+  const { signInGoogle, signInGuest, supabaseConfigured } = useAuth();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState(supabaseConfigured ? 'signin' : 'guest');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // 'google' = sign in with Google (default when configured); 'guest' = local-only quick start.
+  const [mode, setMode] = useState(supabaseConfigured ? 'google' : 'guest');
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
 
   const go = () => navigate('/');
 
   const google = async () => {
-    setError(''); setNotice('');
+    setError('');
     if (!supabaseConfigured) {
-      setError('Email accounts are not configured yet. Use "Continue as guest" for now.');
+      setError('Accounts are not configured yet. Use “Continue as guest” for now.');
       return;
     }
     setBusy(true);
@@ -56,75 +54,22 @@ export default function AuthGate() {
     if (error) { setError(error.message || 'Could not sign in with Google.'); setBusy(false); }
   };
 
-  const submit = async (e) => {
+  const startGuest = (e) => {
     e.preventDefault();
-    setError(''); setNotice('');
-
-    if (mode === 'guest') {
-      if (!name.trim()) return;
-      signInGuest({ name: name.trim() });
-      return go();
-    }
-
-    if (!supabaseConfigured) {
-      setError('Email accounts are not configured yet. Use "Continue as guest" for now.');
-      return;
-    }
-
-    setBusy(true);
-    try {
-      if (mode === 'signin') {
-        const { error } = await signInEmail({ email: email.trim(), password });
-        if (error) setError(error.message || 'Could not sign in.');
-        else go();
-      } else if (mode === 'signup') {
-        const { error, needsConfirmation } = await signUpEmail({ email: email.trim(), password, name: name.trim() });
-        if (error) setError(error.message || 'Could not create account.');
-        else if (needsConfirmation) setNotice('Check your inbox to confirm your email, then sign in.');
-        else go();
-      } else if (mode === 'forgot') {
-        const { error } = await resetPassword(email.trim());
-        if (error) setError(error.message || 'Could not send reset email.');
-        else setNotice('Password reset link sent — check your inbox.');
-      }
-    } finally {
-      setBusy(false);
-    }
+    setError('');
+    if (!name.trim()) return;
+    signInGuest({ name: name.trim() });
+    go();
   };
 
-  const tab = (key, label) => (
-    <button
-      type="button"
-      onClick={() => { setMode(key); setError(''); setNotice(''); }}
-      className="font-sans text-xs tracking-widest uppercase px-3 py-2 transition-all"
-      style={{
-        color: mode === key ? '#E8A33C' : '#8F8779',
-        borderBottom: mode === key ? '2px solid #E8A33C' : '2px solid transparent',
-        background: 'transparent', fontFamily: LABEL, marginBottom: '-1px',
-      }}
-    >
-      {label}
-    </button>
-  );
-
   const titles = {
-    signin: 'Welcome back',
-    signup: 'Create your account',
-    forgot: 'Reset your password',
+    google: 'Welcome to CodeFlow',
     guest: 'Quick start',
   };
   const subtitles = {
-    signin: 'Sign in to pick up where you left off.',
-    signup: 'Save your progress and track how you’re doing.',
-    forgot: 'We’ll email you a link to set a new password.',
+    google: 'Sign in with Google to save your progress across devices.',
     guest: 'No account — progress is saved locally on this device.',
   };
-
-  const canSubmit =
-    mode === 'guest' ? name.trim()
-    : mode === 'forgot' ? email.trim()
-    : mode === 'signup' ? (email.trim() && password.length >= 6 && name.trim())
-    : (email.trim() && password);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#15130E' }}>
@@ -141,11 +86,11 @@ export default function AuthGate() {
 
         {!supabaseConfigured && mode !== 'guest' && (
           <div className="font-sans text-xs mb-6 px-3 py-2" style={{ color: '#E0B341', background: '#E0B34110', border: '1px solid #E0B34133' }}>
-            Email accounts aren’t set up on this build yet. Use <strong>Continue as guest</strong> to start now.
+            Accounts aren’t set up on this build yet. Use <strong>Continue as guest</strong> to start now.
           </div>
         )}
 
-        {supabaseConfigured && mode !== 'guest' && mode !== 'forgot' && (
+        {mode === 'google' && (
           <>
             <button
               type="button"
@@ -162,96 +107,74 @@ export default function AuthGate() {
                 <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.3 35.1 26.8 36 24 36c-5.2 0-9.6-3.3-11.2-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/>
                 <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.4l6.3 5.3C41.4 36.5 44 30.8 44 24c0-1.3-.1-2.3-.4-3.5z"/>
               </svg>
-              Continue with Google
+              {busy ? 'Redirecting…' : 'Continue with Google'}
             </button>
-            <div className="flex items-center gap-3 mb-5">
+
+            {error && (
+              <div className="font-sans text-xs mb-4 px-3 py-2" style={{ color: '#F3B0A6', background: '#FF6B5C12', border: '1px solid #FF6B5C33' }}>
+                {error}
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 my-5">
               <div style={{ flex: 1, height: '1px', background: '#262219' }} />
               <span className="font-sans text-xs" style={{ color: '#6E665A', fontFamily: LABEL }}>or</span>
               <div style={{ flex: 1, height: '1px', background: '#262219' }} />
             </div>
+
+            <button
+              type="button"
+              onClick={() => { setMode('guest'); setError(''); }}
+              className="w-full font-sans text-xs tracking-widest uppercase px-8 py-3"
+              style={{ background: 'transparent', color: '#E8A33C', border: '1px solid #262219', fontFamily: LABEL, cursor: 'pointer' }}
+            >
+              Continue as guest →
+            </button>
           </>
         )}
 
-        <div className="flex gap-1 mb-7" style={{ borderBottom: '1px solid #262219' }}>
-          {tab('signin', 'Sign in')}
-          {tab('signup', 'Sign up')}
-          {tab('guest', 'Guest')}
-        </div>
-
-        <form onSubmit={submit}>
-          {(mode === 'signup' || mode === 'guest') && (
+        {mode === 'guest' && (
+          <form onSubmit={startGuest}>
             <Input
               label="Name"
               type="text"
-              autoFocus={mode === 'guest'}
+              autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ada Lovelace"
             />
-          )}
-          {mode !== 'guest' && (
-            <Input
-              label="Email"
-              type="email"
-              autoFocus={mode !== 'guest' && mode !== 'signup'}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
-          )}
-          {(mode === 'signin' || mode === 'signup') && (
-            <Input
-              label={mode === 'signup' ? 'Password (min 6 chars)' : 'Password'}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-          )}
 
-          {error && (
-            <div className="font-sans text-xs mb-4 px-3 py-2" style={{ color: '#F3B0A6', background: '#FF6B5C12', border: '1px solid #FF6B5C33' }}>
-              {error}
-            </div>
-          )}
-          {notice && (
-            <div className="font-sans text-xs mb-4 px-3 py-2" style={{ color: '#E8A33C', background: '#E8A33C10', border: '1px solid #E8A33C33' }}>
-              {notice}
-            </div>
-          )}
+            {error && (
+              <div className="font-sans text-xs mb-4 px-3 py-2" style={{ color: '#F3B0A6', background: '#FF6B5C12', border: '1px solid #FF6B5C33' }}>
+                {error}
+              </div>
+            )}
 
-          <button
-            type="submit"
-            disabled={!canSubmit || busy}
-            className="w-full font-sans text-sm tracking-widest uppercase px-8 py-4 transition-all duration-150"
-            style={{
-              background: canSubmit && !busy ? '#E8A33C' : '#262219',
-              color: canSubmit && !busy ? '#15130E' : '#8F8779',
-              fontWeight: 700, cursor: canSubmit && !busy ? 'pointer' : 'not-allowed', fontFamily: LABEL,
-            }}
-          >
-            {busy ? 'Working…'
-              : mode === 'signin' ? 'Sign in →'
-              : mode === 'signup' ? 'Create account →'
-              : mode === 'forgot' ? 'Send reset link →'
-              : 'Start →'}
-          </button>
-        </form>
-
-        <div className="mt-5 flex items-center justify-between">
-          {mode === 'signin' ? (
-            <button type="button" onClick={() => { setMode('forgot'); setError(''); setNotice(''); }}
-              className="font-sans text-xs" style={{ color: '#8F8779', fontFamily: LABEL }}>
-              Forgot password?
+            <button
+              type="submit"
+              disabled={!name.trim()}
+              className="w-full font-sans text-sm tracking-widest uppercase px-8 py-4 transition-all duration-150"
+              style={{
+                background: name.trim() ? '#E8A33C' : '#262219',
+                color: name.trim() ? '#15130E' : '#8F8779',
+                fontWeight: 700, cursor: name.trim() ? 'pointer' : 'not-allowed', fontFamily: LABEL,
+              }}
+            >
+              Start →
             </button>
-          ) : <span />}
-          {mode !== 'guest' && (
-            <button type="button" onClick={() => { setMode('guest'); setError(''); setNotice(''); }}
-              className="font-sans text-xs" style={{ color: '#E8A33C', fontFamily: LABEL }}>
-              Continue as guest →
-            </button>
-          )}
-        </div>
+
+            {supabaseConfigured && (
+              <button
+                type="button"
+                onClick={() => { setMode('google'); setError(''); }}
+                className="w-full mt-5 font-sans text-xs"
+                style={{ color: '#8F8779', fontFamily: LABEL, background: 'transparent' }}
+              >
+                ← Back to sign in
+              </button>
+            )}
+          </form>
+        )}
       </div>
     </div>
   );
