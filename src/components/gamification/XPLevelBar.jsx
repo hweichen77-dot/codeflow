@@ -25,7 +25,6 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
       className="flex items-center gap-4 px-5 py-3"
       style={{ background: "#131009", border: "1px solid #262219", borderRadius: "4px" }}
     >
-      {/* Level badge */}
       <div
         className="font-sans font-bold text-center flex-shrink-0"
         style={{

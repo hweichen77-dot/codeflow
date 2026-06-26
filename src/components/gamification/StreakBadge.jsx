@@ -5,7 +5,6 @@ export default function StreakBadge({ completedCount }) {
   const [streakDays, setStreakDays] = useState(0);
 
   useEffect(() => {
-    // Track streak using localStorage
     const today = new Date().toDateString();
     const data = JSON.parse(localStorage.getItem("codeflow_streak") || "{}");
     const lastVisit = data.lastVisit;
@@ -27,7 +26,6 @@ export default function StreakBadge({ completedCount }) {
 
   return (
     <div className="flex items-center gap-4 mb-5">
-      {/* Streak */}
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -42,7 +40,6 @@ export default function StreakBadge({ completedCount }) {
         </div>
       </motion.div>
 
-      {/* Lessons done */}
       <div className="flex items-center gap-2 px-3 py-1.5" style={{ border: "1px solid #262219", background: "#131009" }}>
         <span style={{ fontSize: "0.75rem" }}></span>
         <div className="font-sans text-xs font-bold" style={{ color: "#C9C1B2" }}>

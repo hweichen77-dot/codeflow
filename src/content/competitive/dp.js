@@ -1,5 +1,3 @@
-// Competitive Coding — Dynamic Programming topic.
-// Problems that teach AI sequence algorithms through C++ implementation.
 
 export default [
   {

@@ -10,7 +10,6 @@ import WorkedExample from "@/components/lesson/blocks/WorkedExample";
 import ComparisonTable from "@/components/lesson/blocks/ComparisonTable";
 import Reflection from "@/components/lesson/blocks/Reflection";
 
-/* ---------- deep, GfG-style explanation ---------- */
 const PART_1 = `Type the word **"unbelievable"** into a model and it never sees that word. It sees three pieces — roughly \`un\`, \`believ\`, \`able\`. Those pieces are **tokens**, and they are the real units a language model reads and writes. Every limit, every bill, and a surprising number of bugs trace straight back to them.
 
 ## What a token actually is
@@ -37,7 +36,6 @@ Tokens are not trivia. They quietly control three things that matter every singl
 
 For English: **1 token ≈ 4 characters ≈ ¾ of a word.** So 100 words is roughly 130 tokens. Don't memorize it — you'll reach for a real counter when money is on the line. The intuition is what matters: *common, plain text is cheap; rare, messy text is expensive.*`;
 
-/* ---------- small inline multiple-choice check ---------- */
 function InlineCheck({ question, options, correct, explain }) {
   const [pick, setPick] = useState(null);
   const done = pick !== null;
@@ -105,12 +103,10 @@ export default function LessonDemo() {
   return (
     <div className="min-h-screen px-6 lg:px-10 pt-24 pb-24" style={{ background: "#15130E" }}>
       <div className="max-w-3xl mx-auto">
-        {/* prototype banner */}
         <div className="mb-6 px-4 py-2 font-sans text-xs tracking-widest uppercase" style={{ background: "#cc66ff14", border: "1px solid #cc66ff44", color: "#cc66ff" }}>
           PROTOTYPE — proposed lesson content style (not yet rolled out)
         </div>
 
-        {/* header */}
         <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>MODULE 1 · LESSON 2 · CONCEPT: TOKENS</div>
         <h1 className="font-display font-black mb-3" style={{ fontSize: "2.3rem", lineHeight: 1.05, letterSpacing: "-0.03em", color: "#f5f5f5" }}>
           Tokens: The Model Doesn't See Words
@@ -121,7 +117,6 @@ export default function LessonDemo() {
           <span style={{ color: "#E8A33C" }}>+10 XP</span>
         </div>
 
-        {/* what you'll learn */}
         <div className="px-5 py-4 mb-8" style={{ border: "1px solid #262219", background: "#131009", borderLeft: "2px solid #E8A33C" }}>
           <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>WHAT YOU'LL LEARN</div>
           <ul className="space-y-1 font-display text-sm" style={{ color: "#A8A092" }}>
@@ -131,15 +126,12 @@ export default function LessonDemo() {
           </ul>
         </div>
 
-        {/* deep reading */}
         <SectionLabel>Read</SectionLabel>
         <ReadingBox>{PART_1}</ReadingBox>
 
-        {/* tool */}
         <SectionLabel>Try the tool</SectionLabel>
         <InteractiveTokenizer />
 
-        {/* animation */}
         <SectionLabel>Watch it happen</SectionLabel>
         <StepThrough
           title="text → tokens → bill"
@@ -151,11 +143,9 @@ export default function LessonDemo() {
           ]}
         />
 
-        {/* second reading half */}
         <SectionLabel>Read</SectionLabel>
         <ReadingBox>{PART_2}</ReadingBox>
 
-        {/* worked examples */}
         <SectionLabel>Worked examples</SectionLabel>
         <WorkedExample
           number={1}
@@ -181,7 +171,6 @@ export default function LessonDemo() {
           output={"$0.012000 per call"}
         />
 
-        {/* comparison table */}
         <SectionLabel>Compare the approaches</SectionLabel>
         <ComparisonTable
           title="three ways to split text"
@@ -193,7 +182,6 @@ export default function LessonDemo() {
           ]}
         />
 
-        {/* drag to bin */}
         <SectionLabel>Sort it</SectionLabel>
         <DragToBin
           title="few tokens vs many tokens"
@@ -210,7 +198,6 @@ export default function LessonDemo() {
           ]}
         />
 
-        {/* inline check */}
         <SectionLabel>Check yourself</SectionLabel>
         <InlineCheck
           question="Why is counting the letters in 'strawberry' hard for an LLM?"
@@ -219,14 +206,12 @@ export default function LessonDemo() {
           explain="The model operates on tokens (chunks). The individual letters live inside a chunk it treats as one unit, so they aren't directly visible to it."
         />
 
-        {/* reflection */}
         <SectionLabel>Reflect</SectionLabel>
         <Reflection
           prompt="In one or two sentences: why does rare or messy text cost more tokens than plain English?"
           sampleAnswer="The tokenizer only has whole-chunk symbols for text it saw often. Rare or messy text isn't in that set, so it gets rebuilt from many tiny pieces — and more pieces means more tokens, which means more cost."
         />
 
-        {/* hub footer */}
         <SectionLabel>Keep going</SectionLabel>
         <div className="grid sm:grid-cols-2 gap-3">
           {[

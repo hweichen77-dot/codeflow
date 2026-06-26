@@ -3,9 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-// Supabase is dormant in the static build. createClient() throws "supabaseUrl is required"
-// when env vars are absent — and that throw happens at module load, crashing the whole app.
-// Without credentials, export a no-op stub so importers degrade gracefully instead.
 const makeStub = () => ({
   auth: {
     getSession: async () => ({ data: { session: null } }),
@@ -32,7 +29,6 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
   ? createClient(supabaseUrl, supabaseAnonKey)
   : makeStub()
 
-// ── Auth helpers ──────────────────────────────────────────────────────────────
 export const auth = {
   signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
   signUp: (email, password, name) =>
@@ -56,7 +52,6 @@ export const auth = {
   isConfigured: Boolean(supabaseUrl && supabaseAnonKey),
 }
 
-// ── Challenges ────────────────────────────────────────────────────────────────
 export const Challenges = {
   list: async (filters = {}) => {
     let q = supabase.from('challenges').select('*')
@@ -77,7 +72,6 @@ export const Challenges = {
   }
 }
 
-// ── User Challenge Progress ───────────────────────────────────────────────────
 export const UserChallenges = {
   list: async (userId) => {
     const { data, error } = await supabase
@@ -103,7 +97,6 @@ export const UserChallenges = {
   }
 }
 
-// ── Projects (Portfolio) ──────────────────────────────────────────────────────
 export const Projects = {
   list: async (userId) => {
     const { data, error } = await supabase
@@ -130,7 +123,6 @@ export const Projects = {
   }
 }
 
-// ── Tracks ────────────────────────────────────────────────────────────────────
 export const Tracks = {
   list: async () => {
     const { data, error } = await supabase.from('tracks').select('*').order('order_index')
@@ -139,7 +131,6 @@ export const Tracks = {
   }
 }
 
-// ── User Track Progress ───────────────────────────────────────────────────────
 export const UserTracks = {
   get: async (userId, trackId) => {
     const { data, error } = await supabase

@@ -12,7 +12,6 @@ export default function Competitive() {
   const [topic, setTopic] = useState("all");
   const [difficulty, setDifficulty] = useState("all");
 
-  // Only show topic tabs that actually have problems.
   const presentTopics = COMPETITIVE_TOPICS.filter((t) =>
     COMPETITIVE.some((p) => p.topic === t.key)
   );
@@ -29,7 +28,6 @@ export default function Competitive() {
 
   return (
     <div className="min-h-screen" style={{ background: "#15130E" }}>
-      {/* Header */}
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
@@ -58,7 +56,6 @@ export default function Competitive() {
       </div>
 
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
-        {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none" style={{ color: "#BBB3A4" }}>/search</span>
@@ -88,7 +85,6 @@ export default function Competitive() {
           </div>
         </div>
 
-        {/* Topic tabs */}
         <div className="flex gap-2 flex-wrap mb-12">
           {[{ key: "all", label: "All" }, ...presentTopics].map((t) => (
             <button
@@ -106,7 +102,6 @@ export default function Competitive() {
           ))}
         </div>
 
-        {/* Table header */}
         {filtered.length > 0 && (
           <div className="grid items-center gap-8 px-6 py-3 mb-px" style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #262219" }}>
             {["LVL", "PROBLEM", "TOPIC", "LANG"].map((h) => (
@@ -115,7 +110,6 @@ export default function Competitive() {
           </div>
         )}
 
-        {/* List */}
         {filtered.length === 0 ? (
           <div className="text-center py-24">
             <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>NO RESULTS</div>

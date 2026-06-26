@@ -10,9 +10,6 @@ const KINDS = [
   { key: 'content', label: 'Lesson issue' },
 ]
 
-// Floating "send feedback" control. Early users WILL hit rough edges; without a
-// one-tap channel that friction turns into silent churn. Submitting opens a
-// prefilled GitHub issue (no backend required) and falls back to mailto.
 export default function FeedbackWidget() {
   const [open, setOpen] = useState(false)
   const [kind, setKind] = useState('bug')

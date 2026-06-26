@@ -1031,10 +1031,6 @@ response = client.messages.create(
 
 print(response.content[0].text)
 `,
-      // This lesson calls the real Anthropic SDK, so it cannot run in the
-      // in-browser sandbox and its reply is non-deterministic. It is marked
-      // illustrative: the value below is one example response, not a gradable
-      // target. See schema.js (Lesson.illustrative).
       illustrative: true,
       expected_output: `(example reply — actual output will vary)
 Hello! It's great to meet you.`,

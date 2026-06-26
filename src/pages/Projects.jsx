@@ -3,9 +3,6 @@ import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-// Category labels/order come from the single source of truth so tabs stay in
-// sync with the rest of the app. Tabs are still derived from categories that
-// actually have projects, so empty tracks never render as dead filters.
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/content/categories";
 import { foundationsAreFinished, isModuleGated } from "@/lib/foundationsGate";
 
@@ -19,7 +16,6 @@ export default function Projects() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [user, setUser] = useState(null);
-  // Transient nudge shown when a learner clicks a locked module.
   const [nudge, setNudge] = useState(null);
 
   useEffect(() => {
@@ -36,7 +32,6 @@ export default function Projects() {
     queryKey: ["projects"],
     queryFn: () => api.entities.Project.list("order"),
   });
-  // Projects page covers the AI track only; AP CSP/CSA modules have their own hub.
   const projects = allProjects.filter((p) => (p.track || "ai") === "ai");
 
   const { data: progress = [] } = useQuery({
@@ -57,7 +52,6 @@ export default function Projects() {
     return project.lessons_count ? Math.round((pp.length / project.lessons_count) * 100) : 0;
   };
 
-  // Only show category tabs that have at least one project.
   const presentCats = CATEGORY_ORDER.filter((c) => projects.some((p) => p.category === c));
   const CATEGORIES = [
     { value: "all", label: "All" },
@@ -70,24 +64,17 @@ export default function Projects() {
     return matchSearch && matchCat;
   });
 
-  // Hard-gate: intermediate/advanced modules stay locked until the learner has
-  // finished most beginner-tier foundations. Same rule is enforced on the
-  // ProjectDetail page so deep links can't bypass it.
   const beginnerProjects = projects.filter((p) => p.difficulty === "beginner");
   const foundationsFinished = foundationsAreFinished(
     beginnerProjects,
     (p) => getStatus(p) === "completed"
   );
 
-  // Group the (filtered) projects into category sections so foundations modules
-  // sit together. When a filter pill is active we still pass through every
-  // matching project; empty sections are skipped at render time.
   const grouped = CATEGORY_ORDER.map((c) => ({
     id: c,
     label: CATEGORY_LABELS[c],
     items: filtered.filter((p) => p.category === c),
   }));
-  // Anything with an unknown/missing category still needs a home.
   const uncategorized = filtered.filter((p) => !CATEGORY_ORDER.includes(p.category));
   const sections = [
     ...grouped,
@@ -96,12 +83,10 @@ export default function Projects() {
 
   return (
     <div className="min-h-screen" style={{ background: "#15130E" }}>
-      {/* Page header */}
       <div
         className="relative px-8 lg:px-16 pt-28 pb-16"
         style={{ borderBottom: "1px solid #262219" }}
       >
-        {/* Horizontal accent */}
         <div
           className="absolute top-0 left-0 right-0 h-px"
           style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }}
@@ -122,9 +107,7 @@ export default function Projects() {
       </div>
 
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
-        {/* Filters row */}
         <div className="flex flex-wrap items-center gap-4 mb-12">
-          {/* Search */}
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span
               className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none"
@@ -145,7 +128,6 @@ export default function Projects() {
             />
           </div>
 
-          {/* Category pills */}
           <div className="flex gap-2 flex-wrap">
             {CATEGORIES.map(cat => (
               <button
@@ -164,7 +146,6 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* Project list */}
         {isLoading ? (
           <div className="space-y-px">
             {[1, 2, 3, 4, 5].map(i => (
@@ -177,7 +158,6 @@ export default function Projects() {
           </div>
         ) : (
           <div>
-            {/* Column headers */}
             <div
               className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-3 mb-px"
               style={{ borderBottom: "1px solid #262219" }}
@@ -191,7 +171,6 @@ export default function Projects() {
 
             {sections.map((section) => (
               <div key={section.id} className="mb-12 last:mb-0">
-                {/* Section header */}
                 <div
                   className="flex items-baseline gap-3 px-6 pt-8 pb-3"
                   style={{ borderBottom: "1px solid #1F1C15" }}
@@ -211,8 +190,6 @@ export default function Projects() {
                   {section.items.map((project) => {
                     const status = getStatus(project);
                     const pct = getProgress(project);
-                    // Hard-gate: block navigation into harder material until
-                    // foundations are done. Clicking a locked row nudges instead.
                     const gated = isModuleGated({
                       finished: foundationsFinished,
                       done: status === "completed",
@@ -233,7 +210,6 @@ export default function Projects() {
                             if (gated) e.currentTarget.style.opacity = "0.55";
                           }}
                         >
-                          {/* Level */}
                           <div
                             className="font-sans font-bold"
                             style={{
@@ -245,7 +221,6 @@ export default function Projects() {
                             {DIFFICULTY_LABEL[project.difficulty] || "00"}
                           </div>
 
-                          {/* Title + meta */}
                           <div>
                             <div className="flex items-center gap-3 mb-1">
                               <div
@@ -291,7 +266,6 @@ export default function Projects() {
                             )}
                           </div>
 
-                          {/* Lessons count */}
                           <div
                             className="font-sans text-sm text-right"
                             style={{ color: "#A8A092" }}
@@ -304,7 +278,6 @@ export default function Projects() {
                             ) : null}
                           </div>
 
-                          {/* Status */}
                           <div>
                             {gated && (
                               <span
@@ -342,8 +315,6 @@ export default function Projects() {
                         </div>
                     );
 
-                    // Locked rows render a non-navigating shell that nudges on
-                    // click; unlocked rows are normal links into the module.
                     return gated ? (
                       <div
                         key={project.id}
@@ -393,7 +364,6 @@ export default function Projects() {
         )}
       </div>
 
-      {/* Locked-module nudge */}
       {nudge && (
         <div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 font-sans text-xs tracking-widest uppercase px-5 py-3 shadow-lg"

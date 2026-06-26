@@ -225,7 +225,6 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
 
   return (
     <div style={{ background: trace.raised, border: `1px solid ${trace.border}`, borderRadius: "4px", marginTop: "24px", marginBottom: "24px" }}>
-      {/* Header bar */}
       <div style={{ display: "flex", alignItems: "stretch", borderBottom: `1px solid ${trace.border}` }}>
         <div style={{ width: "4px", background: trace.lime, flexShrink: 0 }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, padding: "10px 16px" }}>
@@ -269,7 +268,6 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
         </div>
       </div>
 
-      {/* Questions */}
       {activity.questions?.map((q, qi) => {
         if (q.type === "fill_in") {
           return (
@@ -295,7 +293,6 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
         );
       })}
 
-      {/* Footer */}
       {allAnswered && (
         <motion.div
           initial={{ opacity: 0 }}

@@ -3,16 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { trace, traceStyles } from "@/components/lesson/trace/theme";
 
-/**
- * StepThrough — TRACE debugger step scrubber.
- * Step through a process with auto-step / prev / next. All steps must be viewed
- * for the learner to "complete" it (onComplete fires once the last step is seen).
- *
- * props:
- *   title: string
- *   steps: [{ label, detail, code }]
- *   onComplete?: () => void
- */
 export default function StepThrough({ title, steps = [], onComplete }) {
   const [i, setI] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -57,9 +47,7 @@ export default function StepThrough({ title, steps = [], onComplete }) {
         </span>
       </div>
 
-      {/* Stage */}
       <div className="px-6 py-7" style={{ minHeight: 168 }}>
-        {/* progress dots */}
         <div className="flex gap-1.5 mb-5">
           {steps.map((_, k) => (
             <div
@@ -96,7 +84,6 @@ export default function StepThrough({ title, steps = [], onComplete }) {
         </AnimatePresence>
       </div>
 
-      {/* Controls */}
       <div className="flex items-center gap-2 px-5 py-3" style={{ borderTop: `1px solid ${trace.border}` }}>
         <Ctl onClick={() => { setPlaying(false); setI(0); }} aria-label="Restart"><RotateCcw size={13} /></Ctl>
         <Ctl onClick={() => { setPlaying(false); setI((v) => Math.max(v - 1, 0)); }} disabled={i === 0} aria-label="Previous"><ChevronLeft size={15} /></Ctl>

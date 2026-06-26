@@ -6,19 +6,6 @@ import WorkedExample from "./blocks/WorkedExample";
 import ComparisonTable from "./blocks/ComparisonTable";
 import Reflection from "./blocks/Reflection";
 
-/**
- * LessonBlocks — renders the new GfG-depth / zyBooks-variety activity blocks
- * from optional lesson fields. Fully backward compatible: a lesson with none
- * of these fields renders nothing.
- *
- * Lesson fields consumed:
- *   lesson.tools             : [{ type: 'tokenizer' }]
- *   lesson.step_throughs     : [{ title, steps:[{label,detail,code}] }]
- *   lesson.worked_examples   : [{ number, difficulty, prompt, steps:[], output }]
- *   lesson.comparison_tables : [{ title, columns:[], rows:[{cells:[],highlight}] }]
- *   lesson.drag_to_bins      : [{ title, bins:[{id,label}], items:[{id,text,bin}] }]
- *   lesson.reflections       : [{ prompt, sampleAnswer }]
- */
 
 const TOOL_REGISTRY = {
   tokenizer: InteractiveTokenizer,

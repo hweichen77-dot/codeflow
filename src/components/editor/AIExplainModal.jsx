@@ -9,7 +9,6 @@ export default function AIExplainModal({ hint, studentCode, solutionCode, lesson
   const dialogRef = useRef(null);
   const previouslyFocused = useRef(null);
 
-  // Escape to close + focus the dialog on open, restore focus on close.
   useEffect(() => {
     previouslyFocused.current = document.activeElement;
     dialogRef.current?.focus();
@@ -78,7 +77,6 @@ Be direct and educational. Use code examples where helpful. Total response under
           style={{ background: "#1C1A14", border: "1px solid #34302A" }}
           onClick={e => e.stopPropagation()}
         >
-          {/* Header */}
           <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #262219" }}>
             <div className="flex items-center gap-3">
               <span className="font-sans text-xs tracking-widest uppercase px-2 py-1" style={{ color: "#E0B341", border: "1px solid #E0B34133", background: "#E0B34110" }}>
@@ -90,13 +88,11 @@ Be direct and educational. Use code examples where helpful. Total response under
             </button>
           </div>
 
-          {/* Flagged hint */}
           <div className="px-6 py-4" style={{ borderBottom: "1px solid #262219", background: "#131009" }}>
             <p className="font-sans text-xs" style={{ color: "#BBB3A4" }}>Flagged issue:</p>
             <p className="font-sans text-sm mt-1" style={{ color: "#E0B341" }}>"{hint}"</p>
           </div>
 
-          {/* Explanation */}
           <div className="px-6 py-5" style={{ minHeight: "180px" }}>
             {loading ? (
               <div className="flex items-center gap-3">

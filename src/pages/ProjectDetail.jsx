@@ -74,9 +74,6 @@ export default function ProjectDetail() {
     enabled: !!user && !!projectId,
   });
 
-  // Foundations hard-gate enforcement for deep/direct links. We load every
-  // project + the learner's full progress so we can compute the same gate the
-  // list pages use and block entry into a still-locked module.
   const { data: allProjects = [] } = useQuery({
     queryKey: ["all-projects"],
     queryFn: () => api.entities.Project.list("order"),
@@ -111,7 +108,7 @@ export default function ProjectDetail() {
       setEarnedPoints(saved?.points_earned || 0);
       lessonStartTime.current = Date.now();
       wrongAttempts.current = 0;
-      try { track('lesson_start', { lesson_id: activeLesson.id, project_id: projectId }); } catch { /* ignore */ }
+      try { track('lesson_start', { lesson_id: activeLesson.id, project_id: projectId }); } catch {  }
     }
   }, [activeLessonId, activeLesson?.id]);
 
@@ -137,10 +134,8 @@ export default function ProjectDetail() {
           user_email: user.email, lesson_id: lessonId, project_id: projectId, ...progressData,
         });
       }
-      // Fire only on first completion so the funnel metric tracks real activations,
-      // not re-visits of an already-finished lesson.
       if (!existing?.completed) {
-        try { track('lesson_complete', { lesson_id: lessonId, project_id: projectId, time_spent_seconds: timeSpent }); } catch { /* ignore */ }
+        try { track('lesson_complete', { lesson_id: lessonId, project_id: projectId, time_spent_seconds: timeSpent }); } catch {  }
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["user-progress", projectId] }),
@@ -173,28 +168,25 @@ export default function ProjectDetail() {
     }
   };
 
-  // Focus mode — persisted preference.
   const [focusMode, setFocusMode] = useState(() => {
     try { return localStorage.getItem("codeflow_focus_mode") === "1"; } catch { return false; }
   });
   const toggleFocusMode = () => {
     setFocusMode((prev) => {
       const next = !prev;
-      try { localStorage.setItem("codeflow_focus_mode", next ? "1" : "0"); } catch { /* ignore */ }
+      try { localStorage.setItem("codeflow_focus_mode", next ? "1" : "0"); } catch {  }
       return next;
     });
   };
 
-  // One-time keyboard-nav hint.
   const [showNavHint, setShowNavHint] = useState(() => {
     try { return localStorage.getItem("codeflow_navhint_seen") !== "1"; } catch { return true; }
   });
   const dismissNavHint = () => {
     setShowNavHint(false);
-    try { localStorage.setItem("codeflow_navhint_seen", "1"); } catch { /* ignore */ }
+    try { localStorage.setItem("codeflow_navhint_seen", "1"); } catch {  }
   };
 
-  // Keyboard navigation: ← previous, → next. Ignore when typing.
   useEffect(() => {
     const handler = (e) => {
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
@@ -280,15 +272,10 @@ export default function ProjectDetail() {
     );
   }
 
-  // Deep-link guard: enforce the same Foundations gate the list pages show, so
-  // a still-locked module can't be opened by typing/sharing its URL. Mirrors
-  // Projects.jsx getStatus (progress rows >= lessons_count === completed).
   const projectCompleted = (p) => {
     const pp = allProgress.filter((x) => x.project_id === p.id);
     return p.lessons_count ? pp.length >= p.lessons_count : false;
   };
-  // The Foundations gate is an AI-track concept; AP CSP/CSA modules are never
-  // gated by it. Only consider AI beginner modules when evaluating it.
   const isAiTrack = (project.track || "ai") === "ai";
   const beginnerProjects = allProjects.filter(
     (p) => p.difficulty === "beginner" && (p.track || "ai") === "ai"
@@ -333,12 +320,10 @@ export default function ProjectDetail() {
         xpEarned={activeLesson?.xp_reward || 10}
         onClose={() => { setShowCelebration(false); showXPToast("Lesson Complete!", activeLesson?.xp_reward || 10, ""); }}
       />
-      {/* Project header — full width banner */}
       <div
         className="relative pt-20"
         style={{ borderBottom: "1px solid #262219" }}
       >
-        {/* Top accent */}
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
 
         <div className="max-w-7xl mx-auto px-8 lg:px-16 py-10">
@@ -377,7 +362,6 @@ export default function ProjectDetail() {
               </p>
             </div>
 
-            {/* Progress indicator — dot trail */}
             <div className="flex flex-col items-end gap-3">
               <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>
                 {completedCount}/{totalLessons} complete
@@ -410,7 +394,6 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      {/* Main layout */}
       <div
         className="mx-auto px-8 lg:px-16 py-10 transition-all duration-300"
         style={{ maxWidth: focusMode ? "920px" : "80rem" }}
@@ -420,17 +403,14 @@ export default function ProjectDetail() {
           style={{ gridTemplateColumns: focusMode ? "1fr" : undefined }}
           data-focus={focusMode ? "1" : "0"}
         >
-          {/* Sidebar — notebook spine (hidden in focus mode) */}
           {!focusMode && (
           <div className="relative" style={{ width: "220px" }}>
             <div
               className="sticky top-20"
               style={{ borderLeft: "1px solid #262219", paddingLeft: "1.25rem" }}
             >
-              {/* Streak badges */}
               <StreakBadge completedCount={completedCount} />
 
-              {/* Vertical label */}
               <div
                 className="font-sans text-xs tracking-widest uppercase mb-5"
                 style={{ color: "#BBB3A4" }}
@@ -449,7 +429,6 @@ export default function ProjectDetail() {
                       className="w-full text-left py-3 transition-all duration-150 group relative"
                       style={{ borderBottom: "1px solid #1C1A14" }}
                     >
-                      {/* Active left accent */}
                       {active && (
                         <div
                           className="absolute left-[-1.25rem] top-0 bottom-0 w-px"
@@ -486,9 +465,7 @@ export default function ProjectDetail() {
           </div>
           )}
 
-          {/* Main content */}
           <div>
-            {/* Focus mode toggle + keyboard-nav hint */}
             <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
               {showNavHint ? (
                 <button
@@ -514,7 +491,6 @@ export default function ProjectDetail() {
               </button>
             </div>
 
-            {/* XP Level Bar */}
             <div style={{ marginBottom: "20px" }}>
               <XPLevelBar totalXP={totalXP} earnedThisLesson={earnedPoints} />
             </div>
@@ -529,10 +505,8 @@ export default function ProjectDetail() {
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                   className="space-y-8 reader-surface"
                 >
-                  {/* Project brief — shown on the first lesson as the overview */}
                   {activeLessonIndex === 0 && <ProjectBrief brief={project?.brief} />}
 
-                  {/* TRACE section header: § NN / TITLE  ▸ XP */}
                   <div style={{ marginBottom: "8px" }}>
                     <div className="font-sans" style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: trace.lime, marginBottom: "6px" }}>
                       § {String(activeLessonIndex + 1).padStart(2, "0")} &nbsp;▸&nbsp; {activeLesson.xp_reward || 10} XP
@@ -546,7 +520,6 @@ export default function ProjectDetail() {
                     </h2>
                   </div>
 
-                  {/* Rich lesson reading area — flat dark editorial surface (TRACE) */}
                   <div style={{ background: "transparent", borderTop: `1px solid ${trace.border}`, paddingTop: "28px" }}>
                     {activeLesson.concept && (
                       <h3 style={{
@@ -595,11 +568,9 @@ export default function ProjectDetail() {
                       />
                     ))}
 
-                  {/* Enhancements: callouts, video, key terms, diagram, inline quizzes */}
                   <div style={{ marginTop: "8px" }}>
                   <LessonEnhancements lesson={activeLesson} />
 
-                  {/* New activity blocks: tools, animations, worked examples, tables, sort-it, reflect */}
                   <LessonBlocks
                     lesson={activeLesson}
                     onActivity={() => {
@@ -611,7 +582,6 @@ export default function ProjectDetail() {
                     }}
                   />
 
-                  {/* Quiz — TRACE check block */}
                   {activeLesson.quiz_questions?.length > 0 && (
                     <CheckBlock
                       questions={activeLesson.quiz_questions}
@@ -626,12 +596,10 @@ export default function ProjectDetail() {
                     />
                   )}
 
-                  {/* Coding challenge */}
                   <LessonChallenge lesson={activeLesson} />
                   </div>
                   </div>
 
-                  {/* Code editor */}
                   <CodeEditor
                     code={code}
                     onChange={setCode}
@@ -644,7 +612,6 @@ export default function ProjectDetail() {
                     enableAIAnalysis={!!activeLesson.solution_code}
                   />
 
-                  {/* Output comparison */}
                   {output && activeLesson?.expected_output && (
                     <OutputComparison
                       actualOutput={output}
@@ -652,7 +619,6 @@ export default function ProjectDetail() {
                     />
                   )}
 
-                  {/* Points summary — zybooks style */}
                   <LessonPointsSummary
                     lessonTitle={activeLesson.title}
                     sectionNumber={activeLessonIndex + 1}
@@ -666,7 +632,6 @@ export default function ProjectDetail() {
                     onNextLesson={goToNextLesson}
                   />
 
-                  {/* Action row */}
                   <div className="flex flex-wrap items-center gap-3 pt-2">
                     {user?.role === "admin" && (
                       <>
@@ -758,7 +723,6 @@ export default function ProjectDetail() {
                     )}
                   </div>
 
-                  {/* Hints panel */}
                   <AnimatePresence>
                     {showHints && activeLesson.hints && (
                       <motion.div
@@ -790,7 +754,6 @@ export default function ProjectDetail() {
                     )}
                   </AnimatePresence>
 
-                  {/* Solution panel */}
                   <AnimatePresence>
                     {showSolution && activeLesson.solution_code && (
                       <motion.div
@@ -825,7 +788,6 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      {/* AI Chatbot */}
       <AIChatbot
         context={activeLesson?.explanation || ""}
         lessonTitle={activeLesson?.title || project.title}

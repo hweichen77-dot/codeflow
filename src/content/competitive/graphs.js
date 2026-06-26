@@ -1,6 +1,3 @@
-// Competitive Coding — Graphs topic.
-// Problems that teach graph algorithms behind AI systems (knowledge graphs,
-// retrieval graphs, compute DAGs) through C++ implementation.
 
 export default [
   {

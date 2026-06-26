@@ -1,6 +1,3 @@
-// Competitive Coding — Linear Algebra topic.
-// Problems that teach the linear-algebra primitives behind neural networks and
-// vector search through exact integer C++ implementation.
 
 export default [
   {

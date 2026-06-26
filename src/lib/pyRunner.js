@@ -1,29 +1,8 @@
-/**
- * Real in-browser Python execution via Pyodide (lazy-loaded from CDN, cached).
- * Replaces the LLM-simulated "run" so challenges give real, deterministic output
- * and pass/fail — works offline once Pyodide has been fetched once.
- *
- * Execution runs inside a dedicated Web Worker. This is what lets us enforce a
- * hard wall-clock timeout: Pyodide runs synchronously once `runPythonAsync`
- * hands control to CPython, so a `while True:` on the main thread would freeze
- * the whole tab and a JS-side timeout could never fire. By isolating the
- * interpreter in a worker we can `terminate()` it on timeout and respawn a fresh
- * one for the next run — the tab stays responsive no matter what the user wrote.
- */
 const PYODIDE_VERSION = "0.26.4";
 const PYODIDE_BASE = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
 const EXEC_TIMEOUT_MS = 5000;
-// First run downloads + initializes Pyodide from the CDN (multi-second on slow
-// school wifi). That must NOT count against the 5s infinite-loop guard, or a
-// correct program "times out" on cold start. The worker acks `ready` once the
-// runtime is loaded; only then does the strict exec clock start.
 const LOAD_TIMEOUT_MS = 45000;
 
-// ---------------------------------------------------------------------------
-// Worker source. Built as a Blob so we don't need a separate file in the bundle.
-// Each message: { id, code, stdin }. Each reply: { id, output, isError, empty }.
-// A fresh `globals` dict per run prevents state leaking across graded cases.
-// ---------------------------------------------------------------------------
 const WORKER_SRC = `
 self.language = "python";
 let pyReady = null;
@@ -104,9 +83,9 @@ self.onmessage = async (e) => {
 
 let worker = null;
 let nextId = 1;
-let pending = null; // { id, resolve } for the in-flight run
-let ready = false; // has a worker ever been spawned (for isPyReady)
-let runChain = Promise.resolve(); // mutex: serialize runs so they can't interleave
+let pending = null;
+let ready = false;
+let runChain = Promise.resolve();
 
 function spawnWorker() {
   const blob = new Blob([WORKER_SRC], { type: "application/javascript" });
@@ -136,20 +115,8 @@ export function isPyReady() {
   return ready;
 }
 
-/**
- * Run Python source, capturing stdout. Optional `stdin` is fed to input().
- * Returns { output, isError, unavailable, empty }. `empty` flags genuinely
- * empty stdout so callers can distinguish it from a literal "(no output)".
- *
- * A hard 5s wall-clock limit is enforced: if user code (e.g. `while True:`)
- * never yields, the worker is terminated and respawned, and a clean timeout
- * result is returned instead of freezing the tab.
- */
 export function runPython(code, stdin = "") {
-  // Serialize behind the mutex: the single worker / shared interpreter can only
-  // run one submission at a time, and concurrent grades must not interleave.
   const run = runChain.then(() => execOnce(code, stdin));
-  // Keep the chain alive even if a run rejects (it shouldn't, but be safe).
   runChain = run.then(() => {}, () => {});
   return run;
 }
@@ -167,13 +134,11 @@ function execOnce(code, stdin) {
       clearTimeout(loadTimer);
       if (execTimer) clearTimeout(execTimer);
       pending = null;
-      // Hard-kill the runaway / stuck interpreter and respawn for the next run.
       try { w.terminate(); } catch (_) {}
       worker = null;
       resolve({ output, isError: true, empty: false });
     };
 
-    // Generous cold-load budget; replaced by the strict exec timer once `ready`.
     const loadTimer = setTimeout(
       () => kill("Error: The Python runtime took too long to load. Check your connection and try again."),
       LOAD_TIMEOUT_MS,
@@ -201,21 +166,13 @@ function execOnce(code, stdin) {
   });
 }
 
-// Normalize for comparison: strip trailing whitespace per line and a single
-// trailing newline, but PRESERVE leading whitespace and internal blank lines so
-// indentation- and ASCII-art-sensitive problems grade correctly.
 const norm = (s) =>
   String(s ?? "")
     .replace(/\r/g, "")
-    .replace(/[ \t]+(?=\n)/g, "") // rstrip each line
-    .replace(/[ \t]+$/, "")       // rstrip final line (no trailing \n)
-    .replace(/\n$/, "");          // drop exactly one trailing newline
+    .replace(/[ \t]+(?=\n)/g, "")
+    .replace(/[ \t]+$/, "")
+    .replace(/\n$/, "");
 
-/**
- * Run code against test cases and grade deterministically.
- * Each case: { input?, expected_output }. Cases with no expected_output are skipped.
- * Returns { output, passed, results: [{ ok, expected, got }], ran }.
- */
 export async function gradePython(code, testCases = []) {
   const cases = (testCases || []).filter((t) => t && t.expected_output != null);
 
@@ -237,7 +194,6 @@ export async function gradePython(code, testCases = []) {
     const r = await runPython(code, tc.input && tc.input !== "(no input)" ? tc.input : "");
     const shown = r.empty ? "(no output)" : r.output;
     if (i === 0) firstOutput = shown;
-    // Compare raw stdout, never the "(no output)" sentinel.
     const ok = !r.isError && norm(r.output) === norm(tc.expected_output);
     results.push({ ok, expected: tc.expected_output, got: shown });
   }

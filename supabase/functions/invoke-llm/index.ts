@@ -1,22 +1,3 @@
-// Supabase Edge Function: invoke-llm
-// Routes code-execution-simulation (and any LLM prompt) through Anthropic,
-// keeping the API key server-side. The browser/desktop app calls this via
-// supabase.functions.invoke('invoke-llm', { body: { prompt } }).
-//
-// Deploy (auth required — verify_jwt=true is the default and is set in
-// config.toml; do NOT pass --no-verify-jwt):
-//   supabase functions deploy invoke-llm
-//   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
-//   supabase secrets set ALLOWED_ORIGIN=https://<your-site>      # CORS lock
-//   supabase secrets set FUNCTION_SHARED_SECRET=<random>          # optional
-//
-// Then set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY at build time so the
-// client picks it up. With no Supabase configured, the app falls back to an
-// offline message (the UI never crashes).
-//
-// Hardening: this endpoint is an Anthropic relay on the owner's key, so it is
-// gated by a valid Supabase JWT (or a shared-secret header), a per-caller rate
-// limit, a prompt-size cap, and an origin-locked CORS policy.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -26,14 +7,12 @@ const MODEL = "claude-haiku-4-5-20251001";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const FUNCTION_SHARED_SECRET = Deno.env.get("FUNCTION_SHARED_SECRET");
-// Lock CORS to the site origin. Falls back to the deployed GitHub Pages site.
 const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://hweichen77-dot.github.io";
 
-const MAX_PROMPT_CHARS = 8000; // ~8KB prompt cap
+const MAX_PROMPT_CHARS = 8000;
 
-// Per-caller fixed-window rate limit (best-effort; in-memory per edge worker).
-const RATE_LIMIT_MAX = 20; // requests
-const RATE_LIMIT_WINDOW_MS = 60_000; // per minute
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000;
 const hits = new Map<string, { count: number; resetAt: number }>();
 
 function rateLimited(key: string): boolean {
@@ -61,8 +40,6 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-// Validate the caller: a shared-secret header OR a verifiable Supabase JWT.
-// Returns the user id (or "secret") on success, null on failure.
 async function authenticate(req: Request): Promise<string | null> {
   if (FUNCTION_SHARED_SECRET) {
     const provided = req.headers.get("x-function-secret");
@@ -74,8 +51,6 @@ async function authenticate(req: Request): Promise<string | null> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
 
   const token = authHeader.slice("Bearer ".length).trim();
-  // The anon key is also sent as a Bearer token by supabase-js; reject it so a
-  // bare anon key cannot stand in for a logged-in user.
   if (token === SUPABASE_ANON_KEY) return null;
 
   try {
@@ -94,11 +69,9 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
 
-  // Require a valid caller before doing any work.
   const caller = await authenticate(req);
   if (!caller) return json({ error: "unauthorized" }, 401);
 
-  // Best-effort per-caller rate limit (per edge worker / in-memory).
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   const rlKey = caller === "secret" ? `ip:${ip}` : `user:${caller}`;
   if (rateLimited(rlKey)) return json({ error: "rate limit exceeded" }, 429);

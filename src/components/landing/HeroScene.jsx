@@ -10,17 +10,14 @@ export default function HeroScene() {
     offset: ["start start", "end start"],
   });
 
-  // Content stays fully visible until 70% scroll, then fades — very slow exit
   const opacity = useTransform(scrollYProgress, [0, 0.65, 0.9], [1, 1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.94]);
   const y = useTransform(scrollYProgress, [0, 1], [0, -30]);
 
-  // Parallax background layers — all move at different speeds
   const gridY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
   const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
   const gridOpacity = useTransform(scrollYProgress, [0, 0.75], [0.5, 0]);
 
-  // Animated ring that expands as user scrolls
   const ringScale = useTransform(scrollYProgress, [0, 0.5], [1, 2.2]);
   const ringOpacity = useTransform(scrollYProgress, [0, 0.15, 0.5], [0, 0.12, 0]);
 
@@ -30,7 +27,6 @@ export default function HeroScene() {
         className="sticky top-0 h-screen overflow-hidden flex items-center justify-center"
         style={{ background: "#080808", paddingTop: "10vh" }}
       >
-        {/* Parallax grid layer (moves slower) */}
         <motion.div
           style={{ opacity: gridOpacity, y: gridY }}
           className="absolute inset-0 pointer-events-none"
@@ -47,7 +43,6 @@ export default function HeroScene() {
           />
         </motion.div>
 
-        {/* Expanding ring on scroll */}
         <motion.div
           style={{ scale: ringScale, opacity: ringOpacity }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -58,7 +53,6 @@ export default function HeroScene() {
           />
         </motion.div>
 
-        {/* Radial glow — moves even slower */}
         <motion.div
           style={{ y: glowY }}
           className="absolute inset-0 pointer-events-none"
@@ -71,7 +65,6 @@ export default function HeroScene() {
           />
         </motion.div>
 
-        {/* Floating particles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {[...Array(16)].map((_, i) => (
             <motion.div
@@ -96,7 +89,6 @@ export default function HeroScene() {
           ))}
         </div>
 
-        {/* Horizontal scan lines that drift on scroll */}
         <motion.div style={{ y: glowY }} className="absolute inset-0 pointer-events-none">
           {[20, 45, 68, 82].map((pct, i) => (
             <motion.div
@@ -112,7 +104,6 @@ export default function HeroScene() {
           ))}
         </motion.div>
 
-        {/* Content — sits lower via padding-bottom on parent */}
         <motion.div
           style={{ scale, opacity, y }}
           className="relative z-10 text-center px-6 max-w-5xl mx-auto w-full"
@@ -195,7 +186,6 @@ export default function HeroScene() {
             </Link>
           </motion.div>
 
-          {/* Scroll cue */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

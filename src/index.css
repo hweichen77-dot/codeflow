@@ -1,5 +1,3 @@
-/* Art-directed type: Bricolage Grotesque (display) + Hanken Grotesk (body) +
-   Spline Sans Mono (code only). Deliberately not the Inter/IBM-Plex/Syne defaults. */
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
@@ -8,7 +6,6 @@
 
 @layer base {
   :root {
-    /* Warm near-black, tinted toward the amber accent (hue ~40). Not cold gray. */
     --background: 40 12% 7%;
     --foreground: 40 14% 90%;
     --card: 40 11% 10%;
@@ -38,8 +35,6 @@
     --sidebar-border: 40 9% 18%;
     --sidebar-ring: 37 78% 57%;
 
-    /* Design tokens — warm dark + amber. (--accent-lime kept as the name many
-       inline styles reference; value is now amber.) */
     --accent-lime: #E8A33C;
     --bg-base: #15130E;
     --bg-raised: #1C1A14;
@@ -70,12 +65,10 @@
     font-stretch: normal;
   }
 
-  /* Tighter tracking for display headings */
   .font-display {
     letter-spacing: -0.01em;
   }
 
-  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
@@ -91,8 +84,6 @@
     background: var(--accent-lime);
   }
 
-  /* Subtle warm paper grain (no scanlines — that "CRT/AI hacker" overlay is gone).
-     Low-opacity tooth gives the dark surface a printed feel. */
   body::after {
     content: '';
     position: fixed;
@@ -104,7 +95,6 @@
   }
 }
 
-/* Font utilities. Mono is reserved for code; display is the art-directed face. */
 .font-mono {
   font-family: 'Spline Sans Mono', ui-monospace, monospace !important;
 }
@@ -113,9 +103,6 @@
   font-family: 'Bricolage Grotesque', system-ui, sans-serif !important;
 }
 
-/* ---- Reader surfaces (lessons / projects / challenges) ----
-   Same family system as the shell now; display = Bricolage, body = Hanken,
-   mono = Spline Sans Mono. Higher specificity + !important still win. */
 .reader-surface {
   font-family: 'Hanken Grotesk', system-ui, sans-serif;
 }
@@ -127,12 +114,9 @@
   font-family: 'Spline Sans Mono', ui-monospace, monospace !important;
 }
 
-/* Accent emphasis — no neon glow (that was an AI tell). Kept as no-ops so any
-   lingering .glow-lime class usage degrades cleanly. */
 .glow-lime { text-shadow: none; }
 .glow-lime-box { box-shadow: none; }
 
-/* Cursor blink */
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -142,13 +126,11 @@
   animation: cursor-blink 1s step-end infinite;
 }
 
-/* Typewriter */
 @keyframes type-in {
   from { width: 0; }
   to { width: 100%; }
 }
 
-/* Slide up entrance */
 @keyframes slide-up {
   from {
     opacity: 0;
@@ -164,7 +146,6 @@
   animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Homepage responsive */
 @media (max-width: 768px) {
   .bento-grid { grid-template-columns: 1fr !important; }
   .how-steps { grid-template-columns: 1fr !important; }
@@ -173,7 +154,6 @@
   .nav-links { display: none !important; }
 }
 
-/* Step dot trail */
 @keyframes dot-pulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }

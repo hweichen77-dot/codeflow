@@ -1,4 +1,3 @@
-// AUTO-AUTHORED AP module. Edit via the content pipeline.
 export default {
   "project": {
     "id": "csa-01",

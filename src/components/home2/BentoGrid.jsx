@@ -17,12 +17,10 @@ export default function BentoGrid() {
   return (
     <section id="learn" style={{ borderBottom: "1px solid #221F18" }}>
       <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "96px 2rem" }}>
-        {/* section head */}
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
           <span style={idx}>02 — The reading surface</span>
         </div>
 
-        {/* lesson surface: gutter number + prose + inline check */}
         <div className="cf-lesson" style={{
           display: "grid",
           gridTemplateColumns: "64px 1fr",
@@ -61,7 +59,6 @@ export default function BentoGrid() {
               run it again — and watch the behavior move.
             </p>
 
-            {/* inline check — bordered card, NOT a side-stripe */}
             <div style={{
               margin: "32px 0",
               background: "#1C1A14",
@@ -103,7 +100,6 @@ export default function BentoGrid() {
           </div>
         </div>
 
-        {/* three numbered pillars — varied, not identical cards */}
         <div className="cf-pillars" style={{
           marginTop: "80px",
           display: "grid",

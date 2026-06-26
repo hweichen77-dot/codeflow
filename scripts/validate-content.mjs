@@ -1,10 +1,4 @@
 #!/usr/bin/env node
-// Standalone content validator. Run with `npm run validate:content`.
-//
-// Imports the pure-ESM content layer (no browser deps) and runs every
-// lesson/project/challenge/problem through the zod schemas in
-// src/content/schema.js. Exits non-zero only if there are schema errors, so it
-// can gate CI without ever affecting `vite build`.
 
 import { PROJECTS, LESSONS, CHALLENGES, COMPETITIVE } from "../src/content/index.js";
 import { validateContent } from "../src/content/schema.js";

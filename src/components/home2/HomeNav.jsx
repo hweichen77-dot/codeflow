@@ -13,13 +13,11 @@ export default function HomeNav() {
         justifyContent: "space-between",
         height: "60px",
       }}>
-        {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <span style={{ color: "#f59e0b", fontSize: "18px", fontWeight: 800, lineHeight: 1 }}>•</span>
           <span style={{ color: "#F2EDE2", fontSize: "17px", fontWeight: 700, letterSpacing: "-0.3px" }}>CodeFlow</span>
         </div>
 
-        {/* Nav links */}
         <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
           <div style={{ display: "flex", gap: "28px" }} className="cf-nav-links">
             {["Learn", "Projects"].map(link => (

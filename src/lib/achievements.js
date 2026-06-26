@@ -1,11 +1,3 @@
-// Pure achievement computation. No side effects, no storage.
-// Inputs derived from the offline data layer:
-//   progress: UserProgress rows (need .completed, .project_id, .lesson_id)
-//   projects: Project rows (need .id, .lessons_count)
-//   streak:   current consecutive-day streak (number)
-//   capstones: optional CapstoneSubmission rows
-//
-// Returns ordered achievement objects: { id, title, desc, icon, unlocked }.
 
 export function computeAchievements({ progress = [], projects = [], streak = 0, capstones = [] } = {}) {
   const completed = progress.filter((p) => p.completed);
@@ -14,7 +6,6 @@ export function computeAchievements({ progress = [], projects = [], streak = 0, 
   const totalLessons = projects.reduce((s, p) => s + (p.lessons_count || 0), 0);
   const pct = totalLessons ? (completedLessons / totalLessons) * 100 : 0;
 
-  // A project is fully complete when its completed lessons >= its lessons_count.
   const fullyCompleteProjects = projects.filter((proj) => {
     if (!proj.lessons_count) return false;
     const done = completed.filter((p) => p.project_id === proj.id).length;

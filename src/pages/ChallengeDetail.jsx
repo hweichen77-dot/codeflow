@@ -54,7 +54,6 @@ export default function ChallengeDetail() {
       setOutput(text);
       const didPass = ok && !isError;
       setPassed(didPass);
-      // Persist the pass locally so guest mode + the Dashboard reflect it.
       if (didPass && challengeId) markChallengeComplete(challengeId);
     } catch (e) {
       setOutput("Error: " + String(e?.message || e));
@@ -87,7 +86,6 @@ export default function ChallengeDetail() {
 
   return (
     <div style={{ background: "#15130E", minHeight: "100vh" }}>
-      {/* Header */}
       <div className="relative pt-20" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
 
@@ -137,7 +135,6 @@ export default function ChallengeDetail() {
       </div>
 
       <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8">
-        {/* One-time primer: how challenges work */}
         <div style={{ border: "1px solid #262219", background: "#131009" }}>
           <button
             onClick={() => setShowPrimer(!showPrimer)}
@@ -180,11 +177,8 @@ export default function ChallengeDetail() {
           </AnimatePresence>
         </div>
 
-        {/* Full USACO/Codeforces-style problem statement (when authored) */}
         {challenge.statement && <ProblemStatement problem={challenge} />}
 
-        {/* Legacy sample test cases — only when there's no rich statement
-            (the rich statement already shows examples). */}
         {!challenge.statement && challenge.test_cases && challenge.test_cases.length > 0 && (
           <div style={{ border: "1px solid #262219", background: "#131009" }}>
             <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
@@ -205,7 +199,6 @@ export default function ChallengeDetail() {
           </div>
         )}
 
-        {/* Editor */}
         <CodeEditor
           code={code}
           onChange={setCode}
@@ -215,7 +208,6 @@ export default function ChallengeDetail() {
           filename={`challenge.py`}
         />
 
-        {/* Passed banner */}
         <AnimatePresence>
           {passed && (
             <motion.div
@@ -238,7 +230,6 @@ export default function ChallengeDetail() {
           )}
         </AnimatePresence>
 
-        {/* Actions */}
         <div className="flex flex-wrap gap-3">
           {challenge.hints && challenge.hints.length > 0 && (
             <button
@@ -266,7 +257,6 @@ export default function ChallengeDetail() {
           )}
         </div>
 
-        {/* Hints */}
         <AnimatePresence>
           {showHints && challenge.hints && (
             <motion.div
@@ -296,7 +286,6 @@ export default function ChallengeDetail() {
           )}
         </AnimatePresence>
 
-        {/* Solution */}
         <AnimatePresence>
           {showSolution && challenge.solution_code && (
             <motion.div

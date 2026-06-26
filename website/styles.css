@@ -1,8 +1,5 @@
 @import url('./fonts/fonts.css');
 
-/* CodeFlow marketing site — warm dark, art-directed. No inline styles/scripts so
-   the CSP can forbid 'unsafe-inline'. Identity matches the app: Bricolage Grotesque
-   + Hanken Grotesk + Spline Sans Mono (code only), single muted amber accent. */
 :root{
   --bg:        oklch(0.165 0.008 75);
   --bg-raised: oklch(0.205 0.010 75);
@@ -36,7 +33,6 @@ img{max-width:100%}
 .wrap{max-width:1180px; margin:0 auto; padding:0 var(--space-8)}
 .idx{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.18em; color:var(--amber-dim); text-transform:uppercase; font-weight:500}
 
-/* Nav */
 nav{position:sticky; top:0; z-index:50; background:color-mix(in oklch, var(--bg) 86%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line-soft)}
 .nav-in{display:flex; align-items:center; justify-content:space-between; height:64px}
 .mark{display:flex; align-items:baseline; gap:10px; font-family:var(--display); font-weight:800; font-size:1.18rem; letter-spacing:-0.02em; text-decoration:none; color:var(--ink)}
@@ -48,7 +44,6 @@ nav{position:sticky; top:0; z-index:50; background:color-mix(in oklch, var(--bg)
 .nav-links a.cta:hover{color:var(--bg)}
 @media(max-width:680px){ .nav-links a.plain{display:none} }
 
-/* Hero */
 .hero{padding:var(--space-24) 0 var(--space-16); border-bottom:1px solid var(--line-soft)}
 .hero-grid{display:grid; grid-template-columns:1fr; gap:var(--space-12)}
 @media(min-width:880px){ .hero-grid{grid-template-columns:1.35fr 1fr; align-items:end} }
@@ -82,7 +77,6 @@ section{padding:var(--space-24) 0; border-bottom:1px solid var(--line-soft)}
 .sec-head{display:flex; align-items:baseline; gap:var(--space-4); margin-bottom:var(--space-12)}
 .sec-head h2{font-family:var(--display); font-weight:720; letter-spacing:-0.025em; font-size:clamp(1.9rem,3.5vw,2.8rem)}
 
-/* Pillars */
 .pillars{display:grid; grid-template-columns:1fr; gap:0}
 @media(min-width:760px){ .pillars{grid-template-columns:repeat(3,1fr)} }
 .pillar{padding:var(--space-8) var(--space-8) var(--space-8) 0; border-top:1px solid var(--line)}
@@ -90,7 +84,6 @@ section{padding:var(--space-24) 0; border-bottom:1px solid var(--line-soft)}
 .pillar h3{font-family:var(--display); font-weight:700; font-size:1.3rem; margin:var(--space-3) 0 var(--space-3); letter-spacing:-0.015em}
 .pillar p{color:var(--ink-3); font-size:0.95rem; max-width:34ch}
 
-/* Track index */
 .track{display:flex; flex-direction:column}
 .track .row{display:grid; grid-template-columns:auto 1fr auto; gap:var(--space-8); align-items:center; padding:var(--space-8) 0; border-top:1px solid var(--line-soft); transition:padding .2s}
 .track .row:hover{padding-left:var(--space-3)}
@@ -102,7 +95,6 @@ section{padding:var(--space-24) 0; border-bottom:1px solid var(--line-soft)}
 .track .badge{font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-2); border:1px solid var(--line); padding:4px 10px; border-radius:2px; white-space:nowrap}
 .track .badge.java{color:var(--clay); border-color:color-mix(in oklch, var(--clay) 40%, var(--line))}
 
-/* Downloads */
 .dl{display:grid; grid-template-columns:1fr; gap:var(--space-6)}
 @media(min-width:720px){ .dl{grid-template-columns:1fr 1fr} }
 .dl-card{background:var(--bg-raised); border:1px solid var(--line); border-radius:5px; padding:var(--space-12)}
@@ -112,7 +104,6 @@ section{padding:var(--space-24) 0; border-bottom:1px solid var(--line-soft)}
 .dl-note{margin-top:var(--space-8); color:var(--ink-3); font-size:0.86rem}
 .dl-note a{color:var(--amber)}
 
-/* About */
 .about-grid{display:grid; grid-template-columns:1fr; gap:var(--space-12)}
 @media(min-width:880px){ .about-grid{grid-template-columns:1fr 1fr} }
 .about p{color:var(--ink-2); font-size:1.05rem; line-height:1.7; margin-bottom:var(--space-6); max-width:60ch}

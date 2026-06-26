@@ -1,4 +1,3 @@
-// One-off: turn the AP content workflow output into module files + indexes.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 

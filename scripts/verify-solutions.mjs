@@ -1,8 +1,3 @@
-// Runs every curriculum challenge's reference solution against its test_cases and
-// asserts stdout matches expected_output. Safety net for content edits.
-// Python runs via python3; Java compiles+runs via javac/java (skipped gracefully
-// if no JDK locally — CI installs one). Competitive C++ is handled separately.
-// Usage: node scripts/verify-solutions.mjs
 import { writeFileSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -11,20 +6,17 @@ import { execFileSync } from 'node:child_process'
 const mod = await import('../src/content/index.js')
 const LESSONS = mod.LESSONS
 
-// match runner norm(): rstrip each line, strip trailing newlines, keep leading ws
 const norm = (s) => String(s).replace(/[ \t]+$/gm, '').replace(/\n+$/, '')
 
-// Resolve a lesson's challenge language (explicit field, else sniff the source).
 const langOf = (l, sol) =>
   l.challenge_language || l.language ||
   (sol.includes('#include') ? 'cpp' : sol.includes('public class') ? 'java' : 'py')
 
-// Is a JDK available? Probe once; if not, Java solutions are skipped (not failed).
 let javaAvailable = false
 try {
   execFileSync('javac', ['-version'], { stdio: 'ignore' })
   javaAvailable = true
-} catch { /* no JDK — skip java */ }
+} catch {  }
 
 const dir = mkdtempSync(join(tmpdir(), 'cfverify-'))
 let total = 0, passed = 0, failed = 0, javaSkipped = 0
@@ -36,7 +28,6 @@ const runPy = (sol, input) => {
   return execFileSync('python3', [file], { input: (input ?? '') + '\n', timeout: 8000, encoding: 'utf8' })
 }
 
-// Java reference solutions must declare `public class Main`.
 const compileJava = (sol) => {
   const file = join(dir, 'Main.java')
   writeFileSync(file, sol)
@@ -52,7 +43,7 @@ for (const l of LESSONS) {
   const id = l.id || l.challenge_title || 'unknown'
   const lang = langOf(l, sol)
 
-  if (lang === 'cpp') continue // competitive handled separately
+  if (lang === 'cpp') continue
 
   if (lang === 'java') {
     if (!javaAvailable) { javaSkipped += cases.length; continue }

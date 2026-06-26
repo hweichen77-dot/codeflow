@@ -24,17 +24,12 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    // Local store is the guest-friendly source of truth (ChallengeDetail writes
-    // here on a pass). Seed from it first so guest mode shows real numbers.
     const local = getChallengeStats();
     setChallengeStats(local);
 
-    // Only email-authed users have server-side rows. AuthContext also sets a
-    // local-* profile in guest mode — skip the Supabase fetch for those.
     const sid = supabaseUser?.id;
     if (!sid || String(sid).startsWith("local-")) { setStatsLoading(false); return; }
 
-    // Signed-in: merge any server-side challenge rows on top of local counts.
     UserChallenges.list(supabaseUser.id).then(items => {
       const completed = items.filter(i => i.status === 'completed').length;
       const inProgress = items.filter(i => i.status === 'in_progress').length;
@@ -81,10 +76,8 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  // Level-up modal — decoupled localStorage approach.
   const [levelUp, setLevelUp] = useState(null);
 
-  // Detect level crossings by comparing current level to last-seen in localStorage.
   useEffect(() => {
     if (!user || progress.length === 0) return;
     const xp = progress
@@ -95,13 +88,11 @@ export default function Dashboard() {
     let lastSeen = 0;
     try {
       lastSeen = parseInt(localStorage.getItem(lastLevelKey) || "0", 10) || 0;
-    } catch { /* ignore */ }
+    } catch {  }
 
     if (currentLevel > lastSeen) {
-      // Only celebrate if the user had a baseline (avoid first-ever-load fanfare
-      // for returning users who never had the key, but still record it).
       if (lastSeen > 0) setLevelUp(currentLevel);
-      try { localStorage.setItem(lastLevelKey, String(currentLevel)); } catch { /* ignore */ }
+      try { localStorage.setItem(lastLevelKey, String(currentLevel)); } catch {  }
     }
   }, [user, progress]);
 
@@ -110,7 +101,6 @@ export default function Dashboard() {
   const completedProgress = progress.filter((p) => p.completed);
   const completedLessons = completedProgress.length;
 
-  // Activity map
   const activityMap = {};
   completedProgress.forEach((p) => {
     if (p.completed_date) {
@@ -119,7 +109,6 @@ export default function Dashboard() {
     }
   });
 
-  // Build last 52 weeks
   const weeks = [];
   const now = new Date();
   const startDate = new Date(now);
@@ -144,7 +133,6 @@ export default function Dashboard() {
     }
   });
 
-  // XP: use stored points or fallback to 10 per lesson
   const totalXP = completedProgress.reduce((sum, p) => sum + (p.points_earned || 10), 0);
   const lvl = getLevel(totalXP);
   const nextLvl = [
@@ -158,7 +146,6 @@ export default function Dashboard() {
   ].find(l => l.min > lvl.min);
   const lvlPct = lvl.max === Infinity ? 100 : Math.min(100, Math.round(((totalXP - lvl.min) / (lvl.max - lvl.min)) * 100));
 
-  // Day streak — shared source of truth with AuthHome / streak badge.
   const streak = getStreak();
 
   const notStartedProjects = projects.filter((proj) => !progress.some((p) => p.project_id === proj.id));
@@ -179,7 +166,6 @@ export default function Dashboard() {
   const totalAvailableLessons = projects.reduce((s, p) => s + (p.lessons_count || 0), 0);
   const overallPct = totalAvailableLessons ? Math.round((completedLessons / totalAvailableLessons) * 100) : 0;
 
-  // Completed lesson lookup for ring + next-lesson computation.
   const completedLessonIds = new Set(completedProgress.map((p) => p.lesson_id));
   const lessonsByProject = (projId) =>
     allLessons.filter((l) => l.project_id === projId).sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -190,8 +176,7 @@ export default function Dashboard() {
     return Math.round((done / total) * 100);
   };
 
-  // "Continue where you left off": first project (in order) with an incomplete lesson.
-  let nextStep = null; // { project, lesson, started }
+  let nextStep = null;
   for (const proj of projects) {
     const ls = lessonsByProject(proj.id);
     if (ls.length === 0) continue;
@@ -205,7 +190,6 @@ export default function Dashboard() {
   const trackComplete = projects.length > 0 && allLessons.length > 0 && !nextStep;
   const nothingStarted = progress.length === 0;
 
-  // Struggle signals: lessons where student viewed solution or had many wrong attempts
   const struggledLessons = completedProgress.filter(
     (p) => p.solution_viewed || (p.wrong_attempts && p.wrong_attempts >= 3)
   ).length;
@@ -215,7 +199,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen" style={{ background: "#15130E" }}>
-      {/* Page header */}
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-5xl mx-auto">
@@ -229,7 +212,6 @@ export default function Dashboard() {
             {user.email}
           </p>
 
-          {/* Level progress bar */}
           <div style={{ marginTop: "20px", maxWidth: "400px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
               <span className="font-sans text-xs" style={{ color: lvl.color }}>
@@ -256,7 +238,6 @@ export default function Dashboard() {
 
       <div className="max-w-5xl mx-auto px-8 lg:px-16 py-12 space-y-12">
 
-        {/* Continue where you left off — hero card */}
         {trackComplete ? (
           <div
             className="px-8 py-8"
@@ -302,7 +283,6 @@ export default function Dashboard() {
           </Link>
         ) : null}
 
-        {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-0" style={{ border: "1px solid #262219" }}>
           {[
             { val: statsLoading ? "—" : challengeStats.completed, label: "Challenges Done", accent: "#E8A33C" },
@@ -333,7 +313,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Streak callout */}
         {streak > 0 && (
           <div
             className="flex items-center gap-4 px-6 py-4"
@@ -360,7 +339,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Struggle signals */}
         {struggledLessons > 0 && (
           <div>
             <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>
@@ -382,7 +360,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Activity heatmap */}
         <div>
           <div className="font-sans text-xs tracking-widest uppercase mb-6" style={{ color: "#BBB3A4" }}>
             ACTIVITY — LAST 52 WEEKS
@@ -392,7 +369,6 @@ export default function Dashboard() {
             style={{ border: "1px solid #262219", background: "#131009" }}
           >
             <div style={{ minWidth: "600px" }}>
-              {/* Month labels */}
               <div className="flex mb-2" style={{ marginLeft: "2rem" }}>
                 {monthLabels.map((m, idx) => (
                   <div
@@ -408,7 +384,6 @@ export default function Dashboard() {
                 ))}
               </div>
               <div className="flex gap-0.5">
-                {/* Day labels */}
                 <div className="flex flex-col gap-0.5 mr-2">
                   {["", "M", "", "W", "", "F", ""].map((d, i) => (
                     <div key={i} className="font-sans" style={{ height: "11px", width: "12px", fontSize: "8px", color: "#BBB3A4", display: "flex", alignItems: "center" }}>
@@ -416,7 +391,6 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-                {/* Grid */}
                 {weeks.map((week, wi) => (
                   <div key={wi} className="flex flex-col gap-0.5">
                     {week.map((day) => {
@@ -450,7 +424,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* In progress */}
         {inProgressProjects.length > 0 && (
           <div>
             <div className="font-sans text-xs tracking-widest uppercase mb-6" style={{ color: "#BBB3A4" }}>
@@ -514,7 +487,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Completed projects */}
         {completedProjects.length > 0 && (
           <div>
             <div className="font-sans text-xs tracking-widest uppercase mb-6" style={{ color: "#BBB3A4" }}>
@@ -537,10 +509,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Achievements */}
         <Achievements progress={progress} projects={projects} streak={streak} capstones={capstones} />
 
-        {/* Empty state */}
         {progress.length === 0 && (
           <div
             className="text-center py-20"

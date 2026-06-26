@@ -14,8 +14,6 @@ const STEPS = [
   { n: '03', t: 'Ship projects', d: 'Capstones turn skills into a portfolio you can actually point to.' },
 ]
 
-// First-run welcome. Without it, new users land on a cold dashboard and bounce.
-// Shows once per browser (or per account, post-merge), gated on being signed in.
 export default function WelcomeModal() {
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
@@ -24,7 +22,7 @@ export default function WelcomeModal() {
   useEffect(() => {
     if (!isAuthenticated) return
     let seen = true
-    try { seen = window.localStorage.getItem(ONBOARDED_KEY) === '1' } catch { /* ignore */ }
+    try { seen = window.localStorage.getItem(ONBOARDED_KEY) === '1' } catch {  }
     if (!seen) {
       setOpen(true)
       track('onboarding_shown')
@@ -32,7 +30,7 @@ export default function WelcomeModal() {
   }, [isAuthenticated])
 
   const dismiss = (started) => {
-    try { window.localStorage.setItem(ONBOARDED_KEY, '1') } catch { /* ignore */ }
+    try { window.localStorage.setItem(ONBOARDED_KEY, '1') } catch {  }
     track('onboarding_complete', { started: Boolean(started) })
     setOpen(false)
     if (started) navigate(createPageUrl('AITrack'))

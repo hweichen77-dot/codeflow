@@ -25,7 +25,6 @@ export default function ProjectCard({ project, index = 0, completedCount = 0 }) 
     >
       <Link to={createPageUrl(`ProjectDetail?id=${project.id}`)}>
         <div className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-200 hover:shadow-xl hover:shadow-gray-100/80 transition-all duration-300 h-full flex flex-col">
-          {/* Cover */}
           <div className="relative h-44 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
             {project.cover_image ? (
               <img
@@ -45,7 +44,6 @@ export default function ProjectCard({ project, index = 0, completedCount = 0 }) 
             </div>
           </div>
 
-          {/* Content */}
           <div className="p-5 flex-1 flex flex-col">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-medium text-[#6C5CE7] uppercase tracking-wider">
@@ -77,7 +75,6 @@ export default function ProjectCard({ project, index = 0, completedCount = 0 }) 
               <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#6C5CE7] group-hover:translate-x-1 transition-all" />
             </div>
 
-            {/* Progress bar */}
             {progress > 0 && (
               <div className="mt-3 pt-3 border-t border-gray-50">
                 <div className="flex items-center justify-between text-xs mb-1.5">

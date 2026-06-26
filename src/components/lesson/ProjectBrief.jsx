@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import { ChevronDown, Target, Wrench, ListChecks, Award, Clock } from "lucide-react";
 
-/**
- * ProjectBrief — collapsible engineering brief shown at the top of a project.
- * Reads project.brief = { tagline, overview, whatYouBuild[], milestones[],
- * skills[], rubric[], estimatedHours }.
- */
 export default function ProjectBrief({ brief }) {
   const [open, setOpen] = useState(false);
   if (!brief) return null;

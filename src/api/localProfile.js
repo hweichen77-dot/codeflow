@@ -1,4 +1,3 @@
-// Local-only profile store. No auth server — everything lives in localStorage.
 const KEY = 'codeflow_profile_v1'
 
 const slugify = (str) =>
@@ -23,7 +22,6 @@ const write = (profile) => {
   try {
     window.localStorage.setItem(KEY, JSON.stringify(profile))
   } catch {
-    /* ignore quota / private-mode errors */
   }
 }
 
@@ -46,6 +44,5 @@ export const clear = () => {
   try {
     window.localStorage.removeItem(KEY)
   } catch {
-    /* ignore */
   }
 }

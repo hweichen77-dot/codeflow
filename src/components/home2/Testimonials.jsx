@@ -7,7 +7,6 @@ export default function Testimonials() {
   return (
     <section style={{ borderBottom: "1px solid #221F18" }}>
       <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "96px 2rem" }}>
-        {/* section head */}
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
           <span style={{
             fontFamily: body,
@@ -21,7 +20,6 @@ export default function Testimonials() {
           </span>
         </div>
 
-        {/* mission statement — large, asymmetric */}
         <div className="cf-quotes" style={{
           display: "grid",
           gridTemplateColumns: "1.5fr 1fr",
@@ -50,7 +48,6 @@ export default function Testimonials() {
             </figcaption>
           </figure>
 
-          {/* two smaller stacked principles */}
           <div style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
             <SmallQuote
               quote="A tutor that makes you think it through instead of handing over the answer. That's the difference between learning and copying."

@@ -14,7 +14,6 @@ import RouteErrorBoundary from '@/components/RouteErrorBoundary';
 import FeedbackWidget from '@/components/FeedbackWidget';
 import WelcomeModal from '@/components/WelcomeModal';
 
-// Route-level code-splitting: each page becomes its own chunk loaded on demand.
 const LessonExpander = lazy(() => import('./pages/LessonExpander'));
 const AuthHome = lazy(() => import('./pages/AuthHome'));
 
@@ -22,14 +21,12 @@ const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
-// Lightweight full-screen fallback shown while a route chunk loads.
 const RouteFallback = () => (
   <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#15130E" }}>
     <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#262219", borderTopColor: "#E8A33C" }}></div>
   </div>
 );
 
-// App pages that require a signed-in (or guest) profile. Public: marketing Home + LessonDemo.
 const PROTECTED = new Set([
   'ChallengeDetail', 'Challenges', 'Dashboard', 'ProjectDetail', 'Projects', 'Portfolio', 'AITrack',
   'Competitive', 'CompetitiveDetail', 'APCS',
@@ -46,20 +43,15 @@ const AuthenticatedApp = () => {
     <Suspense fallback={<RouteFallback />}>
       <RouteErrorBoundary>
       <Routes>
-        {/* Home: marketing for visitors, personalized progress home once signed in. */}
         <Route path="/" element={
           <LayoutWrapper currentPageName={isAuthenticated ? 'Home' : mainPageKey}>
             {isAuthenticated ? <AuthHome /> : <MainPage />}
           </LayoutWrapper>
         } />
 
-        {/* Auth gate (full screen, no app chrome). */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <AuthGate />} />
 
         {Object.entries(Pages).map(([path, Page]) => {
-          // `Home` is the marketing landing, rendered at `/` for logged-out users.
-          // Don't expose a second copy at `/Home`: send authed users to their
-          // personalized AuthHome (the `/` route), visitors to the landing.
           if (path === 'Home') {
             return <Route key={path} path={`/${path}`} element={<Navigate to="/" replace />} />;
           }

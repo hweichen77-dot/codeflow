@@ -5,12 +5,6 @@ import { LEVELS, getLevel } from "./XPLevelBar";
 
 export { LEVELS, getLevel };
 
-/**
- * Full-screen celebratory level-up modal.
- * @param {boolean} show
- * @param {number} level    new level number
- * @param {function} onClose
- */
 export default function LevelUpModal({ show, level, onClose }) {
   const lvl = LEVELS.find((l) => l.level === level) || LEVELS[LEVELS.length - 1];
 

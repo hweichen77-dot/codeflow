@@ -141,7 +141,6 @@ export default function HeroSection() {
               </Link>
             </div>
 
-            {/* intentionally nudged 3px off-grid — live with it */}
             <div className="flex items-center gap-8" style={{ marginLeft: "3px" }}>
               {[
                 { val: "1K+", label: "Learners" },

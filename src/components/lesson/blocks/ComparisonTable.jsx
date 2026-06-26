@@ -1,11 +1,6 @@
 import React from "react";
 import { trace } from "@/components/lesson/trace/theme";
 
-/**
- * ComparisonTable — GfG-style approach comparison.
- * props:
- *   title, columns: string[], rows: [{ cells: string[], highlight?: bool }]
- */
 export default function ComparisonTable({ title, columns = [], rows = [] }) {
   return (
     <div className="my-7" style={{ border: `1px solid ${trace.border}`, background: trace.raised }}>

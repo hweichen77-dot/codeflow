@@ -1,6 +1,3 @@
-// Sync the download links in index.html to the current app version (from the
-// root package.json), so each release points the site at its own signed assets.
-// Run before deploying the website: `node website/build.mjs`.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'

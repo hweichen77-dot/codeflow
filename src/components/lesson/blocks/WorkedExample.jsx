@@ -2,15 +2,6 @@ import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { trace, traceStyles } from "@/components/lesson/trace/theme";
 
-/**
- * WorkedExample — input → reasoning → output triad with escalating difficulty.
- * Reasoning is revealed step by step so learners try first.
- *
- * props:
- *   number, difficulty ("easy"|"medium"|"hard"), prompt
- *   steps: string[]   (revealed one at a time)
- *   output: string
- */
 const DIFF = {
   easy: { c: trace.lime, label: "EASY" },
   medium: { c: trace.warn, label: "MEDIUM" },

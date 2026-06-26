@@ -20,7 +20,6 @@ export default function FinalCTAScene() {
       className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 py-32"
       style={{ background: "#15130E", borderTop: "1px solid #1C1A14" }}
     >
-      {/* Ghost text bg */}
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
         style={{
@@ -36,7 +35,6 @@ export default function FinalCTAScene() {
         BUILD
       </div>
 
-      {/* Glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -44,13 +42,11 @@ export default function FinalCTAScene() {
         }}
       />
 
-      {/* Horizontal line */}
       <div
         className="absolute left-16 right-16 top-1/2 -translate-y-1/2 h-px pointer-events-none"
         style={{ background: "linear-gradient(90deg, transparent, #E8A33C15, transparent)" }}
       />
 
-      {/* Content */}
       <motion.div style={{ opacity, scale, y }} className="relative z-10 text-center max-w-3xl mx-auto">
         <div
           className="font-sans text-xs tracking-widest uppercase mb-8"
@@ -121,7 +117,6 @@ export default function FinalCTAScene() {
           </Link>
         </div>
 
-        {/* Three micro-stats */}
         <div className="flex flex-wrap items-center justify-center gap-8">
           {[
             ["Free", "forever"],
@@ -135,7 +130,6 @@ export default function FinalCTAScene() {
           ))}
         </div>
 
-        {/* Footer */}
         <div
           className="mt-20 font-sans text-xs tracking-widest"
           style={{ color: "#ECE7DC" }}

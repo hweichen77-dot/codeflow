@@ -1,17 +1,8 @@
-/**
- * Single source of truth for learner progress numbers — used by AuthHome,
- * Dashboard, the AI Track page and the streak badge so they never disagree.
- */
 import { getLevel, LEVELS } from "../components/gamification/XPLevelBar";
 
 const STREAK_BASE = "codeflow_streak";
 const PROFILE_KEY = "codeflow_profile_v1";
 
-/**
- * Identity for the active account, read from the local profile store so per-user
- * progress keys don't bleed across accounts. Falls back to "guest" when no
- * profile is present (pre-login / guest-before-naming).
- */
 export function activeUserId() {
   if (typeof window === "undefined") return "guest";
   try {
@@ -23,18 +14,12 @@ export function activeUserId() {
   }
 }
 
-/**
- * Namespace a progress key by account so a second user on the same browser
- * doesn't inherit the first user's streak / level state.
- * Accepts an optional explicit id (e.g. from a caller that knows the user).
- */
 export function namespacedKey(base, id) {
   return `${base}::${id || activeUserId()}`;
 }
 
 const streakKey = (id) => namespacedKey(STREAK_BASE, id);
 
-/** Read the current streak without mutating it (display-safe). */
 export function getStreak() {
   try {
     const data = JSON.parse(localStorage.getItem(streakKey()) || "{}");
@@ -47,7 +32,6 @@ export function getStreak() {
   }
 }
 
-/** Record a visit for today, advancing or resetting the streak. Call once per session. */
 export function touchStreak() {
   try {
     const data = JSON.parse(localStorage.getItem(streakKey()) || "{}");
@@ -63,12 +47,6 @@ export function touchStreak() {
   }
 }
 
-/**
- * Compute a full progress summary from raw progress rows + content.
- * @param {Array} progress  UserProgress rows for the active account
- * @param {Array} projects  PROJECTS
- * @param {Array} lessons   LESSONS
- */
 export function summarize(progress = [], projects = [], lessons = []) {
   const completed = progress.filter((p) => p.completed);
   const completedLessonIds = new Set(completed.map((p) => p.lesson_id));
@@ -90,7 +68,6 @@ export function summarize(progress = [], projects = [], lessons = []) {
   const projectsStarted = projectStats.filter((p) => p.done > 0).length;
   const overallPct = lessons.length ? Math.round((completed.length / lessons.length) * 100) : 0;
 
-  // Resume target: first started-but-unfinished, else first not-started, else first.
   const inProgress = projectStats.find((p) => p.done > 0 && p.done < p.total);
   const notStarted = projectStats.find((p) => p.total > 0 && p.done === 0);
   const resume = inProgress || notStarted || projectStats[0] || null;
