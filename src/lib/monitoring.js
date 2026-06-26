@@ -18,6 +18,7 @@ export function initMonitoring() {
         tracesSampleRate: 0.1,
         replaysSessionSampleRate: 0,
         replaysOnErrorSampleRate: 0,
+        sendDefaultPii: false,
       })
     })
     .catch(() => {  })
@@ -36,6 +37,6 @@ export function captureError(error, context) {
 export function setMonitoringUser(user) {
   if (!monitoringEnabled) return
   try {
-    Sentry?.setUser(user ? { id: user.id, email: user.email } : null)
+    Sentry?.setUser(user ? { id: user.id } : null)
   } catch {  }
 }

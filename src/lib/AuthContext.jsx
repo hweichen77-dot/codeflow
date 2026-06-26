@@ -34,8 +34,10 @@ export const AuthProvider = ({ children }) => {
     setUser({ ...p });
     setIsAuthenticated(true);
     setAuthMode('email');
-    identify(p.id, { email: p.email, name: p.name });
-    setMonitoringUser({ id: p.id, email: p.email });
+    // Identify by opaque user id only — no email/name to 3rd-party analytics
+    // (audience includes students/minors; minimize PII surface).
+    identify(p.id);
+    setMonitoringUser({ id: p.id });
     activateSync(p.id);
   };
 
