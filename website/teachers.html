@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CodeFlow for Teachers — a free, drop-in AP CS classroom tool</title>
+<meta name="description" content="CodeFlow is a free, browser-based platform for AP Computer Science Principles, AP CS A, and intro programming. Real code execution, autograded challenges, no accounts, no IT approval, no paywall." />
+<meta name="color-scheme" content="dark" />
+<meta property="og:title" content="CodeFlow for Teachers" />
+<meta property="og:description" content="A free, drop-in classroom tool for AP CSP, AP CS A, and intro CS. Students run real code in the browser — no accounts, no setup, no paywall." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://codeflow.app/teachers" />
+<meta property="og:image" content="https://codeflow.app/og-image.png" />
+<meta property="og:image:alt" content="CodeFlow for Teachers" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="CodeFlow for Teachers" />
+<meta name="twitter:description" content="A free, drop-in classroom tool for AP CSP, AP CS A, and intro CS." />
+<meta name="twitter:image" content="https://codeflow.app/og-image.png" />
+<link rel="canonical" href="https://codeflow.app/teachers" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="preload" href="./fonts/bricolage-400800.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="./fonts/hanken-400.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <a class="mark" href="/"><span class="dot"></span>CodeFlow</a>
+    <div class="nav-links">
+      <a class="plain" href="/#tracks">Tracks</a>
+      <a class="plain" href="/teachers">For teachers</a>
+      <a class="plain" href="/#download">Download</a>
+      <a class="cta" href="https://hweichen77-dot.github.io/codeflow/?utm_source=teachers_page&utm_medium=web&utm_campaign=teachers" rel="noopener">Open app &rarr;</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow rise d1"><span class="rule"></span><span class="idx">For teachers — AP CS, ready Monday</span></div>
+      <h1 class="rise d2">A real CS lab,<br><em>no setup.</em></h1>
+      <p class="lede rise d3">CodeFlow gives your students the full AP&nbsp;CSP and AP&nbsp;CS&nbsp;A curricula with code that runs in the browser and answers graded against real test cases. Free, no accounts required, no install, no IT ticket.</p>
+      <div class="hero-actions rise d4">
+        <a class="btn btn-primary" href="https://hweichen77-dot.github.io/codeflow/?utm_source=teachers_page&utm_medium=web&utm_campaign=teachers" rel="noopener">Try it as a student</a>
+        <a class="btn btn-ghost" href="#standards">See standards coverage</a>
+        <a class="btn-text" href="#start">Use it with a class</a>
+      </div>
+    </div>
+    <div class="term rise d5">
+      <div class="term-bar"><i></i><i></i><i></i><span>AP CS A — Unit 4 · loops</span></div>
+      <div class="term-body">
+        <span class="c">// autograded against the unit's test cases</span><br>
+        <span class="k">for</span> (<span class="k">int</span> i <span class="k">=</span> 1; i &lt;= n; i++)<br>
+        &nbsp;&nbsp;sum <span class="k">+=</span> i;<br>
+        <span class="k">System</span>.out.println(sum);
+        <span class="o">✓ 8 / 8 tests passed</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">01 — Why teachers use it</span></div>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="n">01</div>
+        <h3>Zero friction</h3>
+        <p>Opens in any browser. No student accounts, no logins, no installs, no IT approval. Share one link and the class is coding.</p>
+      </div>
+      <div class="pillar">
+        <div class="n">02</div>
+        <h3>Autograded, honestly</h3>
+        <p>Challenges check student output against real test cases. Every reference solution is compiled and run in CI, so the answer key is never wrong.</p>
+      </div>
+      <div class="pillar">
+        <div class="n">03</div>
+        <h3>Free, forever</h3>
+        <p>The full curriculum is open and free to learn. No seat licenses, no paywall, no upsell to students or schools.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="standards">
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">02</span><h2>Standards coverage</h2></div>
+    <div class="track">
+      <div class="row">
+        <div class="n">CSP</div>
+        <div><div class="t">AP Computer Science Principles</div><div class="d">All five Big Ideas — Creative Development, Data, Algorithms &amp; Programming, Computer Systems &amp; Networks, Impact of Computing. Python + pseudocode aligned to the exam reference sheet.</div></div>
+        <div class="badge">Python</div>
+      </div>
+      <div class="row">
+        <div class="n">CSA</div>
+        <div><div class="t">AP Computer Science A</div><div class="d">All ten units of object-oriented Java — primitive types, classes, arrays, ArrayList, 2D arrays, inheritance, recursion — every exercise autograded.</div></div>
+        <div class="badge java">Java</div>
+      </div>
+      <div class="row">
+        <div class="n">INTRO</div>
+        <div><div class="t">Intro programming &amp; AI</div><div class="d">A gentle on-ramp before AP, plus an AI Engineering track for clubs, electives, and capstone projects.</div></div>
+        <div class="badge">Python</div>
+      </div>
+      <div class="row">
+        <div class="n">CP</div>
+        <div><div class="t">Competitive Coding</div><div class="d">USACO/Codeforces-style problems on a real C++ compiler — for contest prep and your strongest students.</div></div>
+        <div class="badge java">C++</div>
+      </div>
+    </div>
+    <p class="dl-note">Mapping CodeFlow to your pacing guide? <a href="https://hweichen77-dot.github.io/codeflow/?utm_source=teachers_page&utm_medium=web&utm_campaign=standards" rel="noopener">Browse every unit in the app &rarr;</a></p>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">03</span><h2>Use it with a class</h2></div>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="n">01</div>
+        <h3>Project it</h3>
+        <p>Run a lesson live on the board. Code in front of the class, hit run, and the output appears — no slides, no switching apps.</p>
+      </div>
+      <div class="pillar">
+        <div class="n">02</div>
+        <h3>Assign a track</h3>
+        <p>Point students at a project or unit. Each lesson ends in a runnable challenge they can finish in a class period.</p>
+      </div>
+      <div class="pillar">
+        <div class="n">03</div>
+        <h3>Let it grade</h3>
+        <p>Students see pass/fail against the test cases instantly, so you spend class time on the students who are stuck — not on grading.</p>
+      </div>
+    </div>
+    <p class="dl-note">Want a feature for your classroom, or found a content bug? <a href="https://github.com/hweichen77-dot/codeflow/issues" rel="noopener">Open an issue on GitHub &rarr;</a> — we read every one.</p>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">04</span><h2>What it is — and isn't</h2></div>
+    <div class="about about-grid">
+      <div>
+        <p>CodeFlow is a <b>learning tool, not a gradebook</b>. There's no roster, no LMS lock-in, and no student data to manage — which is exactly why it drops into a classroom with zero approval. Students run code, get graded instantly, and you keep using whatever gradebook you already have.</p>
+        <p>It's built by a small team that cares about <b>craft and honesty</b>: the curriculum is open, the code execution is real, and every answer key is checked by a machine before it ships. No fluff, no fake progress bars, no dark patterns aimed at kids.</p>
+        <p>Optional accounts (Google sign-in) let a student sync their own progress across devices — never required to learn.</p>
+      </div>
+      <div>
+        <div class="stat"><div class="big">300+</div><div class="cap">lessons, every solution autograded</div></div>
+        <div class="stat"><div class="big">$0</div><div class="cap">no seat licenses, no paywall to learn</div></div>
+        <div class="stat"><div class="big">0</div><div class="cap">accounts required to start coding</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <a class="mark" href="/"><span class="dot"></span>CodeFlow</a>
+        <p>Built for people who learn by doing. Open curriculum, real code execution, no fluff.</p>
+      </div>
+      <div class="foot-col">
+        <div class="idx">Product</div>
+        <a href="https://hweichen77-dot.github.io/codeflow/" rel="noopener">Open app</a>
+        <a href="/#tracks">Tracks</a>
+        <a href="/#download">Download</a>
+      </div>
+      <div class="foot-col">
+        <div class="idx">Teachers</div>
+        <a href="#standards">Standards</a>
+        <a href="#start">Use in class</a>
+        <a href="https://github.com/hweichen77-dot/codeflow/issues" rel="noopener">Request a feature</a>
+      </div>
+    </div>
+    <div class="foot-base">© 2026 CodeFlow. Learn by building.</div>
+  </div>
+</footer>
+
+</body>
+</html>
