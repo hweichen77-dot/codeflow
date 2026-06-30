@@ -1,9 +1,10 @@
 import React from "react";
+import { font } from "@/lib/tokens";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-const display = "'Bricolage Grotesque', system-ui, sans-serif";
-const body = "'Hanken Grotesk', system-ui, sans-serif";
+const display = font.display;
+const body = font.body;
 
 const idx = {
   fontFamily: body,

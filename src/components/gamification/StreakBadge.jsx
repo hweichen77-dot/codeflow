@@ -22,7 +22,7 @@ export default function StreakBadge({ completedCount }) {
     }
   }, []);
 
-  const streakEmoji = streakDays >= 7 ? "" : streakDays >= 3 ? "" : "✦";
+  const hot = streakDays >= 3;
 
   return (
     <div className="flex items-center gap-4 mb-5">
@@ -32,16 +32,13 @@ export default function StreakBadge({ completedCount }) {
         className="flex items-center gap-2 px-3 py-1.5"
         style={{ border: "1px solid #262219", background: "#131009" }}
       >
-        <span style={{ fontSize: "0.75rem" }}>{streakEmoji}</span>
-        <div>
-          <div className="font-sans text-xs font-bold" style={{ color: streakDays >= 3 ? "#E8A33C" : "#C9C1B2" }}>
-            {streakDays}d streak
-          </div>
+        <span style={{ fontSize: "0.75rem", color: hot ? "#E8A33C" : "#5A5346" }}>✦</span>
+        <div className="font-sans text-xs font-bold" style={{ color: hot ? "#E8A33C" : "#C9C1B2" }}>
+          {streakDays}d streak
         </div>
       </motion.div>
 
       <div className="flex items-center gap-2 px-3 py-1.5" style={{ border: "1px solid #262219", background: "#131009" }}>
-        <span style={{ fontSize: "0.75rem" }}></span>
         <div className="font-sans text-xs font-bold" style={{ color: "#C9C1B2" }}>
           {completedCount} done
         </div>

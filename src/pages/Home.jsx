@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { font } from "@/lib/tokens";
+import { track } from "@/lib/analytics";
 import HeroSection from "@/components/home2/HeroSection";
-import BentoGrid from "@/components/home2/BentoGrid";
+import LessonShowcase from "@/components/home2/LessonShowcase";
 import HowItWorks from "@/components/home2/HowItWorks";
 import Testimonials from "@/components/home2/Testimonials";
 import FinalCTA from "@/components/home2/FinalCTA";
@@ -26,11 +28,12 @@ const responsiveStyles = `
 `;
 
 export default function Home() {
+  useEffect(() => { track("landing_view"); }, []);
   return (
-    <div style={{ background: "#15130E", minHeight: "100vh", fontFamily: "'Hanken Grotesk', system-ui, sans-serif", color: "#ECE7DC" }}>
+    <div style={{ background: "#15130E", minHeight: "100vh", fontFamily: font.body, color: "#ECE7DC" }}>
       <style>{responsiveStyles}</style>
       <HeroSection />
-      <BentoGrid />
+      <LessonShowcase />
       <HowItWorks />
       <Testimonials />
       <FinalCTA />

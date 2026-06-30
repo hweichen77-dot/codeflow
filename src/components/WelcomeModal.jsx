@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
+import { font } from "@/lib/tokens";
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/utils'
 import { track } from '@/lib/analytics'
 
-const LABEL = "'Hanken Grotesk', system-ui, sans-serif"
-const SERIF = "'Bricolage Grotesque', system-ui, sans-serif"
+const LABEL = font.body
+const SERIF = font.display
 const ONBOARDED_KEY = 'codeflow_onboarded_v1'
 
 const STEPS = [
@@ -51,7 +52,7 @@ export default function WelcomeModal() {
     >
       <div className="w-full max-w-lg p-10" style={{ border: '1px solid #2A261E', background: '#131009', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
         <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#E8A33C', fontFamily: LABEL }}>
-          § WELCOME TO CODEFLOW
+          WELCOME TO CODEFLOW
         </div>
         <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#F2EDE2', lineHeight: 1.12, margin: '0 0 8px' }}>
           Hey {firstName} — here&apos;s the idea.

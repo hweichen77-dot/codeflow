@@ -1,9 +1,10 @@
 import React from 'react'
+import { font } from "@/lib/tokens";
 import { Link } from 'react-router-dom'
 import { createPageUrl } from '../utils'
 
-const LABEL = "'Hanken Grotesk', system-ui, sans-serif"
-const SERIF = "'Bricolage Grotesque', system-ui, sans-serif"
+const LABEL = font.body
+const SERIF = font.display
 
 function Section({ title, children }) {
   return (
@@ -23,7 +24,7 @@ export default function Terms() {
     <div className="min-h-screen px-8 lg:px-16 pt-28 pb-20" style={{ background: '#15130E' }}>
       <div className="max-w-2xl mx-auto">
         <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#E8A33C', fontFamily: LABEL }}>
-          § TERMS
+          TERMS
         </div>
         <h1 style={{ fontFamily: SERIF, fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F2EDE2', margin: '0 0 8px', lineHeight: 1.08 }}>
           Terms of Service

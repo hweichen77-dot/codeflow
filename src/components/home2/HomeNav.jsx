@@ -14,7 +14,7 @@ export default function HomeNav() {
         height: "60px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <span style={{ color: "#f59e0b", fontSize: "18px", fontWeight: 800, lineHeight: 1 }}>•</span>
+          <span style={{ color: "#E8A33C", fontSize: "18px", fontWeight: 800, lineHeight: 1 }}>•</span>
           <span style={{ color: "#F2EDE2", fontSize: "17px", fontWeight: 700, letterSpacing: "-0.3px" }}>CodeFlow</span>
         </div>
 
@@ -35,17 +35,17 @@ export default function HomeNav() {
           <button
             onClick={() => navigate("/login")}
             style={{
-            background: "#f59e0b",
+            background: "#E8A33C",
             color: "#15130E",
             border: "none",
-            borderRadius: "999px",
+            borderRadius: "2px",
             padding: "8px 18px",
             fontSize: "13px",
             fontWeight: 700,
             cursor: "pointer",
             fontFamily: "inherit",
           }}>
-            Get Started
+            Start a track
           </button>
         </div>
       </div>

@@ -1,8 +1,9 @@
 import React from 'react'
+import { font } from "@/lib/tokens";
 import { captureError } from '@/lib/monitoring'
 
-const LABEL = "'Hanken Grotesk', system-ui, sans-serif"
-const SERIF = "'Bricolage Grotesque', system-ui, sans-serif"
+const LABEL = font.body
+const SERIF = font.display
 
 const CHUNK_ERROR =
   /Loading chunk|ChunkLoadError|dynamically imported module|Failed to fetch dynamically imported|Importing a module script failed/i
@@ -44,7 +45,7 @@ export default class RouteErrorBoundary extends React.Component {
       <div className="flex items-center justify-center px-6" style={{ minHeight: '60vh' }}>
         <div className="w-full max-w-md p-10 text-center" style={{ border: '1px solid #262219', background: '#131009' }}>
           <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#FF6B5C', fontFamily: LABEL }}>
-            § THIS PAGE HIT A SNAG
+            THIS PAGE HIT A SNAG
           </div>
           <h1 style={{ fontFamily: SERIF, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F2EDE2', margin: '0 0 10px', lineHeight: 1.15 }}>
             Couldn&apos;t load this page.

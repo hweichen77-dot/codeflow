@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { font } from "@/lib/tokens";
 import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -64,12 +65,12 @@ export default function Challenges() {
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-sans text-xs tracking-widest" style={{ color: "#BBB3A4" }}>§ CHALLENGES</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#BBB3A4" }}>CHALLENGES</span>
           </div>
           <h1
-            style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
+            style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
           >
-            Sharpen the blade.
+            One problem at a time.
           </h1>
           <p className="font-display text-base" style={{ color: "#C9C1B2", fontWeight: 400 }}>
             Focused problems. No setup. Pure coding.

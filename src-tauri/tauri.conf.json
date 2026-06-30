@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CodeFlow",
-  "version": "0.16.4",
+  "version": "0.17.0",
   "identifier": "com.codeflow.app",
   "build": {
     "frontendDist": "../dist",
@@ -37,6 +37,13 @@
     ],
     "android": {
       "debugApplicationIdSuffix": ".debug"
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["codeflow"]
+      }
     }
   }
 }
