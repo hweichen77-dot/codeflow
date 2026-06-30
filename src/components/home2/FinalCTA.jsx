@@ -1,8 +1,10 @@
 import React from "react";
+import { font } from "@/lib/tokens";
 import { useNavigate } from "react-router-dom";
+import { track } from "@/lib/analytics";
 
-const display = "'Bricolage Grotesque', system-ui, sans-serif";
-const body = "'Hanken Grotesk', system-ui, sans-serif";
+const display = font.display;
+const body = font.body;
 
 export default function FinalCTA() {
   const navigate = useNavigate();
@@ -46,8 +48,8 @@ export default function FinalCTA() {
 
         <div style={{ paddingBottom: "6px" }}>
           <p style={{ fontFamily: body, color: "#A39B8C", fontSize: "1.05rem", lineHeight: 1.62, maxWidth: "40ch", margin: "0 0 28px" }}>
-            Pick a track, write the first line, run it. No setup, no friction —
-            and no credit card.
+            Pick a track, write the first line, run it. No setup, no friction,
+            no credit card.
           </p>
           <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
             <button
@@ -63,7 +65,7 @@ export default function FinalCTA() {
                 cursor: "pointer",
                 transition: "transform .15s",
               }}
-              onClick={() => navigate("/login")}
+              onClick={() => { track("cta_click", { cta: "start_track", location: "final_cta" }); navigate("/login"); }}
               onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
               onMouseLeave={e => (e.currentTarget.style.transform = "none")}
             >
@@ -84,7 +86,7 @@ export default function FinalCTA() {
                 padding: "14px 4px",
                 transition: "color .15s",
               }}
-              onClick={() => navigate("/ProjectDetail?id=ai-01")}
+              onClick={() => { track("cta_click", { cta: "browse_projects", location: "final_cta" }); navigate("/ProjectDetail?id=ai-01"); }}
               onMouseEnter={e => { e.currentTarget.style.color = "#E8A33C"; e.currentTarget.style.textDecorationColor = "#E8A33C"; }}
               onMouseLeave={e => { e.currentTarget.style.color = "#A39B8C"; e.currentTarget.style.textDecorationColor = "#34302A"; }}
             >

@@ -1,8 +1,9 @@
 import React from "react";
+import { font } from "@/lib/tokens";
 
-const display = "'Bricolage Grotesque', system-ui, sans-serif";
-const body = "'Hanken Grotesk', system-ui, sans-serif";
-const mono = "'Spline Sans Mono', monospace";
+const display = font.display;
+const body = font.body;
+const mono = font.mono;
 
 const idx = {
   fontFamily: body,
@@ -13,7 +14,7 @@ const idx = {
   fontWeight: 500,
 };
 
-export default function BentoGrid() {
+export default function LessonShowcase() {
   return (
     <section id="learn" style={{ borderBottom: "1px solid #221F18" }}>
       <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "96px 2rem" }}>
@@ -51,12 +52,12 @@ export default function BentoGrid() {
             <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: "0 0 24px", lineHeight: 1.62 }}>
               A model call is just a <b style={{ color: "#ECE7DC", fontWeight: 600 }}>function</b> with a fuzzy
               contract: you hand it text, it hands back text. The craft is writing
-              the input so the output is predictable — the same discipline you'd
+              the input so the output is predictable. Same discipline you'd
               apply to any <Code>def</Code> you ship.
             </p>
             <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: "0 0 24px", lineHeight: 1.62 }}>
               You don't watch this. You run it, read the output, change one line,
-              run it again — and watch the behavior move.
+              run it again, and watch the behavior move.
             </p>
 
             <div style={{
@@ -95,7 +96,7 @@ export default function BentoGrid() {
 
             <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: 0, lineHeight: 1.62 }}>
               Next you'll <b style={{ color: "#ECE7DC", fontWeight: 600 }}>trace</b> how the same prompt drifts
-              across two models — and learn to pin it down.
+              across two models, then learn to pin it down.
             </p>
           </div>
         </div>
@@ -112,7 +113,7 @@ export default function BentoGrid() {
           </Pillar>
           <Pillar n="02" title="Real projects">
             Not toy examples. A sentiment classifier, a semantic search engine, a
-            chatbot with memory — things you'd put on a portfolio.
+            chatbot with memory. Things you'd put on a portfolio.
           </Pillar>
           <Pillar n="03" title="A tutor that won't cheat">
             Stuck? The tutor knows your lesson and nudges your thinking. It won't

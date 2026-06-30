@@ -1,13 +1,14 @@
 import React from "react";
+import { font } from "@/lib/tokens";
 
-const display = "'Bricolage Grotesque', system-ui, sans-serif";
-const body = "'Hanken Grotesk', system-ui, sans-serif";
+const display = font.display;
+const body = font.body;
 
 const tracks = [
   {
     n: "01",
     title: "AI Engineering",
-    desc: "Model calls, embeddings, retrieval, and agents — building tools you actually run.",
+    desc: "Model calls, embeddings, retrieval, and agents. You build tools you actually run.",
     badge: "Python",
     clay: true,
   },
@@ -20,14 +21,14 @@ const tracks = [
   {
     n: "03",
     title: "AP CS A",
-    desc: "Primitive types, iteration, classes, and recursion — the unit that makes it click.",
+    desc: "Primitive types, iteration, classes, recursion: the unit that makes it click.",
     badge: "Java",
     clay: true,
   },
   {
     n: "04",
     title: "Competitive Coding",
-    desc: "USACO/CF-depth problems with stdin judging — graphs, DP, and the patterns that win.",
+    desc: "USACO/CF-depth problems with stdin judging. Graphs, DP, and the patterns that win.",
     badge: "C++",
   },
 ];

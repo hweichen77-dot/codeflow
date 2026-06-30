@@ -1,9 +1,10 @@
 import React from 'react'
+import { font } from "@/lib/tokens";
 import { captureError } from '@/lib/monitoring'
 
-const MONO = "'Spline Sans Mono', ui-monospace, monospace"
-const LABEL = "'Hanken Grotesk', system-ui, sans-serif"
-const SERIF = "'Bricolage Grotesque', system-ui, sans-serif"
+const MONO = font.mono
+const LABEL = font.body
+const SERIF = font.display
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -43,7 +44,7 @@ export default class ErrorBoundary extends React.Component {
             className="font-sans text-xs tracking-widest uppercase mb-3"
             style={{ color: '#FF6B5C', fontFamily: LABEL }}
           >
-            § SOMETHING BROKE
+            SOMETHING BROKE
           </div>
           <h1
             style={{

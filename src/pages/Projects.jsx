@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { font } from "@/lib/tokens";
 import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -93,10 +94,10 @@ export default function Projects() {
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-sans text-xs tracking-widest" style={{ color: "#C9C1B2" }}>§ PROJECTS</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#C9C1B2" }}>PROJECTS</span>
           </div>
           <h1
-            style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
+            style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
           >
             Choose your module.
           </h1>
@@ -175,9 +176,6 @@ export default function Projects() {
                   className="flex items-baseline gap-3 px-6 pt-8 pb-3"
                   style={{ borderBottom: "1px solid #1F1C15" }}
                 >
-                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
-                    §
-                  </span>
                   <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
                     {section.label}
                   </span>

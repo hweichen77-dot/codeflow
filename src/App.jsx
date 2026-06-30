@@ -13,6 +13,11 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import RouteErrorBoundary from '@/components/RouteErrorBoundary';
 import FeedbackWidget from '@/components/FeedbackWidget';
 import WelcomeModal from '@/components/WelcomeModal';
+import AppSkeleton from '@/components/ui/AppSkeleton';
+
+// True inside the Tauri desktop shell. Desktop users already came through the
+// marketing site to download, so we skip the landing page for them.
+const isDesktop = typeof window !== 'undefined' && Boolean(window.__TAURI__ || window.__TAURI_INTERNALS__);
 
 const LessonExpander = lazy(() => import('./pages/LessonExpander'));
 const AuthHome = lazy(() => import('./pages/AuthHome'));
@@ -21,11 +26,7 @@ const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
-const RouteFallback = () => (
-  <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#15130E" }}>
-    <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#262219", borderTopColor: "#E8A33C" }}></div>
-  </div>
-);
+const RouteFallback = () => <AppSkeleton />;
 
 const PROTECTED = new Set([
   'ChallengeDetail', 'Challenges', 'Dashboard', 'ProjectDetail', 'Projects', 'Portfolio', 'AITrack',
@@ -44,9 +45,13 @@ const AuthenticatedApp = () => {
       <RouteErrorBoundary>
       <Routes>
         <Route path="/" element={
-          <LayoutWrapper currentPageName={isAuthenticated ? 'Home' : mainPageKey}>
-            {isAuthenticated ? <AuthHome /> : <MainPage />}
-          </LayoutWrapper>
+          isAuthenticated ? (
+            <LayoutWrapper currentPageName="Home"><AuthHome /></LayoutWrapper>
+          ) : isDesktop ? (
+            <Navigate to="/login" replace />
+          ) : (
+            <LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>
+          )
         } />
 
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <AuthGate />} />

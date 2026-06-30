@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
+import { font } from "@/lib/tokens";
 import { track } from '@/lib/analytics'
 
-const LABEL = "'Hanken Grotesk', system-ui, sans-serif"
+const LABEL = font.body
 const REPO = 'hweichen77-dot/codeflow'
 
 const KINDS = [

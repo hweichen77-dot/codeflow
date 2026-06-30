@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { font } from "@/lib/tokens";
 import { Link } from "react-router-dom";
 import { api } from "@/api/apiClient";
 import { createPageUrl } from "../utils";
 import { useAuth } from "../lib/AuthContext";
 import { summarize, touchStreak } from "../lib/progressStats";
 
-const LABEL = "'Hanken Grotesk', system-ui, sans-serif";
-const SERIF = "'Bricolage Grotesque', system-ui, sans-serif";
+const LABEL = font.body;
+const SERIF = font.display;
 
 function StatCard({ label, value, sub, accent = "#E8A33C" }) {
   return (

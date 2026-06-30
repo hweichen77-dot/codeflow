@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { font } from "@/lib/tokens";
 import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -8,6 +9,7 @@ import { getStreak, namespacedKey } from "../lib/progressStats";
 import { useAuth } from "../lib/AuthContext";
 import { UserChallenges } from "../api/supabaseClient";
 import { getChallengeStats } from "../api/progressStore";
+import ShareCard from "../components/ShareCard";
 import ProgressRing from "../components/gamification/ProgressRing";
 import Achievements from "../components/gamification/Achievements";
 import LevelUpModal from "../components/gamification/LevelUpModal";
@@ -202,9 +204,9 @@ export default function Dashboard() {
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-5xl mx-auto">
-          <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#BBB3A4" }}>§ DASHBOARD</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#BBB3A4" }}>DASHBOARD</div>
           <h1
-            style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 8px" }}
+            style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 8px" }}
           >
             {user.name?.split(" ")[0] || user.email?.split("@")[0] || "Learner"}
           </h1>
@@ -230,6 +232,19 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+
+          <div style={{ marginTop: "24px" }}>
+            <ShareCard
+              name={user.name?.split(" ")[0] || user.email?.split("@")[0] || "Learner"}
+              level={lvl.level}
+              levelName={lvl.name}
+              totalXP={totalXP}
+              lessons={completedLessons}
+              challenges={challengeStats.completed}
+              streak={streak}
+              overallPct={overallPct}
+            />
+          </div>
         </div>
       </div>
 
@@ -246,7 +261,7 @@ export default function Dashboard() {
             <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>
               TRACK COMPLETE
             </div>
-            <h2 style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", margin: "0 0 8px" }}>
+            <h2 style={{ fontFamily: font.display, fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", margin: "0 0 8px" }}>
               You finished every lesson.
             </h2>
             <p className="font-display text-sm" style={{ color: "#C9C1B2", fontWeight: 400 }}>
@@ -268,7 +283,7 @@ export default function Dashboard() {
                 </div>
                 <h2
                   className="truncate transition-colors duration-150 group-hover:text-white"
-                  style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "1.3rem", fontWeight: 800, letterSpacing: "-0.03em", color: "#F2EDE2", margin: "0 0 4px", lineHeight: 1.2 }}
+                  style={{ fontFamily: font.display, fontSize: "1.3rem", fontWeight: 800, letterSpacing: "-0.03em", color: "#F2EDE2", margin: "0 0 4px", lineHeight: 1.2 }}
                 >
                   {nextStep.lesson.title}
                 </h2>

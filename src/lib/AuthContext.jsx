@@ -6,6 +6,7 @@ import { activateSync, deactivateSync } from '@/api/cloudSync';
 import { namespacedKey } from '@/lib/progressStats';
 import { identify, resetIdentity, track } from '@/lib/analytics';
 import { setMonitoringUser } from '@/lib/monitoring';
+import { isDesktop, startGoogleDesktop, initDeepLinkAuth } from '@/lib/desktopAuth';
 
 const AuthContext = createContext();
 
@@ -43,6 +44,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     let active = true;
+    initDeepLinkAuth();
     (async () => {
       try {
         const { data } = await supaAuth.getSession();
@@ -95,6 +97,10 @@ export const AuthProvider = ({ children }) => {
 
   const signInGoogle = async () => {
     track('sign_in_start', { method: 'google' });
+    if (isDesktop) {
+      const { error } = await startGoogleDesktop();
+      return { error };
+    }
     const { error } = await supaAuth.signInWithGoogle();
     return { error };
   };
