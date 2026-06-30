@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { font } from "@/lib/tokens";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -78,7 +79,7 @@ export default function CompetitiveDetail() {
                 </span>
                 <span className="font-sans text-xs" style={{ color: "#C9C1B2" }}>{problem.algorithm_focus}</span>
               </div>
-              <h1 style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: 0 }}>
+              <h1 style={{ fontFamily: font.display, fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: 0 }}>
                 {problem.title}
               </h1>
               <div className="flex items-center gap-4 mt-3 font-sans text-xs" style={{ color: "#8F8779" }}>

@@ -1,9 +1,11 @@
 import React from "react";
+import { font } from "@/lib/tokens";
 import { useNavigate } from "react-router-dom";
+import { track } from "@/lib/analytics";
 
-const display = "'Bricolage Grotesque', system-ui, sans-serif";
-const body = "'Hanken Grotesk', system-ui, sans-serif";
-const mono = "'Spline Sans Mono', monospace";
+const display = font.display;
+const body = font.body;
+const mono = font.mono;
 
 export default function HeroSection() {
   const navigate = useNavigate();
@@ -53,15 +55,15 @@ export default function HeroSection() {
             fontSize: "1.12rem",
             lineHeight: 1.62,
           }}>
-            CodeFlow teaches you to use AI tools and ship real software — AI
+            CodeFlow teaches you to use AI tools and ship real software: AI
             engineering, AP Computer Science, and competitive coding, with code
-            you actually run at every step.
+            you run at every step.
           </p>
 
           <div style={{ marginTop: "44px", display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
             <button
               style={btnPrimary}
-              onClick={() => navigate("/ProjectDetail?id=ai-01")}
+              onClick={() => { track("cta_click", { cta: "start_track", location: "hero" }); navigate("/ProjectDetail?id=ai-01"); }}
               onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
               onMouseLeave={e => (e.currentTarget.style.transform = "none")}
             >
@@ -69,7 +71,7 @@ export default function HeroSection() {
             </button>
             <button
               style={btnGhost}
-              onClick={() => document.getElementById("how")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => { track("cta_click", { cta: "download_desktop", location: "hero" }); document.getElementById("how")?.scrollIntoView({ behavior: "smooth" }); }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = "#756C5C")}
               onMouseLeave={e => (e.currentTarget.style.borderColor = "#34302A")}
             >
@@ -77,7 +79,7 @@ export default function HeroSection() {
             </button>
             <button
               style={btnText}
-              onClick={() => document.getElementById("learn")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => { track("cta_click", { cta: "see_curriculum", location: "hero" }); document.getElementById("learn")?.scrollIntoView({ behavior: "smooth" }); }}
               onMouseEnter={e => { e.currentTarget.style.color = "#E8A33C"; e.currentTarget.style.textDecorationColor = "#E8A33C"; }}
               onMouseLeave={e => { e.currentTarget.style.color = "#A39B8C"; e.currentTarget.style.textDecorationColor = "#34302A"; }}
             >

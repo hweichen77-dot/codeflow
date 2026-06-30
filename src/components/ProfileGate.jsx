@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { font } from "@/lib/tokens";
 import { useAuth } from '@/lib/AuthContext';
 
 export default function ProfileGate() {
@@ -25,11 +26,11 @@ export default function ProfileGate() {
           className="font-sans text-xs tracking-widest uppercase mb-3"
           style={{ color: '#BBB3A4' }}
         >
-          § WELCOME
+          WELCOME
         </div>
         <h1
           style={{
-            fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+            fontFamily: font.display,
             fontSize: '2.25rem',
             fontWeight: 800,
             letterSpacing: '-0.025em',
@@ -50,7 +51,7 @@ export default function ProfileGate() {
         <form onSubmit={handleStart}>
           <label
             className="font-sans text-xs tracking-widest uppercase block mb-2"
-            style={{ color: '#BBB3A4', fontFamily: "'Hanken Grotesk', system-ui, sans-serif" }}
+            style={{ color: '#BBB3A4', fontFamily: font.body }}
           >
             Your name
           </label>
@@ -78,7 +79,7 @@ export default function ProfileGate() {
               color: name.trim() ? '#15130E' : '#BBB3A4',
               fontWeight: 700,
               cursor: name.trim() ? 'pointer' : 'not-allowed',
-              fontFamily: "'Hanken Grotesk', system-ui, sans-serif",
+              fontFamily: font.body,
             }}
             onMouseEnter={(e) => {
               if (!name.trim()) return;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { font } from "@/lib/tokens";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
@@ -32,13 +33,13 @@ export default function Competitive() {
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-sans text-xs tracking-widest" style={{ color: "#BBB3A4" }}>§ COMPETITIVE</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#BBB3A4" }}>COMPETITIVE</span>
           </div>
-          <h1 style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}>
-            Implement the algorithm.
+          <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}>
+            Write the algorithm yourself.
           </h1>
           <p className="font-display text-base" style={{ color: "#C9C1B2", fontWeight: 400 }}>
-            USACO/Codeforces-style problems in C++ — each one builds an algorithm behind modern AI.
+            Hard C++ problems, like the ones on USACO and Codeforces. A lot of them are the algorithms that make AI work.
           </p>
           <div
             className="mt-6 flex items-start gap-3 px-4 py-3 max-w-2xl"
@@ -48,8 +49,8 @@ export default function Competitive() {
               Optional · Advanced
             </span>
             <p className="font-display text-xs leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
-              Not part of the beginner flow. These are challenging C++ algorithm problems for learners
-              already comfortable with programming — a deliberate switch from the Python AI track.
+              Not for beginners. These are hard C++ problems for people who can already code. It's a big
+              jump from the Python AI track.
             </p>
           </div>
         </div>

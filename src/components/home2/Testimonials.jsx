@@ -1,7 +1,8 @@
 import React from "react";
+import { font } from "@/lib/tokens";
 
-const display = "'Bricolage Grotesque', system-ui, sans-serif";
-const body = "'Hanken Grotesk', system-ui, sans-serif";
+const display = font.display;
+const body = font.body;
 
 export default function Testimonials() {
   return (
@@ -54,7 +55,7 @@ export default function Testimonials() {
               who="How we teach"
             />
             <SmallQuote
-              quote="Run real Python, Java, and C++ right in the browser. No setup, no toy sandboxes — the same code you'd write for a real project."
+              quote="Run real Python, Java, and C++ right in the browser. No setup, no toy sandboxes, just the same code you'd write for a real project."
               who="What you'll use"
             />
           </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { font } from "@/lib/tokens";
 import { api } from "@/api/apiClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -15,7 +16,7 @@ import ParticipationActivity from "../components/lesson/ParticipationActivity";
 import { trace } from "../components/lesson/trace/theme";
 import LessonPointsSummary from "../components/lesson/LessonPointsSummary";
 import LessonChallenge from "../components/lesson/LessonChallenge";
-import { runCodeInSandbox } from "../lib/codeRunner";
+import { runPython } from "../lib/pyRunner";
 import XPToastContainer, { showXPToast } from "../components/gamification/XPToast";
 import XPLevelBar from "../components/gamification/XPLevelBar";
 import StreakBadge from "../components/gamification/StreakBadge";
@@ -143,7 +144,7 @@ export default function ProjectDetail() {
 
   const handleRun = async () => {
     setIsRunning(true);
-    const { output: result, isError } = await runCodeInSandbox(code);
+    const { output: result, isError } = await runPython(code);
     if (isError) wrongAttempts.current += 1;
     setOutput(result);
     setIsRunning(false);
@@ -293,7 +294,7 @@ export default function ProjectDetail() {
           Module Locked
         </div>
         <h1
-          style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.15, maxWidth: "32rem" }}
+          style={{ fontFamily: font.display, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.15, maxWidth: "32rem" }}
         >
           Finish the Foundations first.
         </h1>
@@ -351,7 +352,7 @@ export default function ProjectDetail() {
                     {project.difficulty} · {project.category?.replace("_", "/")}
                   </div>
                   <h1
-                    style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: 0 }}
+                    style={{ fontFamily: font.display, fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: 0 }}
                   >
                     {project.title}
                   </h1>
@@ -606,7 +607,7 @@ export default function ProjectDetail() {
                     onRun={handleRun}
                     output={output}
                     isRunning={isRunning}
-                    filename={`lesson_${String(activeLessonIndex + 1).padStart(2, "0")}.js`}
+                    filename={`lesson_${String(activeLessonIndex + 1).padStart(2, "0")}.py`}
                     lessonTitle={activeLesson.title}
                     solutionCode={activeLesson.solution_code || ""}
                     enableAIAnalysis={!!activeLesson.solution_code}

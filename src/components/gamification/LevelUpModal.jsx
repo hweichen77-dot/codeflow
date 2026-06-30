@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { font } from "@/lib/tokens";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { LEVELS, getLevel } from "./XPLevelBar";
@@ -73,7 +74,7 @@ export default function LevelUpModal({ show, level, onClose }) {
               className="font-sans text-xs tracking-widest uppercase mb-6"
               style={{ color: "#BBB3A4" }}
             >
-              § LEVEL UP
+              LEVEL UP
             </div>
 
             <motion.div
@@ -109,7 +110,7 @@ export default function LevelUpModal({ show, level, onClose }) {
 
             <h2
               style={{
-                fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+                fontFamily: font.display,
                 fontSize: "2.25rem",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",

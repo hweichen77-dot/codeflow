@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { font } from "@/lib/tokens";
 import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -122,7 +123,7 @@ export default function ChallengeDetail() {
                 )}
               </div>
               <h1
-                style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: 0 }}
+                style={{ fontFamily: font.display, fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: 0 }}
               >
                 {challenge.title}
               </h1>
