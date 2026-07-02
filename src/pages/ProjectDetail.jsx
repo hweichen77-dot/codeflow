@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { font } from "@/lib/tokens";
 import { api } from "@/api/apiClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { createPageUrl } from "../utils";
+import { resolveLessonSlugs, getLessonPath } from "@/content";
+import useDocumentHead from "@/lib/useDocumentHead";
 import { motion, AnimatePresence } from "framer-motion";
 import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
@@ -30,10 +32,13 @@ const DIFFICULTY_NUM = { beginner: "00", intermediate: "01", advanced: "02" };
 
 export default function ProjectDetail() {
   const params = new URLSearchParams(window.location.search);
-  const projectId = params.get("id");
+  const { projectSlug, lessonSlug } = useParams();
+  const routeResolved = projectSlug ? resolveLessonSlugs(projectSlug, lessonSlug) : {};
+  const projectId = routeResolved.projectId || params.get("id");
+  const initialLessonId = routeResolved.lessonId || null;
 
   const [user, setUser] = useState(null);
-  const [activeLessonId, setActiveLessonId] = useState(null);
+  const [activeLessonId, setActiveLessonId] = useState(initialLessonId);
   const [code, setCode] = useState("");
   const [output, setOutput] = useState(null);
   const [showHints, setShowHints] = useState(false);
@@ -87,12 +92,44 @@ export default function ProjectDetail() {
 
   useEffect(() => {
     if (lessons.length > 0 && !activeLessonId) {
-      setActiveLessonId(lessons[0].id);
+      const wanted =
+        initialLessonId && lessons.some((l) => l.id === initialLessonId)
+          ? initialLessonId
+          : lessons[0].id;
+      setActiveLessonId(wanted);
     }
-  }, [lessons, activeLessonId]);
+  }, [lessons, activeLessonId, initialLessonId]);
 
   const activeLesson = lessons.find((l) => l.id === activeLessonId);
   const activeLessonIndex = lessons.findIndex((l) => l.id === activeLessonId);
+
+  // Keep the URL + document head in sync with the selected lesson so every
+  // lesson is deep-linkable and shareable (only when viewing via /learn/...).
+  useEffect(() => {
+    if (!projectSlug || !activeLesson) return;
+    const path = getLessonPath(activeLesson.id);
+    if (path && window.location.pathname.endsWith(activeLesson.id) === false) {
+      const full = `${import.meta.env.BASE_URL || "/"}`.replace(/\/$/, "") + path;
+      if (window.location.pathname !== full) {
+        window.history.replaceState(null, "", full);
+      }
+    }
+  }, [activeLesson?.id, projectSlug]);
+
+  useDocumentHead(
+    activeLesson
+      ? {
+          title: activeLesson.title,
+          description:
+            (activeLesson.concept || activeLesson.explanation || "")
+              .replace(/[#*`>\-\n]/g, " ")
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 155),
+          path: getLessonPath(activeLesson.id),
+        }
+      : {}
+  );
 
   useEffect(() => {
     if (activeLesson) {
