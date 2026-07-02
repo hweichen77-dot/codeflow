@@ -18,7 +18,7 @@ const DIST = path.join(ROOT, 'dist')
 const ORIGIN = 'https://hweichen77-dot.github.io/codeflow'
 const BASE = '/codeflow'
 
-const TOP_PAGES = ['/', '/AITrack', '/Projects', '/Challenges', '/Competitive', '/APCS', '/Privacy', '/Terms']
+const TOP_PAGES = ['/', '/AITrack', '/Playground', '/Projects', '/Challenges', '/Competitive', '/APCS', '/Privacy', '/Terms']
 
 const esc = (s) =>
   String(s || '')

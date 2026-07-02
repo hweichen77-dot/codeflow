@@ -12,6 +12,7 @@ const LessonDemo = lazy(() => import('./pages/LessonDemo'));
 const Competitive = lazy(() => import('./pages/Competitive'));
 const CompetitiveDetail = lazy(() => import('./pages/CompetitiveDetail'));
 const APCS = lazy(() => import('./pages/APCS'));
+const Playground = lazy(() => import('./pages/Playground'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 import __Layout from './Layout.jsx';
@@ -30,6 +31,7 @@ export const PAGES = {
     "Competitive": Competitive,
     "CompetitiveDetail": CompetitiveDetail,
     "APCS": APCS,
+    "Playground": Playground,
     "Privacy": Privacy,
     "Terms": Terms,
 }
