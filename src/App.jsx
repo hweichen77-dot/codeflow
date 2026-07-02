@@ -28,10 +28,13 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
 const RouteFallback = () => <AppSkeleton />;
 
+// Web-first: lesson/course content is public (no sign-in wall). Only truly
+// personal pages require an account; cloud sync is still opt-in via sign-in.
 const PROTECTED = new Set([
-  'ChallengeDetail', 'Challenges', 'Dashboard', 'ProjectDetail', 'Projects', 'Portfolio', 'AITrack',
-  'Competitive', 'CompetitiveDetail', 'APCS',
+  'Dashboard', 'Portfolio',
 ]);
+
+const ProjectDetailPage = Pages['ProjectDetail'];
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
@@ -73,6 +76,12 @@ const AuthenticatedApp = () => {
           );
         })}
         <Route path="/LessonExpander" element={<LayoutWrapper currentPageName="LessonExpander"><LessonExpander /></LayoutWrapper>} />
+        {ProjectDetailPage && (
+          <>
+            <Route path="/learn/:projectSlug/:lessonSlug" element={<LayoutWrapper currentPageName="ProjectDetail"><ProjectDetailPage /></LayoutWrapper>} />
+            <Route path="/learn/:projectSlug" element={<LayoutWrapper currentPageName="ProjectDetail"><ProjectDetailPage /></LayoutWrapper>} />
+          </>
+        )}
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       </RouteErrorBoundary>

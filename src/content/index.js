@@ -77,3 +77,70 @@ export const getProject = (id) => PROJECTS.find(p => p.id === id)
 export const getLessonsByProject = (id) =>
   LESSONS.filter(l => l.project_id === id).sort((a, b) => (a.order || 0) - (b.order || 0))
 export const getLesson = (id) => LESSONS.find(l => l.id === id)
+
+// ---------------------------------------------------------------------------
+// Slugs + per-lesson route map (for SEO-friendly /learn/:project/:lesson URLs).
+// Identity stays `id`-based; slugs are a stable, keyword-rich addressing layer
+// derived from titles, with deterministic de-duplication.
+// ---------------------------------------------------------------------------
+export const slugify = (s) =>
+  String(s || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 60) || 'x'
+
+const _projIdToSlug = {}
+const _projSlugToId = {}
+for (const p of PROJECTS) {
+  let s = slugify(p.title)
+  if (_projSlugToId[s] && _projSlugToId[s] !== p.id) s = `${s}-${slugify(p.id)}`
+  _projSlugToId[s] = p.id
+  _projIdToSlug[p.id] = s
+}
+
+const _lessonKeyToId = {}   // "projectSlug/lessonSlug" -> lessonId
+const _lessonIdToRoute = {} // lessonId -> { projectSlug, lessonSlug }
+for (const p of PROJECTS) {
+  const projectSlug = _projIdToSlug[p.id]
+  const used = {}
+  for (const l of getLessonsByProject(p.id)) {
+    let s = slugify(l.title)
+    if (used[s]) s = `${s}-${l.order || Object.keys(used).length}`
+    used[s] = 1
+    _lessonKeyToId[`${projectSlug}/${s}`] = l.id
+    _lessonIdToRoute[l.id] = { projectSlug, lessonSlug: s }
+  }
+}
+
+export const getProjectSlug = (projectId) => _projIdToSlug[projectId] || null
+export const getProjectBySlug = (projectSlug) => getProject(_projSlugToId[projectSlug])
+export const getLessonRoute = (lessonId) => _lessonIdToRoute[lessonId] || null
+export const getLessonPath = (lessonId) => {
+  const r = _lessonIdToRoute[lessonId]
+  return r ? `/learn/${r.projectSlug}/${r.lessonSlug}` : null
+}
+export const resolveLessonSlugs = (projectSlug, lessonSlug) => {
+  const projectId = _projSlugToId[projectSlug] || null
+  const lessonId = _lessonKeyToId[`${projectSlug}/${lessonSlug}`] || null
+  return { projectId, lessonId }
+}
+
+// Flat manifest consumed by the build-time prerender + sitemap generator.
+export const LESSON_ROUTES = LESSONS.map(l => {
+  const r = _lessonIdToRoute[l.id] || {}
+  const project = getProject(l.project_id) || {}
+  return {
+    lessonId: l.id,
+    projectId: l.project_id,
+    projectSlug: r.projectSlug || null,
+    lessonSlug: r.lessonSlug || null,
+    path: r.projectSlug ? `/learn/${r.projectSlug}/${r.lessonSlug}` : null,
+    title: l.title,
+    concept: l.concept || '',
+    projectTitle: project.title || '',
+    category: project.category || '',
+    explanation: l.explanation || '',
+    challengeTitle: l.challenge_title || '',
+  }
+})
