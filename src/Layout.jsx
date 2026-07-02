@@ -15,14 +15,15 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Primary (learning) nav lives in the center; personal pages (Dashboard,
+  // Portfolio) sit in the right-hand account cluster to keep the bar uncluttered.
   const navLinks = [
     { label: "AI Track", page: "AITrack" },
     { label: "Playground", page: "Playground", badge: "Live" },
-    { label: "AP CS", page: "APCS" },
     { label: "Projects", page: "Projects" },
     { label: "Challenges", page: "Challenges" },
-    { label: "Compete", page: "Competitive", badge: "Advanced" },
-    { label: "Dashboard", page: "Dashboard" },
+    { label: "Compete", page: "Competitive" },
+    { label: "AP CS", page: "APCS" },
   ];
 
   const isActive = (page) => currentPageName === page;
@@ -73,8 +74,8 @@ export default function Layout({ children, currentPageName }) {
               <Link
                 key={link.page}
                 to={createPageUrl(link.page)}
-                aria-label={link.badge ? `${link.label} — ${link.badge}, optional advanced track` : undefined}
-                className="font-sans text-xs tracking-widest uppercase px-5 py-2 transition-all duration-150 relative inline-flex items-center gap-1.5"
+                aria-label={link.badge ? `${link.label} — ${link.badge}` : undefined}
+                className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 lg:px-4 py-2 transition-all duration-150 relative inline-flex items-center gap-1.5"
                 style={{
                   color: isActive(link.page) ? "#E8A33C" : "#C9C1B2",
                 }}
@@ -110,24 +111,27 @@ export default function Layout({ children, currentPageName }) {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
-                <Link
-                  to={createPageUrl("Portfolio")}
-                  className="font-sans text-xs tracking-widest uppercase px-4 py-2 transition-all duration-150"
-                  style={{ color: isActive("Portfolio") ? "#E8A33C" : "#C9C1B2" }}
-                  onMouseEnter={e => { if (!isActive("Portfolio")) e.currentTarget.style.color = "#A8A092"; }}
-                  onMouseLeave={e => { if (!isActive("Portfolio")) e.currentTarget.style.color = "#C9C1B2"; }}
-                >
-                  Portfolio
-                </Link>
-                <span className="font-sans text-xs" style={{ color: "#C9C1B2" }}>
+                {[{ label: "Dashboard", page: "Dashboard" }, { label: "Portfolio", page: "Portfolio" }].map((p) => (
+                  <Link
+                    key={p.page}
+                    to={createPageUrl(p.page)}
+                    className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 py-2 transition-all duration-150"
+                    style={{ color: isActive(p.page) ? "#E8A33C" : "#C9C1B2" }}
+                    onMouseEnter={e => { if (!isActive(p.page)) e.currentTarget.style.color = "#A8A092"; }}
+                    onMouseLeave={e => { if (!isActive(p.page)) e.currentTarget.style.color = "#C9C1B2"; }}
+                  >
+                    {p.label}
+                  </Link>
+                ))}
+                <span className="font-sans text-xs whitespace-nowrap" style={{ color: "#8F866F" }}>
                   {user.name?.split(" ")[0] || user.email?.split("@")[0]}
                 </span>
                 <button
                   onClick={logout}
-                  className="font-sans text-xs tracking-widest uppercase px-4 py-2 transition-all duration-150"
+                  className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 py-2 transition-all duration-150"
                   style={{ color: "#C9C1B2", border: "1px solid #34302A" }}
                   onMouseEnter={e => { e.currentTarget.style.color = "#C9C1B2"; e.currentTarget.style.borderColor = "#34302A"; }}
                   onMouseLeave={e => { e.currentTarget.style.color = "#C9C1B2"; e.currentTarget.style.borderColor = "#34302A"; }}

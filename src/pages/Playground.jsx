@@ -18,7 +18,7 @@ export default function Playground() {
   })
 
   return (
-    <div className="max-w-6xl mx-auto px-5 py-10">
+    <div className="max-w-6xl mx-auto px-5 pt-24 pb-16">
       <header className="mb-8">
         <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E8A33C' }}>
           Live LLM Playground
