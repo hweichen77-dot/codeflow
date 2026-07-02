@@ -104,7 +104,7 @@ export default function LlmPlayground({ lab }) {
       {state.status === 'unconfigured' && (
         <div className="text-sm mt-3 p-3 rounded-md" style={{ background: '#211c12', color: '#D6CDB8' }}>
           <strong>Live grading isn’t switched on yet.</strong> {state.error} Once the site owner sets the
-          <code className="mx-1 px-1 rounded" style={{ background: '#0F0D08' }}>ANTHROPIC_API_KEY</code>
+          <code className="mx-1 px-1 rounded" style={{ background: '#0F0D08' }}>GEMINI_API_KEY</code>
           on the <code className="mx-1 px-1 rounded" style={{ background: '#0F0D08' }}>llm-playground</code> function, this lab runs against a real model.
         </div>
       )}

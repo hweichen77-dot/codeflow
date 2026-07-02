@@ -10,8 +10,10 @@
 // is contained by: strict per-IP rate limiting, a hard cap on inputs per call,
 // small max_tokens, a cheap model, and length caps on all user-supplied text.
 
-const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-const MODEL = "claude-haiku-4-5-20251001";
+// Google Gemini Flash — generous free tier keeps the playground $0 to run.
+// Get a free key at https://aistudio.google.com/apikey and set it as GEMINI_API_KEY.
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.0-flash";
 const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://hweichen77-dot.github.io";
 
 const MAX_SYSTEM_CHARS = 4000;
@@ -78,27 +80,23 @@ Deno.serve(async (req: Request) => {
     .map((x) => (x as string).slice(0, MAX_INPUT_CHARS));
   if (inputs.length === 0) return json({ error: "provide 1–5 test inputs" }, 400);
 
-  if (!ANTHROPIC_API_KEY) {
-    return json({ configured: false, error: "Live grading is not configured yet (ANTHROPIC_API_KEY unset)." });
+  if (!GEMINI_API_KEY) {
+    return json({ configured: false, error: "Live grading is not configured yet (GEMINI_API_KEY unset)." });
   }
 
   const maxTokens = Math.min(Number(payload.maxTokens) || 200, MAX_TOKENS_CAP);
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
   try {
     const results = await Promise.all(
       inputs.map(async (input) => {
-        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        const resp = await fetch(endpoint, {
           method: "POST",
-          headers: {
-            "content-type": "application/json",
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-          },
+          headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            model: MODEL,
-            max_tokens: maxTokens,
-            system: systemPrompt,
-            messages: [{ role: "user", content: input }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: "user", parts: [{ text: input }] }],
+            generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
           }),
         });
         if (!resp.ok) {
@@ -106,7 +104,11 @@ Deno.serve(async (req: Request) => {
           return { input, output: "", error: `model error ${resp.status}`, detail: detail.slice(0, 300) };
         }
         const data = await resp.json();
-        return { input, output: data?.content?.[0]?.text ?? "" };
+        // Gemini may return multiple parts; concatenate any text parts. An empty
+        // result usually means a safety block — the grader handles it as a fail.
+        const parts = data?.candidates?.[0]?.content?.parts ?? [];
+        const output = parts.map((p: { text?: string }) => p?.text || "").join("").trim();
+        return { input, output };
       }),
     );
     return json({ configured: true, model: MODEL, results });
