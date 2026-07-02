@@ -20,6 +20,44 @@ const BASE = '/codeflow'
 
 const TOP_PAGES = ['/', '/AITrack', '/Playground', '/Projects', '/Challenges', '/Competitive', '/APCS', '/Privacy', '/Terms']
 
+// Static HTML + meta for top-level SPA routes so they return HTTP 200 (not the
+// 404-shim) with a real title/description. Content is client-rendered; this is
+// the crawlable shell + a short blurb.
+const TOP_PAGE_META = {
+  AITrack: {
+    title: 'Learn to Build AI Apps',
+    description: 'A hands-on track that teaches you to build real LLM applications — prompting, RAG, tool use, agents, and evaluation — by writing and running code in the browser.',
+    blurb: 'Learn to build AI apps by actually building them: prompting, RAG, tool use, agents, and evaluation, hands-on in your browser.',
+  },
+  Playground: {
+    title: 'Live LLM Playground',
+    description: 'Write real prompts, run them against a live language model, and get graded on the model’s actual behavior. Practice prompt engineering, RAG grounding, injection defense, and structured output.',
+    blurb: 'Write a system prompt, run it against a live model over adversarial inputs, and get graded on what the model actually does. No sign-in required.',
+  },
+  Projects: {
+    title: 'AI Build Projects',
+    description: 'Guided, hands-on projects that walk you through building real AI-powered applications step by step, with live code execution.',
+    blurb: 'Guided, hands-on projects for building real AI-powered applications, with live code execution in the browser.',
+  },
+  Challenges: {
+    title: 'Coding Challenges',
+    description: 'Practice with graded coding challenges that run in the browser — build the skills behind real AI and software engineering.',
+    blurb: 'Graded coding challenges that run in the browser.',
+  },
+  Competitive: {
+    title: 'Competitive Programming',
+    description: 'USACO/Codeforces-style competitive programming problems with a real judge, in the browser.',
+    blurb: 'Competitive programming problems with a real in-browser judge.',
+  },
+  APCS: {
+    title: 'AP Computer Science',
+    description: 'AP Computer Science Principles and A curriculum with interactive lessons and runnable code.',
+    blurb: 'AP CS Principles and A curriculum with interactive, runnable lessons.',
+  },
+  Privacy: { title: 'Privacy', description: 'CodeFlow privacy policy.', blurb: 'Privacy policy.' },
+  Terms: { title: 'Terms', description: 'CodeFlow terms of service.', blurb: 'Terms of service.' },
+}
+
 const esc = (s) =>
   String(s || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -84,6 +122,21 @@ function run() {
     written++
   }
 
+  // Top-level pages: stamp a 200 shell with real meta.
+  let topWritten = 0
+  for (const [page, meta] of Object.entries(TOP_PAGE_META)) {
+    const url = `${ORIGIN}/${page}`
+    let html = replaceHead(template, { title: meta.title, description: meta.description, url })
+    html = html.replace(
+      '<div id="root"></div>',
+      `<div id="root"><article style="max-width:720px;margin:64px auto;padding:0 24px;font-family:system-ui,sans-serif;color:#e8e2d5;line-height:1.6"><h1>${esc(meta.title)}</h1><p>${esc(meta.blurb)}</p></article></div>`,
+    )
+    const outDir = path.join(DIST, page)
+    fs.mkdirSync(outDir, { recursive: true })
+    fs.writeFileSync(path.join(outDir, 'index.html'), html)
+    topWritten++
+  }
+
   // Sitemap: top pages + every lesson.
   const urls = [
     ...TOP_PAGES.map((p) => `${BASE}${p === '/' ? '/' : p}`),
@@ -98,7 +151,7 @@ function run() {
     `\n</urlset>\n`
   fs.writeFileSync(path.join(DIST, 'sitemap.xml'), sitemap)
 
-  console.log(`[prerender] wrote ${written} lesson pages + sitemap (${urls.length} urls)`)
+  console.log(`[prerender] wrote ${written} lesson pages + ${topWritten} top pages + sitemap (${urls.length} urls)`)
 }
 
 run()
