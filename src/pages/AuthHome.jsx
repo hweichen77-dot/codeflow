@@ -12,7 +12,7 @@ const SERIF = font.display;
 function StatCard({ label, value, sub, accent = "#E8A33C" }) {
   return (
     <div className="p-6" style={{ border: "1px solid #262219", background: "#131009" }}>
-      <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
+      <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
         {label}
       </div>
       <div className="font-sans font-bold" style={{ fontSize: "2rem", lineHeight: 1, color: accent, letterSpacing: "-0.03em" }}>
@@ -70,7 +70,7 @@ export default function AuthHome() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#15130E" }}>
-        <div className="font-sans text-xs tracking-widest uppercase animate-pulse" style={{ color: "#8F8779", fontFamily: LABEL }}>
+        <div className="font-sans text-xs tracking-widest uppercase animate-pulse" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
           Loading your progress…
         </div>
       </div>
@@ -103,7 +103,7 @@ export default function AuthHome() {
 
         <div className="p-6 mb-10" style={{ border: "1px solid #262219", background: "#131009" }}>
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
+            <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
               Level {lvl.name}
             </span>
             <span className="font-sans text-xs" style={{ color: "#8F8779", fontFamily: LABEL }}>
@@ -117,7 +117,7 @@ export default function AuthHome() {
 
         {resume && (
           <div className="mb-10">
-            <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#8F8779", fontFamily: LABEL }}>
+            <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
               {resume.done > 0 ? "Continue learning" : "Start here"}
             </div>
             <Link
@@ -146,7 +146,7 @@ export default function AuthHome() {
         )}
 
         <div>
-          <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#8F8779", fontFamily: LABEL }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
             Your projects
           </div>
           <div className="space-y-0">

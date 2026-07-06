@@ -93,7 +93,7 @@ function ReadingBox({ children }) {
 
 function SectionLabel({ children }) {
   return (
-    <div className="font-sans text-xs tracking-widest uppercase mt-12 mb-3" style={{ color: "#5A554B" }}>
+    <div className="font-sans text-xs tracking-widest uppercase mt-12 mb-3" style={{ color: "#FFFFFF" }}>
       <span style={{ color: "#E8A33C" }}>//</span> {children}
     </div>
   );

@@ -141,7 +141,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                 <div className="w-6 h-6 flex items-center justify-center" style={{ background: "#E8A33C15", border: "1px solid #E8A33C33" }}>
                   <Brain size={12} style={{ color: "#E8A33C" }} />
                 </div>
-                <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
+                <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
                   AI Tutor
                 </span>
                 <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>·</span>

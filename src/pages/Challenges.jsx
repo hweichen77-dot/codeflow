@@ -65,7 +65,7 @@ export default function Challenges() {
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-sans text-xs tracking-widest" style={{ color: "#BBB3A4" }}>CHALLENGES</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#FFFFFF" }}>CHALLENGES</span>
           </div>
           <h1
             style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
@@ -155,7 +155,7 @@ export default function Challenges() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
-            <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>NO RESULTS</div>
+            <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#FFFFFF" }}>NO RESULTS</div>
             <p className="font-display text-base" style={{ color: "#C9C1B2" }}>No challenges match your filter.</p>
           </div>
         ) : (

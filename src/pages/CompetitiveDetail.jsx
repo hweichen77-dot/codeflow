@@ -50,7 +50,7 @@ export default function CompetitiveDetail() {
   if (!problem) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#15130E" }}>
-        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>404 — NOT FOUND</div>
+        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>404 — NOT FOUND</div>
         <Link to={createPageUrl("Competitive")}>
           <button className="font-sans text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33" }}>
             ← Back to Competitive
@@ -65,7 +65,7 @@ export default function CompetitiveDetail() {
       <div className="relative pt-20" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10">
-          <Link to={createPageUrl("Competitive")} className="font-sans text-xs tracking-widest uppercase mb-8 inline-block" style={{ color: "#C9C1B2" }}>
+          <Link to={createPageUrl("Competitive")} className="font-sans text-xs tracking-widest uppercase mb-8 inline-block" style={{ color: "#FFFFFF" }}>
             ← Competitive
           </Link>
           <div className="flex items-start gap-5">
@@ -118,7 +118,7 @@ export default function CompetitiveDetail() {
 
         <div className="flex flex-wrap gap-3">
           {problem.editorial && (
-            <button onClick={() => setShowEditorial(!showEditorial)} className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150" style={{ color: showEditorial ? "#E8A33C" : "#BBB3A4", border: `1px solid ${showEditorial ? "#E8A33C33" : "#262219"}`, background: showEditorial ? "#E8A33C10" : "transparent" }}>
+            <button onClick={() => setShowEditorial(!showEditorial)} className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150" style={{ color: showEditorial ? "#E8A33C" : "#FFFFFF", border: `1px solid ${showEditorial ? "#E8A33C33" : "#262219"}`, background: showEditorial ? "#E8A33C10" : "transparent" }}>
               {showEditorial ? "— Editorial" : "+ Editorial"}
             </button>
           )}
@@ -149,7 +149,7 @@ export default function CompetitiveDetail() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
               <div style={{ border: "1px solid #262219", background: "#131009" }}>
                 <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
-                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>Solution</span>
+                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>Solution</span>
                   <span className="font-sans text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>C++</span>
                 </div>
                 <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#C2BAAA" }}>

@@ -64,7 +64,7 @@ export default function APCS() {
       <div className="relative px-8 lg:px-16 pt-28 pb-12" style={{ borderBottom: "1px solid #262219" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
-          <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#BBB3A4" }}>AP COMPUTER SCIENCE</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#FFFFFF" }}>AP COMPUTER SCIENCE</div>
           <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 20px" }}>
             Pass the AP exam.<br />
             <span style={{ WebkitTextStroke: "1.5px #E8A33C", color: "transparent" }}>Not just cram it.</span>

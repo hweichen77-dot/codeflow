@@ -802,7 +802,7 @@ export default function ProjectDetail() {
                       >
                         <div style={{ border: "1px solid #262219", background: "#131009" }}>
                           <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
-                            <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
+                            <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
                               Solution
                             </span>
                             <span className="font-sans text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>

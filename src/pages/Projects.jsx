@@ -94,7 +94,7 @@ export default function Projects() {
         />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-sans text-xs tracking-widest" style={{ color: "#C9C1B2" }}>PROJECTS</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#FFFFFF" }}>PROJECTS</span>
           </div>
           <h1
             style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
@@ -164,7 +164,7 @@ export default function Projects() {
               style={{ borderBottom: "1px solid #262219" }}
             >
               {["LVL", "PROJECT", "LESSONS", "STATUS"].map(h => (
-                <div key={h} className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
+                <div key={h} className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
                   {h}
                 </div>
               ))}
@@ -176,7 +176,7 @@ export default function Projects() {
                   className="flex items-baseline gap-3 px-6 pt-8 pb-3"
                   style={{ borderBottom: "1px solid #1F1C15" }}
                 >
-                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>
+                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
                     {section.label}
                   </span>
                   <span className="font-sans text-xs" style={{ color: "#5A554B" }}>

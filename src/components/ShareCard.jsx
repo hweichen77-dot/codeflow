@@ -60,7 +60,7 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
       <div style={{ fontFamily: DISPLAY, fontSize: "64px", fontWeight: 800, letterSpacing: "-0.03em", color: color || "#F2EDE2", lineHeight: 1 }}>
         {value}
       </div>
-      <div style={{ fontFamily: BODY, fontSize: "18px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#8F8779", marginTop: "10px" }}>
+      <div style={{ fontFamily: BODY, fontSize: "18px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#FFFFFF", marginTop: "10px" }}>
         {label}
       </div>
     </div>

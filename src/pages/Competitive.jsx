@@ -33,7 +33,7 @@ export default function Competitive() {
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline gap-6 mb-2">
-            <span className="font-sans text-xs tracking-widest" style={{ color: "#BBB3A4" }}>COMPETITIVE</span>
+            <span className="font-sans text-xs tracking-widest" style={{ color: "#FFFFFF" }}>COMPETITIVE</span>
           </div>
           <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}>
             Write the algorithm yourself.
@@ -106,14 +106,14 @@ export default function Competitive() {
         {filtered.length > 0 && (
           <div className="grid items-center gap-8 px-6 py-3 mb-px" style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #262219" }}>
             {["LVL", "PROBLEM", "TOPIC", "LANG"].map((h) => (
-              <div key={h} className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>{h}</div>
+              <div key={h} className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>{h}</div>
             ))}
           </div>
         )}
 
         {filtered.length === 0 ? (
           <div className="text-center py-24">
-            <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#BBB3A4" }}>NO RESULTS</div>
+            <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#FFFFFF" }}>NO RESULTS</div>
             <p className="font-display text-base" style={{ color: "#C9C1B2" }}>No problems match your filter.</p>
           </div>
         ) : (
@@ -139,7 +139,7 @@ export default function Competitive() {
                       </div>
                     </div>
                     <div>
-                      <span className="font-sans text-xs tracking-widest uppercase px-2.5 py-1" style={{ color: "#C9C1B2", border: "1px solid #34302A" }}>
+                      <span className="font-sans text-xs tracking-widest uppercase px-2.5 py-1" style={{ color: "#FFFFFF", border: "1px solid #34302A" }}>
                         {TOPIC_LABEL[p.topic] || p.topic}
                       </span>
                     </div>

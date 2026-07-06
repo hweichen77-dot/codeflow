@@ -60,7 +60,7 @@ export default function LlmPlayground({ lab }) {
 
       <div className="mt-4">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#B8AE99' }}>
+          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#FFFFFF' }}>
             Your system prompt
           </label>
           <button type="button" onClick={() => setShowHint((v) => !v)}

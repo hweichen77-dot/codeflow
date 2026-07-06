@@ -5,7 +5,7 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
   return (
     <div style={{ border: "1px solid #262219" }}>
       <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219", background: "#131009" }}>
-        <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
+        <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
           {items.length} items
         </span>
       </div>

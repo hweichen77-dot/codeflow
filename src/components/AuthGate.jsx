@@ -77,7 +77,7 @@ export default function AuthGate() {
   return (
     <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#15130E' }}>
       <div className="w-full max-w-md p-10" style={{ border: '1px solid #262219', background: '#131009' }}>
-        <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#BBB3A4', fontFamily: LABEL }}>
+        <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#FFFFFF', fontFamily: LABEL }}>
           CODEFLOW
         </div>
         <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#F2EDE2', lineHeight: 1.12, margin: '0 0 10px' }}>

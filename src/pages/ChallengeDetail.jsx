@@ -75,7 +75,7 @@ export default function ChallengeDetail() {
   if (!challenge) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#15130E" }}>
-        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>404 — NOT FOUND</div>
+        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>404 — NOT FOUND</div>
         <Link to={createPageUrl("Challenges")}>
           <button className="font-sans text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33" }}>
             ← Back to Challenges
@@ -183,7 +183,7 @@ export default function ChallengeDetail() {
         {!challenge.statement && challenge.test_cases && challenge.test_cases.length > 0 && (
           <div style={{ border: "1px solid #262219", background: "#131009" }}>
             <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
-              <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#BBB3A4" }}>
+              <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
                 Test Cases
               </span>
             </div>
@@ -297,7 +297,7 @@ export default function ChallengeDetail() {
             >
               <div style={{ border: "1px solid #262219", background: "#131009" }}>
                 <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
-                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#C9C1B2" }}>Solution</span>
+                  <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>Solution</span>
                   <span className="font-sans text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>PY</span>
                 </div>
                 <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#C2BAAA" }}>
