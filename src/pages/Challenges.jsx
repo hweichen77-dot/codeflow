@@ -46,9 +46,15 @@ export default function Challenges() {
             grid-template-columns: 2.5rem 1fr auto auto;
           }
         }
+        .challenge-row-link {
+          border-radius: 14px;
+          border: 1px solid transparent;
+        }
         .challenge-row-link:hover {
-          background: #131009;
+          background: #1B1913;
+          border-color: #3A3428;
           padding-left: 1.75rem;
+          box-shadow: 0 12px 40px -12px rgba(232,163,60,0.33);
         }
         @media (min-width: 640px) {
           .challenge-row-link:hover {

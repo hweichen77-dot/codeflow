@@ -196,15 +196,20 @@ export default function Projects() {
                     const rowInner = (
                         <div
                           className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-6 transition-all duration-200"
-                          style={{ borderBottom: "1px solid #262219", opacity: gated ? 0.55 : 1 }}
+                          style={{ borderBottom: "1px solid #262219", border: "1px solid transparent", borderBottomColor: "#262219", borderRadius: "14px", opacity: gated ? 0.55 : 1 }}
                           onMouseEnter={e => {
-                            e.currentTarget.style.background = "#131009";
+                            e.currentTarget.style.background = "#1B1913";
+                            e.currentTarget.style.borderColor = "#3A3428";
                             e.currentTarget.style.paddingLeft = "1.75rem";
+                            e.currentTarget.style.boxShadow = "0 12px 40px -12px rgba(232,163,60,0.33)";
                             if (gated) e.currentTarget.style.opacity = "0.8";
                           }}
                           onMouseLeave={e => {
                             e.currentTarget.style.background = "";
+                            e.currentTarget.style.borderColor = "transparent";
+                            e.currentTarget.style.borderBottomColor = "#262219";
                             e.currentTarget.style.paddingLeft = "1.5rem";
+                            e.currentTarget.style.boxShadow = "none";
                             if (gated) e.currentTarget.style.opacity = "0.55";
                           }}
                         >
