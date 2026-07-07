@@ -4,8 +4,7 @@ import { track } from '@/lib/analytics'
 
 // Interactive, auto-graded LLM lab: the learner writes a system prompt, it runs
 // against a live model over the lab's (often adversarial) inputs, and each real
-// output is graded against the lab's rules. This is CodeFlow's differentiator —
-// no other learn-to-code platform grades against live model behavior.
+// output is graded against the lab's rules. This is CodeFlow's differentiator, // no other learn-to-code platform grades against live model behavior.
 export default function LlmPlayground({ lab }) {
   const [systemPrompt, setSystemPrompt] = useState('')
   const [state, setState] = useState({ status: 'idle' }) // idle | running | done | error | unconfigured
@@ -48,15 +47,15 @@ export default function LlmPlayground({ lab }) {
         <div>
           <div className="text-xs font-bold uppercase tracking-widest" style={{ color: amber }}>Live LLM Lab</div>
           <h3 className="text-xl font-bold mt-1" style={{ color: '#F3EEE2' }}>{lab.title}</h3>
-          <p className="text-sm mt-1" style={{ color: '#B8AE99' }}>{lab.tagline}</p>
+          <p className="text-sm mt-1" style={{ color: '#FFFFFF' }}>{lab.tagline}</p>
         </div>
         {lab.difficulty && (
           <span className="text-[11px] px-2 py-1 rounded-md border uppercase tracking-wide"
-            style={{ borderColor: '#3a331f', color: '#B8AE99' }}>{lab.difficulty}</span>
+            style={{ borderColor: '#3a331f', color: '#FFFFFF' }}>{lab.difficulty}</span>
         )}
       </div>
 
-      <p className="text-sm mt-4 leading-relaxed" style={{ color: '#D6CDB8' }}>{lab.brief}</p>
+      <p className="text-sm mt-4 leading-relaxed" style={{ color: '#FFFFFF' }}>{lab.brief}</p>
 
       <div className="mt-4">
         <div className="flex items-center justify-between mb-2">
@@ -69,7 +68,7 @@ export default function LlmPlayground({ lab }) {
           </button>
         </div>
         {showHint && (
-          <p className="text-xs mb-2 p-3 rounded-md" style={{ background: '#211c12', color: '#D6CDB8' }}>{lab.hint}</p>
+          <p className="text-xs mb-2 p-3 rounded-md" style={{ background: '#211c12', color: '#FFFFFF' }}>{lab.hint}</p>
         )}
         <textarea
           value={systemPrompt}
@@ -102,7 +101,7 @@ export default function LlmPlayground({ lab }) {
         <p className="text-sm mt-3 p-3 rounded-md" style={{ background: '#2a1512', color: '#F0A89C' }}>{state.error}</p>
       )}
       {state.status === 'unconfigured' && (
-        <div className="text-sm mt-3 p-3 rounded-md" style={{ background: '#211c12', color: '#D6CDB8' }}>
+        <div className="text-sm mt-3 p-3 rounded-md" style={{ background: '#211c12', color: '#FFFFFF' }}>
           <strong>Live grading isn’t switched on yet.</strong> {state.error} Once the site owner sets the
           <code className="mx-1 px-1 rounded" style={{ background: '#0F0D08' }}>GROQ_API_KEY</code>
           on the <code className="mx-1 px-1 rounded" style={{ background: '#0F0D08' }}>llm-playground</code> function, this lab runs against a real model.
@@ -118,20 +117,20 @@ export default function LlmPlayground({ lab }) {
                   style={{ background: g.pass ? '#16301c' : '#301616', color: g.pass ? '#7FD18A' : '#F0A89C' }}>
                   {g.pass ? 'PASS' : 'FAIL'}
                 </span>
-                <span className="text-xs font-mono" style={{ color: '#B8AE99' }}>input: {g.input}</span>
+                <span className="text-xs font-mono" style={{ color: '#FFFFFF' }}>input: {g.input}</span>
               </div>
-              <pre className="text-sm mt-2 whitespace-pre-wrap font-mono" style={{ color: '#E3DAC6' }}>
+              <pre className="text-sm mt-2 whitespace-pre-wrap font-mono" style={{ color: '#FFFFFF' }}>
                 {g.output || g.error || '(empty)'}
               </pre>
               {!g.pass && g.reasons?.length > 0 && (
-                <p className="text-xs mt-1" style={{ color: '#C99' }}>× {g.reasons.join(' · ')}</p>
+                <p className="text-xs mt-1" style={{ color: '#FFFFFF' }}>× {g.reasons.join(' · ')}</p>
               )}
             </div>
           ))}
 
           {result.allPass && (
             <div className="rounded-lg p-4 mt-2" style={{ background: '#12200f', border: '1px solid #244a1c' }}>
-              <p className="text-sm font-semibold" style={{ color: '#9FE0A8' }}>✓ Solved — {lab.successNote}</p>
+              <p className="text-sm font-semibold" style={{ color: '#9FE0A8' }}>✓ Solved, {lab.successNote}</p>
               <button type="button" onClick={share}
                 className="mt-3 px-3 py-1.5 rounded-md text-sm font-semibold"
                 style={{ background: '#1c3316', color: '#9FE0A8', border: '1px solid #2f5a25' }}>

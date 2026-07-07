@@ -36,7 +36,7 @@ export default function CheckBlock({ questions, sectionNumber, onComplete }) {
               ▸ CHECK
             </div>
             <div style={{ width: "1px", height: "28px", background: trace.border }} />
-            <span style={{ fontSize: "0.875rem", color: trace.dim }}>
+            <span style={{ fontSize: "0.875rem", color: '#FFFFFF' }}>
               {sectionNumber}: Quiz
             </span>
           </div>
@@ -88,7 +88,7 @@ export default function CheckBlock({ questions, sectionNumber, onComplete }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: "0.9375rem", color: trace.text, lineHeight: 1.6, margin: "0 0 14px" }}>
-                  <span style={{ color: trace.dim, marginRight: "8px" }}>{qi + 1})</span>
+                  <span style={{ color: '#FFFFFF', marginRight: "8px" }}>{qi + 1})</span>
                   {q.question}
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginLeft: "24px" }}>
@@ -195,7 +195,7 @@ export default function CheckBlock({ questions, sectionNumber, onComplete }) {
           animate={{ opacity: 1 }}
           style={{ padding: "14px 28px", borderTop: `1px solid ${trace.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
-          <span style={{ fontSize: "0.8125rem", color: trace.dim }}>
+          <span style={{ fontSize: "0.8125rem", color: '#FFFFFF' }}>
             {correctCount === totalQuestions ? "Perfect score!" : `Keep practicing — review the explanations above.`}
           </span>
           <span style={{ fontSize: "0.8125rem", color: trace.lime, fontWeight: 700 }}>

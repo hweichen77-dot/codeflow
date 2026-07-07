@@ -25,7 +25,7 @@ function TrueFalseQuestion({ index, question, correctAnswer, explanation, onAnsw
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: "0.9375rem", color: trace.text, lineHeight: 1.6, margin: "0 0 14px" }}>
-            <span style={{ color: trace.faint, marginRight: "8px" }}>{index})</span>
+            <span style={{ color: '#FFFFFF', marginRight: "8px" }}>{index})</span>
             {question}
           </p>
           <div style={{ display: "flex", gap: "10px", marginLeft: "24px" }}>
@@ -124,7 +124,7 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: "0.9375rem", color: trace.text, lineHeight: 1.6, margin: "0 0 14px" }}>
-            <span style={{ color: trace.faint, marginRight: "8px" }}>{index})</span>
+            <span style={{ color: '#FFFFFF', marginRight: "8px" }}>{index})</span>
             {question}
           </p>
           <div style={{ marginLeft: "24px" }}>
@@ -167,7 +167,7 @@ function FillInQuestion({ index, question, correctAnswer, explanation, onAnswer 
               {!checked && (
                 <button
                   onClick={() => { setInput(correctAnswer); setChecked(true); onAnswer(false); }}
-                  style={{ fontSize: "0.8125rem", color: trace.faint, background: "none", border: "none", cursor: "pointer", fontWeight: 500, textDecoration: "underline" }}
+                  style={{ fontSize: "0.8125rem", color: '#FFFFFF', background: "none", border: "none", cursor: "pointer", fontWeight: 500, textDecoration: "underline" }}
                 >
                   Show answer
                 </button>
@@ -233,7 +233,7 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
               DRILL §{sectionNumber}.{activityIndex}
             </div>
             <div style={{ width: "1px", height: "28px", background: trace.borderStrong }} />
-            <span style={{ fontSize: "0.875rem", color: trace.dim }}>
+            <span style={{ fontSize: "0.875rem", color: '#FFFFFF' }}>
               {activity.activity_title}
             </span>
           </div>
@@ -299,8 +299,8 @@ export default function ParticipationActivity({ activity, sectionNumber, activit
           animate={{ opacity: 1 }}
           style={{ padding: "12px 28px", borderTop: `1px solid ${trace.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
-          <span style={{ fontSize: "0.8125rem", color: trace.faint }}>
-            {correctCount === totalQuestions ? " All correct!" : "Nice effort — review the explanations above."}
+          <span style={{ fontSize: "0.8125rem", color: '#FFFFFF' }}>
+            {correctCount === totalQuestions ? " All correct!" : "Nice effort, review the explanations above."}
           </span>
           <span style={{ fontSize: "0.8125rem", color: trace.lime, fontWeight: 600 }}>
             {correctCount}/{totalQuestions} correct

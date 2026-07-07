@@ -72,7 +72,7 @@ const Challenge = {
 }
 
 const OFFLINE_MSG =
-  "The AI tutor isn't available right now. You can still read the lesson, write code, and run it — your code runs for real."
+  "The AI tutor isn't available right now. You can still read the lesson, write code, and run it, your code runs for real."
 
 export const aiAvailable = auth.isConfigured
 

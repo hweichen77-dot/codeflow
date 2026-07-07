@@ -50,7 +50,7 @@ export default function FeedbackWidget() {
         aria-expanded={open}
         className="fixed z-[80] font-sans text-xs tracking-widest uppercase transition-all duration-150"
         style={{
-          right: '20px',
+          left: '20px',
           bottom: '20px',
           padding: '12px 16px',
           background: open ? '#262219' : '#E8A33C',
@@ -70,7 +70,7 @@ export default function FeedbackWidget() {
           aria-label="Send feedback"
           className="fixed z-[80]"
           style={{
-            right: '20px',
+            left: '20px',
             bottom: '72px',
             width: 'min(360px, calc(100vw - 40px))',
             background: '#131009',
@@ -81,7 +81,7 @@ export default function FeedbackWidget() {
           <form onSubmit={submit} style={{ padding: '20px' }}>
             <div
               className="font-sans text-xs tracking-widest uppercase mb-3"
-              style={{ color: '#BBB3A4', fontFamily: LABEL }}
+              style={{ color: '#FFFFFF', fontFamily: LABEL }}
             >
               Tell us what's up
             </div>
@@ -128,7 +128,7 @@ export default function FeedbackWidget() {
               <a
                 href="mailto:hello@codeflow.app"
                 className="font-sans text-xs"
-                style={{ color: '#8F8779', fontFamily: LABEL }}
+                style={{ color: '#FFFFFF', fontFamily: LABEL }}
               >
                 or email us
               </a>

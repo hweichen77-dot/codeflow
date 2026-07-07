@@ -30,7 +30,7 @@ export default function FinalCTA() {
               color: "#D4882E",
               fontWeight: 500,
             }}>
-              No. 05 — Start now
+              No. 05, Start now
             </span>
           </div>
           <h2 style={{
@@ -47,9 +47,9 @@ export default function FinalCTA() {
         </div>
 
         <div style={{ paddingBottom: "6px" }}>
-          <p style={{ fontFamily: body, color: "#A39B8C", fontSize: "1.05rem", lineHeight: 1.62, maxWidth: "40ch", margin: "0 0 28px" }}>
-            Pick a track, write the first line, run it. No setup, no friction,
-            no credit card.
+          <p style={{ fontFamily: body, color: "#FFFFFF", fontSize: "1.05rem", lineHeight: 1.62, maxWidth: "40ch", margin: "0 0 28px" }}>
+            Pick a track, write the first line, run it. No setup and no credit
+            card.
           </p>
           <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
             <button
@@ -78,7 +78,7 @@ export default function FinalCTA() {
                 fontSize: "0.95rem",
                 background: "none",
                 border: "none",
-                color: "#A39B8C",
+                color: "#FFFFFF",
                 cursor: "pointer",
                 textDecoration: "underline",
                 textUnderlineOffset: "4px",

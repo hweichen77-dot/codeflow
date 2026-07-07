@@ -50,7 +50,7 @@ export default class RouteErrorBoundary extends React.Component {
           <h1 style={{ fontFamily: SERIF, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F2EDE2', margin: '0 0 10px', lineHeight: 1.15 }}>
             Couldn&apos;t load this page.
           </h1>
-          <p className="font-display text-sm mb-7" style={{ color: '#C9C1B2' }}>
+          <p className="font-display text-sm mb-7" style={{ color: '#FFFFFF' }}>
             Your progress is saved. Try again, or pick another page from the menu.
           </p>
           <button

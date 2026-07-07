@@ -34,7 +34,7 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
         await navigator.share({
           files: [file],
           title: "My CodeFlow progress",
-          text: `Level ${level} — ${lessons} lessons, ${challenges} challenges, ${streak}-day streak on CodeFlow.`,
+          text: `Level ${level}: ${lessons} lessons, ${challenges} challenges, ${streak}-day streak on CodeFlow.`,
         });
       } else {
         const url = URL.createObjectURL(blob);
@@ -122,7 +122,7 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
             {stat(`${overallPct}%`, "Curriculum", "#F2EDE2")}
           </div>
 
-          <div style={{ fontFamily: BODY, fontSize: "18px", color: "#756C5C", position: "absolute", right: "80px", bottom: "40px" }}>
+          <div style={{ fontFamily: BODY, fontSize: "18px", color: "#FFFFFF", position: "absolute", right: "80px", bottom: "40px" }}>
             learn to build with AI · codeflow
           </div>
         </div>

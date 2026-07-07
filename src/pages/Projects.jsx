@@ -101,8 +101,8 @@ export default function Projects() {
           >
             Choose your module.
           </h1>
-          <p className="font-display text-base" style={{ color: "#A8A092", fontWeight: 400 }}>
-            Each project is a chapter. New here? Start at the top and work down — each one builds on the last.
+          <p className="font-display text-base" style={{ color: "#FFFFFF", fontWeight: 400 }}>
+            Each project is a chapter. New here? Start at the top and work down, each one builds on the last.
           </p>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function Projects() {
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span
               className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none"
-              style={{ color: "#BBB3A4" }}
+              style={{ color: "#FFFFFF" }}
             >
               /search
             </span>
@@ -179,7 +179,7 @@ export default function Projects() {
                   <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
                     {section.label}
                   </span>
-                  <span className="font-sans text-xs" style={{ color: "#5A554B" }}>
+                  <span className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
                     {section.items.length}
                   </span>
                 </div>
@@ -223,7 +223,7 @@ export default function Projects() {
                             <div className="flex items-center gap-3 mb-1">
                               <div
                                 className="font-display font-bold text-lg leading-snug transition-colors duration-200 group-hover:text-white"
-                                style={{ color: "#D8D1C2", letterSpacing: "-0.02em" }}
+                                style={{ color: "#FFFFFF", letterSpacing: "-0.02em" }}
                               >
                                 {project.title}
                               </div>
@@ -239,7 +239,7 @@ export default function Projects() {
                             {project.description && (
                               <div
                                 className="font-display text-sm line-clamp-1"
-                                style={{ color: "#A8A092", fontWeight: 400 }}
+                                style={{ color: "#FFFFFF", fontWeight: 400 }}
                               >
                                 {project.description}
                               </div>
@@ -266,11 +266,11 @@ export default function Projects() {
 
                           <div
                             className="font-sans text-sm text-right"
-                            style={{ color: "#A8A092" }}
+                            style={{ color: "#FFFFFF" }}
                           >
-                            {project.lessons_count ? `${project.lessons_count}` : "—"}
+                            {project.lessons_count ? `${project.lessons_count}` : ", "}
                             {project.estimated_time ? (
-                              <div className="font-sans text-xs" style={{ color: "#C9C1B2" }}>
+                              <div className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
                                 {project.estimated_time}min
                               </div>
                             ) : null}
@@ -296,7 +296,7 @@ export default function Projects() {
                             {!gated && status === "in_progress" && (
                               <span
                                 className="font-sans text-xs tracking-widest uppercase px-3 py-1"
-                                style={{ color: "#C9C1B2", border: "1px solid #34302A", background: "#131009" }}
+                                style={{ color: "#FFFFFF", border: "1px solid #34302A", background: "#131009" }}
                               >
                                 ACTIVE
                               </span>
@@ -304,7 +304,7 @@ export default function Projects() {
                             {!gated && status === "not_started" && (
                               <span
                                 className="font-sans text-xs tracking-widest uppercase px-3 py-1"
-                                style={{ color: "#C9C1B2", border: "1px solid #34302A" }}
+                                style={{ color: "#FFFFFF", border: "1px solid #34302A" }}
                               >
                                 START
                               </span>
@@ -349,11 +349,11 @@ export default function Projects() {
               <div className="text-center py-24">
                 <div
                   className="font-sans text-xs tracking-widest uppercase mb-4"
-                  style={{ color: "#C9C1B2" }}
+                  style={{ color: "#FFFFFF" }}
                   >
                    NO RESULTS
                 </div>
-                <p className="font-display text-base" style={{ color: "#A8A092" }}>
+                <p className="font-display text-base" style={{ color: "#FFFFFF" }}>
                   No projects match your filter.
                 </p>
               </div>
@@ -368,7 +368,7 @@ export default function Projects() {
           style={{ color: "#E0B341", border: "1px solid #E0B34155", background: "#1a1407" }}
           role="status"
         >
-          Finish the Foundations modules to unlock “{nudge}”
+          Finish the Foundations modules to unlock "{nudge}"
         </div>
       )}
     </div>

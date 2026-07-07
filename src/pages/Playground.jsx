@@ -13,7 +13,7 @@ export default function Playground() {
   useDocumentHead({
     title: 'Live LLM Playground',
     description:
-      'Write real prompts, run them against a live language model, and get graded on the model’s actual behavior. Learn prompt engineering, RAG grounding, injection defense, and structured output by doing.',
+      'Write prompts, run them against a live language model, and get graded on how the model behaves. Learn prompt engineering, RAG grounding, injection defense, and structured output by doing.',
     path: '/Playground',
   })
 
@@ -26,9 +26,9 @@ export default function Playground() {
         <h1 className="text-3xl md:text-4xl font-bold mt-2" style={{ color: '#F3EEE2' }}>
           Learn AI by breaking real models
         </h1>
-        <p className="mt-3 max-w-2xl text-sm md:text-base leading-relaxed" style={{ color: '#B8AE99' }}>
+        <p className="mt-3 max-w-2xl text-sm md:text-base leading-relaxed" style={{ color: '#FFFFFF' }}>
           Every other course explains prompts. Here you <strong>write one, run it against a live model</strong>,
-          and get graded on what the model actually does — including adversarial inputs designed to make it fail.
+          and get graded on what the model does, including adversarial inputs designed to make it fail.
           No sign-in required.
         </p>
       </header>
@@ -49,7 +49,7 @@ export default function Playground() {
                 }}
               >
                 <div className="text-sm font-semibold" style={{ color: on ? '#F3EEE2' : '#D6CDB8' }}>{lab.title}</div>
-                <div className="text-xs mt-0.5" style={{ color: '#8F866F' }}>{lab.tagline}</div>
+                <div className="text-xs mt-0.5" style={{ color: '#FFFFFF' }}>{lab.tagline}</div>
               </button>
             )
           })}

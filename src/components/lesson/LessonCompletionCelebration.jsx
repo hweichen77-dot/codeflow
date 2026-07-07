@@ -44,7 +44,7 @@ export default function LessonCompletionCelebration({ show, lessonTitle, xpEarne
             >
               {lessonTitle}
             </h2>
-            <div className="font-sans text-sm mt-4 mb-6" style={{ color: trace.dim }}>
+            <div className="font-sans text-sm mt-4 mb-6" style={{ color: '#FFFFFF' }}>
               +{xpEarned} XP earned
             </div>
             <button

@@ -10,9 +10,9 @@ const SERIF = font.display
 const ONBOARDED_KEY = 'codeflow_onboarded_v1'
 
 const STEPS = [
-  { n: '01', t: 'Learn by building', d: 'No passive videos. Every lesson ends in code you run in the browser.' },
+  { n: '01', t: 'Learn by building', d: 'Every lesson ends in code you run in the browser.' },
   { n: '02', t: 'Solve challenges', d: 'Short problems with real test cases. Earn XP, build a streak, level up.' },
-  { n: '03', t: 'Ship projects', d: 'Capstones turn skills into a portfolio you can actually point to.' },
+  { n: '03', t: 'Ship projects', d: 'Capstones turn skills into a portfolio you can point to.' },
 ]
 
 export default function WelcomeModal() {
@@ -55,9 +55,9 @@ export default function WelcomeModal() {
           WELCOME TO CODEFLOW
         </div>
         <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#F2EDE2', lineHeight: 1.12, margin: '0 0 8px' }}>
-          Hey {firstName} — here&apos;s the idea.
+          Hey {firstName}, here&apos;s the idea.
         </h1>
-        <p className="font-display text-sm mb-7" style={{ color: '#C9C1B2' }}>
+        <p className="font-display text-sm mb-7" style={{ color: '#FFFFFF' }}>
           Three things make CodeFlow work. Then you&apos;re off.
         </p>
 
@@ -69,7 +69,7 @@ export default function WelcomeModal() {
               </span>
               <div>
                 <div className="font-display text-sm font-medium" style={{ color: '#F2EDE2' }}>{s.t}</div>
-                <div className="font-sans text-xs mt-1" style={{ color: '#BBB3A4', fontFamily: LABEL, lineHeight: 1.5 }}>{s.d}</div>
+                <div className="font-sans text-xs mt-1" style={{ color: '#FFFFFF', fontFamily: LABEL, lineHeight: 1.5 }}>{s.d}</div>
               </div>
             </div>
           ))}
@@ -80,7 +80,7 @@ export default function WelcomeModal() {
             type="button"
             onClick={() => dismiss(false)}
             className="font-sans text-xs tracking-widest uppercase px-5 py-3 transition-all"
-            style={{ color: '#8F8779', border: '1px solid #34302A', fontFamily: LABEL }}
+            style={{ color: '#FFFFFF', border: '1px solid #34302A', fontFamily: LABEL }}
           >
             I&apos;ll look around
           </button>

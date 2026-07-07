@@ -45,7 +45,7 @@ export default function BadgeUnlock({ completedCount }) {
             <div className="font-display font-bold text-sm" style={{ color: "#ECE7DC" }}>
               {newBadge.label}
             </div>
-            <div className="font-sans text-xs" style={{ color: "#BBB3A4" }}>
+            <div className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
               {newBadge.desc}
             </div>
           </div>

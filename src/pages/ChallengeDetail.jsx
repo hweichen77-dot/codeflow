@@ -75,7 +75,7 @@ export default function ChallengeDetail() {
   if (!challenge) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#15130E" }}>
-        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>404 — NOT FOUND</div>
+        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>404, NOT FOUND</div>
         <Link to={createPageUrl("Challenges")}>
           <button className="font-sans text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33" }}>
             ← Back to Challenges
@@ -94,7 +94,7 @@ export default function ChallengeDetail() {
           <Link
             to={createPageUrl("Challenges")}
             className="font-sans text-xs tracking-widest uppercase mb-8 inline-block transition-colors duration-150"
-            style={{ color: "#C9C1B2" }}
+            style={{ color: "#FFFFFF" }}
             onMouseEnter={e => e.currentTarget.style.color = "#E8A33C"}
             onMouseLeave={e => e.currentTarget.style.color = "#C9C1B2"}
           >
@@ -117,7 +117,7 @@ export default function ChallengeDetail() {
                   {challenge.difficulty}
                 </span>
                 {challenge.xp && (
-                  <span className="font-sans text-xs" style={{ color: "#C9C1B2" }}>
+                  <span className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
                     +{challenge.xp}xp
                   </span>
                 )}
@@ -127,7 +127,7 @@ export default function ChallengeDetail() {
               >
                 {challenge.title}
               </h1>
-              <p className="font-display text-sm mt-2 leading-relaxed" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+              <p className="font-display text-sm mt-2 leading-relaxed" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                 {challenge.description}
               </p>
             </div>
@@ -145,8 +145,8 @@ export default function ChallengeDetail() {
             <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
               How this works
             </span>
-            <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>
-              {showPrimer ? "—" : "+"}
+            <span className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
+              {showPrimer ? ", " : "+"}
             </span>
           </button>
           <AnimatePresence initial={false}>
@@ -161,13 +161,13 @@ export default function ChallengeDetail() {
                   {[
                     "Your program reads its input from STDIN and prints answers to STDOUT.",
                     "The grader runs your code against each test case and compares your printed output to the expected output.",
-                    "Start from the provided starter code — the input is already parsed for you. Just fill in the logic.",
+                    "Start from the provided starter code, the input is already parsed for you. Just fill in the logic.",
                   ].map((line, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#E8A33C" }}>
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <p className="font-display text-sm leading-relaxed" style={{ color: "#A8A092", fontWeight: 400 }}>
+                      <p className="font-display text-sm leading-relaxed" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                         {line}
                       </p>
                     </div>
@@ -190,10 +190,10 @@ export default function ChallengeDetail() {
             <div className="px-5 py-4 space-y-2">
               {challenge.test_cases.map((tc, i) => (
                 <div key={i} className="flex items-center gap-4 font-mono text-xs py-2" style={{ borderBottom: i < challenge.test_cases.length - 1 ? "1px solid #1C1A14" : "none" }}>
-                  <span style={{ color: "#BBB3A4" }}>{String(i + 1).padStart(2, "0")}</span>
-                  <span style={{ color: "#C9C1B2" }}>in: <span style={{ color: "#C2BAAA" }}>{tc.input}</span></span>
-                  <span style={{ color: "#BBB3A4" }}>→</span>
-                  <span style={{ color: "#C9C1B2" }}>expect: <span style={{ color: "#E8A33C" }}>{tc.expected_output}</span></span>
+                  <span style={{ color: "#FFFFFF" }}>{String(i + 1).padStart(2, "0")}</span>
+                  <span style={{ color: "#FFFFFF" }}>in: <span style={{ color: "#FFFFFF" }}>{tc.input}</span></span>
+                  <span style={{ color: "#FFFFFF" }}>→</span>
+                  <span style={{ color: "#FFFFFF" }}>expect: <span style={{ color: "#E8A33C" }}>{tc.expected_output}</span></span>
                 </div>
               ))}
             </div>
@@ -223,7 +223,7 @@ export default function ChallengeDetail() {
                 <div className="font-sans text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>
                   Challenge Complete
                 </div>
-                <div className="font-display text-sm" style={{ color: "#BBB3A4", fontWeight: 400 }}>
+                <div className="font-display text-sm" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                   All tests passed. Well done.
                 </div>
               </div>
@@ -242,7 +242,7 @@ export default function ChallengeDetail() {
                 background: showHints ? "#E8A33C10" : "transparent",
               }}
             >
-              {showHints ? "— Hints" : "+ Hints"}
+              {showHints ? ", Hints" : "+ Hints"}
             </button>
           )}
           {challenge.solution_code && (
@@ -253,7 +253,7 @@ export default function ChallengeDetail() {
               onMouseEnter={e => e.currentTarget.style.color = "#C9C1B2"}
               onMouseLeave={e => e.currentTarget.style.color = "#ECE7DC"}
             >
-              {showSolution ? "— Solution" : "Show Solution"}
+              {showSolution ? ", Solution" : "Show Solution"}
             </button>
           )}
         </div>
@@ -273,10 +273,10 @@ export default function ChallengeDetail() {
                 <div className="px-5 py-4 space-y-3">
                   {challenge.hints.map((hint, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#BBB3A4" }}>
+                      <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#FFFFFF" }}>
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <p className="font-display text-sm leading-relaxed" style={{ color: "#A8A092", fontWeight: 400 }}>
+                      <p className="font-display text-sm leading-relaxed" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                         {hint}
                       </p>
                     </div>
@@ -300,7 +300,7 @@ export default function ChallengeDetail() {
                   <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>Solution</span>
                   <span className="font-sans text-xs px-2 py-0.5" style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}>PY</span>
                 </div>
-                <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#C2BAAA" }}>
+                <pre className="font-mono overflow-x-auto p-5" style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#FFFFFF" }}>
                   {challenge.solution_code}
                 </pre>
               </div>

@@ -38,8 +38,8 @@ export default function Reflection({ prompt, sampleAnswer, onComplete }) {
           </button>
         ) : (
           <div className="mt-4">
-            <div className="font-sans text-xs tracking-widest uppercase mb-1.5" style={{ color: trace.lime, fontFamily: trace.sans }}>✓ Logged — one way to put it</div>
-            <p className="font-display text-sm leading-relaxed px-4 py-3" style={{ color: trace.dim, background: trace.surface, border: `1px solid ${trace.lime}33`, borderRadius: "4px" }}>{sampleAnswer}</p>
+            <div className="font-sans text-xs tracking-widest uppercase mb-1.5" style={{ color: trace.lime, fontFamily: trace.sans }}>✓ Logged, one way to put it</div>
+            <p className="font-display text-sm leading-relaxed px-4 py-3" style={{ color: '#FFFFFF', background: trace.surface, border: `1px solid ${trace.lime}33`, borderRadius: "4px" }}>{sampleAnswer}</p>
           </div>
         )}
       </div>

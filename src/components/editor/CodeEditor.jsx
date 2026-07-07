@@ -118,7 +118,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#34302A" }} />
             </div>
-            <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>
+            <span className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
               ~/codeflow/{filename}
             </span>
           </div>
@@ -177,7 +177,7 @@ If you notice ONE specific, actionable issue (logic error, infinite loop risk, w
             onScroll={handleScroll}
             aria-label={`Code editor for ${filename}`}
             className="flex-1 bg-transparent font-mono py-5 pl-4 pr-5 resize-none outline-none overflow-auto"
-            style={{ fontSize: "0.8125rem", lineHeight: "1.6rem", color: "#c8c8c8", caretColor: "#E8A33C" }}
+            style={{ fontSize: "0.8125rem", lineHeight: "1.6rem", color: "#FFFFFF", caretColor: "#E8A33C" }}
             spellCheck={false}
             autoComplete="off"
             autoCorrect="off"

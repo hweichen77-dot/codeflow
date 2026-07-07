@@ -52,7 +52,7 @@ export default function InlineQuiz({ question, options, correctIndex, explanatio
                 className="w-full text-left px-3 py-2.5 rounded transition-all duration-150 font-display text-sm"
                 style={{ background: bg, border: `1px solid ${border}`, color, cursor: revealed ? "default" : "pointer" }}
               >
-                <span className="font-sans text-xs mr-2" style={{ color: trace.faint }}>
+                <span className="font-sans text-xs mr-2" style={{ color: '#FFFFFF' }}>
                   {String.fromCharCode(65 + i)}.
                 </span>
                 {opt}
@@ -90,7 +90,7 @@ export default function InlineQuiz({ question, options, correctIndex, explanatio
                 {isCorrect ? "Correct!" : "Not quite"}
               </div>
               {explanation && (
-                <p className="font-display text-xs leading-relaxed" style={{ color: trace.dim }}>
+                <p className="font-display text-xs leading-relaxed" style={{ color: '#FFFFFF' }}>
                   {explanation}
                 </p>
               )}

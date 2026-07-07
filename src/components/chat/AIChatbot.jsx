@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { api, aiAvailable } from "@/api/apiClient";
+import { aiAvailable } from "@/api/apiClient";
+import { askTutor } from "@/lib/aiTutor";
 import { MessageCircle, X, Send, Loader2, Brain, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -58,39 +59,25 @@ export default function AIChatbot({ context = "", lessonTitle = "", lessonId = "
     setMessages(newMessages);
     setIsLoading(true);
 
-    const conversationContext = newMessages
-      .slice(-8)
-      .map((m) => `${m.role === "user" ? "Student" : "Tutor"}: ${m.content}`)
-      .join("\n");
-
-    const codeContext = currentCode?.trim()
-      ? `\nStudent's current code:\n\`\`\`\n${currentCode}\n\`\`\``
-      : "";
-
-    const outputContext = lastOutput?.trim()
-      ? `\nLast output/error:\n${lastOutput}`
-      : "";
-
-    const modeInstructions = socraticMode
-      ? `IMPORTANT: You are in Socratic Mode. Never give direct answers or complete code. Instead, ask one guiding question that leads the student to discover the answer themselves. Point to the right direction without solving it.`
-      : `You can explain directly and provide code examples when helpful. Be clear and concise.`;
-
-    const response = await api.integrations.Core.InvokeLLM({
-      prompt: `You are a coding tutor for "${lessonTitle}". ${modeInstructions}
-
-Lesson context: ${context ? context.slice(0, 400) : lessonTitle}${codeContext}${outputContext}
-
-Conversation:
-${conversationContext}
-
-Student: ${userMessage}
-
-Respond in under 120 words. Be encouraging but don't be sycophantic.`,
+    // Send only the conversation + lesson context; all guardrails (on-topic,
+    // anti-jailbreak, response caps) are enforced server-side in the ai-tutor fn.
+    const res = await askTutor({
+      messages: newMessages.filter((m) => m.role === "user" || m.role === "assistant"),
+      lessonTitle,
+      context: context ? context.slice(0, 1200) : lessonTitle,
+      socratic: socraticMode,
+      currentCode: currentCode || "",
+      lastOutput: lastOutput || "",
     });
 
     setMessages((prev) => [
       ...prev,
-      { role: "assistant", content: response || "Sorry, I couldn't process that. Try again!" },
+      {
+        role: "assistant",
+        content: res.ok
+          ? res.reply
+          : res.error || "Sorry, I couldn't process that. Try again!",
+      },
     ]);
     setIsLoading(false);
   };
@@ -145,7 +132,7 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                   AI Tutor
                 </span>
                 <span className="font-sans text-xs" style={{ color: "#ECE7DC" }}>·</span>
-                <span className="font-sans text-xs" style={{ color: "#BBB3A4" }} title={lessonTitle}>
+                <span className="font-sans text-xs" style={{ color: "#FFFFFF" }} title={lessonTitle}>
                   {lessonTitle?.length > 18 ? lessonTitle.slice(0, 18) + "…" : lessonTitle}
                 </span>
               </div>
@@ -247,8 +234,8 @@ Respond in under 120 words. Be encouraging but don't be sycophantic.`,
                   </button>
                 </div>
               ) : (
-                <p className="font-sans text-xs leading-relaxed" style={{ color: "#BBB3A4" }}>
-                  AI tutor is offline in this build — it lights up when the app is connected to its AI backend.
+                <p className="font-sans text-xs leading-relaxed" style={{ color: "#FFFFFF" }}>
+                  AI tutor is offline in this build, it lights up when the app is connected to its AI backend.
                 </p>
               )}
             </div>

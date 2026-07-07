@@ -72,7 +72,7 @@ export default function Challenges() {
           >
             One problem at a time.
           </h1>
-          <p className="font-display text-base" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+          <p className="font-display text-base" style={{ color: "#FFFFFF", fontWeight: 400 }}>
             Focused problems. No setup. Pure coding.
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function Challenges() {
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span
               className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none"
-              style={{ color: "#BBB3A4" }}
+              style={{ color: "#FFFFFF" }}
             >
               /search
             </span>
@@ -139,7 +139,7 @@ export default function Challenges() {
               <div
                 key={h}
                 className={`font-sans text-xs tracking-widest uppercase${h === "TOPIC" ? " hidden sm:block" : ""}`}
-                style={{ color: "#BBB3A4" }}
+                style={{ color: "#FFFFFF" }}
               >
                 {h}
               </div>
@@ -156,7 +156,7 @@ export default function Challenges() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
             <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#FFFFFF" }}>NO RESULTS</div>
-            <p className="font-display text-base" style={{ color: "#C9C1B2" }}>No challenges match your filter.</p>
+            <p className="font-display text-base" style={{ color: "#FFFFFF" }}>No challenges match your filter.</p>
           </div>
         ) : (
           <div>
@@ -183,21 +183,21 @@ export default function Challenges() {
                       {challenge.project_title && (
                         <div
                           className="font-sans text-xs tracking-wide mb-1"
-                          style={{ color: "#7a7a7a" }}
+                          style={{ color: "#FFFFFF" }}
                         >
                           {challenge.project_title}
                         </div>
                       )}
                       <div
                         className="font-display font-bold text-base leading-snug mb-0.5 transition-colors duration-150 group-hover:text-white"
-                        style={{ color: "#C2BAAA", letterSpacing: "-0.02em" }}
+                        style={{ color: "#FFFFFF", letterSpacing: "-0.02em" }}
                       >
                         {challenge.title}
                       </div>
                       {challenge.description && (
                         <div
                           className="font-display text-xs line-clamp-1"
-                          style={{ color: "#C9C1B2", fontWeight: 400 }}
+                          style={{ color: "#FFFFFF", fontWeight: 400 }}
                         >
                           {challenge.description}
                         </div>
@@ -207,7 +207,7 @@ export default function Challenges() {
                     <div className="hidden sm:block">
                       <span
                         className="font-sans text-xs tracking-widest uppercase px-2.5 py-1"
-                        style={{ color: "#C9C1B2", border: "1px solid #34302A" }}
+                        style={{ color: "#FFFFFF", border: "1px solid #34302A" }}
                       >
                         {CATEGORY_LABELS[challenge.topic] || challenge.topic || challenge.category}
                       </span>

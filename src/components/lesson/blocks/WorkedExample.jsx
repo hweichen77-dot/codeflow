@@ -23,13 +23,13 @@ export default function WorkedExample({ number, difficulty = "easy", prompt, ste
       </div>
 
       <div className="p-5">
-        <div className="font-sans text-xs tracking-widest uppercase mb-1.5" style={{ color: trace.faint, fontFamily: trace.sans }}>INPUT</div>
+        <div className="font-sans text-xs tracking-widest uppercase mb-1.5" style={{ color: '#FFFFFF', fontFamily: trace.sans }}>INPUT</div>
         <pre className="px-4 py-3 mb-4 overflow-x-auto font-mono text-xs" style={{ ...traceStyles.terminal, color: trace.text, whiteSpace: "pre-wrap", fontFamily: trace.mono }}>{prompt}</pre>
 
-        <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: trace.faint, fontFamily: trace.sans }}>REASONING</div>
+        <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: '#FFFFFF', fontFamily: trace.sans }}>REASONING</div>
         <div className="space-y-2 mb-3">
           {steps.slice(0, revealed).map((s, i) => (
-            <div key={i} className="flex gap-3 font-display text-sm" style={{ color: trace.dim }}>
+            <div key={i} className="flex gap-3 font-display text-sm" style={{ color: '#FFFFFF' }}>
               <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: trace.lime, fontFamily: trace.sans }}>{i + 1}.</span>
               <span>{s}</span>
             </div>
@@ -47,7 +47,7 @@ export default function WorkedExample({ number, difficulty = "easy", prompt, ste
 
         {revealed >= steps.length && (
           <>
-            <div className="font-sans text-xs tracking-widest uppercase mb-1.5 mt-2" style={{ color: trace.faint, fontFamily: trace.sans }}>OUTPUT</div>
+            <div className="font-sans text-xs tracking-widest uppercase mb-1.5 mt-2" style={{ color: '#FFFFFF', fontFamily: trace.sans }}>OUTPUT</div>
             {showOut ? (
               <pre className="px-4 py-3 overflow-x-auto font-mono text-xs" style={{ background: trace.terminal, border: `1px solid ${trace.lime}33`, color: trace.lime, whiteSpace: "pre-wrap", borderRadius: "4px", fontFamily: trace.mono }}>{output}</pre>
             ) : (

@@ -31,7 +31,7 @@ export default function HeroSection() {
               color: "#D4882E",
               fontWeight: 500,
             }}>
-              No. 01 — Learn by building
+              No. 01, Learn by building
             </span>
           </div>
 
@@ -51,7 +51,7 @@ export default function HeroSection() {
             fontFamily: body,
             marginTop: "32px",
             maxWidth: "48ch",
-            color: "#A39B8C",
+            color: "#FFFFFF",
             fontSize: "1.12rem",
             lineHeight: 1.62,
           }}>
@@ -107,12 +107,12 @@ export default function HeroSection() {
             <i style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#C2643C", display: "inline-block" }} />
             <i style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#34302A", display: "inline-block" }} />
             <i style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#34302A", display: "inline-block" }} />
-            <span style={{ marginLeft: "8px", color: "#756C5C", fontSize: "0.74rem", letterSpacing: "0.04em" }}>
-              sentiment.py — lesson 03
+            <span style={{ marginLeft: "8px", color: "#FFFFFF", fontSize: "0.74rem", letterSpacing: "0.04em" }}>
+              sentiment.py, lesson 03
             </span>
           </div>
           <div style={{ padding: "18px 18px 20px", lineHeight: 1.85 }}>
-            <span style={{ color: "#756C5C" }}># classify a line of text with one call</span><br />
+            <span style={{ color: "#FFFFFF" }}># classify a line of text with one call</span><br />
             text <span style={{ color: "#E8A33C" }}>=</span> <span style={{ color: "#7FBF8F" }}>"I love this"</span><br />
             label <span style={{ color: "#E8A33C" }}>=</span> classify(text)<br />
             <span style={{ color: "#E8A33C" }}>print</span>(label, confidence)
@@ -162,7 +162,7 @@ const btnText = {
   fontSize: "0.95rem",
   background: "none",
   border: "none",
-  color: "#A39B8C",
+  color: "#FFFFFF",
   cursor: "pointer",
   textDecoration: "underline",
   textUnderlineOffset: "4px",

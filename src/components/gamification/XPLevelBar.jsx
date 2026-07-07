@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 
 export const LEVELS = [
-  { level: 1, name: "Novice", min: 0, max: 50, color: "#8F8779" },
+  { level: 1, name: "Novice", min: 0, max: 50, color: "#FFFFFF" },
   { level: 2, name: "Learner", min: 50, max: 150, color: "#C2643C" },
   { level: 3, name: "Builder", min: 150, max: 300, color: "#a78bfa" },
   { level: 4, name: "Developer", min: 300, max: 500, color: "#f59e0b" },
@@ -42,7 +42,7 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
           <div className="font-sans text-xs" style={{ color: lvl.color }}>
             {lvl.name}
           </div>
-          <div className="font-sans text-xs" style={{ color: "#BBB3A4" }}>
+          <div className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
             {totalXP} / {lvl.max === Infinity ? "∞" : lvl.max} XP
           </div>
         </div>

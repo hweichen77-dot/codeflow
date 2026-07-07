@@ -11,7 +11,7 @@ export const trace = Object.freeze({
 
   text: '#ECE7DC',
   dim: '#A39B8C',
-  faint: '#756C5C',
+  faint: '#FFFFFF',
   muted: '#4A453C',
 
   lime: '#E8A33C',
@@ -56,7 +56,7 @@ export const traceStyles = Object.freeze({
     padding: '2px 8px',
     borderRadius: '3px',
     border: `1px solid ${trace.borderStrong}`,
-    color: trace.dim,
+    color: '#FFFFFF',
   },
   field: {
     background: trace.surface,

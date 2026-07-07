@@ -52,7 +52,7 @@ function CodeBlock({ children, className }) {
             <div key={i} className="flex px-4">
               <span
                 className="select-none flex-shrink-0 text-right w-6 mr-4"
-                style={{ color: trace.faint, fontSize: "0.7rem" }}
+                style={{ color: '#FFFFFF', fontSize: "0.7rem" }}
               >
                 {i + 1}
               </span>
@@ -138,7 +138,7 @@ export default function LessonExplanation({ explanation, concept }) {
           font-weight: 400;
         }
         .lesson-doc li::marker {
-          color: #6a6a6a;
+          color: #FFFFFF;
         }
         .lesson-doc strong, .lesson-doc b {
           font-weight: 700;
@@ -161,10 +161,10 @@ export default function LessonExplanation({ explanation, concept }) {
           padding: 0.75rem 1.25rem;
           margin: 1.25rem 0;
           background: #1C1A14;
-          color: #a0a0a0;
+          color: #FFFFFF;
           font-style: normal;
         }
-        .lesson-doc blockquote p { margin-bottom: 0; color: #a0a0a0; }
+        .lesson-doc blockquote p { margin-bottom: 0; color: #FFFFFF; }
         .lesson-doc hr {
           border: none;
           border-top: 1px solid #262219;

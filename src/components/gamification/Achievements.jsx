@@ -48,7 +48,7 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
         <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
           ACHIEVEMENTS
         </div>
-        <div className="font-sans text-xs" style={{ color: "#BBB3A4" }}>
+        <div className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
           {unlockedCount} / {achievements.length}
         </div>
       </div>

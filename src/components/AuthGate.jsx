@@ -17,7 +17,7 @@ function Input({ label, ...props }) {
     <label className="block mb-4">
       <span
         className="font-sans text-xs tracking-widest uppercase block mb-2"
-        style={{ color: '#BBB3A4', fontFamily: LABEL }}
+        style={{ color: '#FFFFFF', fontFamily: LABEL }}
       >
         {label}
       </span>
@@ -37,7 +37,7 @@ export default function AuthGate() {
   const navigate = useNavigate();
 
   // 'google' = sign in with Google; 'guest' = local-only quick start. Always
-  // start on the sign-in screen so guest mode is never a dead-end — it keeps a
+  // start on the sign-in screen so guest mode is never a dead-end, it keeps a
   // "back" route even when Supabase isn't configured (e.g. an unconfigured build).
   const [mode, setMode] = useState('google');
   const [name, setName] = useState('');
@@ -49,7 +49,7 @@ export default function AuthGate() {
   const google = async () => {
     setError('');
     if (!supabaseConfigured) {
-      setError('Accounts are not configured yet. Use “Continue as guest” for now.');
+      setError('Accounts are not configured yet. Use "Continue as guest" for now.');
       return;
     }
     setBusy(true);
@@ -71,7 +71,7 @@ export default function AuthGate() {
   };
   const subtitles = {
     google: 'Sign in with Google to save your progress across devices.',
-    guest: 'No account — progress is saved locally on this device.',
+    guest: 'No account, progress is saved locally on this device.',
   };
 
   return (
@@ -83,13 +83,13 @@ export default function AuthGate() {
         <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#F2EDE2', lineHeight: 1.12, margin: '0 0 10px' }}>
           {titles[mode]}
         </h1>
-        <p className="font-display text-sm mb-7" style={{ color: '#C9C1B2', fontWeight: 400 }}>
+        <p className="font-display text-sm mb-7" style={{ color: '#FFFFFF', fontWeight: 400 }}>
           {subtitles[mode]}
         </p>
 
         {!supabaseConfigured && mode !== 'guest' && (
           <div className="font-sans text-xs mb-6 px-3 py-2" style={{ color: '#E0B341', background: '#E0B34110', border: '1px solid #E0B34133' }}>
-            Accounts aren’t set up on this build yet. Use <strong>Continue as guest</strong> to start now.
+            Accounts aren't set up on this build yet. Use <strong>Continue as guest</strong> to start now.
           </div>
         )}
 
@@ -123,7 +123,7 @@ export default function AuthGate() {
 
                 <div className="flex items-center gap-3 my-5">
                   <div style={{ flex: 1, height: '1px', background: '#262219' }} />
-                  <span className="font-sans text-xs" style={{ color: '#6E665A', fontFamily: LABEL }}>or</span>
+                  <span className="font-sans text-xs" style={{ color: '#FFFFFF', fontFamily: LABEL }}>or</span>
                   <div style={{ flex: 1, height: '1px', background: '#262219' }} />
                 </div>
               </>
@@ -174,7 +174,7 @@ export default function AuthGate() {
               type="button"
               onClick={() => { setMode('google'); setError(''); }}
               className="w-full mt-5 font-sans text-xs"
-              style={{ color: '#8F8779', fontFamily: LABEL, background: 'transparent' }}
+              style={{ color: '#FFFFFF', fontFamily: LABEL, background: 'transparent' }}
             >
               ← Back
             </button>

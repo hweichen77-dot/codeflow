@@ -18,7 +18,7 @@ function StatCard({ label, value, sub, accent = "#E8A33C" }) {
       <div className="font-sans font-bold" style={{ fontSize: "2rem", lineHeight: 1, color: accent, letterSpacing: "-0.03em" }}>
         {value}
       </div>
-      {sub && <div className="font-sans text-xs mt-2" style={{ color: "#8F8779", fontFamily: LABEL }}>{sub}</div>}
+      {sub && <div className="font-sans text-xs mt-2" style={{ color: "#FFFFFF", fontFamily: LABEL }}>{sub}</div>}
     </div>
   );
 }
@@ -87,7 +87,7 @@ export default function AuthHome() {
           <h1 style={{ fontFamily: SERIF, fontSize: "2.6rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#F2EDE2", margin: 0, lineHeight: 1.05 }}>
             Welcome back, {firstName}.
           </h1>
-          <p className="font-display text-sm mt-3" style={{ color: "#C9C1B2" }}>
+          <p className="font-display text-sm mt-3" style={{ color: "#FFFFFF" }}>
             {completed.length > 0
               ? `You've completed ${completed.length} lesson${completed.length === 1 ? "" : "s"} and earned ${totalXP} XP. Keep the streak alive.`
               : "Let's start your first lesson and begin tracking your progress."}
@@ -106,7 +106,7 @@ export default function AuthHome() {
             <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
               Level {lvl.name}
             </span>
-            <span className="font-sans text-xs" style={{ color: "#8F8779", fontFamily: LABEL }}>
+            <span className="font-sans text-xs" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
               {lvl.max === Infinity ? "MAX" : `${lvl.max - totalXP} XP to ${nextLvl.name}`}
             </span>
           </div>
@@ -132,7 +132,7 @@ export default function AuthHome() {
                   <div style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: "#F2EDE2", letterSpacing: "-0.01em" }}>
                     {resume.title}
                   </div>
-                  <div className="font-sans text-xs mt-2" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
+                  <div className="font-sans text-xs mt-2" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
                     {resume.done}/{resume.total} lessons · {resume.pct}% complete
                   </div>
                 </div>
@@ -161,7 +161,7 @@ export default function AuthHome() {
                   onMouseEnter={(e) => { e.currentTarget.style.background = "#131009"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
-                  <span className="font-sans text-xs w-7 flex-shrink-0" style={{ color: "#6E665A", fontFamily: LABEL }}>
+                  <span className="font-sans text-xs w-7 flex-shrink-0" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -173,7 +173,7 @@ export default function AuthHome() {
                     <div className="flex-1" style={{ height: "5px", background: "#262219", borderRadius: "3px", overflow: "hidden" }}>
                       <div style={{ width: `${p.pct}%`, height: "100%", background: isDone ? "#E8A33C" : "#9A6A1F", borderRadius: "3px" }} />
                     </div>
-                    <span className="font-sans text-xs w-12 text-right" style={{ color: "#BBB3A4", fontFamily: LABEL }}>
+                    <span className="font-sans text-xs w-12 text-right" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
                       {p.pct}%
                     </span>
                   </div>

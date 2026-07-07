@@ -38,7 +38,7 @@ export default function Competitive() {
           <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}>
             Write the algorithm yourself.
           </h1>
-          <p className="font-display text-base" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+          <p className="font-display text-base" style={{ color: "#FFFFFF", fontWeight: 400 }}>
             Hard C++ problems, like the ones on USACO and Codeforces. A lot of them are the algorithms that make AI work.
           </p>
           <div
@@ -48,7 +48,7 @@ export default function Competitive() {
             <span className="font-sans text-xs tracking-widest uppercase mt-px" style={{ color: "#E8A33C" }}>
               Optional · Advanced
             </span>
-            <p className="font-display text-xs leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
+            <p className="font-display text-xs leading-relaxed" style={{ color: "#FFFFFF", fontWeight: 400 }}>
               Not for beginners. These are hard C++ problems for people who can already code. It's a big
               jump from the Python AI track.
             </p>
@@ -59,7 +59,7 @@ export default function Competitive() {
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
         <div className="flex flex-wrap items-center gap-4 mb-6">
           <div className="relative flex-1 min-w-48 max-w-xs">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none" style={{ color: "#BBB3A4" }}>/search</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-sans text-xs pointer-events-none" style={{ color: "#FFFFFF" }}>/search</span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -114,7 +114,7 @@ export default function Competitive() {
         {filtered.length === 0 ? (
           <div className="text-center py-24">
             <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#FFFFFF" }}>NO RESULTS</div>
-            <p className="font-display text-base" style={{ color: "#C9C1B2" }}>No problems match your filter.</p>
+            <p className="font-display text-base" style={{ color: "#FFFFFF" }}>No problems match your filter.</p>
           </div>
         ) : (
           <div>
@@ -131,10 +131,10 @@ export default function Competitive() {
                       {DIFF_NUM[p.difficulty] || "01"}
                     </div>
                     <div>
-                      <div className="font-display font-bold text-base leading-snug mb-0.5 transition-colors duration-150 group-hover:text-white" style={{ color: "#C2BAAA", letterSpacing: "-0.02em" }}>
+                      <div className="font-display font-bold text-base leading-snug mb-0.5 transition-colors duration-150 group-hover:text-white" style={{ color: "#FFFFFF", letterSpacing: "-0.02em" }}>
                         {p.title}
                       </div>
-                      <div className="font-display text-xs line-clamp-1" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+                      <div className="font-display text-xs line-clamp-1" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                         {p.algorithm_focus}
                       </div>
                     </div>

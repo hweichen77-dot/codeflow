@@ -11,7 +11,7 @@ const CAPSTONES = [
   {
     level: "Beginner",
     title: "Personal AI Writing Assistant",
-    description: "A web page with tone controls — formal, shorter, funnier — that rewrites text using an LLM. First real deployed app.",
+    description: "A web page with tone controls, formal, shorter, funnier, that rewrites text using an LLM. First real deployed app.",
     skills: ["Frontend", "API security", "Prompt chaining"],
   },
   {
@@ -83,7 +83,7 @@ export default function AITrack() {
     title: p.title,
     difficulty: cap(p.difficulty),
     rawDifficulty: p.difficulty,
-    time: p.estimated_time ? `${p.estimated_time} min` : "—",
+    time: p.estimated_time ? `${p.estimated_time} min` : ", ",
     description: p.description,
     concepts: (p.tags || []).slice(0, 3),
     projectId: p.id,
@@ -101,8 +101,8 @@ export default function AITrack() {
             Learn to build<br />
             <span style={{ WebkitTextStroke: "1.5px #E8A33C", color: "transparent" }}>with AI.</span>
           </h1>
-          <p className="font-display text-base max-w-prose" style={{ color: "#C9C1B2", fontWeight: 400 }}>
-            Not just theory. A full progression from "what is a model" to building and deploying real AI-powered applications — with working code at every step.
+          <p className="font-display text-base max-w-prose" style={{ color: "#FFFFFF", fontWeight: 400 }}>
+            A full progression from "what is a model" to building and deploying AI-powered applications, with working code at every step.
           </p>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function AITrack() {
 
         <div>
           <div className="font-sans text-xs tracking-widest uppercase mb-8" style={{ color: "#FFFFFF" }}>
-            CURRICULUM — {trackItems.length} MODULES
+            CURRICULUM, {trackItems.length} MODULES
           </div>
 
           <div
@@ -164,12 +164,12 @@ export default function AITrack() {
                         </span>
                       )}
                     </div>
-                    <p className="font-display text-sm mb-3" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+                    <p className="font-display text-sm mb-3" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                       {item.description}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {item.concepts.map(c => (
-                        <span key={c} className="font-sans text-xs px-2 py-0.5" style={{ color: "#BBB3A4", border: "1px solid #34302A" }}>
+                        <span key={c} className="font-sans text-xs px-2 py-0.5" style={{ color: "#FFFFFF", border: "1px solid #34302A" }}>
                           {c}
                         </span>
                       ))}
@@ -183,7 +183,7 @@ export default function AITrack() {
                       {item.difficulty}
                     </span>
                   </div>
-                  <div className="font-sans text-sm text-right" style={{ color: "#C9C1B2" }}>
+                  <div className="font-sans text-sm text-right" style={{ color: "#FFFFFF" }}>
                     {item.time}
                   </div>
                 </div>
@@ -221,7 +221,7 @@ export default function AITrack() {
 
         <div>
           <div className="font-sans text-xs tracking-widest uppercase mb-8" style={{ color: "#FFFFFF" }}>
-            CAPSTONE PROJECTS — WHAT YOU WILL BUILD
+            CAPSTONE PROJECTS, WHAT YOU WILL BUILD
           </div>
           <div className="grid md:grid-cols-3 gap-0" style={{ border: "1px solid #262219" }}>
             {CAPSTONES.map((cap, i) => {
@@ -244,14 +244,14 @@ export default function AITrack() {
                   >
                     {cap.title}
                   </h3>
-                  <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+                  <p className="font-display text-sm leading-relaxed mb-5" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                     {cap.description}
                   </p>
                   <div className="space-y-1.5">
                     {cap.skills.map(s => (
                       <div key={s} className="flex items-center gap-2">
                         <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>→</span>
-                        <span className="font-sans text-xs" style={{ color: "#C9C1B2" }}>{s}</span>
+                        <span className="font-sans text-xs" style={{ color: "#FFFFFF" }}>{s}</span>
                       </div>
                     ))}
                   </div>
@@ -268,7 +268,7 @@ export default function AITrack() {
           >
             Start building with AI.
           </h2>
-          <p className="font-display text-base mb-8" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+          <p className="font-display text-base mb-8" style={{ color: "#FFFFFF", fontWeight: 400 }}>
             The projects are in the Projects section. Filter by category "AI/ML".
           </p>
           <Link to={createPageUrl("Projects")}>
@@ -290,7 +290,7 @@ export default function AITrack() {
           style={{ color: "#E0B341", border: "1px solid #E0B34155", background: "#1a1407" }}
           role="status"
         >
-          Finish the Foundations modules to unlock “{nudge}”
+          Finish the Foundations modules to unlock "{nudge}"
         </div>
       )}
     </div>

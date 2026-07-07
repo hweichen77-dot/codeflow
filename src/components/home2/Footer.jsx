@@ -29,7 +29,7 @@ function FootLink({ children, ...props }) {
   return (
     <a
       {...props}
-      style={{ fontFamily: body, color: "#A39B8C", textDecoration: "none", fontSize: "0.9rem", display: "block", marginBottom: "8px" }}
+      style={{ fontFamily: body, color: "#FFFFFF", textDecoration: "none", fontSize: "0.9rem", display: "block", marginBottom: "8px" }}
       onMouseEnter={e => (e.currentTarget.style.color = "#E8A33C")}
       onMouseLeave={e => (e.currentTarget.style.color = "#A39B8C")}
     >
@@ -42,7 +42,7 @@ function FootRouterLink({ to, children }) {
   return (
     <Link
       to={to}
-      style={{ fontFamily: body, color: "#A39B8C", textDecoration: "none", fontSize: "0.9rem", display: "block", marginBottom: "8px" }}
+      style={{ fontFamily: body, color: "#FFFFFF", textDecoration: "none", fontSize: "0.9rem", display: "block", marginBottom: "8px" }}
       onMouseEnter={e => (e.currentTarget.style.color = "#E8A33C")}
       onMouseLeave={e => (e.currentTarget.style.color = "#A39B8C")}
     >
@@ -58,9 +58,9 @@ export default function Footer() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "32px" }}>
           <div>
             <div style={{ marginBottom: "12px" }}><Wordmark /></div>
-            <p style={{ fontFamily: body, color: "#756C5C", fontSize: "0.86rem", maxWidth: "42ch", lineHeight: 1.6 }}>
-              Built for people who learn by doing. Real code execution, an AI
-              tutor that won't cheat, no fluff.
+            <p style={{ fontFamily: body, color: "#FFFFFF", fontSize: "0.86rem", maxWidth: "42ch", lineHeight: 1.6 }}>
+              Built for people who learn by doing. Real code execution and an
+              AI tutor that won't hand you the answer.
             </p>
           </div>
 
@@ -87,10 +87,10 @@ export default function Footer() {
           borderTop: "1px solid #221F18",
           fontFamily: body,
           fontSize: "0.72rem",
-          color: "#756C5C",
+          color: "#FFFFFF",
           letterSpacing: "0.04em",
         }}>
-          © 2026 CodeFlow — learn by building.
+          © 2026 CodeFlow, learn by building.
         </div>
       </div>
     </footer>

@@ -12,7 +12,7 @@ function Section({ title, children }) {
       <h2 style={{ fontFamily: SERIF, fontSize: '1.35rem', fontWeight: 700, color: '#F2EDE2', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
         {title}
       </h2>
-      <div className="font-display text-sm space-y-3" style={{ color: '#BBB3A4', lineHeight: 1.7 }}>
+      <div className="font-display text-sm space-y-3" style={{ color: '#FFFFFF', lineHeight: 1.7 }}>
         {children}
       </div>
     </section>
@@ -29,14 +29,14 @@ export default function Privacy() {
         <h1 style={{ fontFamily: SERIF, fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F2EDE2', margin: '0 0 8px', lineHeight: 1.08 }}>
           Privacy Policy
         </h1>
-        <p className="font-sans text-xs mb-12" style={{ color: '#8F8779', fontFamily: LABEL }}>
+        <p className="font-sans text-xs mb-12" style={{ color: '#FFFFFF', fontFamily: LABEL }}>
           Last updated: June 2026
         </p>
 
         <Section title="What we collect">
           <p>
-            CodeFlow is built local-first. Your learning progress — completed lessons, challenges,
-            XP, and streaks — is stored in your browser&apos;s localStorage by default and never
+            CodeFlow is built local-first. Your learning progress, completed lessons, challenges,
+            XP, and streaks, is stored in your browser&apos;s localStorage by default and never
             leaves your device unless you create an account.
           </p>
           <p>
@@ -50,7 +50,7 @@ export default function Privacy() {
           <p>
             We use privacy-respecting product analytics to understand which lessons work and where
             people get stuck. We track page views and learning events (e.g. &quot;challenge
-            completed&quot;) — never your code, keystrokes, or personal content. Analytics use
+            completed&quot;), never your code, keystrokes, or personal content. Analytics use
             localStorage, not third-party tracking cookies.
           </p>
         </Section>

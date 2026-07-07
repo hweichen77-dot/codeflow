@@ -31,7 +31,7 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
     <div className="my-7" style={{ border: `1px solid ${trace.border}`, background: trace.raised }}>
       <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${trace.border}` }}>
         <span className="font-sans text-xs tracking-widest uppercase" style={{ color: trace.lime }}>
-          SORT IT — {title}
+          SORT IT, {title}
         </span>
         {checked && (
           <span className="font-sans text-xs" style={{ color: correctCount === items.length ? trace.ok : trace.fail }}>
@@ -57,7 +57,7 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
               {it.text}
             </button>
           ))}
-          {allPlaced && <span className="font-sans text-xs" style={{ color: trace.dim }}>all sorted — check your answer</span>}
+          {allPlaced && <span className="font-sans text-xs" style={{ color: '#FFFFFF' }}>all sorted, check your answer</span>}
         </div>
 
         <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${bins.length}, 1fr)` }}>
@@ -75,7 +75,7 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
                   cursor: selected ? "pointer" : "default",
                 }}
               >
-                <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: trace.dim }}>{bin.label}</div>
+                <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: '#FFFFFF' }}>{bin.label}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {binItems.map((it) => {
                     const ok = it.bin === bin.id;
@@ -111,7 +111,7 @@ export default function DragToBin({ title, bins = [], items = [], onComplete }) 
           >
             Check answer
           </button>
-          <button onClick={reset} className="font-sans text-xs tracking-widest uppercase px-3 py-2" style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: trace.dim, cursor: "pointer" }}>
+          <button onClick={reset} className="font-sans text-xs tracking-widest uppercase px-3 py-2" style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: '#FFFFFF', cursor: "pointer" }}>
             Reset
           </button>
         </div>

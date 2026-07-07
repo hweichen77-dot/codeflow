@@ -18,14 +18,14 @@ export default function CodeAnalysis({ hint, onDismiss, onExplain }) {
           }}
         >
           <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#E0B341" }}>AI</span>
-          <p className="font-sans text-xs flex-1 leading-relaxed" style={{ color: "#C9C1B2" }}>
+          <p className="font-sans text-xs flex-1 leading-relaxed" style={{ color: "#FFFFFF" }}>
             {hint}
           </p>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={onExplain}
               className="font-sans text-xs px-2 py-1 transition-colors"
-              style={{ color: "#BBB3A4", border: "1px solid #262219" }}
+              style={{ color: "#FFFFFF", border: "1px solid #262219" }}
               onMouseEnter={e => e.currentTarget.style.color = "#E0B341"}
               onMouseLeave={e => e.currentTarget.style.color = "#BBB3A4"}
             >

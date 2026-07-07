@@ -1,4 +1,4 @@
-// Shared design tokens — single source for the brand fonts and palette so
+// Shared design tokens, single source for the brand fonts and palette so
 // components stop re-declaring the same strings. The lesson `trace/` block
 // keeps its own theme.js (it has block-specific extras).
 

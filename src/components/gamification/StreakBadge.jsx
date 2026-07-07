@@ -39,7 +39,7 @@ export default function StreakBadge({ completedCount }) {
       </motion.div>
 
       <div className="flex items-center gap-2 px-3 py-1.5" style={{ border: "1px solid #262219", background: "#131009" }}>
-        <div className="font-sans text-xs font-bold" style={{ color: "#C9C1B2" }}>
+        <div className="font-sans text-xs font-bold" style={{ color: "#FFFFFF" }}>
           {completedCount} done
         </div>
       </div>

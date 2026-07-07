@@ -52,13 +52,13 @@ export default function ProblemStatement({ problem }) {
   return (
     <div style={{ border: "1px solid #262219", background: "#131009" }}>
       <style>{`
-        .cf-md { color: #cfcfcf; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 0.9rem; line-height: 1.7; }
+        .cf-md { color: #FFFFFF; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 0.9rem; line-height: 1.7; }
         .cf-md p { margin: 0 0 0.7rem; }
         .cf-md ul, .cf-md ol { margin: 0.4rem 0 0.8rem 1.25rem; }
         .cf-md li { margin-bottom: 0.25rem; }
         .cf-md strong { color: #F2EDE2; font-weight: 700; }
         .cf-code { font-family: 'Spline Sans Mono', ui-monospace, monospace; font-size: 0.82em; background: #221F18; color: #E8A33C; padding: 0.1em 0.35em; border-radius: 3px; border: 1px solid #242424; }
-        .cf-pre { font-family: 'Spline Sans Mono', ui-monospace, monospace; font-size: 0.78rem; line-height: 1.6; background: #080808; border: 1px solid #262219; padding: 0.85rem 1rem; overflow-x: auto; margin: 0 0 0.8rem; color: #C2BAAA; }
+        .cf-pre { font-family: 'Spline Sans Mono', ui-monospace, monospace; font-size: 0.78rem; line-height: 1.6; background: #080808; border: 1px solid #262219; padding: 0.85rem 1rem; overflow-x: auto; margin: 0 0 0.8rem; color: #FFFFFF; }
       `}</style>
 
       <div className="px-6 lg:px-8 py-6">
@@ -79,7 +79,7 @@ export default function ProblemStatement({ problem }) {
           <Section label="Constraints">
             <ul className="space-y-1">
               {constraints.map((c, i) => (
-                <li key={i} className="font-mono text-xs flex gap-2" style={{ color: "#A8A092" }}>
+                <li key={i} className="font-mono text-xs flex gap-2" style={{ color: "#FFFFFF" }}>
                   <span style={{ color: "#E8A33C" }}>•</span>
                   <span>{c}</span>
                 </li>
@@ -96,7 +96,7 @@ export default function ProblemStatement({ problem }) {
                   <div className="grid grid-cols-2" style={{ borderBottom: ex.explanation ? "1px solid #262219" : "none" }}>
                     <div className="px-4 py-3" style={{ borderRight: "1px solid #262219" }}>
                       <div className="font-sans text-xs uppercase tracking-widest mb-1.5" style={{ color: "#FFFFFF" }}>input</div>
-                      <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: "#ddd", margin: 0 }}>{ex.input || "(none)"}</pre>
+                      <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: "#FFFFFF", margin: 0 }}>{ex.input || "(none)"}</pre>
                     </div>
                     <div className="px-4 py-3">
                       <div className="font-sans text-xs uppercase tracking-widest mb-1.5" style={{ color: "#FFFFFF" }}>output</div>
@@ -106,7 +106,7 @@ export default function ProblemStatement({ problem }) {
                   {ex.explanation && (
                     <div className="px-4 py-2.5">
                       <span className="font-sans text-xs uppercase tracking-widest mr-2" style={{ color: "#FFFFFF" }}>note</span>
-                      <span className="font-display text-xs" style={{ color: "#A39B8C" }}>{ex.explanation}</span>
+                      <span className="font-display text-xs" style={{ color: "#FFFFFF" }}>{ex.explanation}</span>
                     </div>
                   )}
                 </div>

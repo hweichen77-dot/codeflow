@@ -63,7 +63,7 @@ export default function Layout({ children, currentPageName }) {
             />
             <span
               className="font-sans text-xs tracking-widest uppercase transition-colors duration-200"
-              style={{ color: "#C9C1B2" }}
+              style={{ color: "#FFFFFF" }}
             >
               CodeFlow
             </span>
@@ -100,7 +100,7 @@ export default function Layout({ children, currentPageName }) {
                     style={{
                       fontSize: "8px",
                       letterSpacing: "0.06em",
-                      color: "#8a8a8a",
+                      color: "#FFFFFF",
                       border: "1px solid #34302A",
                     }}
                   >
@@ -126,13 +126,13 @@ export default function Layout({ children, currentPageName }) {
                     {p.label}
                   </Link>
                 ))}
-                <span className="font-sans text-xs whitespace-nowrap" style={{ color: "#8F866F" }}>
+                <span className="font-sans text-xs whitespace-nowrap" style={{ color: "#FFFFFF" }}>
                   {user.name?.split(" ")[0] || user.email?.split("@")[0]}
                 </span>
                 <button
                   onClick={logout}
                   className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 py-2 transition-all duration-150"
-                  style={{ color: "#C9C1B2", border: "1px solid #34302A" }}
+                  style={{ color: "#FFFFFF", border: "1px solid #34302A" }}
                   onMouseEnter={e => { e.currentTarget.style.color = "#C9C1B2"; e.currentTarget.style.borderColor = "#34302A"; }}
                   onMouseLeave={e => { e.currentTarget.style.color = "#C9C1B2"; e.currentTarget.style.borderColor = "#34302A"; }}
                 >
@@ -193,7 +193,7 @@ export default function Layout({ children, currentPageName }) {
                     style={{
                       fontSize: "8px",
                       letterSpacing: "0.06em",
-                      color: "#8a8a8a",
+                      color: "#FFFFFF",
                       border: "1px solid #34302A",
                     }}
                   >
@@ -209,14 +209,14 @@ export default function Layout({ children, currentPageName }) {
                   to={createPageUrl("Portfolio")}
                   onClick={() => setMobileOpen(false)}
                   className="block font-sans text-xs tracking-widest uppercase px-4 py-3 transition-colors"
-                  style={{ color: "#C9C1B2" }}
+                  style={{ color: "#FFFFFF" }}
                 >
                   Portfolio
                 </Link>
                 <button
                   onClick={() => { setMobileOpen(false); logout(); }}
                   className="font-sans text-xs tracking-widest uppercase w-full text-left px-4 py-3"
-                  style={{ color: "#C9C1B2" }}
+                  style={{ color: "#FFFFFF" }}
                 >
                   Sign Out
                 </button>

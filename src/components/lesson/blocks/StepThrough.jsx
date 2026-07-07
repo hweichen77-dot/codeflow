@@ -40,9 +40,9 @@ export default function StepThrough({ title, steps = [], onComplete }) {
     <div className="my-7" style={{ ...traceStyles.panel }}>
       <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${trace.border}` }}>
         <span style={{ ...traceStyles.monoLabel }}>
-          TRACE — {title}
+          TRACE, {title}
         </span>
-        <span className="font-sans text-xs" style={{ color: trace.faint, fontFamily: trace.sans }}>
+        <span className="font-sans text-xs" style={{ color: '#FFFFFF', fontFamily: trace.sans }}>
           STEP {i + 1} / {steps.length}
         </span>
       </div>
@@ -69,7 +69,7 @@ export default function StepThrough({ title, steps = [], onComplete }) {
             <div className="font-display font-bold text-lg mb-2" style={{ color: trace.text }}>
               {step.label}
             </div>
-            <p className="font-display text-sm leading-relaxed" style={{ color: trace.dim }}>
+            <p className="font-display text-sm leading-relaxed" style={{ color: '#FFFFFF' }}>
               {step.detail}
             </p>
             {step.code && (
@@ -111,7 +111,7 @@ function Ctl({ children, ...props }) {
     <button
       {...props}
       className="flex items-center justify-center w-8 h-8 transition-all disabled:opacity-30"
-      style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: trace.dim, cursor: props.disabled ? "not-allowed" : "pointer" }}
+      style={{ background: "transparent", border: `1px solid ${trace.borderStrong}`, color: '#FFFFFF', cursor: props.disabled ? "not-allowed" : "pointer" }}
     >
       {children}
     </button>

@@ -17,7 +17,7 @@ export default function Testimonials() {
             textTransform: "uppercase",
             fontWeight: 500,
           }}>
-            04 — What we're building
+            04, What we're building
           </span>
         </div>
 
@@ -41,10 +41,10 @@ export default function Testimonials() {
               margin: "8px 0 24px",
             }}>
               Most people who try to learn to code never ship anything. We're
-              building the opposite: a place where you learn by{" "}
+              building a place where you learn by{" "}
               <em style={{ fontStyle: "italic", color: "#E8A33C", fontWeight: 500 }}>building real things</em>.
             </blockquote>
-            <figcaption style={{ fontFamily: body, fontSize: "0.8rem", color: "#756C5C", letterSpacing: "0.04em" }}>
+            <figcaption style={{ fontFamily: body, fontSize: "0.8rem", color: "#FFFFFF", letterSpacing: "0.04em" }}>
               The CodeFlow mission
             </figcaption>
           </figure>
@@ -72,12 +72,12 @@ function SmallQuote({ quote, who }) {
         fontFamily: body,
         fontSize: "1.05rem",
         lineHeight: 1.6,
-        color: "#A39B8C",
+        color: "#FFFFFF",
         margin: "0 0 16px",
       }}>
         {quote}
       </blockquote>
-      <figcaption style={{ fontFamily: body, fontSize: "0.78rem", color: "#756C5C", letterSpacing: "0.04em" }}>
+      <figcaption style={{ fontFamily: body, fontSize: "0.78rem", color: "#FFFFFF", letterSpacing: "0.04em" }}>
         {who}
       </figcaption>
     </figure>

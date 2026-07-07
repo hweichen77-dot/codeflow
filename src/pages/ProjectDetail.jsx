@@ -300,7 +300,7 @@ export default function ProjectDetail() {
   if (!project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#15130E" }}>
-        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>404 — NOT FOUND</div>
+        <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECE7DC" }}>404, NOT FOUND</div>
         <Link to={createPageUrl("Projects")}>
           <button className="font-sans text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#E8A33C", border: "1px solid #E8A33C33" }}>
             ← Back to Projects
@@ -335,8 +335,8 @@ export default function ProjectDetail() {
         >
           Finish the Foundations first.
         </h1>
-        <p className="font-display text-base" style={{ color: "#A8A092", maxWidth: "32rem" }}>
-          “{project.title}” builds on the beginner modules. Complete most of the
+        <p className="font-display text-base" style={{ color: "#FFFFFF", maxWidth: "32rem" }}>
+          "{project.title}" builds on the beginner modules. Complete most of the
           Foundations track and this unlocks automatically.
         </p>
         <Link to={createPageUrl("Projects")}>
@@ -395,7 +395,7 @@ export default function ProjectDetail() {
                   </h1>
                 </div>
               </div>
-              <p className="font-display text-sm leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400, maxWidth: "55ch" }}>
+              <p className="font-display text-sm leading-relaxed" style={{ color: "#FFFFFF", fontWeight: 400, maxWidth: "55ch" }}>
                 {project.description}
               </p>
             </div>
@@ -451,7 +451,7 @@ export default function ProjectDetail() {
 
               <div
                 className="font-sans text-xs tracking-widest uppercase mb-5"
-                style={{ color: "#BBB3A4" }}
+                style={{ color: "#FFFFFF" }}
               >
                 LESSONS
               </div>
@@ -509,7 +509,7 @@ export default function ProjectDetail() {
                 <button
                   onClick={dismissNavHint}
                   className="font-sans text-xs tracking-widest uppercase px-3 py-1.5 transition-all duration-150"
-                  style={{ color: "#BBB3A4", border: "1px solid #262219", background: "#131009" }}
+                  style={{ color: "#FFFFFF", border: "1px solid #262219", background: "#131009" }}
                   title="Dismiss hint"
                 >
                   ← → to navigate lessons
@@ -707,7 +707,7 @@ export default function ProjectDetail() {
                           background: showHints ? "#E8A33C10" : "transparent",
                         }}
                       >
-                        {showHints ? "— Hints" : "+ Hints"}
+                        {showHints ? ", Hints" : "+ Hints"}
                       </button>
                     )}
                     {activeLesson.solution_code && (
@@ -719,7 +719,7 @@ export default function ProjectDetail() {
                           border: `1px solid ${showSolution ? "#34302A" : "#262219"}`,
                         }}
                       >
-                        {showSolution ? "— Solution" : "Show Solution"}
+                        {showSolution ? ", Solution" : "Show Solution"}
                       </button>
                     )}
 
@@ -781,7 +781,7 @@ export default function ProjectDetail() {
                                 <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#ECE7DC" }}>
                                   {String(i + 1).padStart(2, "0")}
                                 </span>
-                                <p className="font-display text-sm leading-relaxed" style={{ color: "#BBB3A4", fontWeight: 400 }}>
+                                <p className="font-display text-sm leading-relaxed" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                                   {hint}
                                 </p>
                               </div>
@@ -811,7 +811,7 @@ export default function ProjectDetail() {
                           </div>
                           <pre
                             className="font-mono overflow-x-auto p-5"
-                            style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#C9C1B2" }}
+                            style={{ fontSize: "0.75rem", lineHeight: "1.7", color: "#FFFFFF" }}
                           >
                             {activeLesson.solution_code}
                           </pre>

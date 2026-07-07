@@ -28,7 +28,7 @@ export default function LessonQuiz({ questions }) {
           >
             QUIZ
           </div>
-          <span className="font-sans text-xs" style={{ color: trace.muted }}>
+          <span className="font-sans text-xs" style={{ color: '#FFFFFF' }}>
             {questions.length} question{questions.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -43,7 +43,7 @@ export default function LessonQuiz({ questions }) {
             <button
               onClick={handleReset}
               className="font-sans text-xs tracking-widest uppercase px-3 py-1.5 transition-colors"
-              style={{ color: trace.muted, border: `1px solid ${trace.border}` }}
+              style={{ color: '#FFFFFF', border: `1px solid ${trace.border}` }}
               onMouseEnter={e => e.currentTarget.style.color = trace.dim}
               onMouseLeave={e => e.currentTarget.style.color = trace.muted}
             >
@@ -62,7 +62,7 @@ export default function LessonQuiz({ questions }) {
           return (
             <div key={qi} className="px-6 py-6">
               <div className="flex gap-3 mb-4">
-                <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: trace.muted }}>
+                <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: '#FFFFFF' }}>
                   {String(qi + 1).padStart(2, "0")}
                 </span>
                 <p className="font-display text-sm leading-relaxed" style={{ color: trace.text, fontWeight: 500 }}>
@@ -137,7 +137,7 @@ export default function LessonQuiz({ questions }) {
                       >
                         {isCorrect ? "Correct" : "Incorrect"}
                       </div>
-                      <p className="font-display text-xs leading-relaxed" style={{ color: trace.dim, fontWeight: 400 }}>
+                      <p className="font-display text-xs leading-relaxed" style={{ color: '#FFFFFF', fontWeight: 400 }}>
                         {q.explanation}
                       </p>
                     </div>
@@ -165,7 +165,7 @@ export default function LessonQuiz({ questions }) {
           >
             Check Answers
           </button>
-          <span className="font-sans text-xs ml-4" style={{ color: trace.muted }}>
+          <span className="font-sans text-xs ml-4" style={{ color: '#FFFFFF' }}>
             {Object.keys(answers).length}/{questions.length} answered
           </span>
         </div>

@@ -28,14 +28,14 @@ export default function OutputComparison({ actualOutput, expectedOutput }) {
       </div>
       <div className="grid grid-cols-2 divide-x" style={{ borderColor: "#262219" }}>
         <div className="px-4 py-3">
-          <div className="font-sans text-xs mb-2" style={{ color: "#5A554B" }}>YOURS</div>
+          <div className="font-sans text-xs mb-2" style={{ color: "#FFFFFF" }}>YOURS</div>
           <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: isMatch ? "#E8A33C" : "#ff9999", fontSize: "0.7rem" }}>
             {actualOutput}
           </pre>
         </div>
         <div className="px-4 py-3">
-          <div className="font-sans text-xs mb-2" style={{ color: "#5A554B" }}>EXPECTED</div>
-          <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: "#8F8779", fontSize: "0.7rem" }}>
+          <div className="font-sans text-xs mb-2" style={{ color: "#FFFFFF" }}>EXPECTED</div>
+          <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: "#FFFFFF", fontSize: "0.7rem" }}>
             {expectedOutput}
           </pre>
         </div>

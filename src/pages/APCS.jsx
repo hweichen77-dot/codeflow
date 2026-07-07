@@ -8,9 +8,9 @@ import ProgressRing from "../components/gamification/ProgressRing";
 
 const TRACKS = [
   { key: "apcsp", label: "AP CSP", title: "Computer Science Principles", lang: "Python · pseudocode",
-    blurb: "The five Big Ideas of computing — creative development, data, algorithms & programming, systems & networks, and the impact of computing. Runnable Python plus exam-style practice." },
+    blurb: "The five Big Ideas of computing, creative development, data, algorithms & programming, systems & networks, and the impact of computing. Runnable Python plus exam-style practice." },
   { key: "apcsa", label: "AP CSA", title: "Computer Science A", lang: "Java",
-    blurb: "Object-oriented Java across all ten units — from primitive types to recursion. Every concept comes with autograded Java drills and FRQ-style practice." },
+    blurb: "Object-oriented Java across all ten units, from primitive types to recursion. Every concept comes with autograded Java drills and FRQ-style practice." },
 ];
 
 const DIFF_COLOR = {
@@ -67,10 +67,10 @@ export default function APCS() {
           <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: "#FFFFFF" }}>AP COMPUTER SCIENCE</div>
           <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 20px" }}>
             Pass the AP exam.<br />
-            <span style={{ WebkitTextStroke: "1.5px #E8A33C", color: "transparent" }}>Not just cram it.</span>
+            <span style={{ WebkitTextStroke: "1.5px #E8A33C", color: "transparent" }}>And understand it.</span>
           </h1>
-          <p className="font-display text-base max-w-prose" style={{ color: "#C9C1B2", fontWeight: 400 }}>
-            CSP in Python, CSA in Java. Both follow the real AP exam, and you write actual code the whole way. Plus practice with the multiple choice and FRQs.
+          <p className="font-display text-base max-w-prose" style={{ color: "#FFFFFF", fontWeight: 400 }}>
+            CSP in Python, CSA in Java. Both follow the AP exam, and you write code the whole way, with practice on the multiple choice and FRQs.
           </p>
         </div>
       </div>
@@ -93,7 +93,7 @@ export default function APCS() {
             </button>
           ))}
         </div>
-        <p className="font-display text-sm mt-4 mb-1" style={{ color: "#C9C1B2" }}>
+        <p className="font-display text-sm mt-4 mb-1" style={{ color: "#FFFFFF" }}>
           <span className="font-sans text-xs uppercase tracking-widest" style={{ color: "#E8A33C" }}>{active.lang}</span>
           &nbsp;·&nbsp; {active.blurb}
         </p>
@@ -101,7 +101,7 @@ export default function APCS() {
 
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12 space-y-12">
         {trackProjects.length === 0 ? (
-          <div className="font-sans text-sm py-20 text-center" style={{ color: "#6E665A" }}>
+          <div className="font-sans text-sm py-20 text-center" style={{ color: "#FFFFFF" }}>
             {active.label} curriculum is coming soon.
           </div>
         ) : (
@@ -147,12 +147,12 @@ export default function APCS() {
                               </span>
                             )}
                           </div>
-                          <p className="font-display text-sm mb-3" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+                          <p className="font-display text-sm mb-3" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                             {p.description}
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {(p.tags || []).slice(0, 4).map((c) => (
-                              <span key={c} className="font-sans text-xs px-2 py-0.5" style={{ color: "#BBB3A4", border: "1px solid #34302A" }}>
+                              <span key={c} className="font-sans text-xs px-2 py-0.5" style={{ color: "#FFFFFF", border: "1px solid #34302A" }}>
                                 {c}
                               </span>
                             ))}

@@ -65,6 +65,6 @@ export async function initDeepLinkAuth() {
     } catch {  }
     await dl.onOpenUrl((urls) => { for (const u of urls) handleCallback(u) })
   } catch {
-    // Plugin absent (web build) — no-op.
+    // Plugin absent (web build), no-op.
   }
 }

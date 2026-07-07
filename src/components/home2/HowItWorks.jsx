@@ -8,14 +8,14 @@ const tracks = [
   {
     n: "01",
     title: "AI Engineering",
-    desc: "Model calls, embeddings, retrieval, and agents. You build tools you actually run.",
+    desc: "Model calls, embeddings, retrieval, and agents. You build tools you run.",
     badge: "Python",
     clay: true,
   },
   {
     n: "02",
     title: "AP CS Principles",
-    desc: "Big Ideas 1–5: how data, code, and the internet become the machine underneath.",
+    desc: "Big Ideas 1, 5: how data, code, and the internet become the machine underneath.",
     badge: "Python",
   },
   {
@@ -102,7 +102,7 @@ function TrackRow({ n, title, desc, badge, clay, last }) {
         <div style={{ fontFamily: display, fontWeight: 700, fontSize: "1.22rem", letterSpacing: "-0.01em", color: "#ECE7DC" }}>
           {title}
         </div>
-        <div style={{ fontFamily: body, color: "#756C5C", fontSize: "0.92rem", marginTop: "3px", maxWidth: "60ch" }}>
+        <div style={{ fontFamily: body, color: "#FFFFFF", fontSize: "0.92rem", marginTop: "3px", maxWidth: "60ch" }}>
           {desc}
         </div>
       </div>

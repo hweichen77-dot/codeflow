@@ -83,13 +83,13 @@ Be direct and educational. Use code examples where helpful. Total response under
                 HOW DID I CATCH THIS?
               </span>
             </div>
-            <button onClick={onClose} aria-label="Close dialog" style={{ color: "#BBB3A4" }} onMouseEnter={e => e.currentTarget.style.color = "#C9C1B2"} onMouseLeave={e => e.currentTarget.style.color = "#BBB3A4"}>
+            <button onClick={onClose} aria-label="Close dialog" style={{ color: "#FFFFFF" }} onMouseEnter={e => e.currentTarget.style.color = "#C9C1B2"} onMouseLeave={e => e.currentTarget.style.color = "#BBB3A4"}>
               <X size={16} />
             </button>
           </div>
 
           <div className="px-6 py-4" style={{ borderBottom: "1px solid #262219", background: "#131009" }}>
-            <p className="font-sans text-xs" style={{ color: "#BBB3A4" }}>Flagged issue:</p>
+            <p className="font-sans text-xs" style={{ color: "#FFFFFF" }}>Flagged issue:</p>
             <p className="font-sans text-sm mt-1" style={{ color: "#E0B341" }}>"{hint}"</p>
           </div>
 
@@ -97,10 +97,10 @@ Be direct and educational. Use code examples where helpful. Total response under
             {loading ? (
               <div className="flex items-center gap-3">
                 <Loader2 size={14} className="animate-spin" style={{ color: "#E0B341" }} />
-                <span className="font-sans text-xs" style={{ color: "#BBB3A4" }}>Analyzing your code...</span>
+                <span className="font-sans text-xs" style={{ color: "#FFFFFF" }}>Analyzing your code...</span>
               </div>
             ) : (
-              <div className="font-display text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+              <div className="font-display text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                 {explanation}
               </div>
             )}

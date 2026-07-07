@@ -46,7 +46,7 @@ export default function XPToastContainer() {
               <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
                 +{toast.xp} XP
               </div>
-              <div className="font-display text-xs" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+              <div className="font-display text-xs" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                 {toast.message}
               </div>
             </div>

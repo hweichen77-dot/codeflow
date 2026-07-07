@@ -19,7 +19,7 @@ export default function LessonShowcase() {
     <section id="learn" style={{ borderBottom: "1px solid #221F18" }}>
       <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "96px 2rem" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
-          <span style={idx}>02 — The reading surface</span>
+          <span style={idx}>02, The reading surface</span>
         </div>
 
         <div className="cf-lesson" style={{
@@ -49,13 +49,13 @@ export default function LessonShowcase() {
             }}>
               Prompts as programs
             </h3>
-            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: "0 0 24px", lineHeight: 1.62 }}>
+            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#FFFFFF", margin: "0 0 24px", lineHeight: 1.62 }}>
               A model call is just a <b style={{ color: "#ECE7DC", fontWeight: 600 }}>function</b> with a fuzzy
               contract: you hand it text, it hands back text. The craft is writing
               the input so the output is predictable. Same discipline you'd
               apply to any <Code>def</Code> you ship.
             </p>
-            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: "0 0 24px", lineHeight: 1.62 }}>
+            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#FFFFFF", margin: "0 0 24px", lineHeight: 1.62 }}>
               You don't watch this. You run it, read the output, change one line,
               run it again, and watch the behavior move.
             </p>
@@ -94,7 +94,7 @@ export default function LessonShowcase() {
               </div>
             </div>
 
-            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#A39B8C", margin: 0, lineHeight: 1.62 }}>
+            <p style={{ fontFamily: body, maxWidth: "68ch", color: "#FFFFFF", margin: 0, lineHeight: 1.62 }}>
               Next you'll <b style={{ color: "#ECE7DC", fontWeight: 600 }}>trace</b> how the same prompt drifts
               across two models, then learn to pin it down.
             </p>
@@ -109,11 +109,11 @@ export default function LessonShowcase() {
         }}>
           <Pillar n="01" title="Run, don't watch">
             Every lesson is a real task. Write the code, run it, see what breaks.
-            We guide you through it — not past it.
+            We stay with you while you work through it.
           </Pillar>
           <Pillar n="02" title="Real projects">
-            Not toy examples. A sentiment classifier, a semantic search engine, a
-            chatbot with memory. Things you'd put on a portfolio.
+            Things you'd put on a portfolio: a sentiment classifier, a semantic
+            search engine, a chatbot with memory.
           </Pillar>
           <Pillar n="03" title="A tutor that won't cheat">
             Stuck? The tutor knows your lesson and nudges your thinking. It won't
@@ -164,7 +164,7 @@ function Opt({ k, children, correct }) {
 function Pillar({ n, title, children }) {
   return (
     <div style={{ borderTop: "1px solid #221F18", paddingTop: "24px" }}>
-      <div style={{ fontFamily: body, fontSize: "0.92rem", color: "#756C5C", marginBottom: "16px" }}>{n}</div>
+      <div style={{ fontFamily: body, fontSize: "0.92rem", color: "#FFFFFF", marginBottom: "16px" }}>{n}</div>
       <h4 style={{
         fontFamily: display,
         fontWeight: 700,
@@ -175,7 +175,7 @@ function Pillar({ n, title, children }) {
       }}>
         {title}
       </h4>
-      <p style={{ fontFamily: body, color: "#A39B8C", fontSize: "0.95rem", lineHeight: 1.6, margin: 0 }}>
+      <p style={{ fontFamily: body, color: "#FFFFFF", fontSize: "0.95rem", lineHeight: 1.6, margin: 0 }}>
         {children}
       </p>
     </div>

@@ -61,7 +61,7 @@ export default class ErrorBoundary extends React.Component {
           </h1>
           <p
             className="font-display text-sm mb-7"
-            style={{ color: '#C9C1B2' }}
+            style={{ color: '#FFFFFF' }}
           >
             Your progress is saved. Try again, or head back to the start.
           </p>
@@ -76,7 +76,7 @@ export default class ErrorBoundary extends React.Component {
             <button
               onClick={this.handleReload}
               className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
-              style={{ color: '#C9C1B2', border: '1px solid #34302A', fontFamily: LABEL }}
+              style={{ color: '#FFFFFF', border: '1px solid #34302A', fontFamily: LABEL }}
             >
               Go home
             </button>
@@ -84,7 +84,7 @@ export default class ErrorBoundary extends React.Component {
           {import.meta.env.DEV && this.state.error && (
             <pre
               className="mt-6 text-left overflow-auto"
-              style={{ color: '#8F8779', fontSize: '11px', fontFamily: MONO, maxHeight: '160px' }}
+              style={{ color: '#FFFFFF', fontSize: '11px', fontFamily: MONO, maxHeight: '160px' }}
             >
               {String(this.state.error?.stack || this.state.error)}
             </pre>

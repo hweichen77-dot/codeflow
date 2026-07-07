@@ -47,7 +47,7 @@ export default function LessonPointsSummary({
             <div style={{ ...traceStyles.monoLabel, color: trace.lime, fontSize: "0.8125rem", textTransform: "none", letterSpacing: "0.04em" }}>
               {allDone ? "> RUN COMPLETE" : "> RUN IN PROGRESS"}
             </div>
-            <div style={{ fontSize: "0.75rem", color: trace.dim, marginTop: "6px", fontFamily: trace.mono }}>
+            <div style={{ fontSize: "0.75rem", color: '#FFFFFF', marginTop: "6px", fontFamily: trace.mono }}>
               {lessonTitle}
             </div>
             {allDone && (
@@ -56,16 +56,16 @@ export default function LessonPointsSummary({
                 animate={{ opacity: 1, y: 0 }}
                 style={{ color: trace.lime, marginTop: "8px", fontFamily: trace.mono, fontSize: "0.7rem", letterSpacing: "0.12em" }}
               >
-                ✓ LESSON COMPLETE — ALL TASKS PASSED
+                ✓ LESSON COMPLETE, ALL TASKS PASSED
               </motion.div>
             )}
           </div>
           <div style={{ textAlign: "right", fontFamily: trace.mono }}>
-            <div style={{ fontSize: "0.7rem", color: trace.faint, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <div style={{ fontSize: "0.7rem", color: '#FFFFFF', textTransform: "uppercase", letterSpacing: "0.1em" }}>
               XP
             </div>
             <div style={{ fontSize: "1.35rem", fontWeight: 700, color: allDone ? trace.lime : trace.text, letterSpacing: "-0.02em" }}>
-              {earnedPoints} <span style={{ fontSize: "0.85rem", color: trace.faint, fontWeight: 400 }}>/ {totalPoints}</span>
+              {earnedPoints} <span style={{ fontSize: "0.85rem", color: '#FFFFFF', fontWeight: 400 }}>/ {totalPoints}</span>
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@ export default function LessonPointsSummary({
                     +{item.pts} XP
                   </motion.span>
                 ) : (
-                  <span key="todo" style={{ color: trace.muted }}>
+                  <span key="todo" style={{ color: '#FFFFFF' }}>
                     {item.pts} XP
                   </span>
                 )}

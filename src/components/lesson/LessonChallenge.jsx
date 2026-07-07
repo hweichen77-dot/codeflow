@@ -62,14 +62,14 @@ export default function LessonChallenge({ lesson }) {
         <span className="font-display text-sm font-semibold" style={{ color: trace.text }}>
           {lesson.challenge_title}
         </span>
-        <span className="font-sans ml-auto" style={{ fontSize: "0.625rem", letterSpacing: "0.08em", textTransform: "uppercase", color: trace.faint }}>
+        <span className="font-sans ml-auto" style={{ fontSize: "0.625rem", letterSpacing: "0.08em", textTransform: "uppercase", color: '#FFFFFF' }}>
           {lang}
         </span>
       </div>
 
       <div className="px-6 py-5">
         <style>{`
-          .lc-md { color: ${trace.dim}; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 0.875rem; line-height: 1.7; }
+          .lc-md { color:#FFFFFF; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 0.875rem; line-height: 1.7; }
           .lc-md p { margin: 0 0 0.6rem; }
           .lc-md ul, .lc-md ol { margin: 0.3rem 0 0.7rem 1.2rem; }
           .lc-md li { margin-bottom: 0.2rem; }
@@ -103,7 +103,7 @@ export default function LessonChallenge({ lesson }) {
           </div>
         ) : (
           lesson.challenge_description && (
-            <p className="font-display text-sm leading-relaxed mb-5" style={{ color: trace.dim, fontWeight: 400 }}>
+            <p className="font-display text-sm leading-relaxed mb-5" style={{ color: '#FFFFFF', fontWeight: 400 }}>
               {lesson.challenge_description}
             </p>
           )
@@ -128,7 +128,7 @@ export default function LessonChallenge({ lesson }) {
                 <div className="font-sans text-xs uppercase tracking-widest mb-1" style={{ color: trace.lime }}>Constraints</div>
                 <ul className="space-y-0.5">
                   {lesson.challenge_constraints.map((c, i) => (
-                    <li key={i} className="font-mono text-xs flex gap-2" style={{ color: trace.dim }}>
+                    <li key={i} className="font-mono text-xs flex gap-2" style={{ color: '#FFFFFF' }}>
                       <span style={{ color: trace.lime }}>•</span><span>{c}</span>
                     </li>
                   ))}
@@ -142,7 +142,7 @@ export default function LessonChallenge({ lesson }) {
           <div className="mb-5" style={{ ...traceStyles.terminal, overflow: "hidden" }}>
             <div
               className="px-4 py-2 font-sans text-xs tracking-widest uppercase"
-              style={{ borderBottom: `1px solid ${trace.border}`, color: trace.faint, background: trace.surface }}
+              style={{ borderBottom: `1px solid ${trace.border}`, color: '#FFFFFF', background: trace.surface }}
             >
               test cases
             </div>
@@ -152,10 +152,10 @@ export default function LessonChallenge({ lesson }) {
                 className="flex flex-wrap gap-6 px-4 py-3 font-mono text-xs"
                 style={{ background: trace.terminal, borderBottom: i < lesson.challenge_test_cases.length - 1 ? `1px solid ${trace.border}` : "none" }}
               >
-                <span style={{ color: trace.faint }}>#{i + 1}</span>
-                <span><span style={{ color: trace.faint }}>in </span><span style={{ color: trace.text }}>{tc.input}</span></span>
-                <span style={{ color: trace.faint }}>→</span>
-                <span><span style={{ color: trace.faint }}>out </span><span style={{ color: trace.ok }}>{tc.expected_output}</span></span>
+                <span style={{ color: '#FFFFFF' }}>#{i + 1}</span>
+                <span><span style={{ color: '#FFFFFF' }}>in </span><span style={{ color: trace.text }}>{tc.input}</span></span>
+                <span style={{ color: '#FFFFFF' }}>→</span>
+                <span><span style={{ color: '#FFFFFF' }}>out </span><span style={{ color: trace.ok }}>{tc.expected_output}</span></span>
               </div>
             ))}
           </div>
@@ -184,7 +184,7 @@ export default function LessonChallenge({ lesson }) {
               <CheckCircle2 size={18} color={trace.lime} strokeWidth={2.5} style={{ flexShrink: 0 }} />
               <div>
                 <div className="font-display font-bold text-sm" style={{ color: trace.text }}>Challenge complete.</div>
-                <div className="font-display text-xs" style={{ color: trace.dim }}>All tests passed.</div>
+                <div className="font-display text-xs" style={{ color: '#FFFFFF' }}>All tests passed.</div>
               </div>
             </motion.div>
           )}
@@ -214,7 +214,7 @@ export default function LessonChallenge({ lesson }) {
                 >
                   <div style={{ ...traceStyles.terminal, overflow: "hidden" }}>
                     <div className="px-4 py-2.5" style={{ borderBottom: `1px solid ${trace.border}`, background: trace.surface }}>
-                      <span className="font-sans text-xs tracking-widest uppercase" style={{ color: trace.faint }}>solution.{ext}</span>
+                      <span className="font-sans text-xs tracking-widest uppercase" style={{ color: '#FFFFFF' }}>solution.{ext}</span>
                     </div>
                     <pre
                       className="font-mono overflow-x-auto p-5"

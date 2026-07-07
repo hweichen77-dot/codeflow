@@ -15,12 +15,12 @@ export default function ConceptVideo({ youtubeId, title, caption }) {
         className="flex items-center justify-between px-4 py-2.5"
         style={{ borderBottom: `1px solid ${trace.border}` }}
       >
-        <span className="font-sans text-xs tracking-widest uppercase flex items-center gap-1.5" style={{ color: trace.dim }}>
-          <Play size={11} fill={trace.dim} style={{ color: trace.dim }} />
+        <span className="font-sans text-xs tracking-widest uppercase flex items-center gap-1.5" style={{ color: '#FFFFFF' }}>
+          <Play size={11} fill={trace.dim} style={{ color: '#FFFFFF' }} />
           Video Explanation
         </span>
         {title && (
-          <span className="font-display text-xs" style={{ color: trace.dim }}>{title}</span>
+          <span className="font-display text-xs" style={{ color: '#FFFFFF' }}>{title}</span>
         )}
       </div>
 
@@ -61,13 +61,13 @@ export default function ConceptVideo({ youtubeId, title, caption }) {
           className="flex items-center justify-between px-4 py-2"
           style={{ borderTop: `1px solid ${trace.border}` }}
         >
-          <span className="font-display text-xs" style={{ color: trace.dim }}>{caption}</span>
+          <span className="font-display text-xs" style={{ color: '#FFFFFF' }}>{caption}</span>
           <a
             href={`https://youtube.com/watch?v=${youtubeId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 font-sans text-xs transition-colors"
-            style={{ color: trace.dim }}
+            style={{ color: '#FFFFFF' }}
             onMouseEnter={e => e.currentTarget.style.color = trace.lime}
             onMouseLeave={e => e.currentTarget.style.color = trace.dim}
           >

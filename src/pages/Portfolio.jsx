@@ -34,7 +34,7 @@ export default function Portfolio() {
           >
             {user.name?.split(" ")[0] || user.email?.split("@")[0] || "Your"}'s builds.
           </h1>
-          <p className="font-display text-sm" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+          <p className="font-display text-sm" style={{ color: "#FFFFFF", fontWeight: 400 }}>
             {submissions.length > 0
               ? `${submissions.length} capstone project${submissions.length > 1 ? "s" : ""} completed.`
               : "Complete capstone projects to build your portfolio."}
@@ -54,7 +54,7 @@ export default function Portfolio() {
             <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#FFFFFF" }}>
               NO SUBMISSIONS YET
             </div>
-            <p className="font-display text-base mb-8" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+            <p className="font-display text-base mb-8" style={{ color: "#FFFFFF", fontWeight: 400 }}>
               Complete the AI/ML track to submit your first capstone project.
             </p>
             <Link to={createPageUrl("AITrack")}>
@@ -95,7 +95,7 @@ export default function Portfolio() {
                         {sub.project_title}
                       </h3>
                       {sub.description && (
-                        <p className="font-display text-sm line-clamp-2" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+                        <p className="font-display text-sm line-clamp-2" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                           {sub.description}
                         </p>
                       )}
@@ -125,13 +125,13 @@ export default function Portfolio() {
                       style={{ background: "#080808", borderLeft: "2px solid #E8A33C33" }}
                     >
                       <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>AI Review: </span>
-                      <span className="font-display text-xs leading-relaxed" style={{ color: "#C9C1B2", fontWeight: 400 }}>
+                      <span className="font-display text-xs leading-relaxed" style={{ color: "#FFFFFF", fontWeight: 400 }}>
                         {sub.ai_feedback}
                       </span>
                     </div>
                   )}
 
-                  <div className="mt-3 font-sans text-xs" style={{ color: "#BBB3A4" }}>
+                  <div className="mt-3 font-sans text-xs" style={{ color: "#FFFFFF" }}>
                     {sub.submitted_date ? new Date(sub.submitted_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""}
                   </div>
                 </div>

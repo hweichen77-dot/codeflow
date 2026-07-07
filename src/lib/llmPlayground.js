@@ -19,7 +19,7 @@ export async function runPlayground({ systemPrompt, inputs, maxTokens = 200 }) {
       // yet" state rather than a raw fetch error.
       const msg = error.message || 'Request failed.'
       if (/failed to send|edge function|not found|404/i.test(msg)) {
-        return { ok: false, configured: false, error: 'Live grading is being switched on — check back soon.' }
+        return { ok: false, configured: false, error: 'Live grading is being switched on, check back soon.' }
       }
       return { ok: false, error: msg }
     }

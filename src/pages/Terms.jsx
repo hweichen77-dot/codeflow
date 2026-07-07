@@ -12,7 +12,7 @@ function Section({ title, children }) {
       <h2 style={{ fontFamily: SERIF, fontSize: '1.35rem', fontWeight: 700, color: '#F2EDE2', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
         {title}
       </h2>
-      <div className="font-display text-sm space-y-3" style={{ color: '#BBB3A4', lineHeight: 1.7 }}>
+      <div className="font-display text-sm space-y-3" style={{ color: '#FFFFFF', lineHeight: 1.7 }}>
         {children}
       </div>
     </section>
@@ -29,7 +29,7 @@ export default function Terms() {
         <h1 style={{ fontFamily: SERIF, fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F2EDE2', margin: '0 0 8px', lineHeight: 1.08 }}>
           Terms of Service
         </h1>
-        <p className="font-sans text-xs mb-12" style={{ color: '#8F8779', fontFamily: LABEL }}>
+        <p className="font-sans text-xs mb-12" style={{ color: '#FFFFFF', fontFamily: LABEL }}>
           Last updated: June 2026
         </p>
 
@@ -44,7 +44,7 @@ export default function Terms() {
         <Section title="Your account">
           <p>
             You&apos;re responsible for activity under your account. Keep your credentials secure. Guest
-            mode requires no account — progress lives only on your device.
+            mode requires no account, progress lives only on your device.
           </p>
         </Section>
 

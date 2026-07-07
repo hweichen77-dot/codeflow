@@ -2,9 +2,9 @@ const EXEC_TIMEOUT_MS = 5000;
 const LOAD_TIMEOUT_MS = 45000;
 
 // Pyodide is bundled and served same-origin (public/pyodide/) rather than pulled
-// from a CDN. This removes the third-party supply-chain surface — important for
+// from a CDN. This removes the third-party supply-chain surface, important for
 // the Tauri desktop build, where remote executable code in a native app is a real
-// risk — and lets the runtime work offline. `base` is the absolute same-origin URL
+// risk, and lets the runtime work offline. `base` is the absolute same-origin URL
 // computed on the main thread (window.location.origin + Vite BASE_URL), injected
 // here because a blob worker cannot reliably resolve relative/same-origin paths.
 const workerSrc = (base) => `
@@ -37,7 +37,7 @@ self.onmessage = async (e) => {
     return;
   }
 
-  // Runtime is loaded — tell the main thread to stop the cold-load timer and
+  // Runtime is loaded, tell the main thread to stop the cold-load timer and
   // start the strict execution timer for the actual run below.
   self.postMessage({ id, ready: true });
 

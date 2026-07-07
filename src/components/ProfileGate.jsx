@@ -24,7 +24,7 @@ export default function ProfileGate() {
       >
         <div
           className="font-sans text-xs tracking-widest uppercase mb-3"
-          style={{ color: '#BBB3A4' }}
+          style={{ color: '#FFFFFF' }}
         >
           WELCOME
         </div>
@@ -43,7 +43,7 @@ export default function ProfileGate() {
         </h1>
         <p
           className="font-display text-sm mb-8"
-          style={{ color: '#C9C1B2', fontWeight: 400 }}
+          style={{ color: '#FFFFFF', fontWeight: 400 }}
         >
           Learn to build with AI. Your progress is saved locally on this device.
         </p>
@@ -51,7 +51,7 @@ export default function ProfileGate() {
         <form onSubmit={handleStart}>
           <label
             className="font-sans text-xs tracking-widest uppercase block mb-2"
-            style={{ color: '#BBB3A4', fontFamily: font.body }}
+            style={{ color: '#FFFFFF', fontFamily: font.body }}
           >
             Your name
           </label>
