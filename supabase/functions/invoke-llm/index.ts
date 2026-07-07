@@ -104,13 +104,15 @@ Deno.serve(async (req: Request) => {
 
     if (!resp.ok) {
       const detail = await resp.text();
-      return json({ error: `anthropic ${resp.status}`, detail }, 502);
+      console.error(`anthropic ${resp.status}: ${detail.slice(0, 500)}`);
+      return json({ error: "upstream model error" }, 502);
     }
 
     const data = await resp.json();
     const text = data?.content?.[0]?.text ?? "";
     return json({ text });
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error("invoke-llm error:", e);
+    return json({ error: "internal error" }, 500);
   }
 });

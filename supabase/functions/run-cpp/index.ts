@@ -112,7 +112,8 @@ Deno.serve(async (req: Request) => {
 
     if (!resp.ok) {
       const detail = await resp.text();
-      return json({ error: `godbolt ${resp.status}`, detail }, 502);
+      console.error(`godbolt ${resp.status}: ${detail.slice(0, 500)}`);
+      return json({ error: "upstream compiler error" }, 502);
     }
 
     const data = await resp.json();
@@ -129,6 +130,7 @@ Deno.serve(async (req: Request) => {
       timed_out: Boolean(exec.timedOut || data?.timedOut),
     });
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error("run-cpp error:", e);
+    return json({ error: "internal error" }, 500);
   }
 });
