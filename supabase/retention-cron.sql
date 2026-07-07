@@ -25,6 +25,11 @@ create table if not exists public.retention_email_log (
   kind    text not null default 'streak_risk',
   primary key (user_id, sent_on, kind)
 );
+-- RLS on with NO policies: locks out the public anon/authenticated roles entirely
+-- (else PostgREST would expose this table for read/write via the shipped anon key,
+-- leaking user ids + letting anyone suppress or duplicate retention emails).
+-- run_retention_sweep is SECURITY DEFINER so it bypasses RLS and keeps working.
+alter table public.retention_email_log enable row level security;
 
 create or replace function public.run_retention_sweep()
 returns integer
