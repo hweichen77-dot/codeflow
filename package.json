@@ -18,6 +18,9 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.2.10",
+    "@fontsource-variable/hanken-grotesk": "^5.2.8",
+    "@fontsource-variable/spline-sans-mono": "^5.2.8",
     "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "^4.1.2",
     "@radix-ui/react-accordion": "^1.2.3",

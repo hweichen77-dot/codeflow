@@ -80,7 +80,7 @@ function ReadingBox({ children }) {
   return (
     <div className="lesson-doc px-7 py-6" style={{ background: "#ffffff", color: "#262219" }}>
       <style>{`
-        .lesson-doc h2 { font-family:'Bricolage Grotesque', system-ui, sans-serif; font-weight:800; font-size:1.35rem; letter-spacing:-0.02em; margin:1.6rem 0 0.7rem; color:#15130E; }
+        .lesson-doc h2 { font-family:'Bricolage Grotesque Variable', system-ui, sans-serif; font-weight:800; font-size:1.35rem; letter-spacing:-0.02em; margin:1.6rem 0 0.7rem; color:#15130E; }
         .lesson-doc p { font-size:0.95rem; line-height:1.7; margin:0 0 0.9rem; color:#34302A; }
         .lesson-doc ul,.lesson-doc ol { margin:0 0 0.9rem 1.2rem; }
         .lesson-doc li { font-size:0.95rem; line-height:1.6; margin-bottom:0.35rem; color:#34302A; }

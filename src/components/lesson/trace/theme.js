@@ -24,9 +24,9 @@ export const trace = Object.freeze({
   warn: '#E0B341',
   info: '#C2643C',
 
-  mono: "'Spline Sans Mono', ui-monospace, monospace",
-  serif: "'Bricolage Grotesque', system-ui, sans-serif",
-  sans: "'Hanken Grotesk', system-ui, sans-serif",
+  mono: "'Spline Sans Mono Variable', ui-monospace, monospace",
+  serif: "'Bricolage Grotesque Variable', system-ui, sans-serif",
+  sans: "'Hanken Grotesk Variable', system-ui, sans-serif",
 })
 
 export const traceStyles = Object.freeze({

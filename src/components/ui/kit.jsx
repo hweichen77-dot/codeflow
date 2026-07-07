@@ -18,7 +18,7 @@ export const KIT = {
   amberBright: "#F5B942",
   gold: "#F2C94C",
   goldGrad: "linear-gradient(135deg, #F2C94C 0%, #E8A33C 55%, #B4741E 100%)",
-  mono: "'Spline Sans Mono', ui-monospace, monospace",
+  mono: "'Spline Sans Mono Variable', ui-monospace, monospace",
   ember: "#FF7A3D",
   emerald: "#4CC98A",
   white: "#FFFFFF",

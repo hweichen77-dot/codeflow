@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -60,7 +59,7 @@
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
-    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    font-family: 'Hanken Grotesk Variable', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-stretch: normal;
@@ -97,22 +96,22 @@
 }
 
 .font-mono {
-  font-family: 'Spline Sans Mono', ui-monospace, monospace !important;
+  font-family: 'Spline Sans Mono Variable', ui-monospace, monospace !important;
 }
 
 .font-display {
-  font-family: 'Bricolage Grotesque', system-ui, sans-serif !important;
+  font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif !important;
 }
 
 .reader-surface {
-  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-family: 'Hanken Grotesk Variable', system-ui, sans-serif;
 }
 .reader-surface .font-display {
-  font-family: 'Bricolage Grotesque', system-ui, sans-serif !important;
+  font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif !important;
   letter-spacing: -0.015em;
 }
 .reader-surface .font-mono {
-  font-family: 'Spline Sans Mono', ui-monospace, monospace !important;
+  font-family: 'Spline Sans Mono Variable', ui-monospace, monospace !important;
 }
 
 .glow-lime { text-shadow: none; }

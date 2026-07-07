@@ -3,9 +3,9 @@
 // keeps its own theme.js (it has block-specific extras).
 
 export const font = {
-  display: "'Bricolage Grotesque', system-ui, sans-serif",
-  body: "'Hanken Grotesk', system-ui, sans-serif",
-  mono: "'Spline Sans Mono', ui-monospace, monospace",
+  display: "'Bricolage Grotesque Variable', system-ui, sans-serif",
+  body: "'Hanken Grotesk Variable', system-ui, sans-serif",
+  mono: "'Spline Sans Mono Variable', ui-monospace, monospace",
 };
 
 export const color = {

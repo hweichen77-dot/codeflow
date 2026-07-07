@@ -74,10 +74,10 @@ export default function LessonExplanation({ explanation, concept }) {
         .lesson-doc {
           color: #ECE7DC;
           line-height: 1.75;
-          font-family: 'Hanken Grotesk', system-ui, sans-serif;
+          font-family: 'Hanken Grotesk Variable', system-ui, sans-serif;
         }
         .lesson-doc h1 {
-          font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+          font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif;
           font-size: 1.6rem;
           font-weight: 700;
           color: #ECE7DC;
@@ -87,7 +87,7 @@ export default function LessonExplanation({ explanation, concept }) {
           line-height: 1.3;
         }
         .lesson-doc h2 {
-          font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+          font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif;
           font-size: 1.15rem;
           font-weight: 600;
           color: #ECE7DC;
@@ -98,7 +98,7 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc h2:first-child { margin-top: 0; }
         .lesson-doc h3 {
-          font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+          font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif;
           font-size: 1rem;
           font-weight: 600;
           color: #ECE7DC;
@@ -148,7 +148,7 @@ export default function LessonExplanation({ explanation, concept }) {
           font-style: italic;
         }
         .lesson-doc code {
-          font-family: 'Spline Sans Mono', ui-monospace, monospace;
+          font-family: 'Spline Sans Mono Variable', ui-monospace, monospace;
           font-size: 0.82em;
           background: #221F18;
           color: #E8A33C;

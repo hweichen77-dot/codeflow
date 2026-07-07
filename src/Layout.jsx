@@ -68,7 +68,7 @@ export default function Layout({ children, currentPageName }) {
           <Link to="/" className="flex items-center gap-3 group">
             <div
               className="font-sans font-bold text-sm tracking-widest uppercase transition-all duration-200"
-              style={{ color: "#E8A33C" }}
+              style={{ color: "#E8A33C", lineHeight: 1 }}
             >
               CF
             </div>
@@ -77,8 +77,8 @@ export default function Layout({ children, currentPageName }) {
               style={{ background: "#34302A" }}
             />
             <span
-              className="text-xs tracking-widest uppercase transition-colors duration-200"
-              style={{ color: "#FFFFFF", fontFamily: "'Spline Sans Mono', ui-monospace, monospace" }}
+              className="text-sm tracking-widest uppercase transition-colors duration-200"
+              style={{ color: "#FFFFFF", fontFamily: "'Spline Sans Mono Variable', ui-monospace, monospace", lineHeight: 1 }}
             >
               codeflow<span className="cf-cursor">_</span>
             </span>
