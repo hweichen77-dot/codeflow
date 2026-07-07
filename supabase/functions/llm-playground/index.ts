@@ -18,14 +18,23 @@ const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://hweichen77-dot
 
 const MAX_SYSTEM_CHARS = 4000;
 const MAX_INPUT_CHARS = 600;
-const MAX_INPUTS = 5;
-const MAX_TOKENS_CAP = 320;
+const MAX_INPUTS = 3;
+const MAX_TOKENS_CAP = 256;
 
 // Per-IP rate limit. Each request may fan out to MAX_INPUTS model calls, so keep
 // the request budget modest.
-const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_MAX = 6;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const hits = new Map<string, { count: number; resetAt: number }>();
+
+// Per-isolate global circuit breaker. The per-IP limiter is bypassable (client can
+// spoof X-Forwarded-For), and the anon endpoint has no auth, so this bounds the
+// worst-case fan-out any single isolate can drive at the free Groq backend even if
+// every request forges a unique IP. It is per-isolate (not globally shared), so it
+// is a ceiling, not a precise quota — durable/shared limiting would need Postgres.
+const GLOBAL_MAX_PER_WINDOW = 120;
+let globalCount = 0;
+let globalResetAt = 0;
 
 function rateLimited(key: string): boolean {
   const now = Date.now();
@@ -36,6 +45,17 @@ function rateLimited(key: string): boolean {
   }
   entry.count += 1;
   return entry.count > RATE_LIMIT_MAX;
+}
+
+function globalLimited(): boolean {
+  const now = Date.now();
+  if (now >= globalResetAt) {
+    globalCount = 1;
+    globalResetAt = now + RATE_LIMIT_WINDOW_MS;
+    return false;
+  }
+  globalCount += 1;
+  return globalCount > GLOBAL_MAX_PER_WINDOW;
 }
 
 function corsHeaders(origin: string | null) {
@@ -66,6 +86,7 @@ Deno.serve(async (req: Request) => {
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   if (rateLimited(`ip:${ip}`)) return json({ error: "rate limit exceeded — wait a minute and try again" }, 429);
+  if (globalLimited()) return json({ error: "the playground is busy right now — try again shortly" }, 429);
 
   let payload: { systemPrompt?: string; inputs?: unknown; maxTokens?: number };
   try {
@@ -113,7 +134,8 @@ Deno.serve(async (req: Request) => {
         });
         if (!resp.ok) {
           const detail = await resp.text();
-          return { input, output: "", error: `model error ${resp.status}`, detail: detail.slice(0, 300) };
+          console.error(`groq ${resp.status}: ${detail.slice(0, 500)}`);
+          return { input, output: "", error: "model error" };
         }
         const data = await resp.json();
         // OpenAI-compatible response. An empty result usually means a refusal —
@@ -124,6 +146,7 @@ Deno.serve(async (req: Request) => {
     );
     return json({ configured: true, model: MODEL, results });
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error("llm-playground error:", e);
+    return json({ error: "internal error" }, 500);
   }
 });
