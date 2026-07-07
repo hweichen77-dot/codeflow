@@ -1,7 +1,7 @@
 {
   "name": "codeflow",
   "private": true,
-  "version": "0.19.0",
+  "version": "0.19.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -104,6 +104,7 @@
     "globals": "^15.14.0",
     "postcss": "^8.5.3",
     "puppeteer": "^25.2.1",
+    "pyodide": "^0.26.4",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.2",
     "vite": "^6.1.0"

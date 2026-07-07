@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CodeFlow",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "identifier": "com.codeflow.app",
   "build": {
     "frontendDist": "../dist",
@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' https://*.supabase.co https://godbolt.org https://cdn.jsdelivr.net https://us.i.posthog.com https://*.posthog.com https://*.sentry.io https://*.ingest.sentry.io; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
+      "csp": "default-src 'self'; connect-src 'self' https://*.supabase.co https://godbolt.org https://us.i.posthog.com https://*.posthog.com https://*.sentry.io https://*.ingest.sentry.io; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
     }
   },
   "bundle": {
