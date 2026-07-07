@@ -1,5 +1,5 @@
-import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, useReducedMotion, animate } from "framer-motion";
 
 // Shared animation primitives so every page gets the same tactile feel as the
 // dashboard. All primitives honor prefers-reduced-motion (animations collapse to
@@ -119,4 +119,16 @@ export function Pulse({ children, color = "#FF7A3D", className, style }) {
       {children}
     </motion.span>
   );
+}
+
+// Counts a number up from 0 to `to` on mount (gamified stat reveal).
+export function CountUp({ to = 0, duration = 0.9, className, style }) {
+  const rm = useReducedMotion();
+  const [val, setVal] = useState(rm ? to : 0);
+  useEffect(() => {
+    if (rm) { setVal(to); return; }
+    const controls = animate(0, to, { duration, ease: "easeOut", onUpdate: (v) => setVal(v) });
+    return () => controls.stop();
+  }, [to, rm, duration]);
+  return <span className={className} style={style}>{Math.round(val)}</span>;
 }
