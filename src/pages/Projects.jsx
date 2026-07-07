@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/content/categories";
 import { foundationsAreFinished, isModuleGated } from "@/lib/foundationsGate";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 const DIFFICULTY_LABEL = {
   beginner: "00",
@@ -184,7 +185,7 @@ export default function Projects() {
                   </span>
                 </div>
 
-                <div>
+                <Stagger as="div">
                   {section.items.map((project) => {
                     const status = getStatus(project);
                     const pct = getProgress(project);
@@ -313,35 +314,37 @@ export default function Projects() {
                         </div>
                     );
 
-                    return gated ? (
-                      <div
-                        key={project.id}
-                        role="button"
-                        tabIndex={0}
-                        aria-disabled="true"
-                        title="Finish the Foundations modules to unlock this"
-                        className="group block cursor-not-allowed"
-                        onClick={() => setNudge(project.title)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setNudge(project.title);
-                          }
-                        }}
-                      >
-                        {rowInner}
-                      </div>
-                    ) : (
-                      <Link
-                        key={project.id}
-                        to={createPageUrl(`ProjectDetail?id=${project.id}`)}
-                        className="group block"
-                      >
-                        {rowInner}
-                      </Link>
+                    return (
+                      <StaggerItem key={project.id} as="div">
+                        {gated ? (
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled="true"
+                            title="Finish the Foundations modules to unlock this"
+                            className="group block cursor-not-allowed"
+                            onClick={() => setNudge(project.title)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setNudge(project.title);
+                              }
+                            }}
+                          >
+                            {rowInner}
+                          </div>
+                        ) : (
+                          <Link
+                            to={createPageUrl(`ProjectDetail?id=${project.id}`)}
+                            className="group block"
+                          >
+                            {rowInner}
+                          </Link>
+                        )}
+                      </StaggerItem>
                     );
                   })}
-                </div>
+                </Stagger>
               </div>
             ))}
 

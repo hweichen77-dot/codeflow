@@ -27,6 +27,7 @@ import OutputComparison from "../components/lesson/OutputComparison";
 import LessonCompletionCelebration from "../components/lesson/LessonCompletionCelebration";
 import { foundationsAreFinished, isModuleGated } from "@/lib/foundationsGate";
 import { track } from "@/lib/analytics";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 const DIFFICULTY_NUM = { beginner: "00", intermediate: "01", advanced: "02" };
 
@@ -456,13 +457,13 @@ export default function ProjectDetail() {
                 LESSONS
               </div>
 
-              <div className="space-y-0">
+              <Stagger as="div" className="space-y-0">
                 {lessons.map((lesson, i) => {
                   const completed = isCompleted(lesson.id);
                   const active = lesson.id === activeLessonId;
                   return (
+                    <StaggerItem key={lesson.id} as="div">
                     <button
-                      key={lesson.id}
                       onClick={() => setActiveLessonId(lesson.id)}
                       className="w-full text-left py-3 transition-all duration-150 group relative"
                       style={{ borderBottom: "1px solid #1C1A14" }}
@@ -496,9 +497,10 @@ export default function ProjectDetail() {
                         </div>
                       </div>
                     </button>
+                    </StaggerItem>
                   );
                 })}
-              </div>
+              </Stagger>
             </div>
           </div>
           )}

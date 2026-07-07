@@ -4,7 +4,7 @@ import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { motion } from "framer-motion";
+import { Stagger, StaggerItem } from "@/lib/motion";
 import { CATEGORY_LABELS } from "@/content/categories";
 
 const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };
@@ -159,14 +159,9 @@ export default function Challenges() {
             <p className="font-display text-base" style={{ color: "#FFFFFF" }}>No challenges match your filter.</p>
           </div>
         ) : (
-          <div>
-            {filtered.map((challenge, i) => (
-              <motion.div
-                key={challenge.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i, 12) * 0.025, ease: [0.16, 1, 0.3, 1] }}
-              >
+          <Stagger as="div">
+            {filtered.map((challenge) => (
+              <StaggerItem key={challenge.id} as="div">
                 <Link to={createPageUrl(`ChallengeDetail?id=${challenge.id}`)}>
                   <div
                     className="challenge-row challenge-row-link grid items-center gap-4 sm:gap-8 px-4 sm:px-6 py-5 transition-all duration-200 group"
@@ -220,9 +215,9 @@ export default function Challenges() {
                     </div>
                   </div>
                 </Link>
-              </motion.div>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         )}
       </div>
     </div>

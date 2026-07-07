@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { font } from "@/lib/tokens";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { motion } from "framer-motion";
+import { Stagger, StaggerItem } from "@/lib/motion";
 import { COMPETITIVE, COMPETITIVE_TOPICS, COMPETITIVE_DIFFICULTIES } from "@/content";
 
 const DIFF_NUM = { easy: "01", medium: "02", hard: "03" };
@@ -117,9 +117,9 @@ export default function Competitive() {
             <p className="font-display text-base" style={{ color: "#FFFFFF" }}>No problems match your filter.</p>
           </div>
         ) : (
-          <div>
+          <Stagger as="div">
             {filtered.map((p, i) => (
-              <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.025, ease: [0.16, 1, 0.3, 1] }}>
+              <StaggerItem key={p.id} as="div">
                 <Link to={createPageUrl(`CompetitiveDetail?id=${p.id}`)}>
                   <div
                     className="grid items-center gap-8 px-6 py-5 transition-all duration-200 group"
@@ -148,9 +148,9 @@ export default function Competitive() {
                     </div>
                   </div>
                 </Link>
-              </motion.div>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         )}
       </div>
     </div>

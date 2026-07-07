@@ -7,6 +7,7 @@ import CodeEditor from "../components/editor/CodeEditor";
 import ProblemStatement from "../components/challenge/ProblemStatement";
 import { getCompetitive } from "@/content";
 import { gradeCpp } from "../lib/cppRunner";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 const DIFF_NUM = { easy: "01", medium: "02", hard: "03" };
 
@@ -92,17 +93,21 @@ export default function CompetitiveDetail() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8">
-        <ProblemStatement problem={problem} />
+      <Stagger className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8" as="div">
+        <StaggerItem as="div">
+          <ProblemStatement problem={problem} />
+        </StaggerItem>
 
-        <CodeEditor
-          code={code}
-          onChange={setCode}
-          onRun={handleRun}
-          output={output}
-          isRunning={isRunning}
-          filename="solution.cpp"
-        />
+        <StaggerItem as="div">
+          <CodeEditor
+            code={code}
+            onChange={setCode}
+            onRun={handleRun}
+            output={output}
+            isRunning={isRunning}
+            filename="solution.cpp"
+          />
+        </StaggerItem>
 
         <AnimatePresence>
           {passed && (
@@ -116,7 +121,7 @@ export default function CompetitiveDetail() {
           )}
         </AnimatePresence>
 
-        <div className="flex flex-wrap gap-3">
+        <StaggerItem className="flex flex-wrap gap-3" as="div">
           {problem.editorial && (
             <button onClick={() => setShowEditorial(!showEditorial)} className="font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-all duration-150" style={{ color: showEditorial ? "#E8A33C" : "#FFFFFF", border: `1px solid ${showEditorial ? "#E8A33C33" : "#262219"}`, background: showEditorial ? "#E8A33C10" : "transparent" }}>
               {showEditorial ? ", Editorial" : "+ Editorial"}
@@ -127,7 +132,7 @@ export default function CompetitiveDetail() {
               {showSolution ? ", Solution" : "Show Solution"}
             </button>
           )}
-        </div>
+        </StaggerItem>
 
         <AnimatePresence>
           {showEditorial && problem.editorial && (
@@ -159,7 +164,7 @@ export default function CompetitiveDetail() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </Stagger>
     </div>
   );
 }

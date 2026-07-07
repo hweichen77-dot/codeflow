@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { useAuth } from "@/lib/AuthContext";
+import { PageTransition } from "@/lib/motion";
 
 export default function Layout({ children, currentPageName }) {
   const { user, logout } = useAuth();
@@ -235,7 +236,9 @@ export default function Layout({ children, currentPageName }) {
         )}
       </nav>
 
-      <main id="main-content">{children}</main>
+      <main id="main-content">
+        <PageTransition pageKey={currentPageName}>{children}</PageTransition>
+      </main>
     </div>
   );
 }

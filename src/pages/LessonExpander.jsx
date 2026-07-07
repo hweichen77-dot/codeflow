@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { api } from "@/api/apiClient";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subKey = null }) {
   return (
-    <div style={{ border: "1px solid #262219" }}>
+    <Stagger style={{ border: "1px solid #262219" }} as="div">
       <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219", background: "#131009" }}>
         <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
           {items.length} items
@@ -12,10 +13,11 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
       {items.map((item, i) => {
         const status = statuses[item.id];
         return (
-          <div
+          <StaggerItem
             key={item.id}
             className="flex items-center justify-between px-5 py-4"
             style={{ borderBottom: "1px solid #1C1A14" }}
+            as="div"
           >
             <div className="flex items-center gap-4">
               <span className="font-sans text-xs w-6 text-right flex-shrink-0" style={{ color: "#ECE7DC" }}>
@@ -57,10 +59,10 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
                 </button>
               )}
             </div>
-          </div>
+          </StaggerItem>
         );
       })}
-    </div>
+    </Stagger>
   );
 }
 
@@ -209,8 +211,8 @@ export default function LessonExpander() {
 
   return (
     <div className="min-h-screen px-8 lg:px-16 pt-28 pb-16" style={{ background: "#15130E" }}>
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
+      <Stagger className="max-w-4xl mx-auto" as="div">
+        <StaggerItem className="mb-8" as="div">
           <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
             ADMIN TOOL
           </span>
@@ -220,9 +222,9 @@ export default function LessonExpander() {
           <p className="font-display text-sm" style={{ color: "#FFFFFF" }}>
             Uses Claude Sonnet to enrich lessons with detailed explanations, quizzes & activities, and rewrites project descriptions to be crystal clear for AI beginners.
           </p>
-        </div>
+        </StaggerItem>
 
-        <div className="flex gap-0 mb-6" style={{ borderBottom: "1px solid #262219" }}>
+        <StaggerItem className="flex gap-0 mb-6" style={{ borderBottom: "1px solid #262219" }} as="div">
           {["lessons", "projects", "enrich"].map(t => (
             <button
               key={t}
@@ -238,7 +240,7 @@ export default function LessonExpander() {
               {t}
             </button>
           ))}
-        </div>
+        </StaggerItem>
 
         {tab === "enrich" && loaded && (
           <div>
@@ -328,7 +330,7 @@ export default function LessonExpander() {
             subKey="category"
           />
         )}
-      </div>
+      </Stagger>
     </div>
   );
 }

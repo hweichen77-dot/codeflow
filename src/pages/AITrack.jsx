@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/apiClient";
 import ProgressRing from "../components/gamification/ProgressRing";
 import { foundationsAreFinished, isModuleGated } from "@/lib/foundationsGate";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 const CAPSTONES = [
   {
@@ -123,6 +124,7 @@ export default function AITrack() {
             ))}
           </div>
 
+          <Stagger as="div">
           {trackItems.map((item) => {
             const dc = DIFF_COLOR[item.difficulty] || DIFF_COLOR.Beginner;
             const pct = modulePct(item.projectId);
@@ -190,8 +192,8 @@ export default function AITrack() {
             );
 
             return gated ? (
+              <StaggerItem key={item.projectId} as="div">
               <div
-                key={item.projectId}
                 role="button"
                 tabIndex={0}
                 aria-disabled="true"
@@ -207,29 +209,33 @@ export default function AITrack() {
               >
                 {rowInner}
               </div>
+              </StaggerItem>
             ) : (
+              <StaggerItem key={item.projectId} as="div">
               <Link
-                key={item.projectId}
                 to={createPageUrl(`ProjectDetail?id=${item.projectId}`)}
                 className="group block"
               >
                 {rowInner}
               </Link>
+              </StaggerItem>
             );
           })}
+          </Stagger>
         </div>
 
         <div>
           <div className="font-sans text-xs tracking-widest uppercase mb-8" style={{ color: "#FFFFFF" }}>
             CAPSTONE PROJECTS, WHAT YOU WILL BUILD
           </div>
-          <div className="grid md:grid-cols-3 gap-0" style={{ border: "1px solid #262219" }}>
+          <Stagger className="grid md:grid-cols-3 gap-0" as="div" style={{ border: "1px solid #262219" }}>
             {CAPSTONES.map((cap, i) => {
               const dc = DIFF_COLOR[cap.level];
               return (
-                <div
+                <StaggerItem
                   key={cap.title}
                   className="p-8"
+                  as="div"
                   style={{ borderRight: i < 2 ? "1px solid #262219" : "none" }}
                 >
                   <span
@@ -255,10 +261,10 @@ export default function AITrack() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </StaggerItem>
               );
             })}
-          </div>
+          </Stagger>
         </div>
 
         <div className="text-center py-12" style={{ border: "1px solid #262219" }}>

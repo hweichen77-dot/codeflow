@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import LABS from '@/content/playgroundLabs'
 import LlmPlayground from '@/components/lesson/LlmPlayground'
 import useDocumentHead from '@/lib/useDocumentHead'
+import { Stagger, StaggerItem, HoverCard } from '@/lib/motion'
 
 // The LLM Playground hub: pick a lab, write a system prompt, run it against a
 // live model, get graded on the model's real behavior. CodeFlow's signature,
@@ -18,8 +19,8 @@ export default function Playground() {
   })
 
   return (
-    <div className="max-w-6xl mx-auto px-5 pt-24 pb-16">
-      <header className="mb-8">
+    <Stagger className="max-w-6xl mx-auto px-5 pt-24 pb-16" as="div">
+      <StaggerItem className="mb-8" as="header">
         <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E8A33C' }}>
           Live LLM Playground
         </div>
@@ -31,15 +32,16 @@ export default function Playground() {
           and get graded on what the model does, including adversarial inputs designed to make it fail.
           No sign-in required.
         </p>
-      </header>
+      </StaggerItem>
 
-      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
+      <StaggerItem className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6" as="div">
         <nav className="flex md:flex-col gap-2 overflow-x-auto">
           {LABS.map((lab) => {
             const on = lab.id === active.id
             return (
-              <button
+              <HoverCard
                 key={lab.id}
+                as="button"
                 type="button"
                 onClick={() => setActiveId(lab.id)}
                 className="text-left px-3 py-3 rounded-lg border shrink-0 transition-colors"
@@ -50,7 +52,7 @@ export default function Playground() {
               >
                 <div className="text-sm font-semibold" style={{ color: on ? '#F3EEE2' : '#D6CDB8' }}>{lab.title}</div>
                 <div className="text-xs mt-0.5" style={{ color: '#FFFFFF' }}>{lab.tagline}</div>
-              </button>
+              </HoverCard>
             )
           })}
         </nav>
@@ -58,7 +60,7 @@ export default function Playground() {
         <div>
           <LlmPlayground key={active.id} lab={active} />
         </div>
-      </div>
-    </div>
+      </StaggerItem>
+    </Stagger>
   )
 }

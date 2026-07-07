@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { ExternalLink, Lock, Globe } from "lucide-react";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 export default function Portfolio() {
   const [user, setUser] = useState(null);
@@ -69,12 +70,13 @@ export default function Portfolio() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-px">
+          <Stagger className="space-y-px" as="div">
             {submissions.map((sub, i) => (
-              <div
+              <StaggerItem
                 key={sub.id}
                 className="group"
                 style={{ border: "1px solid #262219", background: "#131009" }}
+                as="div"
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between gap-6">
@@ -135,9 +137,9 @@ export default function Portfolio() {
                     {sub.submitted_date ? new Date(sub.submitted_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""}
                   </div>
                 </div>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         )}
       </div>
     </div>

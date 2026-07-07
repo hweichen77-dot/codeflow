@@ -5,6 +5,7 @@ import { api } from "@/api/apiClient";
 import { createPageUrl } from "../utils";
 import { useAuth } from "../lib/AuthContext";
 import { summarize, touchStreak } from "../lib/progressStats";
+import { Stagger, StaggerItem, AnimatedBar } from "@/lib/motion";
 
 const LABEL = font.body;
 const SERIF = font.display;
@@ -94,12 +95,12 @@ export default function AuthHome() {
           </p>
         </div>
 
-        <div className="grid gap-4 mb-10" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
-          <StatCard label="Level" value={lvl.name} sub={`${totalXP} XP total`} accent={lvl.color || "#E8A33C"} />
-          <StatCard label="Day streak" value={streak} sub={streak > 0 ? "Don't break it" : "Start today"} accent="#E0B341" />
-          <StatCard label="Lessons done" value={completed.length} sub={`${lessons.length} total`} />
-          <StatCard label="Projects done" value={projectsCompleted} sub={`${projects.length} total`} accent="#C2643C" />
-        </div>
+        <Stagger className="grid gap-4 mb-10" as="div" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+          <StaggerItem as="div"><StatCard label="Level" value={lvl.name} sub={`${totalXP} XP total`} accent={lvl.color || "#E8A33C"} /></StaggerItem>
+          <StaggerItem as="div"><StatCard label="Day streak" value={streak} sub={streak > 0 ? "Don't break it" : "Start today"} accent="#E0B341" /></StaggerItem>
+          <StaggerItem as="div"><StatCard label="Lessons done" value={completed.length} sub={`${lessons.length} total`} /></StaggerItem>
+          <StaggerItem as="div"><StatCard label="Projects done" value={projectsCompleted} sub={`${projects.length} total`} accent="#C2643C" /></StaggerItem>
+        </Stagger>
 
         <div className="p-6 mb-10" style={{ border: "1px solid #262219", background: "#131009" }}>
           <div className="flex items-center justify-between mb-3">
@@ -111,7 +112,7 @@ export default function AuthHome() {
             </span>
           </div>
           <div style={{ height: "8px", background: "#262219", borderRadius: "4px", overflow: "hidden" }}>
-            <div style={{ width: `${lvlPct}%`, height: "100%", background: "linear-gradient(90deg, #9A6A1F, #E8A33C)", borderRadius: "4px", transition: "width .6s ease" }} />
+            <AnimatedBar pct={lvlPct} color="linear-gradient(90deg, #9A6A1F, #E8A33C)" style={{ height: "100%", borderRadius: "4px" }} />
           </div>
         </div>
 
@@ -149,12 +150,12 @@ export default function AuthHome() {
           <div className="font-sans text-xs tracking-widest uppercase mb-4" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
             Your projects
           </div>
-          <div className="space-y-0">
+          <Stagger className="space-y-0" as="div">
             {projectStats.map((p, i) => {
               const isDone = p.total > 0 && p.done === p.total;
               return (
+                <StaggerItem key={p.id} as="div">
                 <Link
-                  key={p.id}
                   to={`${createPageUrl("ProjectDetail")}?id=${p.id}`}
                   className="flex items-center gap-4 px-5 py-4 transition-all duration-150"
                   style={{ borderBottom: "1px solid #1F1C15", background: "transparent" }}
@@ -171,16 +172,17 @@ export default function AuthHome() {
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0" style={{ width: "180px" }}>
                     <div className="flex-1" style={{ height: "5px", background: "#262219", borderRadius: "3px", overflow: "hidden" }}>
-                      <div style={{ width: `${p.pct}%`, height: "100%", background: isDone ? "#E8A33C" : "#9A6A1F", borderRadius: "3px" }} />
+                      <AnimatedBar pct={p.pct} color={isDone ? "#E8A33C" : "#9A6A1F"} style={{ height: "100%", borderRadius: "3px" }} />
                     </div>
                     <span className="font-sans text-xs w-12 text-right" style={{ color: "#FFFFFF", fontFamily: LABEL }}>
                       {p.pct}%
                     </span>
                   </div>
                 </Link>
+                </StaggerItem>
               );
             })}
-          </div>
+          </Stagger>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowRight, Clock, RefreshCw } from "lucide-react";
 
+import { Stagger, StaggerItem, HoverCard } from "@/lib/motion";
 import StepThrough from "@/components/lesson/blocks/StepThrough";
 import InteractiveTokenizer from "@/components/lesson/blocks/InteractiveTokenizer";
 import DragToBin from "@/components/lesson/blocks/DragToBin";
@@ -102,36 +103,43 @@ function SectionLabel({ children }) {
 export default function LessonDemo() {
   return (
     <div className="min-h-screen px-6 lg:px-10 pt-24 pb-24" style={{ background: "#15130E" }}>
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6 px-4 py-2 font-sans text-xs tracking-widest uppercase" style={{ background: "#cc66ff14", border: "1px solid #cc66ff44", color: "#cc66ff" }}>
+      <Stagger className="max-w-3xl mx-auto" as="div">
+        <StaggerItem as="div" className="mb-6 px-4 py-2 font-sans text-xs tracking-widest uppercase" style={{ background: "#cc66ff14", border: "1px solid #cc66ff44", color: "#cc66ff" }}>
           PROTOTYPE, proposed lesson content style (not yet rolled out)
-        </div>
+        </StaggerItem>
 
-        <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>MODULE 1 · LESSON 2 · CONCEPT: TOKENS</div>
-        <h1 className="font-display font-black mb-3" style={{ fontSize: "2.3rem", lineHeight: 1.05, letterSpacing: "-0.03em", color: "#f5f5f5" }}>
-          Tokens: The Model Doesn't See Words
-        </h1>
-        <div className="flex flex-wrap items-center gap-4 font-sans text-xs mb-8" style={{ color: "#FFFFFF" }}>
-          <span className="flex items-center gap-1.5"><Clock size={12} /> 12 min read</span>
-          <span className="flex items-center gap-1.5"><RefreshCw size={12} /> Updated Jun 2026</span>
-          <span style={{ color: "#E8A33C" }}>+10 XP</span>
-        </div>
+        <StaggerItem as="div">
+          <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>MODULE 1 · LESSON 2 · CONCEPT: TOKENS</div>
+          <h1 className="font-display font-black mb-3" style={{ fontSize: "2.3rem", lineHeight: 1.05, letterSpacing: "-0.03em", color: "#f5f5f5" }}>
+            Tokens: The Model Doesn't See Words
+          </h1>
+          <div className="flex flex-wrap items-center gap-4 font-sans text-xs mb-8" style={{ color: "#FFFFFF" }}>
+            <span className="flex items-center gap-1.5"><Clock size={12} /> 12 min read</span>
+            <span className="flex items-center gap-1.5"><RefreshCw size={12} /> Updated Jun 2026</span>
+            <span style={{ color: "#E8A33C" }}>+10 XP</span>
+          </div>
+        </StaggerItem>
 
-        <div className="px-5 py-4 mb-8" style={{ border: "1px solid #262219", background: "#131009", borderLeft: "2px solid #E8A33C" }}>
+        <StaggerItem as="div" className="px-5 py-4 mb-8" style={{ border: "1px solid #262219", background: "#131009", borderLeft: "2px solid #E8A33C" }}>
           <div className="font-sans text-xs tracking-widest uppercase mb-2" style={{ color: "#E8A33C" }}>WHAT YOU'LL LEARN</div>
           <ul className="space-y-1 font-display text-sm" style={{ color: "#FFFFFF" }}>
             <li>, What a token is and why models use them instead of words or letters</li>
             <li>, How tokenization drives cost, context limits, and weird failures</li>
             <li>, How to estimate token counts and API spend in your head</li>
           </ul>
-        </div>
+        </StaggerItem>
 
-        <SectionLabel>Read</SectionLabel>
-        <ReadingBox>{PART_1}</ReadingBox>
+        <StaggerItem as="div">
+          <SectionLabel>Read</SectionLabel>
+          <ReadingBox>{PART_1}</ReadingBox>
+        </StaggerItem>
 
-        <SectionLabel>Try the tool</SectionLabel>
-        <InteractiveTokenizer />
+        <StaggerItem as="div">
+          <SectionLabel>Try the tool</SectionLabel>
+          <InteractiveTokenizer />
+        </StaggerItem>
 
+        <StaggerItem as="div">
         <SectionLabel>Watch it happen</SectionLabel>
         <StepThrough
           title="text → tokens → bill"
@@ -142,10 +150,14 @@ export default function LessonDemo() {
             { label: "You get billed + limited", detail: "Token count drives the API bill (in and out) and must fit inside the context window.", code: "5 tokens · $3 / 1M in  →  $0.000015" },
           ]}
         />
+        </StaggerItem>
 
-        <SectionLabel>Read</SectionLabel>
-        <ReadingBox>{PART_2}</ReadingBox>
+        <StaggerItem as="div">
+          <SectionLabel>Read</SectionLabel>
+          <ReadingBox>{PART_2}</ReadingBox>
+        </StaggerItem>
 
+        <StaggerItem as="div">
         <SectionLabel>Worked examples</SectionLabel>
         <WorkedExample
           number={1}
@@ -170,7 +182,9 @@ export default function LessonDemo() {
           ]}
           output={"$0.012000 per call"}
         />
+        </StaggerItem>
 
+        <StaggerItem as="div">
         <SectionLabel>Compare the approaches</SectionLabel>
         <ComparisonTable
           title="three ways to split text"
@@ -181,7 +195,9 @@ export default function LessonDemo() {
             { cells: ["Subword (BPE)", "~50, 100k", "3 (un · believ · able)", "The sweet spot every modern LLM uses"], highlight: true },
           ]}
         />
+        </StaggerItem>
 
+        <StaggerItem as="div">
         <SectionLabel>Sort it</SectionLabel>
         <DragToBin
           title="few tokens vs many tokens"
@@ -197,7 +213,9 @@ export default function LessonDemo() {
             { id: "i5", text: '"good morning"', bin: "few" },
           ]}
         />
+        </StaggerItem>
 
+        <StaggerItem as="div">
         <SectionLabel>Check yourself</SectionLabel>
         <InlineCheck
           question="Why is counting the letters in 'strawberry' hard for an LLM?"
@@ -205,31 +223,38 @@ export default function LessonDemo() {
           correct={1}
           explain="The model operates on tokens (chunks). The individual letters live inside a chunk it treats as one unit, so they aren't directly visible to it."
         />
+        </StaggerItem>
 
+        <StaggerItem as="div">
         <SectionLabel>Reflect</SectionLabel>
         <Reflection
           prompt="In one or two sentences: why does rare or messy text cost more tokens than plain English?"
           sampleAnswer="The tokenizer only has whole-chunk symbols for text it saw often. Rare or messy text isn't in that set, so it gets rebuilt from many tiny pieces, and more pieces means more tokens, which means more cost."
         />
+        </StaggerItem>
 
+        <StaggerItem as="div">
         <SectionLabel>Keep going</SectionLabel>
-        <div className="grid sm:grid-cols-2 gap-3">
+        <Stagger className="grid sm:grid-cols-2 gap-3" as="div">
           {[
             { k: "NEXT LESSON", t: "Training vs Inference", c: "#E8A33C" },
             { k: "PRACTICE", t: "Challenge: Estimate an API bill", c: "#C2643C" },
             { k: "RELATED", t: "Context Windows & Memory", c: "#cc66ff" },
             { k: "RELATED", t: "Why LLMs Make Things Up", c: "#cc66ff" },
           ].map((x) => (
-            <div key={x.t} className="flex items-center justify-between px-4 py-3 group cursor-pointer transition-all" style={{ border: "1px solid #262219", background: "#131009" }}>
-              <div>
-                <div className="font-sans text-xs tracking-widest uppercase mb-0.5" style={{ color: x.c }}>{x.k}</div>
-                <div className="font-display text-sm font-medium" style={{ color: "#FFFFFF" }}>{x.t}</div>
-              </div>
-              <ArrowRight size={15} style={{ color: "#FFFFFF" }} />
-            </div>
+            <StaggerItem key={x.t} as="div">
+              <HoverCard className="flex items-center justify-between px-4 py-3 group cursor-pointer transition-all" style={{ border: "1px solid #262219", background: "#131009" }} as="div">
+                <div>
+                  <div className="font-sans text-xs tracking-widest uppercase mb-0.5" style={{ color: x.c }}>{x.k}</div>
+                  <div className="font-display text-sm font-medium" style={{ color: "#FFFFFF" }}>{x.t}</div>
+                </div>
+                <ArrowRight size={15} style={{ color: "#FFFFFF" }} />
+              </HoverCard>
+            </StaggerItem>
           ))}
-        </div>
-      </div>
+        </Stagger>
+        </StaggerItem>
+      </Stagger>
     </div>
   );
 }

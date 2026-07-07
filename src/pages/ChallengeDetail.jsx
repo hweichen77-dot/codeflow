@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { Stagger, StaggerItem } from "@/lib/motion";
 import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
 import ProblemStatement from "../components/challenge/ProblemStatement";
@@ -135,8 +136,8 @@ export default function ChallengeDetail() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8">
-        <div style={{ border: "1px solid #262219", background: "#131009" }}>
+      <Stagger className="max-w-5xl mx-auto px-8 lg:px-16 py-10 space-y-8" as="div">
+        <StaggerItem as="div" style={{ border: "1px solid #262219", background: "#131009" }}>
           <button
             onClick={() => setShowPrimer(!showPrimer)}
             className="flex items-center justify-between w-full px-5 py-3 text-left"
@@ -176,12 +177,16 @@ export default function ChallengeDetail() {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </StaggerItem>
 
-        {challenge.statement && <ProblemStatement problem={challenge} />}
+        {challenge.statement && (
+          <StaggerItem as="div">
+            <ProblemStatement problem={challenge} />
+          </StaggerItem>
+        )}
 
         {!challenge.statement && challenge.test_cases && challenge.test_cases.length > 0 && (
-          <div style={{ border: "1px solid #262219", background: "#131009" }}>
+          <StaggerItem as="div" style={{ border: "1px solid #262219", background: "#131009" }}>
             <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219" }}>
               <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
                 Test Cases
@@ -197,17 +202,19 @@ export default function ChallengeDetail() {
                 </div>
               ))}
             </div>
-          </div>
+          </StaggerItem>
         )}
 
-        <CodeEditor
-          code={code}
-          onChange={setCode}
-          onRun={handleRun}
-          output={output}
-          isRunning={isRunning}
-          filename={`challenge.py`}
-        />
+        <StaggerItem as="div">
+          <CodeEditor
+            code={code}
+            onChange={setCode}
+            onRun={handleRun}
+            output={output}
+            isRunning={isRunning}
+            filename={`challenge.py`}
+          />
+        </StaggerItem>
 
         <AnimatePresence>
           {passed && (
@@ -231,7 +238,7 @@ export default function ChallengeDetail() {
           )}
         </AnimatePresence>
 
-        <div className="flex flex-wrap gap-3">
+        <StaggerItem as="div" className="flex flex-wrap gap-3">
           {challenge.hints && challenge.hints.length > 0 && (
             <button
               onClick={() => setShowHints(!showHints)}
@@ -256,7 +263,7 @@ export default function ChallengeDetail() {
               {showSolution ? ", Solution" : "Show Solution"}
             </button>
           )}
-        </div>
+        </StaggerItem>
 
         <AnimatePresence>
           {showHints && challenge.hints && (
@@ -307,7 +314,7 @@ export default function ChallengeDetail() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </Stagger>
 
       <AIChatbot
         context={challenge?.description || ""}

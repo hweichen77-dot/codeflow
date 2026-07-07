@@ -7,6 +7,7 @@ import HowItWorks from "@/components/home2/HowItWorks";
 import Testimonials from "@/components/home2/Testimonials";
 import FinalCTA from "@/components/home2/FinalCTA";
 import Footer from "@/components/home2/Footer";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 const responsiveStyles = `
   @media (max-width: 880px) {
@@ -32,12 +33,14 @@ export default function Home() {
   return (
     <div style={{ background: "#15130E", minHeight: "100vh", fontFamily: font.body, color: "#ECE7DC" }}>
       <style>{responsiveStyles}</style>
-      <HeroSection />
-      <LessonShowcase />
-      <HowItWorks />
-      <Testimonials />
-      <FinalCTA />
-      <Footer />
+      <Stagger as="div">
+        <StaggerItem as="div"><HeroSection /></StaggerItem>
+        <StaggerItem as="div"><LessonShowcase /></StaggerItem>
+        <StaggerItem as="div"><HowItWorks /></StaggerItem>
+        <StaggerItem as="div"><Testimonials /></StaggerItem>
+        <StaggerItem as="div"><FinalCTA /></StaggerItem>
+        <StaggerItem as="div"><Footer /></StaggerItem>
+      </Stagger>
     </div>
   );
 }

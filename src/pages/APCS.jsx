@@ -5,6 +5,7 @@ import { createPageUrl } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/apiClient";
 import ProgressRing from "../components/gamification/ProgressRing";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 const TRACKS = [
   { key: "apcsp", label: "AP CSP", title: "Computer Science Principles", lang: "Python · pseudocode",
@@ -110,14 +111,14 @@ export default function APCS() {
               <div className="font-sans text-xs tracking-widest uppercase mb-5" style={{ color: "#E8A33C" }}>
                 {unit}
               </div>
-              <div style={{ borderTop: "1px solid #262219" }}>
+              <Stagger as="div" style={{ borderTop: "1px solid #262219" }}>
                 {byUnit.get(unit).map((p, i) => {
                   const dc = DIFF_COLOR[p.difficulty] || DIFF_COLOR.beginner;
                   const pct = modulePct(p.id);
                   const done = pct === 100;
                   return (
+                    <StaggerItem key={p.id} as="div">
                     <Link
-                      key={p.id}
                       to={createPageUrl(`ProjectDetail?id=${p.id}`)}
                       className="group block"
                     >
@@ -168,9 +169,10 @@ export default function APCS() {
                         </div>
                       </div>
                     </Link>
+                    </StaggerItem>
                   );
                 })}
-              </div>
+              </Stagger>
             </div>
           ))
         )}
