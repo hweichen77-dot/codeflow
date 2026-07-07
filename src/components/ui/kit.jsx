@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { font } from "@/lib/tokens";
-import { Stagger, StaggerItem, HoverCard, AnimatedBar, Pulse } from "@/lib/motion";
+import { Stagger, StaggerItem, HoverCard, AnimatedBar, Pulse, CountUp } from "@/lib/motion";
 
 // Shared UI kit — the dashboard's card design language, reusable app-wide.
 // Deep off-black surfaces, warm borders, tiny uppercase eyebrow labels, amber/
@@ -71,7 +71,9 @@ export function StatCard({ label, value, sub, icon: Icon, accent = KIT.amber, ba
           </span>
         ))}
       </div>
-      <div style={{ fontFamily: font.display, fontSize: "1.7rem", fontWeight: 800, color: KIT.white, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontFamily: font.display, fontSize: "1.7rem", fontWeight: 800, color: KIT.white, lineHeight: 1 }}>
+        {/^\d+$/.test(String(value)) ? <CountUp to={Number(value)} /> : value}
+      </div>
       {sub && <div className="mt-1.5 text-xs" style={{ color: KIT.dim }}>{sub}</div>}
     </Card>
   );
