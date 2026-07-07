@@ -17,6 +17,8 @@ export const KIT = {
   amber: "#E8A33C",
   amberBright: "#F5B942",
   gold: "#F2C94C",
+  goldGrad: "linear-gradient(135deg, #F2C94C 0%, #E8A33C 55%, #B4741E 100%)",
+  mono: "'Spline Sans Mono', ui-monospace, monospace",
   ember: "#FF7A3D",
   emerald: "#4CC98A",
   white: "#FFFFFF",
@@ -24,10 +26,13 @@ export const KIT = {
   dim: "#B9B1A2",
 };
 
-// Tiny uppercase tracked label (LEVEL, CONTINUE LEARNING, ...).
-export function Eyebrow({ children, color = KIT.dim, className = "", style }) {
+// Tiny uppercase tracked label with a gold terminal-prompt caret — the recurring
+// signature motif, stamped on every section label across the app.
+export function Eyebrow({ children, color = KIT.dim, className = "", style, caret = true }) {
   return (
-    <div className={`font-sans text-[11px] tracking-[0.16em] uppercase ${className}`} style={{ color, ...style }}>
+    <div className={`text-[11px] tracking-[0.18em] uppercase inline-flex items-center gap-1.5 ${className}`}
+      style={{ color, fontFamily: KIT.mono, ...style }}>
+      {caret && <span aria-hidden="true" style={{ color: KIT.amber, fontWeight: 700 }}>&#9656;</span>}
       {children}
     </div>
   );
@@ -41,7 +46,7 @@ export function Card({ children, className = "", style, accent = KIT.amber, hove
     return <Tag className={className} style={base} {...rest}>{children}</Tag>;
   }
   return (
-    <HoverCard as={as} className={className} style={base} glow={accent} {...rest}>
+    <HoverCard as={as} className={`cf-scan-host ${className}`} style={base} glow={accent} {...rest}>
       {children}
     </HoverCard>
   );
@@ -85,7 +90,7 @@ export function StatGrid({ children, cols = 4, className = "" }) {
 // Pill progress bar with animated fill. Amber->gold by default; pass color for
 // a solid (e.g. emerald for "complete").
 export function ProgressBar({ pct = 0, color, height = 10, track = "#0F0D08", glow = true, className = "", style }) {
-  const fill = color || `linear-gradient(90deg, ${KIT.amber}, ${KIT.gold})`;
+  const fill = color || KIT.goldGrad;
   return (
     <div className={`w-full rounded-full overflow-hidden ${className}`} style={{ height, background: track, ...style }}>
       <AnimatedBar pct={pct} color={fill} className="h-full rounded-full"
@@ -97,10 +102,10 @@ export function ProgressBar({ pct = 0, color, height = 10, track = "#0F0D08", gl
 // Primary amber call-to-action with a sliding arrow. Renders a Link (to) or a
 // button (onClick).
 export function PrimaryButton({ children, to, onClick, arrow = true, className = "", type = "button" }) {
-  const style = { background: KIT.amber, color: KIT.bg };
+  const style = { background: KIT.goldGrad, color: KIT.bg };
   const cls = `group inline-flex items-center gap-2.5 rounded-xl px-6 py-3.5 font-sans text-sm font-bold tracking-wide uppercase transition-all duration-200 ${className}`;
-  const enter = (e) => { e.currentTarget.style.background = KIT.amberBright; e.currentTarget.style.boxShadow = `0 10px 30px -8px ${KIT.amber}aa`; };
-  const leave = (e) => { e.currentTarget.style.background = KIT.amber; e.currentTarget.style.boxShadow = "none"; };
+  const enter = (e) => { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.boxShadow = `0 10px 30px -8px ${KIT.amber}aa`; };
+  const leave = (e) => { e.currentTarget.style.filter = "none"; e.currentTarget.style.boxShadow = "none"; };
   const inner = (
     <>
       {children}

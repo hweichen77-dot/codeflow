@@ -44,6 +44,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div style={{ background: "#15130E", minHeight: "100vh" }}>
+      <div className="cf-grain" aria-hidden="true" />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] font-sans text-xs tracking-widest uppercase px-4 py-2"
@@ -76,10 +77,10 @@ export default function Layout({ children, currentPageName }) {
               style={{ background: "#34302A" }}
             />
             <span
-              className="font-sans text-xs tracking-widest uppercase transition-colors duration-200"
-              style={{ color: "#FFFFFF" }}
+              className="text-xs tracking-widest uppercase transition-colors duration-200"
+              style={{ color: "#FFFFFF", fontFamily: "'Spline Sans Mono', ui-monospace, monospace" }}
             >
-              CodeFlow
+              codeflow<span className="cf-cursor">_</span>
             </span>
           </Link>
 
