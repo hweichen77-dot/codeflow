@@ -3,6 +3,7 @@ import { font } from "@/lib/tokens";
 import { Link } from 'react-router-dom'
 import { createPageUrl } from '../utils'
 import { Stagger, StaggerItem } from "@/lib/motion";
+import DataControls from "@/components/DataControls";
 
 const LABEL = font.body
 const SERIF = font.display
@@ -69,11 +70,14 @@ export default function Privacy() {
           <p>We do not sell your data. We do not run ad networks. We do not read or share the code you write.</p>
         </Section></StaggerItem>
 
-        <StaggerItem as="div"><Section title="Your choices">
+        <StaggerItem as="div"><Section title="Your data & your rights">
           <p>
-            Using guest mode keeps everything on your device. You can clear all local data any time
-            through your browser settings. To delete an account and its synced data, email us.
+            You have the right to access, download, and delete your data at any time. Use the
+            controls below, no email or waiting required. Exporting gives you a machine-readable
+            JSON copy of everything we hold (local progress and, if you have an account, your synced
+            data). Deleting is permanent.
           </p>
+          <DataControls />
         </Section></StaggerItem>
 
         <StaggerItem as="div"><Section title="Contact">
