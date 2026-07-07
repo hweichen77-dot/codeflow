@@ -81,6 +81,20 @@ export function getStreakInfo() {
   };
 }
 
+// Compact streak state for cloud sync. lastVisit is normalized to an ISO date
+// (YYYY-MM-DD) so a server-side job (pg_cron) can compare it with `current_date`
+// to find users whose streak is alive but at risk today. See cloudSync.js.
+export function getStreakSyncState() {
+  const data = readStreak();
+  const current = getStreak();
+  let lastVisit = null;
+  if (data.lastVisit) {
+    const d = new Date(data.lastVisit);
+    if (!Number.isNaN(d.getTime())) lastVisit = d.toISOString().slice(0, 10);
+  }
+  return { current, longest: Math.max(data.longest || 0, current), lastVisit };
+}
+
 export function summarize(progress = [], projects = [], lessons = []) {
   const completed = progress.filter((p) => p.completed);
   const completedLessonIds = new Set(completed.map((p) => p.lesson_id));

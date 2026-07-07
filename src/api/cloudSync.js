@@ -6,6 +6,7 @@ import {
   CHALLENGES_KEY,
   PROGRESS_CHANGED_EVENT,
 } from './progressStore'
+import { getStreakSyncState } from '../lib/progressStats'
 
 const STATE_VERSION = 1
 const DEBOUNCE_MS = 1500
@@ -30,11 +31,16 @@ const writeArr = (key, arr) => {
   try { window.localStorage.setItem(key, JSON.stringify(arr)) } catch {  }
 }
 
+const readStreak = () => {
+  try { return getStreakSyncState() } catch { return null }
+}
+
 const collectLocalState = () => ({
   version: STATE_VERSION,
   progress: readArr(PROGRESS_KEY),
   capstones: readArr(CAPSTONE_KEY),
   challenges: readArr(CHALLENGES_KEY),
+  streak: readStreak(),
 })
 
 const mergeById = (a = [], b = []) => {
@@ -77,6 +83,18 @@ const mergeProgress = (a = [], b = []) => {
   return [...byLesson.values()]
 }
 
+// Most recent lastVisit wins the current count; longest is the all-time max.
+const mergeStreak = (a, b) => {
+  if (!a) return b || null
+  if (!b) return a
+  const recent = (b.lastVisit || '') > (a.lastVisit || '') ? b : a
+  return {
+    current: recent.current || 0,
+    lastVisit: recent.lastVisit || null,
+    longest: Math.max(a.longest || 0, b.longest || 0),
+  }
+}
+
 const mergeState = (local, remote) => {
   if (!remote) return local
   return {
@@ -84,6 +102,7 @@ const mergeState = (local, remote) => {
     progress: mergeProgress(local.progress, remote.progress),
     capstones: mergeById(local.capstones, remote.capstones),
     challenges: mergeChallenges(local.challenges, remote.challenges),
+    streak: mergeStreak(local.streak, remote.streak),
   }
 }
 
