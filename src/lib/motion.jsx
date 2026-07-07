@@ -32,9 +32,10 @@ export function PageTransition({ children, pageKey }) {
   );
 }
 
-// Container whose direct <StaggerItem> children cascade in as it scrolls into
-// view. `as` lets it be a section/ul/etc.
-export function Stagger({ children, className, style, stagger = 0.07, delay = 0.04, as = "div", once = true }) {
+// Container whose direct <StaggerItem> children cascade in. Triggered on mount
+// (not scroll) so content always reaches full visibility even if an
+// IntersectionObserver would have missed it. `as` lets it be a section/ul/etc.
+export function Stagger({ children, className, style, stagger = 0.07, delay = 0.04, as = "div" }) {
   const rm = useReducedMotion();
   const M = motion[as] || motion.div;
   if (rm) {
@@ -47,8 +48,7 @@ export function Stagger({ children, className, style, stagger = 0.07, delay = 0.
       style={style}
       variants={staggerContainer(stagger, delay)}
       initial="hidden"
-      whileInView="show"
-      viewport={{ once, margin: "-40px" }}
+      animate="show"
     >
       {children}
     </M>
@@ -96,8 +96,7 @@ export function AnimatedBar({ pct = 0, className, style, color = "#E8A33C", dura
       className={className}
       style={{ background: color, ...style }}
       initial={rm ? false : { width: 0 }}
-      whileInView={{ width: `${pct}%` }}
-      viewport={{ once: true }}
+      animate={{ width: `${pct}%` }}
       transition={{ duration: rm ? 0 : duration, ease: "easeOut" }}
     />
   );
