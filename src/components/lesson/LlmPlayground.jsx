@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
+import { Shield, ShieldAlert, Share2, Check } from 'lucide-react'
 import { runPlayground, gradePlayground } from '@/lib/llmPlayground'
 import { track } from '@/lib/analytics'
 
-// Interactive, auto-graded LLM lab: the learner writes a system prompt, it runs
-// against a live model over the lab's (often adversarial) inputs, and each real
-// output is graded against the lab's rules. This is CodeFlow's differentiator, // no other learn-to-code platform grades against live model behavior.
+// Interactive, auto-graded red-team lab: the learner writes a defensive system
+// prompt, it runs against a live model over a battery of adversarial inputs
+// (attacks), and each real output is graded HELD/BROKEN against the lab's rules.
+// The score ("held 7/8 attacks") is shareable — that's the acquisition loop.
 export default function LlmPlayground({ lab }) {
   const [systemPrompt, setSystemPrompt] = useState('')
   const [state, setState] = useState({ status: 'idle' }) // idle | running | done | error | unconfigured
@@ -30,29 +32,42 @@ export default function LlmPlayground({ lab }) {
   }
 
   const share = async () => {
-    const url = `${window.location.origin}${import.meta.env.BASE_URL || '/'}Playground`
-    const text = `I just solved "${lab.title}" on CodeFlow — got a live LLM to ${lab.tagline.toLowerCase()}. Try it: ${url}`
+    const base = `${window.location.origin}${import.meta.env.BASE_URL || '/'}Playground`
+    const url = `${base}?lab=${lab.id}`
+    const { passed, total, allPass } = result
+    const text = allPass
+      ? `My prompt held all ${total} attacks on "${lab.title}" 🛡️ Can your prompt survive? ${url}`
+      : `My prompt held ${passed}/${total} attacks on "${lab.title}" 🛡️ Think you can beat it? ${url}`
     try {
-      if (navigator.share) { await navigator.share({ title: 'CodeFlow', text, url }); return }
+      track('playground_share', { lab: lab.id, passed, total })
+      if (navigator.share) { await navigator.share({ title: 'CodeFlow red-team lab', text, url }); return }
       await navigator.clipboard.writeText(text)
       setCopied(true); setTimeout(() => setCopied(false), 2000)
     } catch { /* user dismissed */ }
   }
 
   const amber = '#E8A33C'
+  const held = '#4CC98A'
+  const broken = '#FF6B5C'
 
   return (
     <div className="rounded-xl border p-5 md:p-6" style={{ borderColor: '#2a2519', background: '#17140E' }}>
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: amber }}>Live LLM Lab</div>
+          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: amber }}>Red-team lab</div>
           <h3 className="text-xl font-bold mt-1" style={{ color: '#F3EEE2' }}>{lab.title}</h3>
           <p className="text-sm mt-1" style={{ color: '#FFFFFF' }}>{lab.tagline}</p>
         </div>
-        {lab.difficulty && (
-          <span className="text-[11px] px-2 py-1 rounded-md border uppercase tracking-wide"
-            style={{ borderColor: '#3a331f', color: '#FFFFFF' }}>{lab.difficulty}</span>
-        )}
+        <div className="flex items-center gap-2">
+          {lab.difficulty && (
+            <span className="text-[11px] px-2 py-1 rounded-md border uppercase tracking-wide"
+              style={{ borderColor: '#3a331f', color: '#FFFFFF' }}>{lab.difficulty}</span>
+          )}
+          <span className="text-[11px] px-2 py-1 rounded-md border uppercase tracking-wide inline-flex items-center gap-1"
+            style={{ borderColor: '#3a331f', color: '#FFFFFF' }}>
+            <ShieldAlert size={11} style={{ color: amber }} /> {lab.inputs.length} attacks
+          </span>
+        </div>
       </div>
 
       <p className="text-sm mt-4 leading-relaxed" style={{ color: '#FFFFFF' }}>{lab.brief}</p>
@@ -60,7 +75,7 @@ export default function LlmPlayground({ lab }) {
       <div className="mt-4">
         <div className="flex items-center justify-between mb-2">
           <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#FFFFFF' }}>
-            Your system prompt
+            Your defensive system prompt
           </label>
           <button type="button" onClick={() => setShowHint((v) => !v)}
             className="text-xs underline" style={{ color: amber }}>
@@ -88,13 +103,8 @@ export default function LlmPlayground({ lab }) {
           className="px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-50"
           style={{ background: amber, color: '#1a1509' }}
         >
-          {state.status === 'running' ? 'Running against the model…' : 'Run ▶'}
+          {state.status === 'running' ? 'Running the attacks…' : 'Run the attacks ▶'}
         </button>
-        {result && (
-          <span className="text-sm font-semibold" style={{ color: result.allPass ? '#7FD18A' : '#E8A33C' }}>
-            {result.passed}/{result.total} passed
-          </span>
-        )}
       </div>
 
       {state.status === 'error' && (
@@ -109,35 +119,59 @@ export default function LlmPlayground({ lab }) {
       )}
 
       {result && (
-        <div className="mt-4 space-y-3">
-          {result.graded.map((g, i) => (
-            <div key={i} className="rounded-lg p-3" style={{ background: '#0F0D08', border: '1px solid #221d12' }}>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold px-2 py-0.5 rounded"
-                  style={{ background: g.pass ? '#16301c' : '#301616', color: g.pass ? '#7FD18A' : '#F0A89C' }}>
-                  {g.pass ? 'PASS' : 'FAIL'}
-                </span>
-                <span className="text-xs font-mono" style={{ color: '#FFFFFF' }}>input: {g.input}</span>
+        <div className="mt-5">
+          {/* Scorecard: the shareable centerpiece */}
+          <div className="rounded-xl p-4 mb-4" style={{ background: result.allPass ? '#12200f' : '#1B1913', border: `1px solid ${result.allPass ? '#2f5a25' : '#3A3428'}` }}>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-widest" style={{ color: result.allPass ? held : amber }}>
+                  {result.allPass ? 'All attacks held' : 'Score'}
+                </div>
+                <div className="mt-1" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FFFFFF', lineHeight: 1 }}>
+                  Held {result.passed}/{result.total} attacks
+                </div>
               </div>
-              <pre className="text-sm mt-2 whitespace-pre-wrap font-mono" style={{ color: '#FFFFFF' }}>
-                {g.output || g.error || '(empty)'}
-              </pre>
-              {!g.pass && g.reasons?.length > 0 && (
-                <p className="text-xs mt-1" style={{ color: '#FFFFFF' }}>× {g.reasons.join(' · ')}</p>
-              )}
-            </div>
-          ))}
-
-          {result.allPass && (
-            <div className="rounded-lg p-4 mt-2" style={{ background: '#12200f', border: '1px solid #244a1c' }}>
-              <p className="text-sm font-semibold" style={{ color: '#9FE0A8' }}>✓ Solved, {lab.successNote}</p>
               <button type="button" onClick={share}
-                className="mt-3 px-3 py-1.5 rounded-md text-sm font-semibold"
-                style={{ background: '#1c3316', color: '#9FE0A8', border: '1px solid #2f5a25' }}>
-                {copied ? 'Copied!' : 'Share result ↗'}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all"
+                style={{ background: amber, color: '#1a1509' }}>
+                {copied ? <><Check size={15} /> Copied</> : <><Share2 size={15} /> Share score</>}
               </button>
             </div>
-          )}
+            {/* Attack matrix: one shield per attack, held (green) or broken (red) */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              {result.graded.map((g, i) => (
+                <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold"
+                  style={{ background: g.pass ? '#16301c' : '#301616', color: g.pass ? held : broken, border: `1px solid ${g.pass ? '#244a1c' : '#4a2020'}` }}>
+                  {g.pass ? <Shield size={12} /> : <ShieldAlert size={12} />}
+                  Attack {i + 1}
+                </div>
+              ))}
+            </div>
+            {result.allPass && (
+              <p className="text-sm mt-3" style={{ color: '#9FE0A8' }}>{lab.successNote}</p>
+            )}
+          </div>
+
+          {/* Per-attack detail */}
+          <div className="space-y-3">
+            {result.graded.map((g, i) => (
+              <div key={i} className="rounded-lg p-3" style={{ background: '#0F0D08', border: '1px solid #221d12' }}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded"
+                    style={{ background: g.pass ? '#16301c' : '#301616', color: g.pass ? held : broken }}>
+                    {g.pass ? 'HELD' : 'BROKEN'}
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: '#FFFFFF' }}>attack {i + 1}: {g.input}</span>
+                </div>
+                <pre className="text-sm mt-2 whitespace-pre-wrap font-mono" style={{ color: '#FFFFFF' }}>
+                  {g.output || g.error || '(empty)'}
+                </pre>
+                {!g.pass && g.reasons?.length > 0 && (
+                  <p className="text-xs mt-1" style={{ color: '#FFFFFF' }}>× {g.reasons.join(' · ')}</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
