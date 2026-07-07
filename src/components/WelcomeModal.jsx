@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { font } from "@/lib/tokens";
+import { useDialogA11y } from '@/lib/useDialogA11y'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/utils'
@@ -37,6 +38,8 @@ export default function WelcomeModal() {
     if (started) navigate(createPageUrl('AITrack'))
   }
 
+  const dialogRef = useDialogA11y(() => dismiss(false), open)
+
   if (!open) return null
 
   const firstName = (user?.name || user?.email?.split('@')[0] || 'there').split(' ')[0]
@@ -50,7 +53,7 @@ export default function WelcomeModal() {
       style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) dismiss(false) }}
     >
-      <div className="w-full max-w-lg p-10" style={{ border: '1px solid #2A261E', background: '#131009', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
+      <div ref={dialogRef} tabIndex={-1} className="w-full max-w-lg p-10" style={{ border: '1px solid #2A261E', background: '#131009', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', outline: 'none' }}>
         <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#E8A33C', fontFamily: LABEL }}>
           WELCOME TO CODEFLOW
         </div>
@@ -64,7 +67,7 @@ export default function WelcomeModal() {
         <div className="space-y-4 mb-8">
           {STEPS.map((s) => (
             <div key={s.n} className="flex gap-4">
-              <span className="font-sans text-sm flex-shrink-0" style={{ color: '#9A6A1F', fontFamily: LABEL, width: '28px' }}>
+              <span className="font-sans text-sm flex-shrink-0" style={{ color: '#C6892A', fontFamily: LABEL, width: '28px' }}>
                 {s.n}
               </span>
               <div>

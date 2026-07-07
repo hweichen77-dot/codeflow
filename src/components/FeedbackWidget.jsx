@@ -112,6 +112,7 @@ export default function FeedbackWidget() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               autoFocus
+              aria-label="Feedback message"
               rows={4}
               placeholder={
                 kind === 'bug'

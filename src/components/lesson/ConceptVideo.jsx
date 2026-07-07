@@ -35,10 +35,12 @@ export default function ConceptVideo({ youtubeId, title, caption }) {
             title={title || "Video"}
           />
         ) : (
-          <div
+          <button
+            type="button"
             className="absolute top-0 left-0 w-full h-full flex items-center justify-center cursor-pointer group"
             onClick={() => setPlaying(true)}
-            style={{ background: trace.surface }}
+            aria-label={`Play video: ${title || "Video explanation"}`}
+            style={{ background: trace.surface, border: 0, padding: 0 }}
           >
             <img
               src={thumb}
@@ -52,7 +54,7 @@ export default function ConceptVideo({ youtubeId, title, caption }) {
             >
               <Play size={20} fill={trace.bg} style={{ color: trace.bg, marginLeft: "2px" }} />
             </div>
-          </div>
+          </button>
         )}
       </div>
 

@@ -5,6 +5,7 @@ import { getWeeklyRecap, markWeeklyRecapShown } from "@/lib/retention";
 import { Eyebrow, KIT, PrimaryButton } from "@/components/ui/kit";
 import { CountUp } from "@/lib/motion";
 import { font } from "@/lib/tokens";
+import { useDialogA11y } from "@/lib/useDialogA11y";
 
 // Once-a-week reflection moment. Summarizes the last 7 days of activity, then
 // marks itself shown so it won't reappear until next ISO week.
@@ -15,6 +16,8 @@ export default function WeeklyRecapModal({ progress = [], onClose }) {
   useEffect(() => {
     markWeeklyRecapShown();
   }, []);
+
+  const dialogRef = useDialogA11y(onClose);
 
   const stats = [
     { label: "Activities", value: activities, sub: "lessons, labs & challenges" },
@@ -36,8 +39,10 @@ export default function WeeklyRecapModal({ progress = [], onClose }) {
       aria-label="Weekly recap"
     >
       <motion.div
+        ref={dialogRef}
+        tabIndex={-1}
         className="relative w-full max-w-md rounded-2xl p-6 sm:p-8"
-        style={{ background: KIT.card, border: `1px solid ${KIT.borderHi}` }}
+        style={{ background: KIT.card, border: `1px solid ${KIT.borderHi}`, outline: "none" }}
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.96 }}

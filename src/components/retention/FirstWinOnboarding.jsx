@@ -5,6 +5,7 @@ import { ArrowRight, Zap, Bell } from "lucide-react";
 import { isOnboarded, setOnboarded } from "@/lib/retention";
 import { requestNotificationPermission } from "@/lib/notifications";
 import { KIT, PrimaryButton, Eyebrow } from "@/components/ui/kit";
+import { useDialogA11y } from "@/lib/useDialogA11y";
 
 const CHOICES = [
   {
@@ -30,6 +31,7 @@ const CHOICES = [
 export default function FirstWinOnboarding() {
   const [open, setOpen] = useState(true);
   const reduce = useReducedMotion();
+  const dialogRef = useDialogA11y(() => dismiss(), open);
 
   // Already onboarded → nothing to show.
   if (isOnboarded()) return null;
@@ -63,8 +65,11 @@ export default function FirstWinOnboarding() {
           aria-label="Get your first win"
         >
           <motion.div
+            ref={dialogRef}
+            tabIndex={-1}
             className="relative w-full max-w-lg rounded-3xl p-7 sm:p-8"
             style={{
+              outline: "none",
               background: "linear-gradient(135deg, #1F1B12 0%, #17140E 100%)",
               border: `1px solid ${KIT.borderHi}`,
               boxShadow: `0 30px 90px -24px ${KIT.amber}55, 0 0 0 1px ${KIT.border}`,

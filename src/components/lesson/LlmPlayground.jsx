@@ -85,7 +85,7 @@ export default function LlmPlayground({ lab }) {
 
       <div className="mt-4">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#FFFFFF' }}>
+          <label htmlFor="llm-system-prompt" className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#FFFFFF' }}>
             Your defensive system prompt
           </label>
           <button type="button" onClick={() => setShowHint((v) => !v)}
@@ -97,11 +97,12 @@ export default function LlmPlayground({ lab }) {
           <p className="text-xs mb-2 p-3 rounded-md" style={{ background: '#211c12', color: '#FFFFFF' }}>{lab.hint}</p>
         )}
         <textarea
+          id="llm-system-prompt"
           value={systemPrompt}
           onChange={(e) => setSystemPrompt(e.target.value)}
           placeholder={lab.placeholder}
           rows={5}
-          className="w-full rounded-lg p-3 text-sm font-mono resize-y focus:outline-none"
+          className="w-full rounded-lg p-3 text-sm font-mono resize-y focus:outline-none focus:border-[#E8A33C]"
           style={{ background: '#0F0D08', color: '#F3EEE2', border: '1px solid #2a2519' }}
         />
       </div>

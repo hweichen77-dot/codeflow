@@ -56,6 +56,15 @@
     scroll-behavior: smooth;
   }
 
+  /* Keyboard focus safety net (WCAG 2.4.7): the app has many `outline-none`
+     overrides, so guarantee a visible amber ring for keyboard users everywhere.
+     :focus-visible only shows for keyboard/AT nav, not mouse clicks. */
+  :focus-visible {
+    outline: 2px solid #E8A33C;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
@@ -194,6 +203,14 @@
 @media (prefers-reduced-motion: reduce) {
   .cf-scan-host:hover::after { animation: none; }
   .cf-cursor { animation: none; }
+  /* Blanket safety net (WCAG 2.3.3): neutralize all remaining CSS animations,
+     transitions, and smooth scroll for users who ask for reduced motion. */
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 /* Warm film grain over the off-black background — kills the flat-generic feel */
