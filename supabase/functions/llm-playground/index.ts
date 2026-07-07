@@ -39,10 +39,15 @@ function rateLimited(key: string): boolean {
 }
 
 function corsHeaders(origin: string | null) {
-  // Allow the configured origin plus localhost for local dev/preview.
+  // Allow the configured web origin, localhost for dev/preview, and the Tauri
+  // desktop webview origins (macOS/Linux: tauri://localhost, Windows: http://tauri.localhost).
   const ok =
     origin &&
-    (origin === ALLOWED_ORIGIN || /^http:\/\/localhost(:\d+)?$/.test(origin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin));
+    (origin === ALLOWED_ORIGIN ||
+      origin === "tauri://localhost" ||
+      origin === "http://tauri.localhost" ||
+      /^http:\/\/localhost(:\d+)?$/.test(origin) ||
+      /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin));
   return {
     "Access-Control-Allow-Origin": ok ? origin! : ALLOWED_ORIGIN,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
