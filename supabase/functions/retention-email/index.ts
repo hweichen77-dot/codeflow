@@ -22,8 +22,11 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const escapeHtml = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+
 function subjectAndBody({ name, streak, kind, resumeUrl }: { name?: string; streak?: number; kind?: string; resumeUrl?: string }) {
-  const who = name ? name.split(" ")[0] : "there";
+  const who = name ? escapeHtml(name.split(" ")[0]) : "there";
   const url = resumeUrl || SITE;
   if (kind === "goal") {
     return {
@@ -56,7 +59,9 @@ Deno.serve(async (req: Request) => {
   let body: { email?: string; name?: string; streak?: number; kind?: string; resumeUrl?: string; secret?: string };
   try { body = await req.json(); } catch { return json({ error: "invalid JSON" }, 400); }
 
-  if (TRIGGER_SECRET && body.secret !== TRIGGER_SECRET) return json({ error: "unauthorized" }, 401);
+  // Fail closed: the shared secret is the only gate (deployed --no-verify-jwt),
+  // so a missing/empty secret must reject, never wave requests through.
+  if (!TRIGGER_SECRET || body.secret !== TRIGGER_SECRET) return json({ error: "unauthorized" }, 401);
   const email = String(body.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "invalid email" }, 400);
 
