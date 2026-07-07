@@ -18,14 +18,27 @@ export default function Layout({ children, currentPageName }) {
 
   // Primary (learning) nav lives in the center; personal pages (Dashboard,
   // Portfolio) sit in the right-hand account cluster to keep the bar uncluttered.
-  const navLinks = [
-    { label: "AI Track", page: "AITrack" },
-    { label: "Playground", page: "Playground", badge: "Live" },
-    { label: "Projects", page: "Projects" },
-    { label: "Challenges", page: "Challenges" },
-    { label: "Compete", page: "Competitive" },
-    { label: "AP CS", page: "APCS" },
+  // Grouped by the learner journey: pick a track (Learn), then get hands-on
+  // (Practice). Ordered, not a random flat list.
+  const navGroups = [
+    {
+      name: "Learn",
+      links: [
+        { label: "AI Track", page: "AITrack" },
+        { label: "AP CS", page: "APCS" },
+        { label: "Compete", page: "Competitive" },
+      ],
+    },
+    {
+      name: "Practice",
+      links: [
+        { label: "Projects", page: "Projects" },
+        { label: "Challenges", page: "Challenges" },
+        { label: "Playground", page: "Playground", badge: "Live" },
+      ],
+    },
   ];
+  const navLinks = navGroups.flatMap((g) => g.links);
 
   const isActive = (page) => currentPageName === page;
 
@@ -71,44 +84,51 @@ export default function Layout({ children, currentPageName }) {
           </Link>
 
           <div className="hidden md:flex items-center gap-0">
-            {navLinks.map((link) => (
-              <Link
-                key={link.page}
-                to={createPageUrl(link.page)}
-                aria-label={link.badge ? `${link.label} — ${link.badge}` : undefined}
-                className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 lg:px-4 py-2 transition-all duration-150 relative inline-flex items-center gap-1.5"
-                style={{
-                  color: isActive(link.page) ? "#E8A33C" : "#C9C1B2",
-                }}
-                onMouseEnter={e => {
-                  if (!isActive(link.page)) e.currentTarget.style.color = "#A8A092";
-                }}
-                onMouseLeave={e => {
-                  if (!isActive(link.page)) e.currentTarget.style.color = "#C9C1B2";
-                }}
-              >
-                {isActive(link.page) && (
-                  <span
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px w-4"
-                    style={{ background: "#E8A33C" }}
-                  />
+            {navGroups.map((group, gi) => (
+              <React.Fragment key={group.name}>
+                {gi > 0 && (
+                  <span aria-hidden="true" className="mx-2 lg:mx-3 w-px h-4" style={{ background: "#34302A" }} />
                 )}
-                {link.label}
-                {link.badge && (
-                  <span
-                    aria-hidden="true"
-                    className="font-sans px-1.5 py-0.5 leading-none rounded-sm"
+                {group.links.map((link) => (
+                  <Link
+                    key={link.page}
+                    to={createPageUrl(link.page)}
+                    aria-label={link.badge ? `${link.label} — ${link.badge}` : undefined}
+                    className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 lg:px-4 py-2 transition-all duration-150 relative inline-flex items-center gap-1.5"
                     style={{
-                      fontSize: "8px",
-                      letterSpacing: "0.06em",
-                      color: "#FFFFFF",
-                      border: "1px solid #34302A",
+                      color: isActive(link.page) ? "#E8A33C" : "#C9C1B2",
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive(link.page)) e.currentTarget.style.color = "#A8A092";
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive(link.page)) e.currentTarget.style.color = "#C9C1B2";
                     }}
                   >
-                    {link.badge}
-                  </span>
-                )}
-              </Link>
+                    {isActive(link.page) && (
+                      <span
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px w-4"
+                        style={{ background: "#E8A33C" }}
+                      />
+                    )}
+                    {link.label}
+                    {link.badge && (
+                      <span
+                        aria-hidden="true"
+                        className="font-sans px-1.5 py-0.5 leading-none rounded-sm"
+                        style={{
+                          fontSize: "8px",
+                          letterSpacing: "0.06em",
+                          color: "#FFFFFF",
+                          border: "1px solid #34302A",
+                        }}
+                      >
+                        {link.badge}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </React.Fragment>
             ))}
           </div>
 
@@ -177,31 +197,38 @@ export default function Layout({ children, currentPageName }) {
             className="md:hidden px-8 py-4 space-y-1"
             style={{ background: "#15130E", borderTop: "1px solid #262219" }}
           >
-            {navLinks.map((link) => (
-              <Link
-                key={link.page}
-                to={createPageUrl(link.page)}
-                onClick={() => setMobileOpen(false)}
-                aria-label={link.badge ? `${link.label} — ${link.badge}, optional advanced track` : undefined}
-                className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase px-4 py-3 transition-colors"
-                style={{ color: isActive(link.page) ? "#E8A33C" : "#C9C1B2" }}
-              >
-                {link.label}
-                {link.badge && (
-                  <span
-                    aria-hidden="true"
-                    className="font-sans px-1.5 py-0.5 leading-none rounded-sm"
-                    style={{
-                      fontSize: "8px",
-                      letterSpacing: "0.06em",
-                      color: "#FFFFFF",
-                      border: "1px solid #34302A",
-                    }}
+            {navGroups.map((group) => (
+              <div key={group.name} className="mb-2">
+                <div className="font-sans text-[10px] tracking-[0.18em] uppercase px-4 pt-2 pb-1" style={{ color: "#8F8779" }}>
+                  {group.name}
+                </div>
+                {group.links.map((link) => (
+                  <Link
+                    key={link.page}
+                    to={createPageUrl(link.page)}
+                    onClick={() => setMobileOpen(false)}
+                    aria-label={link.badge ? `${link.label} — ${link.badge}, optional advanced track` : undefined}
+                    className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase px-4 py-3 transition-colors"
+                    style={{ color: isActive(link.page) ? "#E8A33C" : "#C9C1B2" }}
                   >
-                    {link.badge}
-                  </span>
-                )}
-              </Link>
+                    {link.label}
+                    {link.badge && (
+                      <span
+                        aria-hidden="true"
+                        className="font-sans px-1.5 py-0.5 leading-none rounded-sm"
+                        style={{
+                          fontSize: "8px",
+                          letterSpacing: "0.06em",
+                          color: "#FFFFFF",
+                          border: "1px solid #34302A",
+                        }}
+                      >
+                        {link.badge}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
             ))}
             <div style={{ borderTop: "1px solid #262219", paddingTop: "0.75rem", marginTop: "0.75rem" }}>
               {user ? (

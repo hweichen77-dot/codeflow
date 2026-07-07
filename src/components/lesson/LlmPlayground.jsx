@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Shield, ShieldAlert, Share2, Check } from 'lucide-react'
+import { Shield, ShieldAlert, Share2, Check, CheckCircle2 } from 'lucide-react'
 import { runPlayground, gradePlayground } from '@/lib/llmPlayground'
+import { markLabSolved, isLabSolved } from '@/lib/playgroundProgress'
 import { track } from '@/lib/analytics'
 
 // Interactive, auto-graded red-team lab: the learner writes a defensive system
@@ -13,6 +14,8 @@ export default function LlmPlayground({ lab }) {
   const [result, setResult] = useState(null)
   const [showHint, setShowHint] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [solved, setSolved] = useState(() => isLabSolved(lab.id))
+  const [justSolved, setJustSolved] = useState(false)
 
   const run = async () => {
     setState({ status: 'running' })
@@ -25,6 +28,11 @@ export default function LlmPlayground({ lab }) {
     const graded = gradePlayground(res.results, lab.inputs)
     setResult({ ...graded, model: res.model })
     setState({ status: 'done' })
+    if (graded.allPass) {
+      const isNew = markLabSolved(lab.id)
+      setSolved(true)
+      setJustSolved(isNew)
+    }
     try {
       track('playground_run', { lab: lab.id, passed: graded.passed, total: graded.total })
       if (graded.allPass) track('playground_solved', { lab: lab.id })
@@ -55,7 +63,10 @@ export default function LlmPlayground({ lab }) {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="text-xs font-bold uppercase tracking-widest" style={{ color: amber }}>Red-team lab</div>
-          <h3 className="text-xl font-bold mt-1" style={{ color: '#F3EEE2' }}>{lab.title}</h3>
+          <h3 className="text-xl font-bold mt-1 inline-flex items-center gap-2" style={{ color: '#F3EEE2' }}>
+            {lab.title}
+            {solved && <CheckCircle2 size={18} style={{ color: held }} aria-label="Solved" />}
+          </h3>
           <p className="text-sm mt-1" style={{ color: '#FFFFFF' }}>{lab.tagline}</p>
         </div>
         <div className="flex items-center gap-2">
