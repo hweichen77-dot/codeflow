@@ -38,16 +38,17 @@ Student's current code:
 \`\`\`
 ${currentCode}
 \`\`\`
-If you notice ONE specific, actionable issue (logic error, infinite loop risk, wrong approach, off-by-one), return a single hint of max 15 words. Be direct, not encouraging. If the code looks reasonable or is clearly incomplete/empty, return null.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            hint: { type: "string" },
-          },
-        },
+If you notice ONE specific, actionable issue (logic error, infinite loop risk, wrong approach, off-by-one), reply with a single hint of max 15 words and nothing else. Be direct, not encouraging. If the code looks reasonable or is clearly incomplete/empty, reply with exactly: null`,
       });
-      if (result?.hint && result.hint !== "null") {
-        setAiHint(result.hint);
+      // InvokeLLM returns the model's plain text. Strip wrapping quotes/markdown,
+      // and reject the "null" sentinel, the offline fallback, and anything too
+      // long to be a 15-word hint.
+      const hint = (typeof result === "string" ? result : result?.hint || "")
+        .trim()
+        .replace(/^["'`*\s]+|["'`*\s]+$/g, "");
+      const looksOffline = /isn'?t available|not available|try again/i.test(hint);
+      if (hint && !/^null\b/i.test(hint) && hint.length <= 140 && !looksOffline) {
+        setAiHint(hint);
       }
     } catch (e) {
     }

@@ -12,7 +12,6 @@ import AuthGate from '@/components/AuthGate';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import RouteErrorBoundary from '@/components/RouteErrorBoundary';
 import FeedbackWidget from '@/components/FeedbackWidget';
-import WelcomeModal from '@/components/WelcomeModal';
 import AppSkeleton from '@/components/ui/AppSkeleton';
 
 // True inside the Tauri desktop shell. Desktop users already came through the
@@ -120,7 +119,6 @@ const Gate = () => {
     <Router basename={import.meta.env.BASE_URL}>
       <NavigationTracker />
       <AuthenticatedApp />
-      <WelcomeModal />
       <FeedbackWidget />
       <StorageWatcher />
     </Router>
