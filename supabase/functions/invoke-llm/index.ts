@@ -1,8 +1,11 @@
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-const MODEL = "claude-haiku-4-5-20251001";
+// Powers the code-editor "Explain" feature (AIExplainModal / CodeEditor).
+// Uses the free Groq backend — same provider as ai-tutor / llm-playground — so
+// there is no paid Anthropic spend. Get a free key at
+// https://console.groq.com/keys and set it as GROQ_API_KEY.
+const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+const MODEL = Deno.env.get("GROQ_MODEL") ?? "llama-3.3-70b-versatile";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -15,6 +18,13 @@ const RATE_LIMIT_MAX = 20;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const hits = new Map<string, { count: number; resetAt: number }>();
 
+// Per-isolate global circuit breaker. The per-user/IP limiter bounds one caller;
+// this bounds the worst-case fan-out any single isolate can drive at the free
+// Groq backend even under many accounts / spoofed IPs. Ceiling, not exact quota.
+const GLOBAL_MAX_PER_WINDOW = 120;
+let globalCount = 0;
+let globalResetAt = 0;
+
 function rateLimited(key: string): boolean {
   const now = Date.now();
   const entry = hits.get(key);
@@ -24,6 +34,17 @@ function rateLimited(key: string): boolean {
   }
   entry.count += 1;
   return entry.count > RATE_LIMIT_MAX;
+}
+
+function globalLimited(): boolean {
+  const now = Date.now();
+  if (now >= globalResetAt) {
+    globalCount = 1;
+    globalResetAt = now + RATE_LIMIT_WINDOW_MS;
+    return false;
+  }
+  globalCount += 1;
+  return globalCount > GLOBAL_MAX_PER_WINDOW;
 }
 
 const cors = {
@@ -75,6 +96,7 @@ Deno.serve(async (req: Request) => {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   const rlKey = caller === "secret" ? `ip:${ip}` : `user:${caller}`;
   if (rateLimited(rlKey)) return json({ error: "rate limit exceeded" }, 429);
+  if (globalLimited()) return json({ error: "service busy, try again shortly" }, 429);
 
   try {
     const { prompt, max_tokens } = await req.json();
@@ -84,16 +106,15 @@ Deno.serve(async (req: Request) => {
     if (prompt.length > MAX_PROMPT_CHARS) {
       return json({ error: "prompt too large" }, 413);
     }
-    if (!ANTHROPIC_API_KEY) {
-      return json({ text: "AI exec endpoint is not configured (ANTHROPIC_API_KEY unset)." });
+    if (!GROQ_API_KEY) {
+      return json({ text: "AI exec endpoint is not configured (GROQ_API_KEY unset)." });
     }
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
+        authorization: `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
         model: MODEL,
@@ -104,12 +125,12 @@ Deno.serve(async (req: Request) => {
 
     if (!resp.ok) {
       const detail = await resp.text();
-      console.error(`anthropic ${resp.status}: ${detail.slice(0, 500)}`);
+      console.error(`groq ${resp.status}: ${detail.slice(0, 500)}`);
       return json({ error: "upstream model error" }, 502);
     }
 
     const data = await resp.json();
-    const text = data?.content?.[0]?.text ?? "";
+    const text = data?.choices?.[0]?.message?.content ?? "";
     return json({ text });
   } catch (e) {
     console.error("invoke-llm error:", e);
