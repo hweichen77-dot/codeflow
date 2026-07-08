@@ -3,9 +3,6 @@ const HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com'
 
 export const analyticsEnabled = Boolean(KEY) && typeof window !== 'undefined'
 
-// Strip OAuth tokens / secrets and the URL fragment before anything leaves the
-// browser. After a Supabase OAuth redirect window.location.href briefly carries
-// `#access_token=...`; never let that (or query-string secrets) reach PostHog.
 const SENSITIVE_PARAMS = ['access_token', 'refresh_token', 'provider_token', 'provider_refresh_token', 'id_token', 'token', 'code']
 function sanitizeUrl(value) {
   if (typeof value !== 'string' || !value) return value

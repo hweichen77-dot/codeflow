@@ -10,10 +10,6 @@ import { getStreakInfo } from "@/lib/progressStats";
 import { Card, Eyebrow, ProgressBar, KIT } from "@/components/ui/kit";
 import { CountUp, Pulse } from "@/lib/motion";
 
-// Compact "today" retention card: daily-goal progress, streak status with
-// freeze count, and a streak-at-risk nudge. All state is read from the
-// retention engine + progressStats and refreshed on RETENTION_CHANGED_EVENT
-// and window focus.
 export default function DailyGoal() {
   const [status, setStatus] = useState(() => getDailyStatus());
   const [streak, setStreak] = useState(() => getStreakInfo());
@@ -58,7 +54,7 @@ export default function DailyGoal() {
     <Card className="p-5" accent={met ? KIT.emerald : KIT.amber}>
       <div className="flex items-center justify-between">
         <Eyebrow>Today</Eyebrow>
-        {/* Unobtrusive goal stepper */}
+        {}
         <div className="inline-flex items-center gap-1.5" title="Daily goal (lessons)">
           <button
             type="button"
@@ -89,7 +85,7 @@ export default function DailyGoal() {
         </div>
       </div>
 
-      {/* Daily goal ring/bar */}
+      {}
       <div className="mt-4 flex items-baseline gap-2">
         <span
           className="tabular-nums"
@@ -117,7 +113,7 @@ export default function DailyGoal() {
         </div>
       )}
 
-      {/* Streak row */}
+      {}
       <div
         className="mt-4 pt-4 flex items-center gap-2"
         style={{ borderTop: `1px solid ${KIT.border}` }}
@@ -144,7 +140,7 @@ export default function DailyGoal() {
         )}
       </div>
 
-      {/* Streak-at-risk nudge */}
+      {}
       {atRisk && (
         <div className="mt-2 text-xs" style={{ color: KIT.amber }}>
           Do one lesson to keep your {current}-day streak.

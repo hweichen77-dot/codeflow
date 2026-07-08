@@ -1,9 +1,5 @@
 import { useEffect } from 'react'
 
-// Minimal, dependency-free <head> manager. Sets document.title plus the meta
-// description, canonical link, and OG/Twitter title/description for the current
-// view, then restores the previous values on unmount. Client-side only, the
-// build-time prerender stamps the same fields into static HTML for crawlers.
 const SITE = 'CodeFlow'
 const ORIGIN = 'https://hweichen77-dot.github.io/codeflow'
 

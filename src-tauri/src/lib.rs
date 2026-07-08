@@ -5,8 +5,7 @@ pub fn run() {
     .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_notification::init())
     .setup(|app| {
-      // On Linux/Windows the custom scheme must be registered at runtime; on
-      // macOS it is wired up via the Info.plist generated from tauri.conf.json.
+
       #[cfg(any(target_os = "linux", windows))]
       {
         use tauri_plugin_deep_link::DeepLinkExt;

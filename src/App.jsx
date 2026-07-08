@@ -14,8 +14,6 @@ import RouteErrorBoundary from '@/components/RouteErrorBoundary';
 import FeedbackWidget from '@/components/FeedbackWidget';
 import AppSkeleton from '@/components/ui/AppSkeleton';
 
-// True inside the Tauri desktop shell. Desktop users already came through the
-// marketing site to download, so we skip the landing page for them.
 const isDesktop = typeof window !== 'undefined' && Boolean(window.__TAURI__ || window.__TAURI_INTERNALS__);
 
 const LessonExpander = lazy(() => import('./pages/LessonExpander'));
@@ -27,8 +25,6 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
 const RouteFallback = () => <AppSkeleton />;
 
-// Web-first: lesson/course content is public (no sign-in wall). Only truly
-// personal pages require an account; cloud sync is still opt-in via sign-in.
 const PROTECTED = new Set([
   'Dashboard', 'Portfolio',
 ]);
@@ -88,9 +84,6 @@ const AuthenticatedApp = () => {
   );
 };
 
-// Surfaces a single toast when localStorage writes start failing (private mode /
-// quota full) so a student knows their progress isn't being saved instead of
-// silently losing it. Fired at most once per session by progressStore.
 const StorageWatcher = () => {
   useEffect(() => {
     const onErr = () => toast({

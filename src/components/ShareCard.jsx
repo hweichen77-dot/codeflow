@@ -6,8 +6,6 @@ const DISPLAY = font.display;
 const BODY = font.body;
 const MONO = font.mono;
 
-// Off-screen 1200x630 (OG ratio) card rendered to PNG via html2canvas, then
-// shared natively (with the image file) or downloaded as a fallback.
 export default function ShareCard({ name, level, levelName, totalXP, lessons, challenges, streak, overallPct }) {
   const cardRef = useRef(null);
   const [busy, setBusy] = useState(false);
@@ -48,7 +46,7 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
       }
       track("progress_share", { method, surface: "dashboard", level, lessons, challenges, streak });
     } catch (e) {
-      // AbortError = user dismissed the native share sheet; not a real failure.
+
       if (e && e.name !== "AbortError") track("progress_share_error", { message: String(e?.message || e).slice(0, 120) });
     } finally {
       setBusy(false);
@@ -89,7 +87,7 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
         {busy ? "Rendering…" : "Share progress"}
       </button>
 
-      {/* Off-screen capture target */}
+      {}
       <div style={{ position: "fixed", left: "-9999px", top: 0, pointerEvents: "none" }} aria-hidden="true">
         <div
           ref={cardRef}

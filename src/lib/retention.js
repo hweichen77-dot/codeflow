@@ -1,10 +1,5 @@
 import { namespacedKey } from "./progressStats";
 
-// Retention engine — one data model behind daily goals, weekly recap, spaced
-// review, milestones, and onboarding. Per-user, localStorage-backed, SSR-safe.
-// Streak + freeze logic lives in progressStats.js (so all existing callers get
-// it); this module is everything else.
-
 export const RETENTION_CHANGED_EVENT = "codeflow:retention-changed";
 
 const ACTIVITY_KEY = () => namespacedKey("codeflow_activity_v1");
@@ -29,20 +24,17 @@ function read(key, fallback) {
 }
 function write(key, val) {
   if (typeof window === "undefined") return;
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch { /* ignore */ }
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {  }
 }
 function emit() {
-  try { window.dispatchEvent(new Event(RETENTION_CHANGED_EVENT)); } catch { /* ignore */ }
+  try { window.dispatchEvent(new Event(RETENTION_CHANGED_EVENT)); } catch {  }
 }
 
-// ---------------- Daily activity log ----------------
-// { [YYYY-MM-DD]: count } of meaningful actions (lesson/challenge/lab).
 export function getActivityLog() {
   return read(ACTIVITY_KEY(), {});
 }
 
-// Call on every completion. type is informational; count is what matters.
-export function recordActivity(/* type */) {
+export function recordActivity() {
   const log = getActivityLog();
   const k = todayKey();
   log[k] = (log[k] || 0) + 1;
@@ -55,7 +47,6 @@ export function getTodayCount() {
   return getActivityLog()[todayKey()] || 0;
 }
 
-// ---------------- Daily goal ----------------
 export function getDailyGoal() {
   const g = read(GOAL_KEY(), 1);
   return Math.max(1, Math.min(10, Number(g) || 1));
@@ -70,8 +61,6 @@ export function getDailyStatus() {
   return { done, goal, met: done >= goal, pct: Math.min(100, Math.round((done / goal) * 100)) };
 }
 
-// ---------------- Weekly recap ----------------
-// Rolling last 7 days from the activity log; XP is summed from progress rows.
 export function getWeeklyRecap(progress = []) {
   const log = getActivityLog();
   let activities = 0;
@@ -91,7 +80,6 @@ export function getWeeklyRecap(progress = []) {
   return { activities, activeDays: activeDays.size, bestDay, lessons, xp };
 }
 
-// Show the recap at most once per ISO week, and only if there was activity.
 function isoWeek(d = new Date()) {
   const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const day = t.getUTCDay() || 7;
@@ -112,8 +100,6 @@ export function markWeeklyRecapShown() {
   write(RECAP_KEY(), isoWeek());
 }
 
-// ---------------- Spaced review ----------------
-// Lessons completed >= 3 days ago and not reviewed in the last 3 days are "due".
 export function getReviewItems(lessons = [], progress = [], limit = 3) {
   const reviewed = read(REVIEW_KEY(), {});
   const now = Date.now();
@@ -128,7 +114,7 @@ export function getReviewItems(lessons = [], progress = [], limit = 3) {
     const lesson = byId.get(p.lesson_id);
     if (lesson) due.push({ lesson, age });
   }
-  due.sort((a, b) => b.age - a.age); // oldest first
+  due.sort((a, b) => b.age - a.age);
   return due.slice(0, limit).map((d) => d.lesson);
 }
 export function markReviewed(lessonId) {
@@ -138,8 +124,6 @@ export function markReviewed(lessonId) {
   emit();
 }
 
-// ---------------- Milestones ----------------
-// Returns any newly-crossed milestone (once each), for a celebration moment.
 const STREAK_TIERS = [3, 7, 14, 30, 60, 100];
 const LESSON_TIERS = [1, 5, 10, 25, 50, 100];
 const LAB_TIERS = [1, 5, 10];
@@ -163,20 +147,17 @@ export function checkMilestones({ streak = 0, lessonsDone = 0, labsSolved = 0, l
     if (!seen[id]) { seen[id] = Date.now(); fresh.push({ id, kind: "level", tier: level, label: `Reached level ${level}` }); }
   }
   if (fresh.length) write(MILESTONE_KEY(), seen);
-  // Return the highest-value fresh milestone to celebrate (avoid spamming).
+
   return fresh.sort((a, b) => b.tier - a.tier)[0] || null;
 }
 
-// Seed already-earned milestones without celebrating them (call once for
-// existing users so they don't get a burst of old milestones).
 export function seedMilestones(state) {
   if (read(MILESTONE_KEY(), null) != null) return;
   const seen = {};
-  checkMilestones(state); // no-op record path
+  checkMilestones(state);
   write(MILESTONE_KEY(), read(MILESTONE_KEY(), seen));
 }
 
-// ---------------- Onboarding ----------------
 export function isOnboarded() {
   return read(ONBOARD_KEY(), false) === true;
 }

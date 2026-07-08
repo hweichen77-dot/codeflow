@@ -36,9 +36,6 @@ export default function AuthGate() {
   const { signInGoogle, signInGuest, supabaseConfigured } = useAuth();
   const navigate = useNavigate();
 
-  // 'google' = sign in with Google; 'guest' = local-only quick start. Always
-  // start on the sign-in screen so guest mode is never a dead-end, it keeps a
-  // "back" route even when Supabase isn't configured (e.g. an unconfigured build).
   const [mode, setMode] = useState('google');
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);

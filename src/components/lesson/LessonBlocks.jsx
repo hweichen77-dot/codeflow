@@ -6,7 +6,6 @@ import WorkedExample from "./blocks/WorkedExample";
 import ComparisonTable from "./blocks/ComparisonTable";
 import Reflection from "./blocks/Reflection";
 
-
 const TOOL_REGISTRY = {
   tokenizer: InteractiveTokenizer,
 };

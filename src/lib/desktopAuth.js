@@ -1,11 +1,3 @@
-// Desktop (Tauri) Google OAuth via deep link.
-//
-// Flow: signInWithGoogle() returns the provider URL (skipBrowserRedirect) → we
-// open it in the system browser → the user authenticates → Supabase redirects to
-// `codeflow://auth-callback?code=…` → the deep-link plugin hands us that URL →
-// we exchange the code for a session. The PKCE verifier lives in this same
-// webview's localStorage, so the exchange succeeds. supabase's onAuthStateChange
-// (wired in AuthContext) then adopts the user and the UI navigates in.
 
 import { supabase, auth } from '@/api/supabaseClient'
 
@@ -14,7 +6,6 @@ export const isDesktop =
 
 let listenerReady = false
 
-// Kick off Google sign-in: get the OAuth URL, open it in the default browser.
 export async function startGoogleDesktop() {
   const { data, error } = await auth.signInWithGoogle()
   if (error) return { error }
@@ -48,12 +39,10 @@ async function handleCallback(url) {
       })
     }
   } catch {
-    // Failures surface through the auth-state listener; nothing to do here.
+
   }
 }
 
-// Register the deep-link listener once. Also drains a cold-start URL (app
-// launched by clicking the link while closed).
 export async function initDeepLinkAuth() {
   if (!isDesktop || listenerReady) return
   listenerReady = true
@@ -65,6 +54,6 @@ export async function initDeepLinkAuth() {
     } catch {  }
     await dl.onOpenUrl((urls) => { for (const u of urls) handleCallback(u) })
   } catch {
-    // Plugin absent (web build), no-op.
+
   }
 }

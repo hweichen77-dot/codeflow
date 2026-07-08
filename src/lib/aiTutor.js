@@ -1,8 +1,5 @@
 import { supabase } from '@/api/supabaseClient'
 
-// Calls the ai-tutor edge function: a Groq-backed coding tutor. All guardrails
-// (on-topic-only, anti-jailbreak, response caps) live server-side; the client
-// only sends the conversation, lesson context, and mode.
 export async function askTutor({ messages, lessonTitle = '', context = '', socratic = true, currentCode = '', lastOutput = '' }) {
   if (!supabase) {
     return { ok: false, configured: false, error: 'The AI tutor needs a connection (not configured in this build).' }

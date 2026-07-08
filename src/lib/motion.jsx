@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, useReducedMotion, animate } from "framer-motion";
 
-// Shared animation primitives so every page gets the same tactile feel as the
-// dashboard. All primitives honor prefers-reduced-motion (animations collapse to
-// static output for users who ask for reduced motion).
-
 export const fadeUp = {
   hidden: { opacity: 0, y: 18 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 220, damping: 24 } },
@@ -15,8 +11,6 @@ export const staggerContainer = (stagger = 0.07, delay = 0.04) => ({
   show: { transition: { staggerChildren: stagger, delayChildren: delay } },
 });
 
-// Route-level entrance. Wrap page content once (keyed by route) for a clean
-// fade + slide-up on every navigation.
 export function PageTransition({ children, pageKey }) {
   const rm = useReducedMotion();
   if (rm) return <>{children}</>;
@@ -32,9 +26,6 @@ export function PageTransition({ children, pageKey }) {
   );
 }
 
-// Container whose direct <StaggerItem> children cascade in. Triggered on mount
-// (not scroll) so content always reaches full visibility even if an
-// IntersectionObserver would have missed it. `as` lets it be a section/ul/etc.
 export function Stagger({ children, className, style, stagger = 0.07, delay = 0.04, as = "div" }) {
   const rm = useReducedMotion();
   const M = motion[as] || motion.div;
@@ -69,7 +60,6 @@ export function StaggerItem({ children, className, style, as = "div" }) {
   );
 }
 
-// Card that lifts + gets a warm glow on hover.
 export function HoverCard({ children, className, style, glow = "#E8A33C", lift = -4, as = "div", ...rest }) {
   const rm = useReducedMotion();
   const M = motion[as] || motion.div;
@@ -88,7 +78,6 @@ export function HoverCard({ children, className, style, glow = "#E8A33C", lift =
   );
 }
 
-// Progress/level bar that fills from 0 to pct% when scrolled into view.
 export function AnimatedBar({ pct = 0, className, style, color = "#E8A33C", duration = 1 }) {
   const rm = useReducedMotion();
   return (
@@ -102,7 +91,6 @@ export function AnimatedBar({ pct = 0, className, style, color = "#E8A33C", dura
   );
 }
 
-// Continuous glow pulse (e.g. streak flame).
 export function Pulse({ children, color = "#FF7A3D", className, style }) {
   const rm = useReducedMotion();
   if (rm) return <span className={className} style={style}>{children}</span>;
@@ -121,7 +109,6 @@ export function Pulse({ children, color = "#FF7A3D", className, style }) {
   );
 }
 
-// Counts a number up from 0 to `to` on mount (gamified stat reveal).
 export function CountUp({ to = 0, duration = 0.9, className, style }) {
   const rm = useReducedMotion();
   const [val, setVal] = useState(rm ? to : 0);

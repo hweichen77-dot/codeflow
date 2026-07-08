@@ -1,14 +1,8 @@
-// Data subject rights (GDPR Art. 15/17, CCPA/CPRA): self-serve export + delete.
-// CodeFlow is local-first, so "your data" spans two places:
-//   1. Everything under the `codeflow` localStorage prefix (progress, streak,
-//      challenges, capstones, profile, badges, flags).
-//   2. The cloud mirror in Supabase `user_state` (+ auth account) if signed in.
+
 import { supabase, auth as supaAuth } from '@/api/supabaseClient'
 
 const PREFIX = 'codeflow'
 
-// Every localStorage key this app owns, so export and delete stay in sync with
-// each other and with whatever new keys get added later (all use the prefix).
 function localKeys() {
   if (typeof window === 'undefined') return []
   const keys = []
@@ -47,8 +41,6 @@ async function readRemoteState() {
   }
 }
 
-// Assemble everything we hold about the user into one JSON document and hand it
-// back for download — satisfies the right to access / data portability.
 export async function exportUserData() {
   const bundle = {
     export_format: 'codeflow.data-export.v1',
@@ -69,18 +61,12 @@ export async function exportUserData() {
   return bundle
 }
 
-// Wipe every CodeFlow key from this device. Used on its own (guest/local
-// erasure) and as the local half of full-account deletion.
 export function deleteLocalData() {
   for (const k of localKeys()) {
-    try { window.localStorage.removeItem(k) } catch { /* ignore */ }
+    try { window.localStorage.removeItem(k) } catch {  }
   }
 }
 
-// Full erasure for signed-in users: delete the auth account + all server rows
-// (user_state / user_challenges / user_tracks / projects cascade off auth.users),
-// then wipe the device. The Edge Function does the privileged server delete; the
-// client only proves identity by forwarding its access token.
 export async function deleteAccountAndData() {
   if (!supaAuth.isConfigured) { deleteLocalData(); return { local: true, cloud: false } }
   const { data: { session } } = await supabase.auth.getSession()
@@ -100,7 +86,7 @@ export async function deleteAccountAndData() {
     const detail = await resp.text().catch(() => '')
     throw new Error(`account deletion failed (${resp.status}): ${detail.slice(0, 200)}`)
   }
-  try { await supabase.auth.signOut() } catch { /* already gone */ }
+  try { await supabase.auth.signOut() } catch {  }
   deleteLocalData()
   return { local: true, cloud: true }
 }

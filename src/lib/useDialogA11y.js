@@ -1,11 +1,5 @@
 import { useEffect, useRef } from 'react'
 
-// Modal a11y baseline (WCAG 2.1.2 / 2.4.3): move focus into the dialog on open,
-// close on Escape, and restore focus to the trigger on unmount. Attach the
-// returned ref to the dialog panel and give that panel tabIndex={-1}.
-// `active` lets a self-gating modal (mounted before it's open) trigger the
-// focus/Escape wiring only once it actually opens. Callers rendered
-// conditionally by a parent can leave it defaulted to true.
 export function useDialogA11y(onClose, active = true) {
   const dialogRef = useRef(null)
   const previouslyFocused = useRef(null)

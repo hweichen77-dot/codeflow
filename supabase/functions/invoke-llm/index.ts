@@ -1,9 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Powers the code-editor "Explain" feature (AIExplainModal / CodeEditor).
-// Uses the free Groq backend — same provider as ai-tutor / llm-playground — so
-// there is no paid Anthropic spend. Get a free key at
-// https://console.groq.com/keys and set it as GROQ_API_KEY.
 const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
 const MODEL = Deno.env.get("GROQ_MODEL") ?? "llama-3.3-70b-versatile";
 
@@ -18,9 +14,6 @@ const RATE_LIMIT_MAX = 20;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const hits = new Map<string, { count: number; resetAt: number }>();
 
-// Per-isolate global circuit breaker. The per-user/IP limiter bounds one caller;
-// this bounds the worst-case fan-out any single isolate can drive at the free
-// Groq backend even under many accounts / spoofed IPs. Ceiling, not exact quota.
 const GLOBAL_MAX_PER_WINDOW = 120;
 let globalCount = 0;
 let globalResetAt = 0;

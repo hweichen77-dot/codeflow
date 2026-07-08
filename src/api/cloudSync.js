@@ -83,7 +83,6 @@ const mergeProgress = (a = [], b = []) => {
   return [...byLesson.values()]
 }
 
-// Most recent lastVisit wins the current count; longest is the all-time max.
 const mergeStreak = (a, b) => {
   if (!a) return b || null
   if (!b) return a

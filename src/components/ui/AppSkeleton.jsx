@@ -1,8 +1,6 @@
 import React from "react";
 import { color } from "@/lib/tokens";
 
-// Shown while a lazy route/chunk loads. Mirrors the app shell (sidebar + header
-// + content rows) so the transition reads as "loading this page", not "blank".
 const Bar = ({ w = "100%", h = 14, mb = 0, style }) => (
   <div
     className="animate-pulse"
@@ -13,7 +11,7 @@ const Bar = ({ w = "100%", h = 14, mb = 0, style }) => (
 export default function AppSkeleton() {
   return (
     <div className="fixed inset-0 flex" style={{ background: color.bg }} aria-hidden="true">
-      {/* sidebar */}
+      {}
       <div
         className="hidden md:flex flex-col flex-shrink-0"
         style={{ width: 232, borderRight: `1px solid ${color.border}`, padding: "28px 20px" }}
@@ -26,7 +24,7 @@ export default function AppSkeleton() {
         <Bar w="60%" h={12} />
       </div>
 
-      {/* main */}
+      {}
       <div className="flex-1 overflow-hidden" style={{ padding: "72px clamp(2rem, 6vw, 4rem)" }}>
         <div style={{ maxWidth: 1024, margin: "0 auto" }}>
           <Bar w={96} h={11} mb={16} />

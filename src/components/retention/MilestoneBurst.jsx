@@ -8,12 +8,10 @@ import { getChallengeStats } from "@/api/progressStore";
 import { getLevel } from "@/components/gamification/XPLevelBar";
 import { KIT } from "@/components/ui/kit";
 
-// eslint-disable-next-line no-unused-vars -- referenced for level-milestone parity; level handled elsewhere
 const _levelRef = getLevel;
 
 const ICON_FOR = { streak: Flame, lessons: Trophy, level: Trophy, labs: Award };
 
-// A few outward "spark" targets for the burst (dx, dy in px).
 const SPARKS = [
   { dx: -70, dy: -54 },
   { dx: 66, dy: -60 },
@@ -36,7 +34,7 @@ export default function MilestoneBurst() {
         streak: getStreakInfo().current,
         lessonsDone: getChallengeStats().completed,
         labsSolved: getSolvedLabs().length,
-        level: 0, // level milestones handled elsewhere
+        level: 0,
       });
     } catch {
       hit = null;
@@ -54,7 +52,6 @@ export default function MilestoneBurst() {
     };
   }, [evaluate]);
 
-  // Auto-dismiss after ~3.5s.
   useEffect(() => {
     if (!milestone) return;
     const t = setTimeout(() => setMilestone(null), 3500);
@@ -89,14 +86,14 @@ export default function MilestoneBurst() {
             transition={{ type: "spring", stiffness: 320, damping: 22 }}
             aria-label={`Milestone: ${milestone.label}. Tap to dismiss.`}
           >
-            {/* Gold radial glow */}
+            {}
             <div
               className="absolute inset-0 rounded-3xl pointer-events-none"
               style={{ background: `radial-gradient(circle at 50% 38%, ${KIT.amber}33, transparent 68%)` }}
               aria-hidden="true"
             />
 
-            {/* Spark burst */}
+            {}
             {!reduce &&
               SPARKS.map((s, i) => (
                 <motion.span

@@ -17,7 +17,6 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 import __Layout from './Layout.jsx';
 
-
 export const PAGES = {
     "ChallengeDetail": ChallengeDetail,
     "Challenges": Challenges,

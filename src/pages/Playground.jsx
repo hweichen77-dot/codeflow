@@ -7,22 +7,18 @@ import { Stagger, StaggerItem, HoverCard } from '@/lib/motion'
 import { ProgressBar, KIT } from '@/components/ui/kit'
 import { getSolvedLabs, PLAYGROUND_CHANGED_EVENT } from '@/lib/playgroundProgress'
 
-// The prompt-security playground: pick a lab, write a defensive system prompt,
-// run it against a live model over a battery of adversarial attacks, and get a
-// shareable HELD/BROKEN score. Free, no signup.
 export default function Playground() {
-  // Deep-link support: /Playground?lab=<id> opens that challenge (shared links).
+
   const initialId = (() => {
     try {
       const q = new URLSearchParams(window.location.search).get('lab')
       if (q && LABS.some((l) => l.id === q)) return q
-    } catch { /* ignore */ }
+    } catch {  }
     return LABS[0]?.id
   })()
   const [activeId, setActiveId] = useState(initialId)
   const active = LABS.find((l) => l.id === activeId) || LABS[0]
 
-  // Completion: which labs the learner has solved (held all attacks).
   const [solvedIds, setSolvedIds] = useState(() => getSolvedLabs())
   useEffect(() => {
     const refresh = () => setSolvedIds(getSolvedLabs())

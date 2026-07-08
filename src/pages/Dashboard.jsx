@@ -18,8 +18,6 @@ import DailyGoal from "../components/retention/DailyGoal";
 import ReviewSection from "../components/retention/ReviewSection";
 import WeeklyRecapModal from "../components/retention/WeeklyRecapModal";
 
-// Palette (no blue/purple/cyan): off-black bg, warm amber/gold accents, emerald
-// for "complete", stark white text, warm-slate hover.
 const C = {
   bg: "#15130E",
   card: "#1B1913",
@@ -95,16 +93,15 @@ export default function Dashboard() {
     const currentLevel = getLevel(xp).level;
     const key = namespacedKey("codeflow_last_level");
     let lastSeen = 0;
-    try { lastSeen = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch { /* ignore */ }
+    try { lastSeen = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch {  }
     if (currentLevel > lastSeen) {
       if (lastSeen > 0) setLevelUp(currentLevel);
-      try { localStorage.setItem(key, String(currentLevel)); } catch { /* ignore */ }
+      try { localStorage.setItem(key, String(currentLevel)); } catch {  }
     }
   }, [user, progress]);
 
   if (!user) return null;
 
-  // ---- derived stats (real data) ----
   const completedProgress = progress.filter(p => p.completed);
   const completedLessonIds = new Set(completedProgress.map(p => p.lesson_id));
   const completedLessons = Math.max(completedProgress.length, challengeStats.completed);
@@ -129,7 +126,6 @@ export default function Dashboard() {
     return proj.lessons_count && done >= proj.lessons_count;
   }).length;
 
-  // continue-learning target: first project with an incomplete lesson
   let nextStep = null;
   for (const proj of projects) {
     const ls = lessonsByProject(proj.id);
@@ -157,7 +153,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen relative" style={{ background: C.bg }}>
-      {/* faint dot-grid texture so the background isn't a flat void */}
+      {}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -171,7 +167,7 @@ export default function Dashboard() {
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${C.amber}, transparent)` }} />
 
       <div className="relative max-w-5xl mx-auto px-6 lg:px-8 pt-24 pb-20">
-        {/* 2. Welcome */}
+        {}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <div className="font-sans text-xs tracking-[0.2em] uppercase mb-3" style={{ color: C.amber }}>Dashboard</div>
           <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 800, letterSpacing: "-0.03em", color: C.white, lineHeight: 1.1, margin: 0 }}>
@@ -182,7 +178,7 @@ export default function Dashboard() {
           </p>
         </motion.div>
 
-        {/* 3. Stat cards */}
+        {}
         <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
           {stats.map((s) => {
             const Icon = s.icon;
@@ -223,7 +219,7 @@ export default function Dashboard() {
           })}
         </motion.div>
 
-        {/* 4. Level progress bar */}
+        {}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-8 rounded-2xl p-5" style={{ background: C.card, border: `1px solid ${C.border}` }}>
           <div className="flex items-center justify-between mb-3">
             <span className="font-sans text-xs tracking-[0.14em] uppercase" style={{ color: C.dim }}>
@@ -244,12 +240,12 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Daily goal + streak (retention) */}
+        {}
         <div className="mt-8">
           <DailyGoal />
         </div>
 
-        {/* 5. Continue learning hero */}
+        {}
         {heroProject && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="mt-8 rounded-2xl p-6 lg:p-8 relative overflow-hidden"
@@ -274,7 +270,7 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* 6. Lesson list */}
+        {}
         {heroLessons.length > 0 && (
           <div className="mt-10">
             <div className="font-sans text-xs tracking-[0.16em] uppercase mb-4" style={{ color: C.dim }}>
@@ -291,7 +287,7 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-        {/* Spaced review (retention) */}
+        {}
         <div className="mt-10">
           <ReviewSection lessons={allLessons} progress={progress} />
         </div>

@@ -5,14 +5,12 @@ export const monitoringEnabled = Boolean(DSN) && typeof window !== 'undefined'
 let Sentry = null
 let started = false
 
-// Defence-in-depth: redact secrets/PII from anything Sentry sends, in case a
-// token or email lands in an error message, URL, or breadcrumb.
 const REDACTIONS = [
-  // OAuth / API secrets in query or fragment params
+
   [/\b(access_token|refresh_token|provider_token|provider_refresh_token|id_token|token|code|apikey|api_key)=[^&\s#"']+/gi, '$1=[REDACTED]'],
-  // JWTs (Supabase access tokens, etc.)
+
   [/eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, '[REDACTED_JWT]'],
-  // Email addresses
+
   [/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[REDACTED_EMAIL]'],
 ]
 function scrubString(s) {

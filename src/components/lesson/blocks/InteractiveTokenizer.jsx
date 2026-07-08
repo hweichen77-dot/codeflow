@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { trace } from "@/components/lesson/trace/theme";
 
-
 function tokenize(text) {
   if (!text) return [];
   const raw = text.match(/\s+|[a-zA-Z]+|[0-9]+|[^\sa-zA-Z0-9]/g) || [];

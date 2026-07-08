@@ -1,7 +1,3 @@
-// Notifications: web Notification API in the browser, native notifications in
-// the Tauri desktop app. Used for streak/goal nudges. A notification while the
-// app is open is a nudge, not a return trigger; the real return trigger for a
-// closed app is the retention email (see supabase/functions/retention-email).
 
 const isDesktop = () => typeof window !== "undefined" && !!window.__TAURI_INTERNALS__;
 
@@ -12,7 +8,7 @@ export async function getPermissionState() {
       return (await isPermissionGranted()) ? "granted" : "default";
     }
     if (typeof Notification === "undefined") return "unsupported";
-    return Notification.permission; // 'granted' | 'denied' | 'default'
+    return Notification.permission;
   } catch {
     return "unsupported";
   }
@@ -43,10 +39,10 @@ export async function notify(title, body) {
       return;
     }
     if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-      // eslint-disable-next-line no-new
+
       new Notification(title, { body, icon: "/favicon.svg" });
     }
   } catch {
-    /* ignore */
+
   }
 }

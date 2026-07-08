@@ -1,17 +1,4 @@
-// AI Tutor runner.
-//
-// Powers the in-lesson coding tutor. Anon-friendly (guests can use it with no
-// sign-in wall) and backed by the free Groq API. The system prompt and all
-// hard guardrails are built SERVER-SIDE so a client cannot weaken them: the
-// browser only sends the conversation, the lesson context, and the mode.
-//
-// Abuse containment: per-IP + per-isolate global rate limiting, a hard cap on
-// message count/length, small max_tokens, and a strict on-topic/anti-jailbreak
-// system prompt (no roleplay, no rule-override, no system-prompt disclosure, no
-// deals/prices/offers — the "brand chatbot says anything / sells a car for $1"
-// failure mode).
 
-// Separate key from the playground so tutor traffic has its own Groq quota.
 const GROQ_API_KEY = Deno.env.get("TUTOR_GROQ_API_KEY") ?? Deno.env.get("GROQ_API_KEY");
 const MODEL = Deno.env.get("GROQ_MODEL") ?? "llama-3.3-70b-versatile";
 const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://hweichen77-dot.github.io";
@@ -22,13 +9,10 @@ const MAX_CONTEXT_CHARS = 1200;
 const MAX_CODE_CHARS = 2000;
 const MAX_TOKENS = 320;
 
-// Per-IP rate limit.
 const RATE_LIMIT_MAX = 12;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const hits = new Map<string, { count: number; resetAt: number }>();
 
-// Per-isolate global circuit breaker (the per-IP limiter is bypassable via a
-// forged X-Forwarded-For; this bounds worst-case fan-out at the free backend).
 const GLOBAL_MAX_PER_WINDOW = 240;
 let globalCount = 0;
 let globalResetAt = 0;
@@ -71,8 +55,6 @@ function corsHeaders(origin: string | null) {
   };
 }
 
-// Non-overridable guardrails. Built server-side and prepended as the system
-// message so no client input can weaken them.
 function systemPrompt(lessonTitle: string, context: string, socratic: boolean, code: string, output: string): string {
   const codeBlock = code ? `\n\nStudent's current code:\n\`\`\`\n${code}\n\`\`\`` : "";
   const outputBlock = output ? `\n\nLast output/error:\n${output}` : "";
@@ -125,8 +107,6 @@ Deno.serve(async (req: Request) => {
     return json({ configured: false, error: "The AI tutor is not configured yet." });
   }
 
-  // Sanitize + cap the conversation. Only user/assistant turns, trimmed and
-  // length-limited, most recent MAX_MESSAGES kept.
   const rawMessages = Array.isArray(payload.messages) ? payload.messages : [];
   const convo = rawMessages
     .filter(
@@ -144,7 +124,7 @@ Deno.serve(async (req: Request) => {
   const sys = systemPrompt(
     String(payload.lessonTitle || "").slice(0, 200),
     String(payload.context || "").slice(0, MAX_CONTEXT_CHARS),
-    payload.socratic !== false, // default to Socratic if unspecified
+    payload.socratic !== false,
     String(payload.currentCode || "").slice(0, MAX_CODE_CHARS),
     String(payload.lastOutput || "").slice(0, 600),
   );

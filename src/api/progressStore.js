@@ -95,7 +95,6 @@ export const UserProgress = {
   },
 }
 
-
 export function markChallengeComplete(id) {
   if (!id) return null
   const rows = readArr(CHALLENGES_KEY)

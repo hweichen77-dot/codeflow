@@ -1,12 +1,6 @@
 const EXEC_TIMEOUT_MS = 5000;
 const LOAD_TIMEOUT_MS = 45000;
 
-// Pyodide is bundled and served same-origin (public/pyodide/) rather than pulled
-// from a CDN. This removes the third-party supply-chain surface, important for
-// the Tauri desktop build, where remote executable code in a native app is a real
-// risk, and lets the runtime work offline. `base` is the absolute same-origin URL
-// computed on the main thread (window.location.origin + Vite BASE_URL), injected
-// here because a blob worker cannot reliably resolve relative/same-origin paths.
 const workerSrc = (base) => `
 self.language = "python";
 let pyReady = null;
@@ -92,8 +86,7 @@ let ready = false;
 let runChain = Promise.resolve();
 
 function spawnWorker() {
-  // Absolute same-origin URL to the bundled Pyodide, resolved at runtime so it is
-  // correct for both the web build (base /codeflow/) and the desktop build (base /).
+
   const base = `${window.location.origin}${import.meta.env.BASE_URL || "/"}pyodide/`;
   const blob = new Blob([workerSrc(base)], { type: "application/javascript" });
   const url = URL.createObjectURL(blob);

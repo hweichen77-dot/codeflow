@@ -43,7 +43,7 @@ export const LESSONS = MODULES.flatMap(m => m.lessons)
 const XP_BY_DIFFICULTY = { beginner: 15, intermediate: 25, advanced: 40 }
 
 export const CHALLENGES = LESSONS.filter(l => l.challenge_title).map((l, i) => {
-  // eslint-disable-next-line, runtime fallback; project is always found in practice
+
   const project =  (PROJECTS.find(p => p.id === l.project_id) || {})
   const difficulty = l.challenge_difficulty || project.difficulty || 'beginner'
   const topic = (project.tags && project.tags[0]) || project.category || 'ai'
@@ -78,11 +78,6 @@ export const getLessonsByProject = (id) =>
   LESSONS.filter(l => l.project_id === id).sort((a, b) => (a.order || 0) - (b.order || 0))
 export const getLesson = (id) => LESSONS.find(l => l.id === id)
 
-// ---------------------------------------------------------------------------
-// Slugs + per-lesson route map (for SEO-friendly /learn/:project/:lesson URLs).
-// Identity stays `id`-based; slugs are a stable, keyword-rich addressing layer
-// derived from titles, with deterministic de-duplication.
-// ---------------------------------------------------------------------------
 export const slugify = (s) =>
   String(s || '')
     .toLowerCase()
@@ -99,8 +94,8 @@ for (const p of PROJECTS) {
   _projIdToSlug[p.id] = s
 }
 
-const _lessonKeyToId = {}   // "projectSlug/lessonSlug" -> lessonId
-const _lessonIdToRoute = {} // lessonId -> { projectSlug, lessonSlug }
+const _lessonKeyToId = {}
+const _lessonIdToRoute = {}
 for (const p of PROJECTS) {
   const projectSlug = _projIdToSlug[p.id]
   const used = {}
@@ -126,7 +121,6 @@ export const resolveLessonSlugs = (projectSlug, lessonSlug) => {
   return { projectId, lessonId }
 }
 
-// Flat manifest consumed by the build-time prerender + sitemap generator.
 export const LESSON_ROUTES = LESSONS.map(l => {
   const r = _lessonIdToRoute[l.id] || {}
   const project = getProject(l.project_id) || {}

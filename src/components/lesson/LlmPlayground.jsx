@@ -4,13 +4,9 @@ import { runPlayground, gradePlayground } from '@/lib/llmPlayground'
 import { markLabSolved, isLabSolved } from '@/lib/playgroundProgress'
 import { track } from '@/lib/analytics'
 
-// Interactive, auto-graded red-team lab: the learner writes a defensive system
-// prompt, it runs against a live model over a battery of adversarial inputs
-// (attacks), and each real output is graded HELD/BROKEN against the lab's rules.
-// The score ("held 7/8 attacks") is shareable — that's the acquisition loop.
 export default function LlmPlayground({ lab }) {
   const [systemPrompt, setSystemPrompt] = useState('')
-  const [state, setState] = useState({ status: 'idle' }) // idle | running | done | error | unconfigured
+  const [state, setState] = useState({ status: 'idle' })
   const [result, setResult] = useState(null)
   const [showHint, setShowHint] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -36,7 +32,7 @@ export default function LlmPlayground({ lab }) {
     try {
       track('playground_run', { lab: lab.id, passed: graded.passed, total: graded.total })
       if (graded.allPass) track('playground_solved', { lab: lab.id })
-    } catch { /* analytics optional */ }
+    } catch {  }
   }
 
   const share = async () => {
@@ -51,7 +47,7 @@ export default function LlmPlayground({ lab }) {
       if (navigator.share) { await navigator.share({ title: 'CodeFlow red-team lab', text, url }); return }
       await navigator.clipboard.writeText(text)
       setCopied(true); setTimeout(() => setCopied(false), 2000)
-    } catch { /* user dismissed */ }
+    } catch {  }
   }
 
   const amber = '#E8A33C'
@@ -132,7 +128,7 @@ export default function LlmPlayground({ lab }) {
 
       {result && (
         <div className="mt-5">
-          {/* Scorecard: the shareable centerpiece */}
+          {}
           <div className="rounded-xl p-4 mb-4" style={{ background: result.allPass ? '#12200f' : '#1B1913', border: `1px solid ${result.allPass ? '#2f5a25' : '#3A3428'}` }}>
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
@@ -149,7 +145,7 @@ export default function LlmPlayground({ lab }) {
                 {copied ? <><Check size={15} /> Copied</> : <><Share2 size={15} /> Share score</>}
               </button>
             </div>
-            {/* Attack matrix: one shield per attack, held (green) or broken (red) */}
+            {}
             <div className="flex flex-wrap gap-2 mt-4">
               {result.graded.map((g, i) => (
                 <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold"
@@ -164,7 +160,7 @@ export default function LlmPlayground({ lab }) {
             )}
           </div>
 
-          {/* Per-attack detail */}
+          {}
           <div className="space-y-3">
             {result.graded.map((g, i) => (
               <div key={i} className="rounded-lg p-3" style={{ background: '#0F0D08', border: '1px solid #221d12' }}>

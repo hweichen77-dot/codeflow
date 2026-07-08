@@ -1,8 +1,5 @@
 import { supabase } from '@/api/supabaseClient'
 
-// Calls the llm-playground edge function: runs the learner's system prompt
-// against a set of test inputs on a live model and returns each real output.
-// Grading happens client-side against the scenario rules (see gradePlayground).
 export async function runPlayground({ systemPrompt, inputs, maxTokens = 200 }) {
   if (!supabase) {
     return { ok: false, configured: false, error: 'Live grading needs a Supabase connection (not configured in this build).' }
@@ -15,8 +12,7 @@ export async function runPlayground({ systemPrompt, inputs, maxTokens = 200 }) {
       body: { systemPrompt, inputs, maxTokens },
     })
     if (error) {
-      // Function not deployed yet / unreachable → show the friendly "not live
-      // yet" state rather than a raw fetch error.
+
       const msg = error.message || 'Request failed.'
       if (/failed to send|edge function|not found|404/i.test(msg)) {
         return { ok: false, configured: false, error: 'Live grading is being switched on, check back soon.' }
@@ -31,9 +27,6 @@ export async function runPlayground({ systemPrompt, inputs, maxTokens = 200 }) {
   }
 }
 
-// Rule-based grader. Rules are plain data so they live in lesson content:
-//   { mustInclude: [...], mustExclude: [...], includeAny: [...] }
-// Matching is case-insensitive. Returns { pass, reasons[] } per output.
 export function gradeOutput(output, rules = {}) {
   const text = String(output || '').toLowerCase()
   const reasons = []
@@ -52,7 +45,6 @@ export function gradeOutput(output, rules = {}) {
   return { pass, reasons }
 }
 
-// Grade a whole run. `cases` aligns with the scenario inputs (same order).
 export function gradePlayground(results, cases) {
   const graded = results.map((r, i) => {
     const rules = cases[i]?.rules || cases[i] || {}

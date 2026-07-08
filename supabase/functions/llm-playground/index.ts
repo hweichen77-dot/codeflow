@@ -1,17 +1,4 @@
-// Live LLM Playground runner.
-//
-// Powers CodeFlow's differentiator: lessons where a learner writes a real system
-// prompt and it is executed against a live model over several (often adversarial)
-// user inputs. The model's real outputs come back to the client, which grades
-// them against the scenario's rules.
-//
-// Unlike invoke-llm (which requires a signed-in user), this endpoint is
-// intentionally anon-friendly so guests can try it with no sign-in wall. Abuse
-// is contained by: strict per-IP rate limiting, a hard cap on inputs per call,
-// small max_tokens, a cheap model, and length caps on all user-supplied text.
 
-// Groq — genuinely free API (no card, generous limits) keeps the playground $0 to run.
-// Get a free key at https://console.groq.com/keys and set it as GROQ_API_KEY.
 const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
 const MODEL = Deno.env.get("GROQ_MODEL") ?? "llama-3.3-70b-versatile";
 const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://hweichen77-dot.github.io";
@@ -21,17 +8,10 @@ const MAX_INPUT_CHARS = 600;
 const MAX_INPUTS = 3;
 const MAX_TOKENS_CAP = 256;
 
-// Per-IP rate limit. Each request may fan out to MAX_INPUTS model calls, so keep
-// the request budget modest.
 const RATE_LIMIT_MAX = 6;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const hits = new Map<string, { count: number; resetAt: number }>();
 
-// Per-isolate global circuit breaker. The per-IP limiter is bypassable (client can
-// spoof X-Forwarded-For), and the anon endpoint has no auth, so this bounds the
-// worst-case fan-out any single isolate can drive at the free Groq backend even if
-// every request forges a unique IP. It is per-isolate (not globally shared), so it
-// is a ceiling, not a precise quota — durable/shared limiting would need Postgres.
 const GLOBAL_MAX_PER_WINDOW = 120;
 let globalCount = 0;
 let globalResetAt = 0;
@@ -59,8 +39,7 @@ function globalLimited(): boolean {
 }
 
 function corsHeaders(origin: string | null) {
-  // Allow the configured web origin, localhost for dev/preview, and the Tauri
-  // desktop webview origins (macOS/Linux: tauri://localhost, Windows: http://tauri.localhost).
+
   const ok =
     origin &&
     (origin === ALLOWED_ORIGIN ||
@@ -138,8 +117,7 @@ Deno.serve(async (req: Request) => {
           return { input, output: "", error: "model error" };
         }
         const data = await resp.json();
-        // OpenAI-compatible response. An empty result usually means a refusal —
-        // the grader handles it as a fail.
+
         const output = (data?.choices?.[0]?.message?.content || "").trim();
         return { input, output };
       }),

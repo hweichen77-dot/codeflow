@@ -4,10 +4,6 @@ import { ArrowRight } from "lucide-react";
 import { font } from "@/lib/tokens";
 import { Stagger, StaggerItem, HoverCard, AnimatedBar, Pulse, CountUp } from "@/lib/motion";
 
-// Shared UI kit — the dashboard's card design language, reusable app-wide.
-// Deep off-black surfaces, warm borders, tiny uppercase eyebrow labels, amber/
-// gold/emerald accents. Cards lift + glow on hover; grids stagger in.
-
 export const KIT = {
   bg: "#15130E",
   card: "#1B1913",
@@ -26,8 +22,6 @@ export const KIT = {
   dim: "#B9B1A2",
 };
 
-// Tiny uppercase tracked label with a gold terminal-prompt caret — the recurring
-// signature motif, stamped on every section label across the app.
 export function Eyebrow({ children, color = KIT.dim, className = "", style, caret = true }) {
   return (
     <div className={`text-[11px] tracking-[0.18em] uppercase inline-flex items-center gap-1.5 ${className}`}
@@ -38,7 +32,6 @@ export function Eyebrow({ children, color = KIT.dim, className = "", style, care
   );
 }
 
-// Base surface card. Lifts + warm-glows on hover unless hover={false}.
 export function Card({ children, className = "", style, accent = KIT.amber, hover = true, as = "div", ...rest }) {
   const base = { background: KIT.card, border: `1px solid ${KIT.border}`, borderRadius: 16, ...style };
   if (!hover) {
@@ -52,8 +45,6 @@ export function Card({ children, className = "", style, accent = KIT.amber, hove
   );
 }
 
-// Stat card: eyebrow label, big value, sub-label, accent icon (+optional badge
-// or pulsing icon). Matches the dashboard stat cards exactly.
 export function StatCard({ label, value, sub, icon: Icon, accent = KIT.amber, badge, pulse = false, className = "" }) {
   return (
     <Card accent={accent} className={`p-5 ${className}`}>
@@ -79,7 +70,6 @@ export function StatCard({ label, value, sub, icon: Icon, accent = KIT.amber, ba
   );
 }
 
-// Responsive stat-card grid that staggers its children in.
 export function StatGrid({ children, cols = 4, className = "" }) {
   const col = cols === 3 ? "lg:grid-cols-3" : cols === 2 ? "lg:grid-cols-2" : "lg:grid-cols-4";
   return (
@@ -89,8 +79,6 @@ export function StatGrid({ children, cols = 4, className = "" }) {
   );
 }
 
-// Pill progress bar with animated fill. Amber->gold by default; pass color for
-// a solid (e.g. emerald for "complete").
 export function ProgressBar({ pct = 0, color, height = 10, track = "#0F0D08", glow = true, className = "", style }) {
   const fill = color || KIT.goldGrad;
   return (
@@ -101,8 +89,6 @@ export function ProgressBar({ pct = 0, color, height = 10, track = "#0F0D08", gl
   );
 }
 
-// Primary amber call-to-action with a sliding arrow. Renders a Link (to) or a
-// button (onClick).
 export function PrimaryButton({ children, to, onClick, arrow = true, className = "", type = "button" }) {
   const style = { background: KIT.goldGrad, color: KIT.bg };
   const cls = `group inline-flex items-center gap-2.5 rounded-xl px-6 py-3.5 font-sans text-sm font-bold tracking-wide uppercase transition-all duration-200 ${className}`;
@@ -118,8 +104,6 @@ export function PrimaryButton({ children, to, onClick, arrow = true, className =
   return <button type={type} onClick={onClick} className={cls} style={style} onMouseEnter={enter} onMouseLeave={leave}>{inner}</button>;
 }
 
-// Larger feature/hero card (the "Continue Learning" panel): warm gradient,
-// eyebrow, big title, and freeform content (progress, meta, CTA).
 export function HeroCard({ eyebrow, title, children, className = "", style }) {
   return (
     <div className={`rounded-2xl p-6 lg:p-8 relative overflow-hidden ${className}`}
@@ -139,7 +123,6 @@ export function HeroCard({ eyebrow, title, children, className = "", style }) {
   );
 }
 
-// Section header: eyebrow + optional big editorial title, for page tops.
 export function SectionHeader({ eyebrow, title, sub, className = "" }) {
   return (
     <div className={className}>

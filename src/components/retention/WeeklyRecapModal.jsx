@@ -7,8 +7,6 @@ import { CountUp } from "@/lib/motion";
 import { font } from "@/lib/tokens";
 import { useDialogA11y } from "@/lib/useDialogA11y";
 
-// Once-a-week reflection moment. Summarizes the last 7 days of activity, then
-// marks itself shown so it won't reappear until next ISO week.
 export default function WeeklyRecapModal({ progress = [], onClose }) {
   const r = getWeeklyRecap(progress);
   const activities = r.activities;

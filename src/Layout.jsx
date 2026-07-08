@@ -18,10 +18,6 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Primary (learning) nav lives in the center; personal pages (Dashboard,
-  // Portfolio) sit in the right-hand account cluster to keep the bar uncluttered.
-  // Grouped by the learner journey: pick a track (Learn), then get hands-on
-  // (Practice). Ordered, not a random flat list.
   const navGroups = [
     {
       name: "Learn",

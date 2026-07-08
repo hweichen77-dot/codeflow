@@ -1,11 +1,3 @@
-// Post-build prerender: after `vite build`, stamp a static HTML file for every
-// lesson at dist/learn/<projectSlug>/<lessonSlug>/index.html with a correct
-// <title>, description, canonical + OG/Twitter tags and real (crawlable) lesson
-// text inside #root. The SPA mounts over #root and replaces the placeholder.
-// Also regenerates dist/sitemap.xml with every lesson URL.
-//
-// SPA-only apps are invisible to search engines; this gives each lesson its own
-// indexable page without a headless browser.
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -20,9 +12,6 @@ const BASE = '/codeflow'
 
 const TOP_PAGES = ['/', '/AITrack', '/Playground', '/Projects', '/Challenges', '/Competitive', '/APCS', '/Privacy', '/Terms']
 
-// Static HTML + meta for top-level SPA routes so they return HTTP 200 (not the
-// 404-shim) with a real title/description. Content is client-rendered; this is
-// the crawlable shell + a short blurb.
 const TOP_PAGE_META = {
   AITrack: {
     title: 'Learn to Build AI Apps',
@@ -63,7 +52,6 @@ const esc = (s) =>
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
-// Markdown → plain text, trimmed for meta/description use.
 const stripMd = (s) =>
   String(s || '')
     .replace(/```[\s\S]*?```/g, ' ')
@@ -98,7 +86,7 @@ function seoBlock(r) {
     intro ? `<p>${esc(intro)}</p>` : '',
     r.challengeTitle ? `<p><strong>Challenge:</strong> ${esc(r.challengeTitle)}</p>` : '',
   ]
-  // Inside #root so it shows pre-hydration and is replaced when the SPA mounts.
+
   return `<article style="max-width:720px;margin:64px auto;padding:0 24px;font-family:system-ui,sans-serif;color:#e8e2d5;line-height:1.6">${parts.join('')}</article>`
 }
 
@@ -122,7 +110,6 @@ function run() {
     written++
   }
 
-  // Top-level pages: stamp a 200 shell with real meta.
   let topWritten = 0
   for (const [page, meta] of Object.entries(TOP_PAGE_META)) {
     const url = `${ORIGIN}/${page}`
@@ -137,7 +124,6 @@ function run() {
     topWritten++
   }
 
-  // Sitemap: top pages + every lesson.
   const urls = [
     ...TOP_PAGES.map((p) => `${BASE}${p === '/' ? '/' : p}`),
     ...routes.map((r) => `${BASE}${r.path}`),

@@ -6,8 +6,6 @@ import { getLessonPath } from "@/content";
 import { Eyebrow, KIT, Card } from "@/components/ui/kit";
 import { Stagger, StaggerItem } from "@/lib/motion";
 
-// Spaced-review nudge. Surfaces up to 3 lessons finished a few days ago so the
-// learner can reinforce them. Renders nothing when nothing is due.
 export default function ReviewSection({ lessons = [], progress = [] }) {
   const items = getReviewItems(lessons, progress, 3);
   if (items.length === 0) return null;

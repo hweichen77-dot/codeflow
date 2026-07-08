@@ -1,20 +1,9 @@
 #!/usr/bin/env node
-// Content QA scanner: flags placeholder/filler text and suspicious links across
-// all lessons, challenges, projects, and competitive problems.
-//
-//   node scripts/scan-content.mjs            # offline text + link-shape scan
-//   node scripts/scan-content.mjs --check-links   # also HEAD-check external URLs
-//
-// Exit 1 if any HIGH-severity findings (real placeholders / broken link shapes).
 
 import { PROJECTS, LESSONS, CHALLENGES, COMPETITIVE } from "../src/content/index.js";
 
 const checkLinks = process.argv.includes("--check-links");
 
-// HIGH = almost certainly unfinished content. LOW = worth a look, may be fine.
-// Tuned for educational prose: words like "placeholder", "example.com", and
-// "insert" appear legitimately in lessons (vocab, URL/PII demos, insertion sort),
-// so they are NOT flagged. Only true unfinished-content markers are HIGH.
 const PLACEHOLDER_PATTERNS = [
   { re: /\bTODO\b/, sev: "high", note: "TODO marker" },
   { re: /\bFIXME\b/, sev: "high", note: "FIXME marker" },
@@ -26,11 +15,9 @@ const PLACEHOLDER_PATTERNS = [
   { re: /\basdf\b|\bqwerty\b/i, sev: "low", note: "keyboard-mash filler" },
 ];
 
-const LINK_RE = /\[([^\]]*)\]\(([^)]*)\)/g;          // markdown [text](url)
-const BARE_URL_RE = /https?:\/\/[^\s)"'<>]+/g;        // bare http(s) urls
+const LINK_RE = /\[([^\]]*)\]\(([^)]*)\)/g;
+const BARE_URL_RE = /https?:\/\/[^\s)"'<>]+/g;
 
-// Stub code fields legitimately contain "TODO"/"your code here" — that's the
-// fill-in-the-blank pedagogy. Skip placeholder scanning there (still scan links).
 const STUB_FIELD_RE = /starter_(code|cpp)/i;
 
 const findings = [];
@@ -87,7 +74,6 @@ for (const { kind, rows } of sets) {
   }
 }
 
-// Optional live link check
 const deadLinks = [];
 if (checkLinks && links.size) {
   console.log(`Checking ${links.size} external link(s)…`);
@@ -105,7 +91,6 @@ if (checkLinks && links.size) {
   }));
 }
 
-// Report
 const high = findings.filter((f) => f.sev === "high");
 const low = findings.filter((f) => f.sev === "low");
 

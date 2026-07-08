@@ -14,14 +14,10 @@ const btnBase = {
   transition: 'opacity .15s',
 }
 
-// Self-serve data access + erasure controls (GDPR Art. 15/17, CCPA/CPRA).
-// Works for guests (device-local erasure) and signed-in users (full account
-// deletion via the delete-account Edge Function). Uses a two-step in-page
-// confirm rather than window.confirm so it stays keyboard/screen-reader friendly.
 export default function DataControls() {
   const { isAuthenticated, authMode } = useAuth()
   const isAccount = isAuthenticated && authMode === 'email'
-  const [busy, setBusy] = useState(null) // 'export' | 'delete'
+  const [busy, setBusy] = useState(null)
   const [confirming, setConfirming] = useState(false)
 
   const onExport = async () => {

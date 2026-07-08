@@ -107,8 +107,6 @@ export default function ProjectDetail() {
   const activeLesson = lessons.find((l) => l.id === activeLessonId);
   const activeLessonIndex = lessons.findIndex((l) => l.id === activeLessonId);
 
-  // Keep the URL + document head in sync with the selected lesson so every
-  // lesson is deep-linkable and shareable (only when viewing via /learn/...).
   useEffect(() => {
     if (!projectSlug || !activeLesson) return;
     const path = getLessonPath(activeLesson.id);
@@ -200,8 +198,6 @@ export default function ProjectDetail() {
     }
   };
 
-  // Reset scroll to the top of the page whenever the lesson changes, so Next/Prev
-  // land you at the start of the new lesson instead of wherever the button was.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [activeLessonId]);

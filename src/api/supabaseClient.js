@@ -3,9 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-// Inside the Tauri desktop shell the OAuth redirect can't return to the webview,
-// so we send Google to a custom-scheme deep link and skip the in-app redirect;
-// desktopAuth.js opens the URL in the system browser and handles the callback.
 const isDesktopEnv = typeof window !== 'undefined' && Boolean(window.__TAURI__ || window.__TAURI_INTERNALS__)
 export const DEEP_LINK_REDIRECT = 'codeflow://auth-callback'
 

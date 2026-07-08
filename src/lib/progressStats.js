@@ -21,7 +21,6 @@ export function namespacedKey(base, id) {
 const streakKey = (id) => namespacedKey(STREAK_BASE, id);
 const MAX_FREEZES = 3;
 
-// Whole-day difference between a stored toDateString() and today.
 function dayGap(lastVisit, now = new Date()) {
   if (!lastVisit) return Infinity;
   const from = new Date(lastVisit);
@@ -37,7 +36,7 @@ function readStreak() {
 export function getStreak() {
   const data = readStreak();
   const gap = dayGap(data.lastVisit);
-  // Live today/yesterday, or one missed day covered by an available freeze.
+
   if (gap <= 1) return data.streak || 0;
   if (gap === 2 && (data.freezes || 0) > 0) return data.streak || 0;
   return 0;
@@ -51,11 +50,11 @@ export function touchStreak() {
     let freezes = data.freezes || 0;
     let streak;
     if (data.lastVisit == null) streak = 1;
-    else if (gap === 0) streak = prev || 1;         // already active today
-    else if (gap === 1) streak = prev + 1;          // consecutive day
-    else if (gap === 2 && freezes > 0) { freezes -= 1; streak = prev + 1; } // freeze covered 1 missed day
-    else streak = 1;                                // streak broke
-    // Earn a freeze each time the streak crosses a multiple of 5 (cap 3).
+    else if (gap === 0) streak = prev || 1;
+    else if (gap === 1) streak = prev + 1;
+    else if (gap === 2 && freezes > 0) { freezes -= 1; streak = prev + 1; }
+    else streak = 1;
+
     if (streak > prev && streak % 5 === 0) freezes = Math.min(MAX_FREEZES, freezes + 1);
     const longest = Math.max(data.longest || 0, streak);
     localStorage.setItem(streakKey(), JSON.stringify({ lastVisit: new Date().toDateString(), streak, freezes, longest }));
@@ -65,9 +64,6 @@ export function touchStreak() {
   }
 }
 
-// Rich streak state for the UI: current, freezes banked, longest ever, whether
-// the user has been active today, and whether the streak is at risk (alive but
-// no activity yet today — the moment to nudge them).
 export function getStreakInfo() {
   const data = readStreak();
   const current = getStreak();
@@ -81,9 +77,6 @@ export function getStreakInfo() {
   };
 }
 
-// Compact streak state for cloud sync. lastVisit is normalized to an ISO date
-// (YYYY-MM-DD) so a server-side job (pg_cron) can compare it with `current_date`
-// to find users whose streak is alive but at risk today. See cloudSync.js.
 export function getStreakSyncState() {
   const data = readStreak();
   const current = getStreak();

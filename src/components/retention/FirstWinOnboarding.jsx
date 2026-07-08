@@ -33,7 +33,6 @@ export default function FirstWinOnboarding() {
   const reduce = useReducedMotion();
   const dialogRef = useDialogA11y(() => dismiss(), open);
 
-  // Already onboarded → nothing to show.
   if (isOnboarded()) return null;
 
   const dismiss = () => {
@@ -45,7 +44,7 @@ export default function FirstWinOnboarding() {
     try {
       await requestNotificationPermission();
     } catch {
-      /* permission denied or unsupported — proceed anyway */
+
     }
     dismiss();
   };

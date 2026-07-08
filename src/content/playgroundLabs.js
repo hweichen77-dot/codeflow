@@ -1,9 +1,3 @@
-// Live LLM Playground labs. Each lab gives the learner a real failure mode of
-// LLM apps and asks them to fix it by writing a system prompt, which is then
-// executed against a live model over adversarial inputs and auto-graded.
-//
-// Rules are plain data (see gradeOutput in src/lib/llmPlayground.js):
-//   mustInclude / mustExclude / includeAny  (case-insensitive substring checks)
 
 const LABS = [
   {

@@ -1,15 +1,3 @@
-// Retention email — the real "come back" trigger for a closed app.
-//
-// Sends a short streak/goal nudge via Resend. Designed to be called from a
-// scheduled job (Supabase cron / pg_cron + pg_net, or an external scheduler)
-// that iterates users whose streak is at risk. Requires:
-//   - RESEND_API_KEY  (https://resend.com, free tier)
-//   - RETENTION_FROM  (a verified sender, e.g. "CodeFlow <hi@yourdomain>")
-//   - a secret shared with the caller (RETENTION_TRIGGER_SECRET) so this
-//     endpoint can't be used to spam arbitrary addresses.
-//
-// Body: { email, name?, streak?, kind?: "streak_risk" | "goal" | "weekly",
-//         resumeUrl?, secret }
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM = Deno.env.get("RETENTION_FROM") ?? "CodeFlow <onboarding@resend.dev>";
@@ -40,7 +28,7 @@ function subjectAndBody({ name, streak, kind, resumeUrl }: { name?: string; stre
       html: `<p>Hi ${who},</p><p>Here's a quick recap of your week. Ready for the next one?</p><p><a href="${url}">Keep learning</a>.</p>`,
     };
   }
-  // streak_risk (default)
+
   const s = streak && streak > 0 ? `${streak}-day` : "";
   return {
     subject: s ? `Keep your ${s} streak alive` : "Come back to CodeFlow",
@@ -59,8 +47,6 @@ Deno.serve(async (req: Request) => {
   let body: { email?: string; name?: string; streak?: number; kind?: string; resumeUrl?: string; secret?: string };
   try { body = await req.json(); } catch { return json({ error: "invalid JSON" }, 400); }
 
-  // Fail closed: the shared secret is the only gate (deployed --no-verify-jwt),
-  // so a missing/empty secret must reject, never wave requests through.
   if (!TRIGGER_SECRET || body.secret !== TRIGGER_SECRET) return json({ error: "unauthorized" }, 401);
   const email = String(body.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "invalid email" }, 400);

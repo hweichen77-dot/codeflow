@@ -59,8 +59,6 @@ export default function AIChatbot({ context = "", lessonTitle = "", lessonId = "
     setMessages(newMessages);
     setIsLoading(true);
 
-    // Send only the conversation + lesson context; all guardrails (on-topic,
-    // anti-jailbreak, response caps) are enforced server-side in the ai-tutor fn.
     const res = await askTutor({
       messages: newMessages.filter((m) => m.role === "user" || m.role === "assistant"),
       lessonTitle,
