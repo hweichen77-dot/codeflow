@@ -70,11 +70,15 @@ jobs:
           supabase functions deploy retention-email --project-ref "$PROJECT_REF" --no-verify-jwt
 
       - name: Apply retention cron (only when Resend is configured)
-        if: ${{ secrets.RESEND_API_KEY != '' && secrets.RETENTION_TRIGGER_SECRET != '' }}
         env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RETENTION_TRIGGER_SECRET: ${{ secrets.RETENTION_TRIGGER_SECRET }}
         run: |
           set -e
+          if [ -z "$RESEND_API_KEY" ] || [ -z "$RETENTION_TRIGGER_SECRET" ]; then
+            echo "Resend not configured (RESEND_API_KEY unset) — skipping retention cron."
+            exit 0
+          fi
           FN_URL="https://${PROJECT_REF}.functions.supabase.co/retention-email"
           # Idempotent vault setup (delete-then-create) + the cron migration.
           {
