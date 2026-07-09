@@ -68,19 +68,23 @@ export default function Dashboard() {
     }).catch(() => {});
   }, [supabaseUser]);
 
-  const { data: progress = [] } = useQuery({
+  const { data: progressRaw = [] } = useQuery({
     queryKey: ["all-progress", user?.email],
     queryFn: () => api.entities.UserProgress.filter({ user_email: user.email }),
     enabled: !!user,
   });
-  const { data: projects = [] } = useQuery({
+  const { data: projectsRaw = [] } = useQuery({
     queryKey: ["all-projects"],
     queryFn: () => api.entities.Project.list("order"),
   });
-  const { data: allLessons = [] } = useQuery({
+  const { data: allLessonsRaw = [] } = useQuery({
     queryKey: ["all-lessons"],
     queryFn: () => api.entities.Lesson.list("order"),
   });
+
+  const progress = (Array.isArray(progressRaw) ? progressRaw : []).filter(Boolean);
+  const projects = (Array.isArray(projectsRaw) ? projectsRaw : []).filter(Boolean);
+  const allLessons = (Array.isArray(allLessonsRaw) ? allLessonsRaw : []).filter(Boolean);
 
   const [levelUp, setLevelUp] = useState(null);
   const [showRecap, setShowRecap] = useState(false);

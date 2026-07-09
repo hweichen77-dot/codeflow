@@ -32,8 +32,10 @@ const PROTECTED = new Set([
 const ProjectDetailPage = Pages['ProjectDetail'];
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
+  <Layout currentPageName={currentPageName}>
+    <RouteErrorBoundary key={currentPageName}>{children}</RouteErrorBoundary>
+  </Layout>
+  : <RouteErrorBoundary key={currentPageName}>{children}</RouteErrorBoundary>;
 
 const AuthenticatedApp = () => {
   const { isAuthenticated } = useAuth();
