@@ -136,7 +136,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
-                {[{ label: "Dashboard", page: "Dashboard" }, { label: "Portfolio", page: "Portfolio" }].map((p) => (
+                {[{ label: "Portfolio", page: "Portfolio" }].map((p) => (
                   <Link
                     key={p.page}
                     to={createPageUrl(p.page)}

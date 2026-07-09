@@ -17,11 +17,11 @@ import AppSkeleton from '@/components/ui/AppSkeleton';
 const isDesktop = typeof window !== 'undefined' && Boolean(window.__TAURI__ || window.__TAURI_INTERNALS__);
 
 const LessonExpander = lazy(() => import('./pages/LessonExpander'));
-const AuthHome = lazy(() => import('./pages/AuthHome'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
+const HomeDashboard = Pages['Dashboard'];
 
 const RouteFallback = () => <AppSkeleton />;
 
@@ -46,7 +46,7 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route path="/" element={
           isAuthenticated ? (
-            <LayoutWrapper currentPageName="Home"><AuthHome /></LayoutWrapper>
+            <LayoutWrapper currentPageName="Home"><HomeDashboard /></LayoutWrapper>
           ) : isDesktop ? (
             <Navigate to="/login" replace />
           ) : (
@@ -57,7 +57,7 @@ const AuthenticatedApp = () => {
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <AuthGate />} />
 
         {Object.entries(Pages).map(([path, Page]) => {
-          if (path === 'Home') {
+          if (path === 'Home' || path === 'Dashboard') {
             return <Route key={path} path={`/${path}`} element={<Navigate to="/" replace />} />;
           }
           return (

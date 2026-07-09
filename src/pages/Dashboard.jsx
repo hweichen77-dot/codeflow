@@ -11,6 +11,8 @@ import { useAuth } from "../lib/AuthContext";
 import { UserChallenges } from "../api/supabaseClient";
 import { getChallengeStats } from "../api/progressStore";
 import { getLessonPath } from "../content";
+import { createPageUrl } from "../utils";
+import { AnimatedBar } from "@/lib/motion";
 import LevelUpModal from "../components/gamification/LevelUpModal";
 import { getStreakInfo } from "../lib/progressStats";
 import { shouldShowWeeklyRecap } from "../lib/retention";
@@ -145,6 +147,16 @@ export default function Dashboard() {
 
   const firstName = user.name?.split(" ")[0] || user.email?.split("@")[0] || "there";
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+  const projectStats = projects.map((proj) => {
+    const ls = lessonsByProject(proj.id);
+    const total = ls.length || proj.lessons_count || 0;
+    const done = ls.filter(l => completedLessonIds.has(l.id)).length;
+    return { id: proj.id, title: proj.title || proj.name || "Project", total, done, pct: total ? Math.round((done / total) * 100) : 0 };
+  });
+
   const stats = [
     { key: "level", label: "Level", value: lvl.name, sub: `${totalXP} XP total`, icon: Shield, accent: C.gold, badge: lvl.level },
     { key: "streak", label: "Day streak", value: String(streak), sub: streak > 0 ? "Don't break it" : "Start one today", icon: Flame, accent: C.ember, pulse: true },
@@ -173,7 +185,7 @@ export default function Dashboard() {
       <div className="relative max-w-5xl mx-auto px-6 lg:px-8 pt-24 pb-20">
         {}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <div className="font-sans text-xs tracking-[0.2em] uppercase mb-3" style={{ color: C.amber }}>Dashboard</div>
+          <div className="font-sans text-xs tracking-[0.2em] uppercase mb-3" style={{ color: C.amber }}>{greeting}</div>
           <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 800, letterSpacing: "-0.03em", color: C.white, lineHeight: 1.1, margin: 0 }}>
             Welcome back, {firstName}.
           </h1>
@@ -295,6 +307,43 @@ export default function Dashboard() {
         <div className="mt-10">
           <ReviewSection lessons={allLessons} progress={progress} />
         </div>
+
+        {}
+        {projectStats.length > 0 && (
+          <div className="mt-12">
+            <div className="font-sans text-xs tracking-[0.16em] uppercase mb-4" style={{ color: C.dim }}>All projects</div>
+            <div style={{ borderTop: `1px solid ${C.border}` }}>
+              {projectStats.map((p, i) => {
+                const isDone = p.total > 0 && p.done === p.total;
+                return (
+                  <Link
+                    key={p.id}
+                    to={`${createPageUrl("ProjectDetail")}?id=${p.id}`}
+                    className="flex items-center gap-4 px-2 py-4 transition-colors duration-150"
+                    style={{ borderBottom: `1px solid ${C.border}` }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = C.card; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <span className="font-mono text-xs tabular-nums w-7 shrink-0" style={{ color: isDone ? C.emerald : C.dim }}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate" style={{ color: isDone ? C.amber : C.white, fontFamily: font.display }}>
+                        {p.title}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0" style={{ width: "180px" }}>
+                      <div className="flex-1 rounded-full overflow-hidden" style={{ height: "5px", background: "#0F0D08" }}>
+                        <AnimatedBar pct={p.pct} color={isDone ? C.amber : "#9A6A1F"} style={{ height: "100%", borderRadius: "3px" }} />
+                      </div>
+                      <span className="font-mono text-xs tabular-nums w-10 text-right" style={{ color: C.dim }}>{p.pct}%</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {levelUp && <LevelUpModal level={levelUp} onClose={() => setLevelUp(null)} />}
