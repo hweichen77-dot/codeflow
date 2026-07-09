@@ -47,6 +47,13 @@ const cors = {
   "Vary": "Origin",
 };
 
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -57,7 +64,7 @@ function json(body: unknown, status = 200): Response {
 async function authenticate(req: Request): Promise<string | null> {
   if (FUNCTION_SHARED_SECRET) {
     const provided = req.headers.get("x-function-secret");
-    if (provided && provided === FUNCTION_SHARED_SECRET) return "secret";
+    if (provided && safeEqual(provided, FUNCTION_SHARED_SECRET)) return "secret";
   }
 
   const authHeader = req.headers.get("Authorization");

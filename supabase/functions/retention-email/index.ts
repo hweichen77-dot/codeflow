@@ -13,6 +13,13 @@ const cors = {
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
 function subjectAndBody({ name, streak, kind, resumeUrl }: { name?: string; streak?: number; kind?: string; resumeUrl?: string }) {
   const who = name ? escapeHtml(name.split(" ")[0]) : "there";
   const url = resumeUrl || SITE;
@@ -47,7 +54,7 @@ Deno.serve(async (req: Request) => {
   let body: { email?: string; name?: string; streak?: number; kind?: string; resumeUrl?: string; secret?: string };
   try { body = await req.json(); } catch { return json({ error: "invalid JSON" }, 400); }
 
-  if (!TRIGGER_SECRET || body.secret !== TRIGGER_SECRET) return json({ error: "unauthorized" }, 401);
+  if (!TRIGGER_SECRET || !safeEqual(String(body.secret ?? ""), TRIGGER_SECRET)) return json({ error: "unauthorized" }, 401);
   const email = String(body.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "invalid email" }, 400);
 

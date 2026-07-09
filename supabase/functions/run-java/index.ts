@@ -26,6 +26,23 @@ function rateLimited(key: string): boolean {
   return entry.count > RATE_LIMIT_MAX;
 }
 
+const GLOBAL_MAX_PER_WINDOW = 200;
+let globalCount = 0;
+let globalResetAt = 0;
+function globalLimited(): boolean {
+  const now = Date.now();
+  if (now >= globalResetAt) { globalCount = 1; globalResetAt = now + RATE_LIMIT_WINDOW_MS; return false; }
+  globalCount += 1;
+  return globalCount > GLOBAL_MAX_PER_WINDOW;
+}
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
 const cors = {
   "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-function-secret",
@@ -43,7 +60,7 @@ function json(body: unknown, status = 200): Response {
 async function authenticate(req: Request): Promise<string | null> {
   if (FUNCTION_SHARED_SECRET) {
     const provided = req.headers.get("x-function-secret");
-    if (provided && provided === FUNCTION_SHARED_SECRET) return "secret";
+    if (provided && safeEqual(provided, FUNCTION_SHARED_SECRET)) return "secret";
   }
 
   const authHeader = req.headers.get("Authorization");
@@ -80,6 +97,7 @@ Deno.serve(async (req: Request) => {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   const rlKey = caller === "secret" ? `ip:${ip}` : `user:${caller}`;
   if (rateLimited(rlKey)) return json({ error: "rate limit exceeded" }, 429);
+  if (globalLimited()) return json({ error: "service busy, try again shortly" }, 429);
 
   try {
     const { source, stdin } = await req.json();
