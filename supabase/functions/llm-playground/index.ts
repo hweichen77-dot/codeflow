@@ -116,7 +116,7 @@ Deno.serve(async (req: Request) => {
         if (!resp.ok) {
           const detail = await resp.text();
           console.error(`groq ${resp.status}: ${detail.slice(0, 500)}`);
-          return { input, output: "", error: `model error [${resp.status}] ${detail.slice(0, 160)}` };
+          return { input, output: "", error: "model error" };
         }
         const data = await resp.json();
 
