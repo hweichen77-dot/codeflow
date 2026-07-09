@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, useReducedMotion, animate } from "framer-motion";
 
+const motionComponentCache = new WeakMap();
+function resolveMotionComp(as) {
+  if (typeof as === "string") return motion[as] || motion.div;
+  if (typeof as !== "function" && typeof as !== "object") return motion.div;
+  let m = motionComponentCache.get(as);
+  if (!m) { m = motion.create(as); motionComponentCache.set(as, m); }
+  return m;
+}
+
 export const fadeUp = {
   hidden: { opacity: 0, y: 18 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 220, damping: 24 } },
@@ -28,7 +37,7 @@ export function PageTransition({ children, pageKey }) {
 
 export function Stagger({ children, className, style, stagger = 0.07, delay = 0.04, as = "div" }) {
   const rm = useReducedMotion();
-  const M = motion[as] || motion.div;
+  const M = resolveMotionComp(as);
   if (rm) {
     const Plain = as;
     return <Plain className={className} style={style}>{children}</Plain>;
@@ -48,7 +57,7 @@ export function Stagger({ children, className, style, stagger = 0.07, delay = 0.
 
 export function StaggerItem({ children, className, style, as = "div" }) {
   const rm = useReducedMotion();
-  const M = motion[as] || motion.div;
+  const M = resolveMotionComp(as);
   if (rm) {
     const Plain = as;
     return <Plain className={className} style={style}>{children}</Plain>;
@@ -62,7 +71,7 @@ export function StaggerItem({ children, className, style, as = "div" }) {
 
 export function HoverCard({ children, className, style, glow = "#E8A33C", lift = -4, as = "div", ...rest }) {
   const rm = useReducedMotion();
-  const M = motion[as] || motion.div;
+  const M = resolveMotionComp(as);
   return (
     <M
       className={className}
