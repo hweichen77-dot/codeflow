@@ -66,13 +66,23 @@ export default function LivePlayground() {
           margin: 0,
           maxWidth: "20ch",
         }}>
-          Don't watch a demo. <em style={{ fontStyle: "italic", fontWeight: 500, color: "#E8A33C" }}>Run the model.</em>
+          Introducing: the <em style={{ fontStyle: "italic", fontWeight: 500, color: "#E8A33C" }}>LLM Playground.</em>
         </h2>
-        <p style={{ fontFamily: body, marginTop: "18px", maxWidth: "56ch", color: "#B9B1A2", fontSize: "1.08rem", lineHeight: 1.6 }}>
-          Your system prompt guards a secret word. Three prompt-injection attacks
-          try to steal it. Edit the defense, hit run, and see a real LLM answer
-          live, then find out if your prompt held. This is every lesson: write, run,
-          get graded.
+        <p style={{ fontFamily: body, marginTop: "18px", maxWidth: "60ch", color: "#B9B1A2", fontSize: "1.08rem", lineHeight: 1.6 }}>
+          Most courses show you a screenshot of a chatbot and call it AI engineering.
+          The Playground drops you straight into the loop the pros use: write a
+          prompt, send it to a real large language model, and read what actually
+          comes back. No API keys, no setup, no account, right in your browser.
+        </p>
+        <p style={{ fontFamily: body, marginTop: "14px", maxWidth: "60ch", color: "#B9B1A2", fontSize: "1.08rem", lineHeight: 1.6 }}>
+          It powers every lesson: you don't memorize prompt theory, you ship a
+          prompt and get graded on what the model does. Here's a taste, a
+          security challenge you can play right now.
+        </p>
+        <p style={{ fontFamily: body, marginTop: "22px", maxWidth: "60ch", color: "#ECE7DC", fontSize: "1.02rem", lineHeight: 1.6, fontWeight: 500 }}>
+          The challenge: your system prompt guards a secret word. Three
+          prompt-injection attacks try to trick the model into leaking it. Edit
+          your defense, run it against a live model, and see whether it held.
         </p>
 
         <div style={{ marginTop: "40px", display: "grid", gap: "20px", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.1fr)" }} className="cf-pg-grid">
