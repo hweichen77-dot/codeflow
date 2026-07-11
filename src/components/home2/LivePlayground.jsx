@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { runPlayground, gradeOutput } from "@/lib/llmPlayground";
 import { track } from "@/lib/analytics";
+import { useAuth } from "@/lib/AuthContext";
+
+const MAX_FREE_RUNS = 2;
+const TRIES_KEY = "cf_pg_tries";
+
+function readTries() {
+  if (typeof window === "undefined") return 0;
+  return Number(window.localStorage.getItem(TRIES_KEY)) || 0;
+}
 
 const mono = "'IBM Plex Mono', ui-monospace, monospace";
 const body = "'Hanken Grotesk', system-ui, sans-serif";
@@ -18,16 +27,27 @@ const ATTACKS = [
 const SECRET = "fondue";
 
 export default function LivePlayground() {
+  const { isAuthenticated, signInGuest, signInGoogle } = useAuth();
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_PROMPT);
   const [state, setState] = useState("idle");
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState("");
+  const [tries, setTries] = useState(readTries);
+
+  const gated = !isAuthenticated && tries >= MAX_FREE_RUNS;
+  const remaining = Math.max(0, MAX_FREE_RUNS - tries);
 
   async function run() {
+    if (gated || state === "running") return;
+
+    const next = tries + 1;
+    setTries(next);
+    if (typeof window !== "undefined") window.localStorage.setItem(TRIES_KEY, String(next));
+
     setState("running");
     setErr("");
     setRows(ATTACKS.map((a) => ({ attack: a, output: "", held: null })));
-    track("cta_click", { cta: "playground_run", location: "home_playground" });
+    track("cta_click", { cta: "playground_run", location: "home_playground", run_number: next });
 
     const res = await runPlayground({ systemPrompt, inputs: ATTACKS, maxTokens: 140 });
     if (!res.ok) {
@@ -110,24 +130,53 @@ export default function LivePlayground() {
                 padding: "16px",
               }}
             />
-            <div style={{ padding: "12px 15px", borderTop: "1px solid #221F18", display: "flex", alignItems: "center", gap: "12px" }}>
-              <button
-                onClick={run}
-                disabled={state === "running"}
-                style={{
-                  fontFamily: body, fontWeight: 650, fontSize: "0.9rem",
-                  padding: "10px 22px", borderRadius: "3px", border: "none",
-                  background: state === "running" ? "#8A6A2E" : "#E8A33C",
-                  color: "#15130E", cursor: state === "running" ? "wait" : "pointer",
-                  transition: "background .15s",
-                }}
-              >
-                {state === "running" ? "Running model…" : "▸ Run against real model"}
-              </button>
-              {state === "done" && (
-                <span style={{ fontFamily: mono, fontSize: "0.82rem", fontWeight: 700, color: held === total ? "#4CC98A" : "#F0A89C" }}>
-                  {held === total ? `✓ HELD ${held}/${total}` : `✗ LEAKED ${total - held}/${total}`}
-                </span>
+            <div style={{ padding: "12px 15px", borderTop: "1px solid #221F18" }}>
+              {gated ? (
+                <div>
+                  <div style={{ fontFamily: body, fontSize: "0.9rem", color: "#ECE7DC", fontWeight: 600, marginBottom: "10px" }}>
+                    You've used your {MAX_FREE_RUNS} free runs. Sign in to keep playing, it's free.
+                  </div>
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => { track("cta_click", { cta: "playground_gate_google", location: "home_playground" }); signInGoogle(); }}
+                      style={{ fontFamily: body, fontWeight: 650, fontSize: "0.86rem", padding: "9px 18px", borderRadius: "3px", border: "none", background: "#E8A33C", color: "#15130E", cursor: "pointer" }}
+                    >
+                      Sign in with Google
+                    </button>
+                    <button
+                      onClick={() => { track("cta_click", { cta: "playground_gate_guest", location: "home_playground" }); signInGuest({ name: "Guest" }); }}
+                      style={{ fontFamily: body, fontWeight: 650, fontSize: "0.86rem", padding: "9px 18px", borderRadius: "3px", background: "transparent", color: "#ECE7DC", border: "1px solid #34302A", cursor: "pointer" }}
+                    >
+                      Continue as guest
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+                  <button
+                    onClick={run}
+                    disabled={state === "running"}
+                    style={{
+                      fontFamily: body, fontWeight: 650, fontSize: "0.9rem",
+                      padding: "10px 22px", borderRadius: "3px", border: "none",
+                      background: state === "running" ? "#8A6A2E" : "#E8A33C",
+                      color: "#15130E", cursor: state === "running" ? "wait" : "pointer",
+                      transition: "background .15s",
+                    }}
+                  >
+                    {state === "running" ? "Running model…" : "▸ Run against real model"}
+                  </button>
+                  {state === "done" && (
+                    <span style={{ fontFamily: mono, fontSize: "0.82rem", fontWeight: 700, color: held === total ? "#4CC98A" : "#F0A89C" }}>
+                      {held === total ? `✓ HELD ${held}/${total}` : `✗ LEAKED ${total - held}/${total}`}
+                    </span>
+                  )}
+                  {!isAuthenticated && (
+                    <span style={{ fontFamily: mono, fontSize: "0.74rem", color: "#8A8272", marginLeft: "auto" }}>
+                      {remaining} free run{remaining === 1 ? "" : "s"} left
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>
