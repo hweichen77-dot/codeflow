@@ -25,6 +25,7 @@ import BRIEFS from './briefs.js'
 
 import { MODULES as CSP_MODULES, BRIEFS as CSP_BRIEFS } from './csp/index.js'
 import { MODULES as CSA_MODULES, BRIEFS as CSA_BRIEFS } from './csa/index.js'
+import { PRODUCT_MODULES } from './products/index.js'
 
 export {
   COMPETITIVE,
@@ -34,7 +35,7 @@ export {
 } from './competitive/index.js'
 
 const AI_MODULES = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21, m22]
-const MODULES = [...AI_MODULES, ...CSP_MODULES, ...CSA_MODULES]
+const MODULES = [...AI_MODULES, ...CSP_MODULES, ...CSA_MODULES, ...PRODUCT_MODULES]
 const ALL_BRIEFS = { ...BRIEFS, ...CSP_BRIEFS, ...CSA_BRIEFS }
 
 export const PROJECTS = MODULES.map(m => ({ ...m.project, brief: ALL_BRIEFS[m.project.id] || null }))

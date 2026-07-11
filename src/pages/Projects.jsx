@@ -35,7 +35,7 @@ export default function Projects() {
     queryKey: ["projects"],
     queryFn: () => api.entities.Project.list("order"),
   });
-  const projects = allProjects.filter((p) => (p.track || "ai") === "ai");
+  const projects = allProjects.filter((p) => p.kind === "product");
 
   const { data: progress = [] } = useQuery({
     queryKey: ["progress", user?.email],

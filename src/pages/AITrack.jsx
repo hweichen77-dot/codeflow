@@ -72,7 +72,7 @@ export default function AITrack() {
 
   const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "Beginner");
 
-  const aiProjects = projects.filter((p) => (p.track || "ai") === "ai");
+  const aiProjects = projects.filter((p) => (p.track || "ai") === "ai" && p.kind !== "product");
 
   const beginnerProjects = aiProjects.filter((p) => p.difficulty === "beginner");
   const foundationsFinished = foundationsAreFinished(
@@ -106,6 +106,12 @@ export default function AITrack() {
           <p className="font-display text-base max-w-prose" style={{ color: "#FFFFFF", fontWeight: 400 }}>
             A full progression from "what is a model" to building and deploying AI-powered applications, with working code at every step.
           </p>
+          <div className="mt-5 inline-flex items-center gap-2 px-3 py-1.5" style={{ border: "1px solid #E8A33C33", background: "#E8A33C10" }}>
+            <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>Prerequisite</span>
+            <span className="font-display text-xs" style={{ color: "#ECE7DC" }}>
+              Assumes a basic understanding of Python (variables, loops, functions). New to Python? Start with AP CS Principles.
+            </span>
+          </div>
         </div>
       </div>
 

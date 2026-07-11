@@ -154,6 +154,24 @@ export default function ProjectDetail() {
 
   const isCompleted = (lessonId) => progress.some((p) => p.lesson_id === lessonId && p.completed);
 
+  const saveToPortfolioIfFinished = async (lessonId) => {
+    if (!project || project.kind !== "product" || !user) return;
+    const doneIds = new Set(progress.filter((p) => p.completed).map((p) => p.lesson_id));
+    doneIds.add(lessonId);
+    const total = project.lessons_count || lessons.length;
+    if (doneIds.size < total) return;
+    const existing = await api.entities.CapstoneSubmission.filter({ user_email: user.email, project_id: projectId });
+    if (existing && existing.length) return;
+    await api.entities.CapstoneSubmission.create({
+      user_email: user.email,
+      project_id: projectId,
+      project_title: project.title,
+      description: project.description,
+      is_public: false,
+    });
+    try { track("project_complete", { project_id: projectId }); } catch {  }
+  };
+
   const completeMutation = useMutation({
     mutationFn: async (lessonId) => {
       const timeSpent = Math.round((Date.now() - lessonStartTime.current) / 1000);
@@ -178,6 +196,7 @@ export default function ProjectDetail() {
         try { recordActivity('lesson'); } catch {  }
         try { touchStreak(); } catch {  }
         try { track('lesson_complete', { lesson_id: lessonId, project_id: projectId, time_spent_seconds: timeSpent }); } catch {  }
+        try { await saveToPortfolioIfFinished(lessonId); } catch {  }
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["user-progress", projectId] }),
@@ -322,9 +341,9 @@ export default function ProjectDetail() {
     const pp = allProgress.filter((x) => x.project_id === p.id);
     return p.lessons_count ? pp.length >= p.lessons_count : false;
   };
-  const isAiTrack = (project.track || "ai") === "ai";
+  const isAiTrack = (project.track || "ai") === "ai" && project.kind !== "product";
   const beginnerProjects = allProjects.filter(
-    (p) => p.difficulty === "beginner" && (p.track || "ai") === "ai"
+    (p) => p.difficulty === "beginner" && (p.track || "ai") === "ai" && p.kind !== "product"
   );
   const moduleGated = isAiTrack && isModuleGated({
     finished: foundationsAreFinished(beginnerProjects, projectCompleted),
