@@ -66,7 +66,7 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
-  const limitErr = await checkLimits({ caller: `ip:${ip}`, fn: "llm-playground", perMin: 6, globalPerMin: 120, globalPerDay: 4000 });
+  const limitErr = await checkLimits({ caller: `ip:${ip}`, fn: "llm-playground", perMin: 6, perDay: 30, globalPerMin: 120, globalPerDay: 4000 });
   if (limitErr) return json({ error: limitErr }, 429);
 
   let payload: { systemPrompt?: string; inputs?: unknown; maxTokens?: number };

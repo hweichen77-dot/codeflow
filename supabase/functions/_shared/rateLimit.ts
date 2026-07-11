@@ -52,6 +52,7 @@ export interface RateOpts {
   caller: string;
   fn: string;
   perMin: number;
+  perDay?: number;
   globalPerMin: number;
   globalPerDay: number;
 }
@@ -59,6 +60,9 @@ export interface RateOpts {
 export async function checkLimits(o: RateOpts): Promise<string | null> {
   if (!(await consume(`u:${o.fn}:${o.caller}`, o.perMin, 60_000))) {
     return "rate limit exceeded — slow down and try again in a minute";
+  }
+  if (o.perDay && !(await consume(`ud:${o.fn}:${o.caller}`, o.perDay, 86_400_000))) {
+    return "daily limit reached for this device — sign in to keep going";
   }
   if (!(await consume(`g:${o.fn}`, o.globalPerMin, 60_000))) {
     return "service is busy right now — try again shortly";
