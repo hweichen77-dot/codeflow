@@ -45,12 +45,12 @@ The schema is a contract. It names every field, so the model knows what to look 
 
 It's the same six-step loop from the playbook. The special work lives in **prompt** and **parse**:
 
-1. **Input** — the messy text.
-2. **Prompt** — "extract exactly these fields as JSON."
-3. **Call** — send it to the model.
-4. **Parse** — pull the JSON object out of the reply.
-5. **Validate** — are the required fields present and the right type?
-6. **Ship** — a clean record.
+1. **Input**: the messy text.
+2. **Prompt**: "extract exactly these fields as JSON."
+3. **Call**: send it to the model.
+4. **Parse**: pull the JSON object out of the reply.
+5. **Validate**: are the required fields present and the right type?
+6. **Ship**: a clean record.
 
 Here's the real call you're heading toward:
 

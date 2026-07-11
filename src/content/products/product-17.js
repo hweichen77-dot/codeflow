@@ -26,7 +26,7 @@ export default {
 ## The RAG loop, in one breath
 
 1. **Index** every note once: split it into small, retrievable pieces called **chunks**.
-2. **Retrieve**, at question time, only the chunks that actually relate to the question.
+2. **Retrieve**: at question time, only the chunks that actually relate to the question.
 3. **Synthesize** an answer from just those chunks, and **cite** which chunk backed which claim.
 
 This lesson builds step 1. The rest of the project builds steps 2 and 3.

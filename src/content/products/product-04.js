@@ -25,7 +25,7 @@ const lessons = [
 
 ## What you're building
 
-The finished tool is one function you can run from a terminal: paste in a plain task, get back a punchy bullet. Under the hood it's the same six-step loop every AI product uses — read a task, wrap it in a prompt, call the model, clean the reply, check it against your rules, print it. This lesson builds step two: the **rewrite prompt**.
+The finished tool is one function you can run from a terminal: paste in a plain task, get back a punchy bullet. Under the hood it's the same six-step loop every AI product uses, read a task, wrap it in a prompt, call the model, clean the reply, check it against your rules, print it. This lesson builds step two: the **rewrite prompt**.
 
 ## The system prompt is the product
 
@@ -55,11 +55,11 @@ def rewrite(task):
 
 ## Why the "Return only the bullet" line matters
 
-Left to itself, a chat model is chatty: "Sure! Here's a strong version:…". That preamble breaks everything downstream because your tool expects a bare bullet, not a friendly paragraph. Telling the model the **exact output shape** — one line, verb-first, nothing else — is the cheapest reliability you can buy. You'll still defend against a chatty reply in lesson 2, but a precise prompt means you rarely have to.
+Left to itself, a chat model is chatty: "Sure! Here's a strong version:…". That preamble breaks everything downstream because your tool expects a bare bullet, not a friendly paragraph. Telling the model the **exact output shape**, one line, verb-first, nothing else, is the cheapest reliability you can buy. You'll still defend against a chatty reply in lesson 2, but a precise prompt means you rarely have to.
 
 ## The mental model
 
-The prompt is a function's instructions that will run on a thousand tasks you'll never see. Write it precise and boring: who the model is, what to do, and the exact format to return. Below you'll build the request payload by hand — no network — so the data shape is locked in before you ever make a real call.`,
+The prompt is a function's instructions that will run on a thousand tasks you'll never see. Write it precise and boring: who the model is, what to do, and the exact format to return. Below you'll build the request payload by hand, no network, so the data shape is locked in before you ever make a real call.`,
     starter_code: `# Build the rewrite request payload by hand (no API call yet).
 # system holds the rules; the user message holds this task.
 
@@ -150,7 +150,7 @@ main()
 
 ## Why parsing is a separate step
 
-Never trust the raw reply. Even with a strict prompt, models drift: they wrap text in quotes, add a leading dash because "that's what bullets look like," or number the line. Your downstream code — the action-verb check, the length check — expects a clean string that starts with the actual first word. A stray \`- \` means the "first word" is a dash, and every check misfires. So right after the call, you normalize.
+Never trust the raw reply. Even with a strict prompt, models drift: they wrap text in quotes, add a leading dash because "that's what bullets look like," or number the line. Your downstream code, the action-verb check, the length check, expects a clean string that starts with the actual first word. A stray \`- \` means the "first word" is a dash, and every check misfires. So right after the call, you normalize.
 
 \`\`\`python
 def clean_bullet(raw):
@@ -169,19 +169,19 @@ def clean_bullet(raw):
 Cleanup is a pipeline, and order matters:
 
 1. **Strip whitespace** first, so a leading space doesn't hide the marker.
-2. **Remove one bullet marker** (\`- \`, \`* \`, \`• \`, or a numeric \`1. \`) if present. Just one — a real bullet won't start with two.
+2. **Remove one bullet marker** (\`- \`, \`* \`, \`• \`, or a numeric \`1. \`) if present. Just one, a real bullet won't start with two.
 3. **Strip surrounding quotes** if both ends have them.
-4. **Strip again**, because removing a marker can expose new whitespace.
+4. **Strip again**: because removing a marker can expose new whitespace.
 
 Each step is boring on its own. Together they mean the rest of your tool always sees a predictable string.
 
 ## What cleanup does NOT fix
 
-Cleanup handles formatting noise, not bad content. If the model returns "Here is a great bullet for you: Managed the desk," stripping markers won't remove the preamble — that's a prompt problem, and the fix is the "Return only the bullet" line from lesson 1. Cleanup is the second line of defense, not the first. Tighten the prompt, then clean what slips through.
+Cleanup handles formatting noise, not bad content. If the model returns "Here is a great bullet for you: Managed the desk," stripping markers won't remove the preamble, that's a prompt problem, and the fix is the "Return only the bullet" line from lesson 1. Cleanup is the second line of defense, not the first. Tighten the prompt, then clean what slips through.
 
 ## The mental model
 
-Think of the reply as a package that sometimes arrives with extra tape and a bow. You're not judging the gift yet — just unwrapping it so what's inside is a plain string you can measure. Below you'll write \`clean_bullet\` and run it over a few messy replies.`,
+Think of the reply as a package that sometimes arrives with extra tape and a bow. You're not judging the gift yet, just unwrapping it so what's inside is a plain string you can measure. Below you'll write \`clean_bullet\` and run it over a few messy replies.`,
     starter_code: `# Turn a messy model reply into one clean bullet string.
 
 def clean_bullet(raw):
@@ -287,7 +287,7 @@ main()
     order: 3,
     title: "Demand a Strong Verb",
     concept: "action-verb constraints",
-    explanation: `The single biggest tell of a weak resume is the opener. "Responsible for," "Helped with," "Worked on," "Assisted with," "Duties included" — these signal a passenger, not a driver. Strong bullets start with a past-tense **action verb** that you owned: Led, Built, Shipped, Cut, Grew, Automated, Negotiated. This lesson makes your tool enforce that.
+    explanation: `The single biggest tell of a weak resume is the opener. "Responsible for," "Helped with," "Worked on," "Assisted with," "Duties included", these signal a passenger, not a driver. Strong bullets start with a past-tense **action verb** that you owned: Led, Built, Shipped, Cut, Grew, Automated, Negotiated. This lesson makes your tool enforce that.
 
 ## Two ways to enforce the verb
 
@@ -318,11 +318,11 @@ def starts_weak(bullet):
 
 ## Why check when you already asked
 
-Because "asked" and "guaranteed" are different words. A model that follows your rule 95% of the time still ships a weak bullet one in twenty runs — and on a resume, one weak line is the one a recruiter notices. The verification is cheap: a lowercase-and-\`startswith\` scan over a short list. When it fails, you'll retry the call (lesson 6). Prompt for quality, verify for reliability — that pairing shows up in every serious AI product.
+Because "asked" and "guaranteed" are different words. A model that follows your rule 95% of the time still ships a weak bullet one in twenty runs, and on a resume, one weak line is the one a recruiter notices. The verification is cheap: a lowercase-and-\`startswith\` scan over a short list. When it fails, you'll retry the call (lesson 6). Prompt for quality, verify for reliability, that pairing shows up in every serious AI product.
 
 ## Getting the check right
 
-Two details keep the check honest. **Lowercase both sides** so "Responsible" and "responsible" match. And match against **openers**, not any occurrence — a bullet can legitimately contain "helped" mid-sentence ("Led a rewrite that helped cut load time"); it's only weak when it *starts* that way. \`startswith\` on the lowercased bullet gets both right.
+Two details keep the check honest. **Lowercase both sides** so "Responsible" and "responsible" match. And match against **openers**, not any occurrence, a bullet can legitimately contain "helped" mid-sentence ("Led a rewrite that helped cut load time"); it's only weak when it *starts* that way. \`startswith\` on the lowercased bullet gets both right.
 
 ## The mental model
 
@@ -429,7 +429,7 @@ main()
 
 ## The rewrite prompt should ask for numbers
 
-The model can't invent true numbers — it doesn't know your metrics — but it can prompt you for them and use any you provide. So the rewrite instruction does two things: bake numbers in when the task mentions them, and insert a clear placeholder when it doesn't, so you fill it rather than shipping a vague line.
+The model can't invent true numbers, it doesn't know your metrics, but it can prompt you for them and use any you provide. So the rewrite instruction does two things: bake numbers in when the task mentions them, and insert a clear placeholder when it doesn't, so you fill it rather than shipping a vague line.
 
 \`\`\`python
 SYSTEM = (
@@ -451,7 +451,7 @@ def has_number(bullet):
     return any(ch.isdigit() for ch in bullet)
 \`\`\`
 
-That single line catches percentages, counts, dollar amounts, and time spans — anything with a \`0\`–\`9\` in it. It's a heuristic, not a proof (a bullet could say "doubled" in words), but it correctly flags the overwhelming majority of vague lines so you know which ones still need a metric. When \`has_number\` is False, your tool warns you: "this bullet has no numbers — add one."
+That single line catches percentages, counts, dollar amounts, and time spans, anything with a \`0\`, \`9\` in it. It's a heuristic, not a proof (a bullet could say "doubled" in words), but it correctly flags the overwhelming majority of vague lines so you know which ones still need a metric. When \`has_number\` is False, your tool warns you: "this bullet has no numbers, add one."
 
 ## Why a heuristic is enough here
 
@@ -546,7 +546,7 @@ main()
     order: 5,
     title: "One Line, No More",
     concept: "length limits",
-    explanation: `A resume bullet is one line. Not a sentence that wraps three times, not a paragraph disguised as a bullet. Recruiters skim; a bullet that runs long gets read as "didn't edit." This lesson makes your tool enforce a hard **length limit** — in the prompt, and again on the output.
+    explanation: `A resume bullet is one line. Not a sentence that wraps three times, not a paragraph disguised as a bullet. Recruiters skim; a bullet that runs long gets read as "didn't edit." This lesson makes your tool enforce a hard **length limit**, in the prompt, and again on the output.
 
 ## Cap it in the prompt first
 
@@ -578,15 +578,15 @@ The function returns the (possibly trimmed) bullet and a flag saying whether it 
 
 ## Why trim instead of just reject
 
-Rejecting and retrying costs another API call and another few seconds. For length specifically, a local trim is instant and usually fine — the important content is front-loaded because you forced the verb first. Trim locally, flag when you did, and only re-call the model if the trim damaged the meaning. Cheap fixes before expensive ones.
+Rejecting and retrying costs another API call and another few seconds. For length specifically, a local trim is instant and usually fine, the important content is front-loaded because you forced the verb first. Trim locally, flag when you did, and only re-call the model if the trim damaged the meaning. Cheap fixes before expensive ones.
 
 ## Watch the boundary
 
-The one bug to avoid: never slice by character count in the middle of a word. \`bullet[:100]\` can produce "Automated the deploy pipeli" — worse than the original. Splitting into words and rejoining the first N guarantees clean, readable output every time. \`split()\` also collapses any accidental double spaces for free.
+The one bug to avoid: never slice by character count in the middle of a word. \`bullet[:100]\` can produce "Automated the deploy pipeli", worse than the original. Splitting into words and rejoining the first N guarantees clean, readable output every time. \`split()\` also collapses any accidental double spaces for free.
 
 ## The mental model
 
-Think of the bullet as a headline with a character budget, like a tweet. When it's over, you don't shrink the font — you cut words from the end, and if cutting hurt, you rewrite. Below you'll build \`enforce_length\` and trim to a limit.`,
+Think of the bullet as a headline with a character budget, like a tweet. When it's over, you don't shrink the font, you cut words from the end, and if cutting hurt, you rewrite. Below you'll build \`enforce_length\` and trim to a limit.`,
     starter_code: `# Enforce a word limit, trimming at a word boundary.
 
 def enforce_length(bullet, max_words):
@@ -667,7 +667,7 @@ main()
     order: 6,
     title: "Guard Every Bullet",
     concept: "validation and retries",
-    explanation: `You now have three separate rules: strong opener, has a number, within the word limit. Scattered across your code they're easy to forget. This lesson pulls them into one **validator** that checks every rule at once and, when a bullet fails, tells your tool exactly what to fix — including the edge case everyone forgets: empty input.
+    explanation: `You now have three separate rules: strong opener, has a number, within the word limit. Scattered across your code they're easy to forget. This lesson pulls them into one **validator** that checks every rule at once and, when a bullet fails, tells your tool exactly what to fix, including the edge case everyone forgets: empty input.
 
 ## One function, all the rules
 
@@ -689,11 +689,11 @@ def validate(bullet, weak_openers, max_words):
     return problems
 \`\`\`
 
-Notice the order: **EMPTY short-circuits**. An empty bullet isn't weak or long — it's nothing, and every other check would be noise. Return early. Then collect the rest in a fixed order so the output is predictable.
+Notice the order: **EMPTY short-circuits**. An empty bullet isn't weak or long, it's nothing, and every other check would be noise. Return early. Then collect the rest in a fixed order so the output is predictable.
 
 ## Turning failures into a retry
 
-The validator is what makes the "prompt for quality, verify for reliability" loop real. When a bullet fails, you don't give up — you call the model again, and you tell it *why* it failed so the retry is better than a blind redo:
+The validator is what makes the "prompt for quality, verify for reliability" loop real. When a bullet fails, you don't give up, you call the model again, and you tell it *why* it failed so the retry is better than a blind redo:
 
 \`\`\`python
 def rewrite_valid(task, tries=2):
@@ -706,11 +706,11 @@ def rewrite_valid(task, tries=2):
     return bullet
 \`\`\`
 
-Feeding the failure codes back is the trick: "you started weak and used no numbers" gives the model a concrete correction, so attempt two usually lands. Cap the tries so a stubborn task can't loop forever and burn money — return the best you got and flag it.
+Feeding the failure codes back is the trick: "you started weak and used no numbers" gives the model a concrete correction, so attempt two usually lands. Cap the tries so a stubborn task can't loop forever and burn money, return the best you got and flag it.
 
 ## Why empty input matters most
 
-The empty case is the one that crashes tools in the wild: a blank line in the input file, a task that's just whitespace. If \`validate\` didn't check it first, \`text.split()\` returns \`[]\`, "no number" fires, and you'd retry forever on a bullet that can never be filled. Handling empty explicitly turns a crash-or-loop into a clean, honest "EMPTY — skip this one."
+The empty case is the one that crashes tools in the wild: a blank line in the input file, a task that's just whitespace. If \`validate\` didn't check it first, \`text.split()\` returns \`[]\`, "no number" fires, and you'd retry forever on a bullet that can never be filled. Handling empty explicitly turns a crash-or-loop into a clean, honest "EMPTY, skip this one."
 
 ## The mental model
 
@@ -818,7 +818,7 @@ main()
     order: 7,
     title: "Batch and Budget",
     concept: "batching, dedup, and cost",
-    explanation: `Nobody rewrites one bullet. You paste in a whole job's worth of tasks — fifteen, twenty lines, often with duplicates and blanks. This lesson turns your single-bullet tool into a **batch** tool that dedupes the input and estimates what the run will cost, so a big paste doesn't quietly become a big bill.
+    explanation: `Nobody rewrites one bullet. You paste in a whole job's worth of tasks, fifteen, twenty lines, often with duplicates and blanks. This lesson turns your single-bullet tool into a **batch** tool that dedupes the input and estimates what the run will cost, so a big paste doesn't quietly become a big bill.
 
 ## Deduplicate before you spend
 
@@ -847,7 +847,7 @@ def estimate_tokens(tasks):
     return sum(max(1, len(t) // 4) for t in tasks)
 \`\`\`
 
-This is deliberately rough — it ignores the system prompt and the output tokens — but it's enough to answer the only question that matters at this stage: is this a 200-token run or a 20,000-token run? A quick estimate lets your tool print "About N tokens — continue?" before spending anything, which is the difference between a tool people trust and one they're afraid to paste into.
+This is deliberately rough, it ignores the system prompt and the output tokens, but it's enough to answer the only question that matters at this stage: is this a 200-token run or a 20,000-token run? A quick estimate lets your tool print "About N tokens, continue?" before spending anything, which is the difference between a tool people trust and one they're afraid to paste into.
 
 ## Why this is the "harden" step
 
@@ -950,7 +950,7 @@ main()
 
 ## The whole pipeline, one function
 
-Shipping isn't new code — it's the assembly. Read tasks, dedupe, rewrite each with retries, validate, and print a clean resume section:
+Shipping isn't new code, it's the assembly. Read tasks, dedupe, rewrite each with retries, validate, and print a clean resume section:
 
 \`\`\`python
 def boost(tasks):
@@ -976,18 +976,18 @@ Read it top to bottom and you can see the loop from lesson 1 of the whole track:
 Shipped doesn't mean deployed to the cloud. It means:
 
 1. It runs from a clean start on a whole list, not just your one test task.
-2. It handles the messy input — blanks, duplicates, a bullet that fails validation — without crashing.
+2. It handles the messy input, blanks, duplicates, a bullet that fails validation, without crashing.
 3. Someone else could paste their tasks in and get usable bullets from your instructions alone.
 
 If those three hold, it's a real deliverable, not a demo.
 
 ## It lands in your Portfolio
 
-Finishing this final lesson records the build in your **Portfolio** tab: the title, what it does, and that you built it. That shelf — your summarizer, your chatbot, this bullet booster — is the actual point of the track. Keep a one-line description and one example (a raw task in, a strong bullet out) so the entry proves it works.
+Finishing this final lesson records the build in your **Portfolio** tab: the title, what it does, and that you built it. That shelf, your summarizer, your chatbot, this bullet booster, is the actual point of the track. Keep a one-line description and one example (a raw task in, a strong bullet out) so the entry proves it works.
 
 ## Ship it well
 
-Two finishing touches make it show: print the cost estimate before running so users aren't surprised, and flag any bullet that failed validation instead of hiding it — an honest "[check] add a number here" is more useful than a silently weak line. Below you'll assemble the final section: dedupe, drop blanks, and print the clean list.`,
+Two finishing touches make it show: print the cost estimate before running so users aren't surprised, and flag any bullet that failed validation instead of hiding it, an honest "[check] add a number here" is more useful than a silently weak line. Below you'll assemble the final section: dedupe, drop blanks, and print the clean list.`,
     starter_code: `# Ship: assemble a clean resume section from final bullets.
 # Drop blanks, dedupe case-insensitively, print a numbered-free bullet list.
 

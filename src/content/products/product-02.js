@@ -1054,7 +1054,7 @@ Every run of the finished tool is the same ordered flow:
 3. **Generate several drafts** with the model (lesson 5).
 4. **Clean every draft** and drop the unusable ones (lesson 6).
 5. **Pick the best** surviving draft by tone distance (lesson 5).
-6. **Return one reply**, or a safe fallback if nothing survived.
+6. **Return one reply**: or a safe fallback if nothing survived.
 
 \`\`\`python
 def smart_reply(incoming, samples, examples):

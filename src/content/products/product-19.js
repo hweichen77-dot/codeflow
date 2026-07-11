@@ -27,10 +27,10 @@ export default {
 
 By lesson 8 you'll have a reusable \`guard()\` layer, one small module you can drop in front of any AI feature. It has four jobs:
 
-1. **Input moderation** — screen what the user sends *before* it reaches the model.
-2. **Output checks** — screen what the model replies *before* it reaches the user.
-3. **Prompt-injection defense** — catch content that tries to hijack your system prompt.
-4. **Policy config** — one place that decides what happens to each category of problem: allow it, flag it for review, or block it outright.
+1. **Input moderation**: screen what the user sends *before* it reaches the model.
+2. **Output checks**: screen what the model replies *before* it reaches the user.
+3. **Prompt-injection defense**: catch content that tries to hijack your system prompt.
+4. **Policy config**: one place that decides what happens to each category of problem: allow it, flag it for review, or block it outright.
 
 None of these four is optional in a shipped product. Skip input moderation and your app becomes a tool for generating whatever the model will produce. Skip output checks and you're trusting the model never to slip, which it does. Skip injection defense and any document a user uploads can quietly rewrite your bot's instructions. Skip a policy config and every rule is hardcoded, untestable, and un-tunable without a redeploy.
 
