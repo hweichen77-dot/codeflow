@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { font } from "@/lib/tokens";
 import { track } from "@/lib/analytics";
 import HeroSection from "@/components/home2/HeroSection";
+import LivePlayground from "@/components/home2/LivePlayground";
 import LessonShowcase from "@/components/home2/LessonShowcase";
 import HowItWorks from "@/components/home2/HowItWorks";
 import Testimonials from "@/components/home2/Testimonials";
@@ -13,6 +14,7 @@ const responsiveStyles = `
   @media (max-width: 880px) {
     .cf-hero { grid-template-columns: 1fr !important; gap: 56px !important; align-items: start !important; padding-top: 88px !important; }
     .cf-lesson { grid-template-columns: 1fr !important; gap: 16px !important; }
+    .cf-pg-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
     .cf-gutter { font-size: 1.8rem !important; }
     .cf-cta { grid-template-columns: 1fr !important; gap: 32px !important; align-items: start !important; }
   }
@@ -35,6 +37,7 @@ export default function Home() {
       <style>{responsiveStyles}</style>
       <Stagger as="div">
         <StaggerItem as="div"><HeroSection /></StaggerItem>
+        <StaggerItem as="div"><LivePlayground /></StaggerItem>
         <StaggerItem as="div"><LessonShowcase /></StaggerItem>
         <StaggerItem as="div"><HowItWorks /></StaggerItem>
         <StaggerItem as="div"><Testimonials /></StaggerItem>

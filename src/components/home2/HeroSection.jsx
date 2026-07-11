@@ -88,13 +88,16 @@ export default function HeroSection() {
           </div>
         </div>
 
-        <div style={{
+        <div
+          onClick={() => { track("cta_click", { cta: "hero_playground_peek", location: "hero" }); document.getElementById("playground")?.scrollIntoView({ behavior: "smooth" }); }}
+          style={{
           background: "#131009",
           border: "1px solid #34302A",
           borderRadius: "4px",
           overflow: "hidden",
           fontFamily: mono,
           fontSize: "0.84rem",
+          cursor: "pointer",
           boxShadow: "0 24px 60px -30px rgba(0,0,0,0.7)",
         }}>
           <div style={{
@@ -110,6 +113,7 @@ export default function HeroSection() {
             <span style={{ marginLeft: "8px", color: "#FFFFFF", fontSize: "0.74rem", letterSpacing: "0.04em" }}>
               playground · defuse the injection
             </span>
+            <span style={{ marginLeft: "auto", color: "#E8A33C", fontSize: "0.72rem", fontWeight: 600 }}>try it live ↓</span>
           </div>
           <div style={{ padding: "18px 18px 20px", lineHeight: 1.85 }}>
             <span style={{ color: "#FFFFFF" }}># your defensive system prompt</span><br />
