@@ -3,7 +3,7 @@ export default {
     id: "prod-11",
     title: "Multi-Step Task Agent",
     description:
-      "Build an agent that turns a goal into an ordered plan, executes each step with the right tool, and knows when to stop on its own. You'll wire up a tool registry, resolve step-to-step data references, track state as the plan runs, and harden the loop against dependency cycles, tool failures, and infinite loops.",
+      "Build an agent that turns a goal into an ordered plan, runs each step with the right tool, and stops itself when the work is done. You'll write a tool registry, pass data from one step into the next, track state as the plan runs, and defend the loop against dependency cycles, tool failures, and runaway repetition.",
     difficulty: "advanced",
     category: "chatbots_agents",
     estimated_time: 130,
@@ -21,15 +21,15 @@ export default {
       order: 1,
       title: "The Plan-Then-Act Loop",
       concept: "plan-then-act architecture",
-      explanation: `A chatbot answers one turn at a time. A **multi-step task agent** is different: you hand it a goal like "research three competitors and write a comparison table," and it has to figure out *what steps that takes*, run them in order, and stop when it's actually done. This guide builds the shape everything else hangs on: **plan, then act**.
+      explanation: `A chatbot answers one turn at a time. A **multi-step task agent** works differently. You hand it a goal like "research three competitors and write a comparison table," and it has to work out *what steps that takes*, run them in order, and stop once the work is actually finished. This lesson builds the shape everything else hangs on: **plan, then act**.
 
 ## What we're building
 
-By lesson 8 you'll have a working agent: give it a goal, it produces an ordered plan, executes each step with the right tool, carries results forward, and knows when to stop. That's four moving parts, plan, execute, track state, and stop, and this lesson is only the first: getting the model to turn a goal into a plan you can actually run.
+By lesson 8 you'll have a working agent. You give it a goal, it produces an ordered plan, runs each step with the right tool, carries results forward, and stops on its own. Four moving parts hold it together: plan, execute, track state, stop. This lesson covers the first one, getting the model to turn a goal into a plan you can actually run.
 
-## Plan-then-act, not act-then-hope
+## Plan up front, don't improvise
 
-A naive "agent" just asks the model "what should I do next?" one step at a time, with no view of the whole task. That drifts: it repeats work, forgets the goal, or wanders off. A **plan-then-act** agent instead asks the model up front to break the goal into an ordered list of steps, before touching a single tool. Only then does it execute that plan step by step.
+A naive "agent" asks the model "what should I do next?" one step at a time, with no view of the whole task. It drifts. It redoes work it already did and loses track of the goal. A **plan-then-act** agent asks the model up front to break the goal into an ordered list of steps, before it touches a single tool. Only then does it work through that plan step by step.
 
 \`\`\`python
 import json
@@ -54,15 +54,15 @@ resp = client.messages.create(
 plan = json.loads(resp.content[0].text)
 \`\`\`
 
-That \`plan\` is now a list of dicts like \`{"step": 1, "tool": "search", "instruction": "..."}\`. It's data, not prose, which is exactly what an executor needs to loop over.
+That \`plan\` is now a list of dicts like \`{"step": 1, "tool": "search", "instruction": "..."}\`. It is structured data, which is what an executor needs to loop over.
 
-## Why a plan first
+## Why plan first
 
-Planning up front buys you three things an act-then-hope loop doesn't have: you can **validate** the plan before spending a single tool call (are the tool names real? is the step order sane?), you can **show** it to a user for approval on anything risky, and you can **track progress** against it, "on step 3 of 5," instead of guessing whether the agent is almost done or lost.
+A plan you can read before you run it earns its keep. You can check it before spending a single tool call: are the tool names real, is the step order sane? You can show it to a user for approval when a step looks risky. And you can report progress against it ("on step 3 of 5") instead of guessing whether the agent is nearly done or lost in the weeds.
 
 ## The mental model to keep
 
-A plan is a recipe, not a conversation. The planner call happens once, up front; it decides what needs to happen. Everything after that is mechanical: work through the recipe, step by step, checking off each one. Below, you'll validate a plan's shape in pure Python, no network, so you know exactly what a plan step must contain before your executor ever touches it.`,
+Treat a plan like a recipe. The planner call happens once, up front, and decides what needs to happen. Everything after that is mechanical: work through the recipe step by step, checking off each one. Below, you'll validate a plan's shape in pure Python, no network involved, so you know exactly what a plan step must contain before your executor ever touches it.`,
       starter_code: `# A plan is a list of step dicts. Validate its shape before executing anything.
 
 plan = [
@@ -189,11 +189,11 @@ main()
       order: 2,
       title: "Giving the Agent Tools",
       concept: "tool registry and dispatch",
-      explanation: `You have a plan, and each step names a tool: "search," "calculate," "write_file." But a tool name is just a string in a JSON blob until you wire it to real code. This lesson builds the **tool registry**, the mapping from a tool's name to the Python function that actually does the work.
+      explanation: `Your plan names a tool on every step: "search," "calculate," "write_file." Right now those names are just strings in a JSON blob. Nothing runs until each name points at real code. This lesson builds the **tool registry**, the map from a tool's name to the Python function that does the work.
 
 ## Defining tools for the model
 
-The Anthropic API lets the model choose to call a tool by describing each one with a name, a description, and an input schema:
+The Anthropic API lets the model call a tool once you describe each one with a name, a description, and an input schema:
 
 \`\`\`python
 tools = [
@@ -225,7 +225,7 @@ resp = client.messages.create(
 )
 \`\`\`
 
-When the model decides to use a tool, its reply contains a \`tool_use\` content block with a \`name\` and an \`input\` dict, the model's guess at the arguments. Your job is to take that name and dispatch it to the matching Python function, whether it came from a live tool-choice reply or from a planned step's \`"tool"\` field.
+When the model decides to use a tool, its reply carries a \`tool_use\` content block holding a \`name\` and an \`input\` dict of the arguments it guessed. You take that name and route it to the matching Python function. The name might come from a live tool-choice reply or from a planned step's \`"tool"\` field; either way, the routing is the same.
 
 ## The registry pattern
 
@@ -245,15 +245,15 @@ def dispatch(tool_name, args):
     return tool_fn(**args)
 \`\`\`
 
-Every step in every plan, no matter what it does, goes through this exact same two-line dispatch. That uniformity is the point: the executor never needs a chain of \`if tool == "search": ... elif tool == "calculate": ...\`, it just looks the name up.
+Every step of every plan runs through this same two-line dispatch, whatever the step does. That is the point of it. The executor never needs a growing chain of \`if tool == "search": ... elif tool == "calculate": ...\`; it looks the name up.
 
 ## Why guard the unknown case
 
-A planner can hallucinate a tool name that was never registered, "browse_web" instead of "search." Without the registry check, that crashes with a raw \`KeyError\` deep inside your executor. With it, dispatch returns a clean error string the agent can log, retry with a corrected plan, or treat as a failed step, exactly the kind of graceful failure a real tool needs.
+A planner can hallucinate a tool name you never registered, "browse_web" where you have "search." Skip the membership check and that hits a raw \`KeyError\` deep inside your executor. Keep it and dispatch hands back a clean error string. The agent can log that, retry with a corrected plan, or mark the step failed, which is how a real tool should fall over.
 
 ## The mental model
 
-The registry is your agent's toolbox. A plan step is a slip of paper naming a tool; dispatch is the hand that reaches into the toolbox, finds it by name, and hands it the arguments. Below, you'll build that registry and dispatcher in pure Python, and see the unknown-tool guard fire.`,
+The registry is your agent's toolbox. A plan step names a tool; dispatch reaches into the box, finds it by name, and passes it the arguments. Below, you'll build the registry and dispatcher in pure Python and watch the unknown-tool guard fire.`,
       starter_code: `def search(query):
     return f"[search result for '{query}']"
 
@@ -385,11 +385,11 @@ main()
       order: 3,
       title: "Decomposing a Goal Into Ordered Steps",
       concept: "task decomposition and dependencies",
-      explanation: `Not every step in a plan is independent. "Calculate the total" needs the numbers "search for prices" found first. A real plan isn't just a numbered list, it's a small dependency graph, and your executor has to run steps in an order that respects it, even if the planner didn't list them that way.
+      explanation: `Steps in a plan lean on each other. "Calculate the total" needs the numbers that "search for prices" found first. So a real plan is a small dependency graph wearing the costume of a numbered list, and your executor has to run steps in an order that respects the graph, even when the planner listed them in a different order.
 
 ## Adding dependencies to the plan
 
-Ask the planner to include which earlier steps each step needs:
+Ask the planner to record which earlier steps each step needs:
 
 \`\`\`python
 PLANNER_SYSTEM = """Break the goal into steps. Return a JSON array where each
@@ -397,11 +397,11 @@ item has: step (int), tool (string), instruction (string), and depends_on
 (a list of earlier step numbers this step needs the results of, or an empty list)."""
 \`\`\`
 
-A step with \`"depends_on": [1, 2]\` can't run until steps 1 and 2 have both completed. Most steps depend on nothing, or on just the one before them, but some, like a final "write the report" step, might depend on everything that came before it.
+A step with \`"depends_on": [1, 2]\` can't run until steps 1 and 2 have both finished. Most steps depend on nothing, or on just the step before them. A final "write the report" step might depend on everything that came before it.
 
 ## Ordering by dependency: topological order
 
-Running steps "in listed order" breaks the moment a planner lists them slightly out of order, or you want to double-check the plan is even runnable at all. The fix is a **topological sort**: repeatedly find any step whose dependencies are already done, run it, mark it done, and repeat.
+Running steps in listed order breaks the moment a planner emits them slightly out of order, and it gives you no way to check the plan is even runnable. The fix is a **topological sort**: find any step whose dependencies are already done, run it, mark it done, and repeat until nothing is left.
 
 \`\`\`python
 def topo_order(steps):
@@ -418,15 +418,15 @@ def topo_order(steps):
     return order
 \`\`\`
 
-If the loop ever finds **no** ready step while steps still remain, that means the remaining steps depend on each other in a circle, step 2 needs step 3, which needs step 2. That's a broken plan, and you should reject it before running a single tool, not discover it mid-execution.
+If the loop ever finds **no** ready step while steps still remain, the leftovers depend on each other in a circle: step 2 needs step 3, which needs step 2. That plan is broken. Reject it before running a single tool, rather than discovering the deadlock halfway through execution.
 
 ## Why this matters
 
-A flat, listed-order executor is fine for simple plans, but it silently produces wrong results the moment a planner reorders things or you introduce steps that fan in from multiple earlier ones. Sorting by dependency once, up front, means the execution order is always correct no matter what order the JSON array happened to list things in.
+A listed-order executor works fine on simple plans, then quietly produces wrong results the moment a planner reorders things or a step fans in from several earlier ones. Sort by dependency once, up front, and the execution order stays correct no matter what order the JSON array happened to list.
 
 ## The mental model
 
-Think of the plan as a small assignment with prerequisites, like a course schedule. You can't take the capstone before its prerequisites; a topological sort is exactly "take everything whose prerequisites are satisfied, in any batch, then repeat." Below, you'll implement this ordering and see it catch a circular dependency.`,
+Think of the plan as a course schedule with prerequisites. You can't take the capstone before its prerequisites clear. A topological sort is that same rule: take everything whose prerequisites are satisfied, in any batch, then repeat. Below, you'll implement this ordering and watch it catch a circular dependency.`,
       starter_code: `steps = [
     {"step": 1, "depends_on": []},
     {"step": 2, "depends_on": [1]},
@@ -553,7 +553,7 @@ main()
       order: 4,
       title: "Executing Steps and Passing Results Forward",
       concept: "step execution with result references",
-      explanation: `A plan is ordered now, but there's still a gap: step 2 needs the actual number step 1 found, not just the *idea* that step 1 ran first. This lesson wires real data from one step's output into the next step's input.
+      explanation: `The plan runs in the right order now, but a gap remains. Step 2 needs the actual number step 1 found, not merely the fact that step 1 ran first. This lesson wires real data out of one step's output and into the next step's input.
 
 ## Referencing an earlier step's result
 
@@ -588,11 +588,11 @@ This is a simplified reference format, \`"$step1"\` instead of \`"{{step1.result
 
 ## Why check for a missing reference
 
-A dependency-ordered execution should never hit a missing reference, that's exactly what the topological sort from the last lesson guarantees. But defending against it anyway catches bugs: a typo in the planner's output referencing a step number that doesn't exist, or a step that failed and never wrote a result. Returning \`None\` here, instead of crashing on a \`KeyError\`, gives your executor a clean signal to abort that step instead of a stack trace.
+Dependency-ordered execution should never hit a missing reference; the topological sort from the last lesson guarantees it. Guard against it anyway, because guards catch bugs the guarantee assumes away: a planner typo pointing at a step number that doesn't exist, or a step that failed and never wrote a result. Returning \`None\` here, rather than crashing on a \`KeyError\`, gives your executor a clean signal to abort that step instead of a stack trace.
 
 ## The mental model
 
-Think of \`results\` as a running ledger, one row per finished step, keyed by step number. Resolving arguments is reading that ledger just before you dispatch: swap any reference for the real value, then hand off clean, concrete arguments to the tool. Below, you'll build that resolver and see it catch a reference to a step that never ran.`,
+Think of \`results\` as a running ledger, one row per finished step, keyed by step number. Resolving arguments means reading that ledger just before you dispatch: swap each reference for its real value, then hand concrete arguments to the tool. Below, you'll build that resolver and watch it catch a reference to a step that never ran.`,
       starter_code: `results = {1: 42, 2: "tokyo"}
 
 def resolve_args(args, results):
@@ -715,11 +715,11 @@ main()
       order: 5,
       title: "Tracking State Across Steps",
       concept: "agent state and a bounded scratchpad",
-      explanation: `The \`results\` dict from the last lesson is more than plumbing for argument substitution, it's the agent's **state**: everything it has learned so far. This lesson formalizes that state and, just as important, keeps it from growing forever.
+      explanation: `The \`results\` dict from the last lesson does more than feed argument substitution. It is the agent's **state**: everything the agent has learned so far. This lesson gives that state a shape and, just as importantly, stops it from growing without bound.
 
 ## Two flavors of agent, one state problem
 
-A **fixed-plan agent**, the kind this guide builds, plans once and then just executes, referring back to \`results\` only to resolve arguments. A **replanning agent** is more flexible: after every step it hands the model a summary of what's happened so far and asks "given this, what's the next step?" That second style needs a real summary of state to feed back in:
+A **fixed-plan agent**, the kind this lesson builds, plans once and then executes, reaching back into \`results\` only to resolve arguments. A **replanning agent** is looser: after each step it hands the model a summary of what has happened and asks, "given this, what's the next step?" That second style needs a real summary of state to send back in:
 
 \`\`\`python
 def state_summary(state):
@@ -731,11 +731,11 @@ def state_summary(state):
 messages = [{"role": "user", "content": f"{state_summary(state)}\\n\\nWhat should the next step be?"}]
 \`\`\`
 
-Replanning adapts to surprises, a search coming back empty, an unexpected number, but it costs a planning call on every single step instead of one call up front. That's the trade-off: cheap and rigid versus adaptive and expensive.
+Replanning adapts to surprises like a search coming back empty or a number that makes no sense, but it spends a planning call on every step instead of one call up front. The fixed plan is cheaper and more rigid; replanning is adaptive and pricier. Pick per task.
 
 ## State grows exactly like chat history
 
-Sound familiar? It's the same problem a chatbot's message history has: every step you log grows the record, and eventually the record gets too big to usefully resend, whether to a human reading a trace or a model reading a summary. The fix is the same one too, keep it bounded.
+This is the same problem a chatbot's message history has. Every step you log grows the record, and eventually the record is too big to resend usefully, whether a human is reading a trace or a model is reading a summary. The fix is the same too: keep it bounded.
 
 \`\`\`python
 def compress_state_log(log, keep):
@@ -746,15 +746,15 @@ def compress_state_log(log, keep):
     return [summary] + log[dropped:]
 \`\`\`
 
-Keep the most recent \`keep\` entries verbatim, the ones most likely to matter for the next decision, and collapse everything older into a single "N earlier steps omitted" marker. The agent still knows *something* happened before, without paying to resend the full blow-by-blow.
+Keep the most recent \`keep\` entries verbatim, since those are the ones most likely to matter for the next decision, and fold everything older into one "N earlier steps omitted" marker. The agent still knows *something* came before, without paying to resend the full blow-by-blow.
 
 ## Why not just keep everything
 
-On a ten-step plan it doesn't matter. On a fifty-step research agent, resending the full log every time you re-plan means the last plan call pays for the tokens of the first forty-nine steps too. Bounding the log the same way you'd bound chat history keeps a long-running agent from becoming its own worst cost problem.
+On a ten-step plan, keeping everything is fine. On a fifty-step research agent it is not: resending the full log on every replan makes the last plan call pay for the tokens of the first forty-nine steps. Bound the log the way you'd bound chat history and a long-running agent stops being its own worst cost problem.
 
 ## The mental model
 
-State is a scratchpad, not a diary. You want the last few entries in full detail, and a one-line note that older entries existed, not a running transcript of everything the agent has ever done. Below, build the compressor and watch it collapse a four-step log down to its most recent entries.`,
+Treat state as a scratchpad rather than a diary. You want the last few entries in full, plus a one-line note that older ones existed. You do not want a running transcript of everything the agent has ever done. Below, build the compressor and watch it collapse a four-step log down to its most recent entries.`,
       starter_code: `log = [
     (1, "search", "found population 14M"),
     (2, "calculate", "doubled to 28M"),
@@ -874,7 +874,7 @@ main()
       order: 6,
       title: "Handling Step Failures",
       concept: "retries, and required vs. optional steps",
-      explanation: `Tools fail. A search times out, a calculation gets bad input, a file write hits a permissions error. A script crashes on the first failure and calls it a day. An agent that's actually production-ready has to decide, per step, whether a failure is fatal to the whole plan or just a shrug.
+      explanation: `Tools fail. A search times out, a calculation gets fed garbage, a file write hits a permissions error. A throwaway script crashes on the first failure and calls it a day. A production agent has to decide, per step, whether a given failure kills the whole plan or barely matters.
 
 ## Retry before giving up
 
@@ -897,9 +897,9 @@ Notice the branch at the end: exhausting retries doesn't always mean the same th
 
 ## Required steps vs. optional steps
 
-Mark each step in the plan as **required** or **optional**. "Calculate the total" is required, everything downstream needs that number, so if it fails after every retry, the whole plan has to stop and report failure; limping forward with a missing number just produces a wrong answer instead of an honest one. "Post a summary to Slack" is optional, a nice-to-have that later steps don't depend on, so if it fails, the agent logs it, skips it, and keeps going. The plan can still finish successfully overall.
+Mark each step in the plan as **required** or **optional**. "Calculate the total" is required: everything downstream needs that number, so if it fails after every retry, the plan stops and reports failure. Limping forward with a missing number would hand back a confidently wrong answer. "Post a summary to Slack" is optional: nothing later depends on it, so if it fails, the agent logs the failure, skips the step, and keeps going. The plan can still finish successfully.
 
-That distinction, one flag on each step, is what keeps a single flaky tool call from taking down an entire multi-step task, while still refusing to silently paper over a failure that actually matters.
+That one flag on each step is what keeps a single flaky tool call from sinking an entire multi-step task, without quietly papering over a failure that actually matters.
 
 ## The stopping rule this creates
 
@@ -908,11 +908,11 @@ That distinction, one flag on each step, is what keeps a single flaky tool call 
 
 ## Why this matters
 
-Real tool calls fail more often than demos suggest, networks blip, APIs rate-limit, inputs are messier than expected. An agent that treats every failure as fatal is too brittle to trust with anything long; one that treats every failure as ignorable produces confidently wrong results. The required/optional split is the cheapest way to get both: fail loud on what matters, fail quiet on what doesn't.
+Real tool calls fail more often than demos let on. Networks blip, APIs rate-limit, and inputs arrive messier than expected. An agent that treats every failure as fatal is too brittle to trust with a long task. An agent that treats every failure as ignorable ships confidently wrong results. The required/optional split gets you out of that bind cheaply: it fails loud on the steps that carry the answer and fails quiet on the ones that don't.
 
 ## The mental model
 
-Think of required steps as load-bearing walls and optional steps as decoration. Losing a wall brings the whole structure down, so you stop and report it. Losing the decoration is a shame, but the building still stands. Below, you'll simulate a plan's step outcomes and compute whether the whole thing ultimately succeeds.`,
+Required steps are load-bearing walls; optional steps are decoration. Lose a wall and the structure comes down, so you stop and report it. Lose the decoration and it's a shame, but the building still stands. Below, you'll simulate a plan's step outcomes and work out whether the whole thing succeeds.`,
       starter_code: `steps = [
     {"required": True, "succeeds_on": 1},
     {"required": False, "succeeds_on": None},
@@ -1028,7 +1028,7 @@ main()
       order: 7,
       title: "Knowing When to Stop",
       concept: "stopping conditions and loop detection",
-      explanation: `A fixed plan stops naturally, it runs out of steps. But a replanning agent, the kind that looks at results and decides its own next move turn by turn, has no natural finish line. Without an explicit stop rule, it can loop forever: re-searching the same query, always "almost done," burning tokens and money with nothing to show for it. This lesson builds the guard that catches that.
+      explanation: `A fixed plan stops on its own once it runs out of steps. A replanning agent, the kind that reads results and picks its own next move turn by turn, has no such finish line. Without an explicit stop rule it can spin forever: re-running the same query, forever "almost done," spending tokens with nothing to show for it. This lesson builds the guard that catches that.
 
 ## Three ways to know it's time to stop
 
@@ -1230,11 +1230,11 @@ Every line of \`run\` traces back to a lesson you've already built: \`topo_order
 
 ## What "shipped" means here
 
-Same three tests as every product in this track: it runs from a clean start with one command, it survives an empty or malformed plan without crashing, and someone else could hand it a goal from your instructions alone. An agent that plans, executes in dependency order, resolves references, tracks bounded state, retries and distinguishes required from optional failures, and knows when to stop, that's not a demo anymore. That's a deliverable.
+The same three tests as every product in this track. It runs from a clean start with one command. It survives an empty or malformed plan without crashing. And someone else could hand it a goal working from your instructions alone. An agent that plans, runs steps in dependency order, resolves references, tracks bounded state, retries while telling required failures from optional ones, and stops itself has crossed the line from demo to deliverable.
 
 ## Into your Portfolio
 
-Finishing this lesson records the Multi-Step Task Agent in your **Portfolio** tab: the goal it can take, the tools it dispatches to, and proof it plans and executes on its own. It joins the shelf of working products you've been assembling across this track, each one a real, runnable thing rather than a score.
+Finishing this lesson records the Multi-Step Task Agent in your **Portfolio** tab: the goal it takes, the tools it dispatches to, and proof it plans and executes on its own. It joins the shelf of working products you've built across this track, each one runnable rather than a score on a page.
 
 ## The mental model
 

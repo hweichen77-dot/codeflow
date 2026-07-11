@@ -2,7 +2,7 @@ const project = {
   id: "prod-16",
   title: "Semantic Search Engine",
   description:
-    "Build a search tool that finds results by meaning instead of matching keywords. By lesson 8 you have a working engine that embeds a corpus, ranks it by cosine similarity, and returns the top-k matches with scores.",
+    "Build a search tool that finds results by meaning instead of matching keywords. By lesson 8 you have a working engine that embeds a corpus, ranks it by cosine similarity, and returns the top-k matches with their scores.",
   difficulty: "intermediate",
   category: "rag_search",
   estimated_time: 130,
@@ -21,19 +21,19 @@ const lessons = [
     order: 1,
     title: "Search by Meaning, Not Keywords",
     concept: "embeddings and semantic search",
-    explanation: `Over the next eight lessons you'll build a search tool that finds results by **meaning**, not by matching keywords. Search "puppy training tips" and it should also surface a document titled "how to teach your dog to sit," even though the two share almost no words in common. By the end you'll have a working engine you can point at any small dataset and query in plain English.
+    explanation: `Over the next eight lessons you'll build a search tool that finds results by **meaning**, not by matching keywords. Search "puppy training tips" and it should still surface a document titled "how to teach your dog to sit," even though the two share almost no words. By the end you'll have a working engine you can point at any small dataset and query in plain English.
 
 ## Keyword search hits a wall
 
-Classic search (grep, SQL \`LIKE\`, a basic search box) matches literal substrings. It can't tell that "car" and "automobile" mean roughly the same thing, or that "return policy" and "how do I send this back" are asking the same question. It's fast and simple, but it's blind to meaning.
+Classic search (grep, SQL \`LIKE\`, a plain search box) matches literal substrings. It can't tell that "car" and "automobile" mean roughly the same thing, or that "return policy" and "how do I send this back" are the same question. It's fast and simple, and it's blind to meaning.
 
 ## What an embedding is
 
-An **embedding** is a list of floating-point numbers, produced by a model, that represents the meaning of a piece of text as a point in space. Two texts with similar meaning get embeddings that land close together in that space; two unrelated texts land far apart. A real embedding vector is typically hundreds to over a thousand numbers long, but the intuition is the same as a 2D map: closeness in the vector space mirrors closeness in meaning.
+An **embedding** is a list of floating-point numbers, produced by a model, that places the meaning of a piece of text at a point in space. Two texts with similar meaning get embeddings that land close together; two unrelated texts land far apart. A real embedding vector runs from a few hundred to over a thousand numbers long, but the intuition matches a 2D map: closeness in the vector space is closeness in meaning.
 
 ## Calling a real embeddings API
 
-Claude's Messages API has no built-in embeddings endpoint. Anthropic's documented recommendation for text embeddings is **Voyage AI**, an embeddings provider Anthropic partners with directly for exactly this purpose:
+Claude's Messages API has no embeddings endpoint. Anthropic's documented recommendation for text embeddings is **Voyage AI**, an embeddings provider Anthropic partners with directly for this:
 
 \`\`\`python
 import os
@@ -52,13 +52,13 @@ vectors = result.embeddings
 print(len(vectors), len(vectors[0]))
 \`\`\`
 
-\`vo.embed\` sends a batch of texts and gets back one vector per text. The first two sentences, both about a cat resting somewhere, will land close together. The third sentence, about stock prices, lands far from both, even though it shares zero words with the others.
+\`vo.embed\` sends a batch of texts and gets one vector back per text. The first two sentences are both about a cat resting somewhere, so they land close together. The third, about stock prices, lands far from both, even though it shares zero words with them.
 
 ## The mental model
 
-Picture every document as a dot dropped onto a giant map, where meaning, not geography, decides its position. A query is just one more dot on that same map. Semantic search is the simple act of asking "which dots sit nearest my query's dot?" Every lesson from here is in service of answering that one question quickly and correctly: how do we get texts onto the map (embedding), how do we measure "nearest" (similarity), and how do we return only the closest few (top-k).
+Picture every document as a dot dropped onto a giant map where meaning, not geography, sets its position. A query is one more dot on that same map. Semantic search asks "which dots sit nearest my query's dot?" Every lesson from here answers that one question quickly and correctly: how texts get onto the map (embedding), how we measure "nearest" (similarity), and how we return only the closest few (top-k).
 
-The rest of this lesson builds the smallest possible piece: a corpus that already carries its vectors, so you can see the shape of the data before you worry about computing anything.`,
+The rest of this lesson builds the smallest piece: a corpus that already carries its vectors, so you can see the shape of the data before computing anything.`,
     starter_code: `# A "corpus" is just a list of documents, each carrying its embedding vector.
 # Real vectors come from an API call like vo.embed() (see the explanation
 # above); here they are given to you directly so this runs offline.
@@ -90,11 +90,11 @@ print("Consistent dimension:", same_dim)
     hints: [
       "len(corpus) gives the document count; len(corpus[0][\"vector\"]) gives the dimension.",
       "Use all(...) with a generator expression to check every vector matches the first one's length.",
-      "This lesson doesn't compute anything about meaning yet, it just confirms the data shape is sane before you embed a real corpus.",
+      "This lesson computes nothing about meaning yet. It confirms the data shape is sane before you embed a real corpus.",
     ],
     challenge_title: "Same Dimension or Bust",
     challenge_description:
-      "Validate that every vector in a corpus has the same dimension before you try to search it. A mismatched vector silently breaks every similarity score computed downstream.",
+      "Check that every vector in a corpus has the same dimension before you search it. A mismatched vector silently breaks every similarity score computed downstream.",
     challenge_language: "python",
     challenge_starter_code: `import sys
 
@@ -163,11 +163,11 @@ main()
     order: 2,
     title: "Turning Text into Vectors",
     concept: "batch embedding a corpus",
-    explanation: `Lesson 1 gave you vectors for free. Now you'll actually produce them, and the key decision is doing it in **one batch call** instead of one call per document.
+    explanation: `Lesson 1 handed you vectors. Now you produce them yourself, and the decision that matters is making **one batch call** instead of one call per document.
 
 ## Batching, not looping
 
-A naive first attempt embeds documents one at a time in a loop, calling the API once per document. That's slow (one network round trip per doc) and, on most providers, more expensive than sending them together. The fix is simple: collect every text you need embedded, then send them as a single batch request.
+A first attempt often embeds documents one at a time in a loop, calling the API once per document. That's slow, one network round trip per doc, and on most providers it costs more than sending them together. Collect every text you need embedded, then send them as a single batch request.
 
 \`\`\`python
 import voyageai
@@ -189,19 +189,19 @@ for doc, vector in zip(docs, result.embeddings):
 print(docs[0]["text"], "->", len(docs[0]["vector"]), "dims")
 \`\`\`
 
-One request in, one vector per text out, in the same order you sent them. That's the whole shape of building an **index**: a corpus where every document now also carries its vector.
+One request in, one vector per text out, in the same order you sent them. That is the shape of an **index**: a corpus where every document now also carries its vector.
 
 ## Documents vs. queries
 
-Notice the \`input_type="document"\` argument. Voyage's models are trained so that documents and search queries are embedded slightly differently, documents anticipate being searched, queries anticipate searching. When you later embed the user's search text, you'll pass \`input_type="query"\` instead. Using the wrong one for a given side of the search doesn't crash anything, it just quietly makes your rankings worse, so it's worth getting right from the start.
+Notice the \`input_type="document"\` argument. Voyage's models embed documents and search queries slightly differently. Documents expect to be searched; queries expect to search. When you later embed the user's search text, you pass \`input_type="query"\` instead. Using the wrong one for a given side won't crash anything. It quietly makes your rankings worse, so get it right from the start.
 
 ## Why batching matters as the corpus grows
 
-A batch call to an embeddings API has a maximum number of texts (and total tokens) it accepts per request, and there's usually a per-minute rate limit too. A 10,000-document corpus isn't one call, it's dozens of calls of a few hundred documents each. You'll build the chunking logic for that in a later lesson; for now, the important habit is: gather all the texts you need first, then embed them together, rather than interleaving embed calls with other work.
+A batch call to an embeddings API caps how many texts (and total tokens) it accepts per request, and there's usually a per-minute rate limit on top. A 10,000-document corpus isn't one call. It's dozens of calls of a few hundred documents each. You'll build that chunking logic in a later lesson. The habit to form now: gather all the texts first, then embed them together, instead of interleaving embed calls with other work.
 
 ## The drill below
 
-Since there's no network in this sandbox, you'll build the exact same pipeline shape, collect texts, embed in one batch, attach vectors back to their documents, using a deterministic pure-Python stand-in for the real embed call. The stand-in turns each text into a tiny 5-number vector by counting its vowels. It's not a real embedding (it knows nothing about meaning), but it lets you practice the batching pattern you'll reuse with a real API for the rest of this build.`,
+There's no network in this sandbox, so you'll build the same pipeline shape, collect texts, embed in one batch, attach vectors back to their documents, using a deterministic pure-Python stand-in for the real embed call. The stand-in turns each text into a 5-number vector by counting its vowels. It knows nothing about meaning, so it isn't a real embedding, but it lets you practice the batching pattern you'll reuse with a real API for the rest of this build.`,
     starter_code: `# Pure-Python stand-in for a real embeddings API call.
 # It turns each text into a small vector by counting vowels, deterministic,
 # so it's not a real embedding, but it lets us build and test the batching
@@ -263,11 +263,11 @@ for entry in index:
     hints: [
       "Build the full texts list first (a list comprehension over docs), then call embed_fn ONCE on that whole list.",
       "zip(docs, vectors) pairs each original document with its vector in the same order.",
-      "The point of build_index is that embed_fn is called exactly once no matter how many documents there are.",
+      "build_index calls embed_fn exactly once no matter how many documents there are.",
     ],
     challenge_title: "Batch-Embed the Corpus",
     challenge_description:
-      "Embed a corpus in one batch pass using a deterministic vowel-count embedding, then report the index size and each document's vector.",
+      "Embed a corpus in one batch pass with a deterministic vowel-count embedding, then report the index size and each document's vector.",
     challenge_language: "python",
     challenge_starter_code: `import sys
 
@@ -333,15 +333,15 @@ main()
     order: 3,
     title: "Measuring Similarity with Cosine",
     concept: "cosine similarity",
-    explanation: `You now have vectors. The next question is: given a query vector, how "close" is it to a document's vector? The standard answer for embeddings is **cosine similarity**.
+    explanation: `You have vectors. The next question: given a query vector, how "close" is it to a document's vector? For embeddings the standard answer is **cosine similarity**.
 
 ## Why not just measure distance?
 
-Your first instinct might be to measure straight-line distance between two vectors. The problem is that embedding vectors can vary in length (magnitude) for reasons that have nothing to do with meaning, longer documents sometimes produce vectors with larger magnitude than short ones, purely as an artifact of the model. If you measured raw distance, a long document about the exact right topic could score worse than a short, only vaguely related one, just because of its magnitude.
+The obvious first move is straight-line distance between two vectors. Embedding vectors vary in length (magnitude) for reasons that have nothing to do with meaning. A longer document sometimes produces a vector with larger magnitude than a short one, purely as an artifact of the model. Measure raw distance and a long document about the exact right topic can score worse than a short, only vaguely related one, just because of its magnitude.
 
 ## What cosine similarity measures instead
 
-Cosine similarity ignores magnitude entirely and measures the **angle** between two vectors. Two vectors pointing in exactly the same direction score 1.0, no matter how long either one is. Perpendicular (unrelated) vectors score 0.0. Opposite directions score -1.0. Because it only cares about direction, doubling a vector's length doesn't change its similarity to anything, exactly the property you want for comparing meaning regardless of document length.
+Cosine similarity ignores magnitude and measures the **angle** between two vectors. Two vectors pointing the same direction score 1.0, no matter how long either one is. Perpendicular vectors score 0.0. Opposite directions score -1.0. Because only direction counts, doubling a vector's length leaves its similarity to everything unchanged, which is what you want when comparing meaning across documents of different lengths.
 
 ## The formula
 
@@ -371,11 +371,11 @@ for doc in index:
     print(doc["text"], round(score, 3))
 \`\`\`
 
-Real embeddings from Voyage are already close to unit length, so scores in practice usually land somewhere between about 0.0 and 1.0, with genuinely relevant matches often scoring 0.7 or higher and unrelated text scoring closer to 0.2-0.4. Don't treat those numbers as universal thresholds, they shift by model, but the ordering (which document scores highest) is what your search actually depends on.
+Real embeddings from Voyage are already close to unit length, so in practice scores land somewhere between about 0.0 and 1.0. Genuinely relevant matches often score 0.7 or higher; unrelated text scores closer to 0.2-0.4. Those numbers aren't universal thresholds, they shift by model, but the ordering (which document scores highest) is what your search depends on.
 
 ## The mental model
 
-Cosine similarity asks "are these two arrows pointing the same way?", not "are these two arrows the same length?" That's exactly the question you want answered when the arrows represent meaning, and it's the single function every later lesson builds on top of.`,
+Cosine similarity asks "are these two arrows pointing the same way?", not "are these two arrows the same length?" That is the question you want when the arrows represent meaning, and it's the one function every later lesson builds on.`,
     starter_code: `import math
 
 def cosine_similarity(a, b):
@@ -409,7 +409,7 @@ print(round(cosine_similarity(v1, v3), 4))
     hints: [
       "sum(x * y for x, y in zip(a, b)) is the dot product in one line.",
       "math.sqrt(sum(x * x for x in a)) is the norm (magnitude) of a.",
-      "v3 is just v1 scaled by 2, same direction, so its similarity to v1 should come out to exactly 1.0.",
+      "v3 is v1 scaled by 2, same direction, so its similarity to v1 comes out to exactly 1.0.",
     ],
     challenge_title: "Cosine Similarity from Scratch",
     challenge_description:
@@ -479,7 +479,7 @@ main()
     order: 4,
     title: "Ranking the Whole Corpus",
     concept: "scoring and ranking documents",
-    explanation: `Cosine similarity scores one pair of vectors. A search engine needs to score a query against **every** document in the corpus, then order them best-first. That's ranking.
+    explanation: `Cosine similarity scores one pair of vectors. A search engine scores a query against **every** document in the corpus, then orders them best-first. That's ranking.
 
 ## The ranking loop
 
@@ -497,25 +497,25 @@ for doc, score in results:
     print(f"{score:.3f}  {doc['text']}")
 \`\`\`
 
-Score every document once, then sort. For a corpus of a few thousand documents this is fast; you're doing a handful of multiplications per document, not calling any API. The embedding call is the expensive part, ranking is nearly free arithmetic.
+Score every document once, then sort. For a corpus of a few thousand documents this is fast: a handful of multiplications per document, no API call. The embedding call is the expensive part. Ranking is nearly free arithmetic.
 
 ## Ties need a rule
 
-Two documents can legitimately score identically, especially with toy or small-dimension vectors, or when two entries are near-duplicates. If you sort only by score, Python's sort is stable, but "stable" just means ties keep whatever order they arrived in, which is an accident of how you built the corpus, not a real decision. A production search engine should have an explicit, deterministic tie-break, most simply, the smaller document ID wins:
+Two documents can score identically, especially with toy or small-dimension vectors, or when two entries are near-duplicates. Python's sort is stable, but "stable" only means ties keep whatever order they arrived in, which is an accident of how you built the corpus rather than a decision. Give the search engine an explicit, deterministic tie-break. The simplest is that the smaller document ID wins:
 
 \`\`\`python
 scored.sort(key=lambda pair: (-pair[1], pair[0]["id"]))
 \`\`\`
 
-Sorting by \`(-score, id)\` sorts descending by score first (the negative sign flips ascending sort into descending), then ascending by ID only among ties. Two searches on the same corpus and query now always return results in the exact same order, which matters for testing, caching, and just not confusing users who search the same thing twice.
+Sorting by \`(-score, id)\` sorts descending by score first (the negative sign flips an ascending sort into descending), then ascending by ID among ties only. Two searches on the same corpus and query now return results in the exact same order every time, which matters for testing, caching, and not confusing a user who searches the same thing twice.
 
 ## Why you rank before you trim
 
-It's tempting to stop as soon as you've found "enough good" documents, but you can't know a document is in the top 5 until you've compared it against everything else. Score first, sort second, then decide how many to keep (that's the next lesson). Trying to shortcut this by stopping early almost always produces wrong results the moment the corpus order changes.
+You might want to stop as soon as you've found "enough good" documents, but you can't know a document is in the top 5 until you've compared it against everything else. Score first, sort second, then decide how many to keep (the next lesson). Stopping early produces wrong results the moment the corpus order changes.
 
 ## The mental model
 
-Ranking turns a pile of independent similarity scores into a single, meaningful ordering, with ties broken the same way every time. It's the bridge between "I can compare two vectors" (lesson 3) and "I can hand a user a numbered list of results" (the next two lessons).`,
+Ranking turns a pile of independent similarity scores into one ordering, with ties broken the same way every time. It bridges "I can compare two vectors" (lesson 3) and "I can hand a user a numbered list of results" (the next two lessons).`,
     starter_code: `import math
 
 def cosine_similarity(a, b):
@@ -659,11 +659,11 @@ main()
     order: 5,
     title: "Returning Top-K with Scores",
     concept: "top-k selection and result formatting",
-    explanation: `A ranked list of every document isn't a search result, it's a wall of text. Real search returns the best few matches, usually called the **top-k**, along with a score so the caller can judge how confident each match is.
+    explanation: `A ranked list of every document isn't a search result. It's a wall of text. Real search returns the best few matches, the **top-k**, each with a score so the caller can judge how confident the match is.
 
 ## Slicing off the top
 
-Once \`rank_documents\` has produced a fully sorted list, getting the top-k is just a slice:
+Once \`rank_documents\` has produced a fully sorted list, the top-k is a slice:
 
 \`\`\`python
 def top_k(ranked, k):
@@ -671,7 +671,7 @@ def top_k(ranked, k):
     return ranked[:k]
 \`\`\`
 
-The \`min(k, len(ranked))\` guard matters: if a caller asks for the top 10 results from a 3-document corpus, you don't want an index error or a padded list of missing entries, you want all 3 documents, no more, no less. Clamping k to the corpus size handles that for free.
+The \`min(k, len(ranked))\` guard matters. If a caller asks for the top 10 results from a 3-document corpus, you don't want an index error or a list padded with missing entries. You want all 3 documents. Clamping k to the corpus size does that.
 
 ## Putting the full pipeline together
 
@@ -690,15 +690,15 @@ def semantic_search(query_text, index, k=5):
     ]
 \`\`\`
 
-This is the shape of a real semantic search function: embed the query, score and rank the whole corpus, slice to the requested size, and format the result as something a caller (a UI, an API response, another program) can consume directly. Notice the query only gets embedded once per search, no matter how large \`k\` is or how big the corpus is, the cost of a search is one embedding call plus cheap arithmetic.
+This is the shape of a real semantic search function: embed the query, score and rank the whole corpus, slice to the requested size, and hand back something a caller (a UI, an API response, another program) can consume directly. The query gets embedded once per search regardless of \`k\` or corpus size, so a search costs one embedding call plus cheap arithmetic.
 
 ## Why return the score at all
 
-A bare list of matching documents hides useful information. A score of 0.91 means "this is almost certainly what the user meant." A score of 0.31 for the last item in a top-5 list means "this is a weak match included only because the other four ranked higher," it might not actually be relevant. Returning scores lets the caller decide whether to trust a result, show a "did you mean" fallback, or apply a cutoff of their own.
+A bare list of matching documents throws away useful information. A score of 0.91 means "this is almost certainly what the user meant." A score of 0.31 on the last item in a top-5 list means "weak match, included only because the other four ranked higher," and it might not be relevant at all. Returning scores lets the caller decide whether to trust a result, show a "did you mean" fallback, or apply its own cutoff.
 
 ## The mental model
 
-Top-k is a promise: "here are the k most-relevant documents, ranked, with proof of how relevant each one is." Everything upstream (embedding, scoring, sorting) exists to make that promise trustworthy. The next two lessons make sure the promise holds even when the input is messy.`,
+Top-k is a promise: here are the k most relevant documents, ranked, with a number showing how relevant each one is. Everything upstream (embedding, scoring, sorting) makes that promise trustworthy. The next two lessons keep it holding when the input is messy.`,
     starter_code: `def top_k(ranked, k):
     # TODO: clamp k to len(ranked) so asking for more than exists is safe.
     # TODO: return the first k entries of ranked.
@@ -808,15 +808,15 @@ main()
     order: 6,
     title: "Handling Bad Vectors and Empty Results",
     concept: "edge cases: zero vectors, dimension mismatches, empty corpora",
-    explanation: `Every piece works on clean input. Real corpora are not clean: a document that failed to embed can leave a zero vector behind, a bug can attach a vector of the wrong length, and a search can run before the corpus has anything in it at all. This lesson hardens the pipeline against all three.
+    explanation: `Every piece works on clean input. Real corpora aren't clean. A document that failed to embed leaves a zero vector behind, a bug attaches a vector of the wrong length, or a search runs before the corpus has anything in it. This lesson hardens the pipeline against all three.
 
 ## Zero vectors
 
-You already guard against this in \`cosine_similarity\` (lesson 3): if either vector's norm is 0, dividing would crash, so you return 0.0 instead. But *why* would a zero vector show up at all? In practice it usually means something upstream failed silently, an empty string got embedded, a placeholder document was never actually processed, or a bug zeroed out a field. Scoring it as 0.0 (rather than crashing the whole search) means one bad document doesn't take down every other result.
+You already guard against this in \`cosine_similarity\` (lesson 3): if either vector's norm is 0, dividing would crash, so you return 0.0 instead. But *why* would a zero vector show up? Usually something upstream failed silently, an empty string got embedded, a placeholder document was never processed, or a bug zeroed out a field. Scoring it as 0.0 instead of crashing the search means one bad document doesn't take down every other result.
 
 ## Dimension mismatches
 
-Every vector in an index should have the same length, the dimension your embedding model produces. If one doesn't, cosine similarity's \`zip(a, b)\` will silently truncate to the shorter length and produce a meaningless number instead of raising an error, which is worse than crashing: it looks like a valid result. The fix is to check dimension *before* scoring and skip (or flag) anything that doesn't match:
+Every vector in an index should have the same length, the dimension your embedding model produces. When one doesn't, cosine similarity's \`zip(a, b)\` silently truncates to the shorter length and returns a meaningless number instead of raising an error. That's worse than a crash, because it looks like a valid result. Check the dimension *before* scoring and skip (or flag) anything that doesn't match:
 
 \`\`\`python
 def safe_rank(query_vector, index):
@@ -836,15 +836,15 @@ def safe_rank(query_vector, index):
 
 ## Empty corpora
 
-If the index is empty, there is nothing to rank, and the correct answer is an empty list, not an error and not a crash on \`index[0]\` somewhere downstream. Check for this first, before touching anything else, so it short-circuits cleanly.
+If the index is empty there is nothing to rank, and the right answer is an empty list, not an error and not a crash on \`index[0]\` somewhere downstream. Check for it first, before touching anything else, so it short-circuits cleanly.
 
 ## Why this matters in production
 
-A search engine that crashes on one malformed document, or returns garbage silently instead of skipping it, is worse than one that's a little slower. Real corpora get updated by many processes over time; something will eventually go wrong with one document's embedding. The goal isn't to prevent that, it's impossible to prevent entirely, it's to make sure one bad row degrades gracefully instead of breaking search for everyone.
+A search engine that crashes on one malformed document, or silently returns garbage instead of skipping it, is worse than one that's a little slower. Real corpora get updated by many processes over time, and eventually something goes wrong with one document's embedding. You can't prevent that entirely. You can make one bad row degrade quietly instead of breaking search for everyone.
 
 ## The mental model
 
-Treat every document's vector as untrusted until you've checked it. A dimension check and a zero-vector guard cost a few lines of code and turn "the whole search engine is down" into "one document was silently skipped," which is the difference between a bug report and an outage.`,
+Treat every document's vector as untrusted until you've checked it. A dimension check and a zero-vector guard cost a few lines and turn "the whole search engine is down" into "one document was silently skipped." That's the difference between a bug report and an outage.`,
     starter_code: `import math
 
 def cosine_similarity(a, b):
@@ -1012,11 +1012,11 @@ main()
     order: 7,
     title: "Cost, Caching, and Batching at Scale",
     concept: "embedding cost, caching duplicates, batching large corpora",
-    explanation: `Every embedding call costs tokens, and a real corpus doesn't sit still, documents get added, edited, and re-indexed. This lesson is about not paying to embed the same thing twice, and not sending a batch so large the API rejects it.
+    explanation: `Every embedding call costs tokens, and a real corpus doesn't sit still. Documents get added, edited, and re-indexed. This lesson is about not paying to embed the same text twice, and not sending a batch so large the API rejects it.
 
 ## Cache identical texts
 
-If your corpus has duplicate or repeated text, two support articles that happen to share a boilerplate paragraph, the same FAQ synced from two sources, re-embedding both wastes money and time for an identical result. A **cache** keyed by the exact text, kept in memory or in a small database, means each unique string only ever gets embedded once:
+Corpora repeat text. Two support articles share a boilerplate paragraph, or the same FAQ gets synced from two sources. Re-embedding both spends money and time on an identical result. A **cache** keyed by the exact text, in memory or in a small database, embeds each unique string once:
 
 \`\`\`python
 import voyageai
@@ -1035,11 +1035,11 @@ def embed_corpus(texts, cache, batch_size=128):
     return [cache[t] for t in texts]
 \`\`\`
 
-Note the two things happening here: \`to_embed\` filters out anything already in the cache *before* any API call is made, and the loop below it chunks whatever's left into fixed-size batches. Rebuilding the same corpus a second time with this function makes zero API calls, everything is already cached.
+Two things happen here. \`to_embed\` filters out anything already cached *before* any API call, and the loop below chunks whatever's left into fixed-size batches. Rebuild the same corpus a second time with this function and it makes zero API calls, since everything is already cached.
 
 ## Batching for API limits, not just cost
 
-Embedding providers cap how many texts (and how many total tokens) a single request can carry. A corpus of 10,000 unique documents isn't one call, it's however many batches of, say, 128 documents it takes to cover them all: \`ceil(10000 / 128)\` = 79 calls. Chunking a list into fixed-size pieces is the same pattern regardless of what's inside it:
+Embedding providers cap how many texts (and how many total tokens) one request can carry. A corpus of 10,000 unique documents isn't one call. It's however many batches of, say, 128 documents it takes to cover them: \`ceil(10000 / 128)\` = 79 calls. Chunking a list into fixed-size pieces is the same pattern whatever's inside it:
 
 \`\`\`python
 def batch(items, batch_size):
@@ -1057,11 +1057,11 @@ def estimate_tokens(text):
 total = sum(estimate_tokens(t) for t in unique_texts)
 \`\`\`
 
-Summing that estimate over only the *unique* texts (not the duplicates the cache will skip) gives you a realistic number, not an inflated one.
+Sum the estimate over only the *unique* texts, not the duplicates the cache will skip, and you get a realistic number instead of an inflated one.
 
 ## The mental model
 
-Dedupe first, batch second, estimate third. Each step is cheap arithmetic that prevents an expensive mistake: dedupe stops you from paying twice for the same text, batching stops you from getting a request rejected for being too large, and estimating stops "I built the index" from turning into a surprise bill.`,
+Dedupe first, batch second, estimate third. Each step is cheap arithmetic that heads off an expensive mistake. Dedupe stops you paying twice for the same text. Batching stops a request getting rejected for being too large. Estimating stops "I built the index" from becoming a surprise bill.`,
     starter_code: `def dedupe_preserve_order(texts):
     # TODO: return a list of the unique texts in texts, in first-seen order.
     pass
@@ -1104,11 +1104,11 @@ print("Batches needed:", len(batches))
     hints: [
       "Use a set to track which texts you've already added, and a separate list to preserve the order they first appeared in.",
       "batch() is just slicing items in fixed-size steps: items[i:i+batch_size] for i in range(0, len(items), batch_size).",
-      "Always dedupe BEFORE batching, batching duplicates just wastes a slot in some batch for nothing.",
+      "Dedupe BEFORE batching. Batching duplicates wastes a slot in some batch for nothing.",
     ],
     challenge_title: "Dedupe, Batch, and Bill",
     challenge_description:
-      "Before re-embedding a corpus, dedupe repeated texts (cache hits are free), batch the rest into fixed-size API calls, and estimate the token cost of only the unique texts.",
+      "Before re-embedding a corpus, dedupe repeated texts (cache hits are free), batch the rest into fixed-size API calls, and estimate the token cost of the unique texts only.",
     challenge_language: "python",
     challenge_starter_code: `import sys
 
@@ -1172,7 +1172,7 @@ main()
     order: 8,
     title: "Ship the Semantic Search Engine",
     concept: "assembling and shipping the engine",
-    explanation: `Every piece is built: batch embedding, cosine similarity, ranking with a tie-break, top-k with clamping, guards against bad vectors, and a cache to keep costs down. This lesson bolts them together into one engine and ships it. Finish this and the project lands in your **Portfolio**.
+    explanation: `Every piece is built: batch embedding, cosine similarity, ranking with a tie-break, top-k with clamping, guards against bad vectors, and a cache to hold costs down. This lesson bolts them into one engine and ships it. Finish it and the project lands in your **Portfolio**.
 
 ## The whole thing, assembled
 
@@ -1235,11 +1235,11 @@ class SemanticSearchEngine:
         ]
 \`\`\`
 
-Read it top to bottom and every lesson is there: \`add_documents\` batches and caches (lessons 2 and 7), \`_cosine\` is the similarity math with its zero-vector guard (lesson 3), \`search\` ranks, ties-breaks, and clamps to top-k (lessons 4-5), and the dimension check plus the empty-index guard is the hardening (lesson 6).
+Read it top to bottom and every lesson is there. \`add_documents\` batches and caches (lessons 2 and 7). \`_cosine\` is the similarity math with its zero-vector guard (lesson 3). \`search\` ranks, breaks ties, and clamps to top-k (lessons 4-5). The dimension check and the empty-index guard are the hardening (lesson 6).
 
 ## What "shipped" means here
 
-You don't need a fancy deployment. Shipped means three things are true:
+No deployment needed. Shipped means three things are true:
 
 1. It runs from a clean start: point it at a folder of documents, call \`add_documents\`, then \`search\`.
 2. It handles an empty corpus, a repeated document, and a weird query without crashing.
@@ -1247,11 +1247,11 @@ You don't need a fancy deployment. Shipped means three things are true:
 
 ## Your Portfolio
 
-Completing this final lesson records the project in your **Portfolio** with its title and what you built: a working semantic search engine over a real corpus, backed by real embeddings, ranked by cosine similarity, returned as scored top-k results. Keep a one-line description ("finds FAQ answers by meaning, not keyword") and a saved example query and its top result as proof it works.
+Completing this final lesson records the project in your **Portfolio** with its title and what you built: a working semantic search engine over a real corpus, backed by real embeddings, ranked by cosine similarity, returned as scored top-k results. Keep a one-line description ("finds FAQ answers by meaning, not keyword") plus a saved example query and its top result as proof it works.
 
 ## The drill below
 
-You'll build a ship-readiness check: given the engine's index size, cache flag, zero-vector guard flag, and estimated token usage, decide if it's ready to ship or list exactly what's missing.`,
+You'll build a ship-readiness check. Given the engine's index size, cache flag, zero-vector guard flag, and estimated token usage, it decides whether the engine is ready to ship or lists what's missing.`,
     starter_code: `# Ship-readiness check for the finished search engine.
 # index_size: number of documents embedded and indexed
 # cache_enabled: 1 if repeated texts are deduped/cached, else 0
@@ -1291,8 +1291,8 @@ for index_size, cache, guard, tok, bud in cases:
 `,
     hints: [
       "Check the four conditions in a fixed order: index, cache, zero_vector_guard, budget.",
-      "index_size < 1 means nothing has been embedded yet, there's nothing to search.",
-      "No failures at all means the engine is READY to ship.",
+      "index_size < 1 means nothing has been embedded yet, so there's nothing to search.",
+      "No failures means the engine is READY to ship.",
     ],
     challenge_title: "Ship Checklist",
     challenge_description:

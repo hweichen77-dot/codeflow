@@ -35,11 +35,11 @@ A flashcard is just two strings: a **question** and an **answer**. In Python tha
 card = {"question": "What year did WWII end?", "answer": "1945"}
 \`\`\`
 
-A deck is a list of those dicts. Everything the tool does is turn text into a list of these dicts, then write that list to disk. Hold that picture the whole way through: \`str\` in, \`list[dict]\` out, file at the end.
+A deck is a list of those dicts. Everything the tool does is turn text into a list of these dicts, then write that list to disk. Keep the shape in mind: \`str\` in, \`list[dict]\` out, a file at the end.
 
 ## The smallest thing that works
 
-Give the model one fact and ask for one card. The prompt does the heavy lifting:
+Give the model one fact and ask for one card. The prompt carries the rules:
 
 \`\`\`python
 import os
@@ -74,7 +74,7 @@ card = {"question": question, "answer": answer}
 
 ## Why force the reply into this shape
 
-We told the model to answer in a rigid \`Q:\`/\`A:\` layout so parsing is trivial: split the lines, strip the labels, done. Later we upgrade to JSON so we can pull many cards at once, but the idea never changes: **constrain the output so your code can read it**. A vague "make some flashcards" gives you chatty prose you can't parse.
+We told the model to answer in a rigid \`Q:\`/\`A:\` layout so parsing is trivial: split the lines, strip the labels, done. Later we switch to JSON so we can pull many cards at once, but the idea stays the same. Constrain the output so your code can read it. Ask vaguely for "some flashcards" and you get chatty prose no parser can touch.
 
 ## The runnable drill
 
@@ -202,7 +202,7 @@ A model reading a short, focused chunk pays attention to every line. A model rea
 
 ## A chunk is just a slice of text under a size limit
 
-The rule is simple: pick a maximum size (say, a few hundred characters) and pack text into chunks that stay under it, never splitting in the middle of a sentence. Splitting on sentence boundaries keeps each card's context intact:
+Pick a maximum size, say a few hundred characters, and pack text into chunks that stay under it without ever splitting in the middle of a sentence. Cutting on sentence boundaries keeps each card's context intact:
 
 \`\`\`python
 def chunk_notes(text, max_chars=280):
@@ -356,7 +356,7 @@ The \`Q:\`/\`A:\` layout worked for exactly one card. For many cards you'd inven
 
 ## The extraction prompt
 
-The system prompt does three jobs: name the task, pin the exact schema, and set the rules that stop garbage:
+The system prompt has real work to do here. It names the task, pins the exact schema, and sets rules that keep garbage out:
 
 \`\`\`python
 SYSTEM = """You extract study flashcards from notes.
@@ -371,7 +371,7 @@ Rules:
 Example: [{"question": "What year did WWII end?", "answer": "1945"}]"""
 \`\`\`
 
-Three details carry the reliability. **"Return ONLY a JSON array"** discourages the chatty "Sure! Here are your cards:" preamble that breaks parsing. **The exact keys** (\`question\`, \`answer\`) mean your loop can rely on them. **The example** shows the shape better than any description, one line of sample output is worth a paragraph of rules.
+A few details carry the reliability here. **"Return ONLY a JSON array"** discourages the chatty "Sure! Here are your cards:" preamble that breaks parsing. **The exact keys** (\`question\`, \`answer\`) mean your loop can rely on them. **The example** shows the shape better than any description can. One line of sample output is worth a paragraph of rules.
 
 ## The call
 
@@ -390,7 +390,7 @@ for c in cards:
     print(c["question"], "->", c["answer"])
 \`\`\`
 
-That \`json.loads\` is the payoff for asking for JSON: text becomes a real Python list you can iterate, filter, and count. (In the next lesson we make that parse bulletproof, because models sometimes wrap the JSON in extra text.)
+That \`json.loads\` is why you asked for JSON in the first place. The text becomes a real Python list you can loop over and count. (The next lesson hardens the parse, since models sometimes wrap the JSON in extra text.)
 
 ## The runnable drill
 
@@ -500,7 +500,7 @@ main()
 
 ## The failure you're defending against
 
-\`json.loads\` needs the string to be *pure* JSON. Any extra character before or after the array throws \`JSONDecodeError\`, and a crashed parse means the whole chunk's cards are lost. Since parsing failures are the number-one way an extraction pipeline breaks, you harden this one spot and everything downstream gets steadier.
+\`json.loads\` needs the string to be *pure* JSON. Any extra character before or after the array throws \`JSONDecodeError\`, and a crashed parse means the whole chunk's cards are gone. Parsing failures are the number-one way an extraction pipeline breaks, so you harden this one spot and everything downstream steadies out.
 
 ## The extract-then-parse trick
 
@@ -644,7 +644,7 @@ main()
     order: 5,
     title: "Deduping the Deck",
     concept: "removing duplicate cards",
-    explanation: `Chunk your notes into ten pieces and the same fact often shows up in three of them, so your deck ends up with three near-identical cards for "What is the powerhouse of the cell?". Studying duplicates is a waste, and a messy deck feels sloppy. This lesson removes repeats before export.
+    explanation: `Chunk your notes into ten pieces and the same fact often turns up in three of them, so your deck ends up with three near-identical cards for "What is the powerhouse of the cell?". Studying the same card three times wastes your time, and a deck full of repeats feels sloppy. This lesson strips the repeats before export.
 
 ## Why exact matching isn't enough
 
@@ -830,7 +830,7 @@ This is the greedy packer again, now measured in tokens instead of characters. E
 
 ## The tradeoff to hold in mind
 
-Batching trades attention for cost. A batch that's too big is back to the lesson-2 problem: the model skims and misses facts. So batch *small related* chunks together, not the whole document. A budget of a few hundred to a couple thousand tokens per batch is a reasonable middle: cheaper than one-call-per-chunk, still small enough to extract carefully. The point isn't a magic number, it's that you *measure* before you ship instead of discovering the cost in your billing dashboard.
+Batching trades attention for cost. A batch that's too big is back to the lesson-2 problem: the model skims and misses facts. So batch *small related* chunks together, not the whole document. A budget of a few hundred to a couple thousand tokens per batch is a reasonable middle: cheaper than one-call-per-chunk, still small enough to extract carefully. Don't hunt for a magic number. *Measure* a run before you ship, so the cost shows up in your terminal and not on your billing dashboard.
 
 ## The runnable drill
 
@@ -980,7 +980,7 @@ Notice the order: cheapest, most-likely checks first (type, emptiness), then the
 
 ## Report, don't hide
 
-Print how many cards you dropped. A run that quietly discards half its cards is telling you the notes were thin or a chunk failed, and you want to *see* that, not wonder why your deck is short. A validator that reports its work is the difference between a tool you trust and a black box:
+Print how many cards you dropped. A run that quietly discards half its cards is telling you the notes were thin or a chunk failed, and you want to *see* that, not wonder why your deck is short. A validator that shows what it threw away earns your trust in a way a silent one never will:
 
 \`\`\`python
 print(f"Kept {len(good)} cards, dropped {dropped}.")
@@ -1145,7 +1145,7 @@ It's shipped when it runs from a clean start with one command, survives an empty
 
 ## It lands in your Portfolio
 
-Finishing this lesson saves **Flashcard Maker** to your **Portfolio** tab, with the title and what you built: a notes-to-flashcards tool with structured extraction, dedup, cost batching, validation, and CSV export. That's a real, showable deliverable, not a quiz score. The runnable drill below builds the escaped CSV text in memory (using the same \`csv\` module, which works offline) so you can see the exact bytes your file will contain.`,
+Finishing this lesson saves **Flashcard Maker** to your **Portfolio** tab, with the title and what you built: a notes-to-flashcards tool with structured extraction, dedup, cost batching, validation, and CSV export. You walk away with something you can show off. The runnable drill below builds the escaped CSV text in memory (using the same \`csv\` module, which works offline) so you can see the exact bytes your file will contain.`,
     starter_code: `import csv, io
 
 # Turn the finished deck into Anki-ready CSV text, correctly escaped.

@@ -2,7 +2,7 @@ const project = {
   id: "prod-08",
   title: "Persona Chatbot",
   description:
-    "Build a stateful character chatbot that remembers the whole conversation, holds a persona through every reply, and streams its answers token by token. By lesson 8 you have a runnable chat session that trims its own history to stay in budget and survives bad input and flaky network calls.",
+    "Build a stateful character chatbot that keeps the whole conversation in memory and stays in character while it streams replies token by token. By lesson 8 you have a runnable chat session that trims its own history to stay in budget and survives bad input and flaky network calls.",
   difficulty: "intermediate",
   category: "chatbots_agents",
   estimated_time: 120,
@@ -311,7 +311,7 @@ main()
     order: 3,
     title: "The Chat Loop",
     concept: "the conversation loop",
-    explanation: `You have the two ingredients: a persona string and a message list. Now wire them into the loop that turns them into a real conversation. This is the beating heart of every chatbot, and it's smaller than you'd think.
+    explanation: `You have the two ingredients: a persona string and a message list. Now wire them into the loop that turns them into a real conversation. This is the loop every chatbot runs on, and it's smaller than you'd think.
 
 ## One turn, end to end
 
@@ -892,7 +892,7 @@ main()
     order: 7,
     title: "Surviving Bad Input and Flaky Networks",
     concept: "errors, retries, and cost caps",
-    explanation: `Your bot works on your machine, on your inputs, with your Wi-Fi. A real bot faces empty messages, network blips, and a cost ceiling it must not blow through. This lesson is the boring, crucial armor that turns a demo into a tool.
+    explanation: `Your bot works on your machine, on your inputs, with your Wi-Fi. A real bot faces empty messages, network blips, and a cost ceiling it must not blow through. This lesson is the unglamorous armor that turns a demo into a tool.
 
 ## Three things that will go wrong
 
@@ -934,11 +934,11 @@ One \`if not user_text\` before you touch history saves a whole class of "why di
 
 ## Cap the cost
 
-Before sending, check the estimated tokens (lesson 4) against a ceiling. Over it? Trim harder or refuse. And cap attempts, as above. The mindset: assume the model will occasionally return garbage and the network will occasionally drop. Good bots aren't the ones that never fail; they're the ones that fail politely and recover.
+Before sending, check the estimated tokens (lesson 4) against a ceiling. Over it? Trim harder or refuse. And cap attempts, as above. The mindset: assume the model will occasionally return garbage and the network will occasionally drop. The bots people rely on fail politely and recover.
 
 ## Why it matters
 
-Every \`try/except\` and every input guard is the difference between a bot that dies on the first weird input and one someone can actually rely on. Hardening isn't glamorous, but it's what "production" means.
+Every \`try/except\` and every input guard is the difference between a bot that dies on the first weird input and one someone can actually rely on. That hardening is most of what "production" means.
 
 ## The drill below
 

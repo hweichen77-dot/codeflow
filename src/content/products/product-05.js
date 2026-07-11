@@ -2,7 +2,7 @@ const project = {
   id: "prod-05",
   title: "Tone Rewriter",
   description:
-    "Build a tool that takes any block of text and rewrites it in a tone you pick, formal, casual, or friendly, without changing what it actually says. You'll learn system-prompt templating, reusable tone presets, and how to keep the meaning intact while the style flips.",
+    "Build a tool that takes a block of text and rewrites it in a tone you pick, formal, casual, or friendly, without changing what it says. Along the way you'll write a system-prompt template, build reusable tone presets, and work out how to hold the meaning steady while the style shifts.",
   difficulty: "beginner",
   category: "prompting",
   estimated_time: 120,
@@ -25,18 +25,15 @@ const lessons = [
 
 ## The one job, stated precisely
 
-Every rewrite has two halves that must never blur together:
+Every rewrite has two halves, and they must never blur together. First, keep the meaning: facts, names, numbers, and intent stay identical. Second, change the style: word choice, formality, warmth, and sentence length are all fair game.
 
-- **Keep the meaning.** Facts, names, numbers, and intent stay identical.
-- **Change the style.** Word choice, formality, warmth, sentence length, all fair game.
+That split is the whole product. A rewriter that changes the meaning is broken. A rewriter that changes nothing is useless. You're building a dial that only moves the *style* axis.
 
-That split is the whole product. A rewriter that changes the meaning is broken, and a rewriter that changes nothing is useless. You're building a dial that only moves the *style* axis.
+## The same loop as every AI product
 
-## It's the same loop as every AI product
+Rewriting follows the usual loop. Take input (the text plus a chosen tone), build a prompt, call the model, read the reply, ship it. The one part that's specific to this product is the prompt, where you tell the model exactly what to keep and what to change.
 
-Rewriting fits the standard loop: take input (text + chosen tone), build a prompt, call the model, read the reply, ship it. The only special part is the prompt: you have to tell the model precisely what to keep and what to change.
-
-The instructions live in a **system prompt** (the standing rules) and the text to rewrite rides in a **user** message:
+The instructions live in a **system prompt** (the standing rules). The text to rewrite rides in a **user** message:
 
 \`\`\`python
 import os
@@ -55,19 +52,19 @@ resp = client.messages.create(
 print(resp.content[0].text)
 \`\`\`
 
-Notice the shape: the *tone* and the *rules* are in \`system\`, the *text to rewrite* is the user turn. Later lessons make that system string swappable so one tool handles every tone.
+Notice the shape. The *tone* and the *rules* go in \`system\`; the *text to rewrite* is the user turn. Later lessons make that system string swappable so one tool handles every tone.
 
 ## Why separate the two channels
 
-Because they change at different rates. The rules ("keep the meaning, change the style") are constant across every rewrite. The tone changes per request. The text changes every single call. Putting the standing rules in \`system\` and the raw text in \`messages\` means you write the rules once and only swap what actually varies.
+They change at different rates. The rules ("keep the meaning, change the style") are constant across every rewrite. The tone changes per request. The text changes on every single call. Put the standing rules in \`system\` and the raw text in \`messages\`, and you write the rules once while swapping only what varies.
 
 ## What we'll build first
 
-No network yet. First you'll assemble the exact request by hand, a system string plus a user message, so you can see the data shape the API expects. Get the shape right and the real call is a one-liner.
+No network yet. First you'll assemble the exact request by hand, a system string plus a user message, so you can see the data shape the API expects. Once the shape is right, the real call is a one-liner.
 
 ## The mental model to keep
 
-A tone rewriter is a volume knob for *style* wired to a lock on *meaning*. You turn the style knob (formal, casual, friendly) while the meaning stays bolted down. Everything in this project is building that knob and making sure the lock holds.`,
+A tone rewriter is a volume knob for *style* wired to a lock on *meaning*. You turn the style knob (formal, casual, friendly) while the meaning stays bolted down. The rest of this project is building that knob and making sure the lock holds.`,
     starter_code: `# Assemble a rewrite request by hand (no API yet).
 # A request is a system string (the rules + tone) plus a user message (the text).
 
@@ -154,11 +151,11 @@ main()
     order: 2,
     title: "The Smallest Rewrite That Works",
     concept: "one hardcoded tone",
-    explanation: `Now the smallest end-to-end thing: one tone, hardcoded, that actually returns rewritten text. Get one path working before you make it flexible.
+    explanation: `Now the smallest end-to-end thing: one tone, hardcoded, that returns rewritten text. Get one path working before you make it flexible.
 
 ## Call, then read the reply
 
-You've built the request. Sending it returns a response object, and the rewritten text is buried one level down. With the Anthropic SDK the text lives at \`resp.content[0].text\`:
+You've built the request. Sending it returns a response object, and the rewritten text sits one level down inside it. With the Anthropic SDK the text lives at \`resp.content[0].text\`:
 
 \`\`\`python
 import os
@@ -179,23 +176,23 @@ print(rewrite_formal("hey can u send that over?"))
 # -> "Could you please send that over?"
 \`\`\`
 
-The \`.strip()\` matters more than it looks. Models love to pad replies with a leading space or a trailing newline. If you're going to display or store the result, trim it now so those stray characters don't pile up.
+The \`.strip()\` matters more than it looks. Models often pad replies with a leading space or a trailing newline. If you're going to display or store the result, trim it now so those stray characters don't pile up.
 
 ## The reply is not always clean
 
-Here's the reality that shapes the rest of this project: the model doesn't always return *only* the rewrite. Sometimes it wraps it in a helpful preamble, "Here is the rewritten text:", or quotes it. Your parsing step has to reach past that and grab the actual rewrite. For a hardcoded first version you can trust a clean reply, but you'll harden this in lesson 7.
+One reality shapes the rest of this project: the model doesn't always return *only* the rewrite. Sometimes it wraps the text in a preamble like "Here is the rewritten text:" or drops quotes around it. Your parsing step has to reach past that and grab the actual rewrite. A hardcoded first version can trust a clean reply, and you'll harden this properly in lesson 7.
 
 ## Why start this small
 
-One tone, one function, one clean return. That's a checkpoint you can run and believe. Every later feature, more tones, presets, validation, hangs off this working core. If you can't rewrite into *one* tone reliably, adding five tones just multiplies the bug. Prove the smallest slice first.
+One tone, one function, one clean return. That's a checkpoint you can run and believe. Every later feature (more tones, presets, validation) hangs off this working core. If you can't rewrite into one tone reliably, adding five tones just multiplies the bug. Prove the smallest slice first.
 
 ## What you'll drill
 
-The runnable exercise below simulates a model reply (a plain dict, like the SDK gives you) and makes you pull the rewritten text out and clean it. That extract-and-strip step is the exact code you'd run on a real response, minus the network.
+The exercise below simulates a model reply, a plain dict like the SDK gives you, and makes you pull the rewritten text out and clean it. That extract-and-strip step is the exact code you'd run on a real response, minus the network.
 
 ## The mental model to keep
 
-The model hands you a *box*, not a *string*. The rewrite is inside the box, sometimes with packing peanuts around it. Your job every call is the same: open the box, take the rewrite, brush off the peanuts.`,
+The model hands you a *box*, not a *string*. The rewrite is inside the box, sometimes with packing peanuts around it. Your job on every call is the same: open the box, take the rewrite, brush off the peanuts.`,
     starter_code: `# Simulate a model reply and pull the rewritten text out of it.
 # The SDK returns an object; here we mimic it with a plain dict.
 
@@ -283,7 +280,7 @@ main()
 
 ## The template idea
 
-A system-prompt template is a string with a placeholder you fill at call time. In Python the cleanest tool is \`str.format\` with a named field:
+A system-prompt template is a string with a placeholder you fill at call time. In Python the cleanest tool for that is \`str.format\` with a named field:
 
 \`\`\`python
 SYSTEM_TEMPLATE = (
@@ -299,11 +296,11 @@ def build_system(tone):
 print(build_system("friendly"))
 \`\`\`
 
-Call \`build_system("formal")\`, \`build_system("casual")\`, \`build_system("friendly")\`, and you get three tailored system prompts from one source of truth. Change the rules once and every tone benefits.
+Call \`build_system("formal")\`, then \`build_system("casual")\`, then \`build_system("friendly")\`, and you get three tailored system prompts from one source of truth. Change the rules once and every tone picks up the change.
 
 ## Wiring it into the call
 
-The template feeds straight into the API call. The user message never changes shape, only the system string swaps:
+The template feeds straight into the API call. The user message never changes shape; only the system string swaps:
 
 \`\`\`python
 def rewrite(text, tone):
@@ -316,19 +313,19 @@ def rewrite(text, tone):
     return resp.content[0].text.strip()
 \`\`\`
 
-One function, any tone. That's the payoff of templating: the tone becomes a *parameter*, not a copy-pasted function.
+One function, any tone. That's the payoff of templating: the tone becomes a *parameter* instead of a copy-pasted function.
 
 ## Why not f-strings everywhere?
 
-You *could* use an f-string inline. But pulling the template out as a named constant with \`{tone}\` gives you one place to edit the rules, keeps the wording consistent across tones, and makes the template easy to test on its own (which you'll do below). A prompt that's reused a thousand times deserves to live in one spot.
+You could use an f-string inline. Pulling the template out as a named constant with \`{tone}\` gives you one place to edit the rules, keeps the wording consistent across tones, and lets you test the template on its own (which you'll do below). A prompt reused a thousand times deserves to live in one spot.
 
 ## Watch the placeholder trap
 
-\`str.format\` treats every \`{...}\` as a field to fill. If your prompt legitimately contains braces, say you're asking for JSON output, \`format\` will try to fill those too and crash. For tone prompts you rarely hit this, but remember: with \`.format\`, literal braces must be doubled (\`{{\` and \`}}\`).
+\`str.format\` treats every \`{...}\` as a field to fill. If your prompt genuinely contains braces, say you're asking for JSON output, \`format\` will try to fill those too and crash. Tone prompts rarely hit this, but keep it in mind: with \`.format\`, literal braces must be doubled (\`{{\` and \`}}\`).
 
 ## The mental model to keep
 
-The template is a rubber stamp with one blank line. You ink in the tone and stamp; the rest of the message, the rules, the format demand, comes out identical every time. One stamp, many tones.`,
+The template is a rubber stamp with one blank line. You ink in the tone and stamp. The rest of the message, the rules and the format demand, comes out identical every time. One stamp, many tones.`,
     starter_code: `# Fill a system-prompt template with a chosen tone.
 
 SYSTEM_TEMPLATE = (
@@ -407,11 +404,11 @@ main()
     order: 4,
     title: "A Menu of Tones: Presets",
     concept: "tone presets",
-    explanation: `"Formal" is a vague word. To one model it means stiff legalese; to another, polite email. If you want *consistent* results, don't hand the model a bare adjective, hand it a **preset**: a named tone with a concrete description of what it means.
+    explanation: `"Formal" is a vague word. To one model it means stiff legalese; to another, a polite email. If you want consistent results, don't hand the model a bare adjective. Hand it a **preset**: a named tone with a concrete description of what it means.
 
 ## What a preset is
 
-A preset pairs a short name with a precise instruction. Store them in a dict, the name is the key, the guidance is the value:
+A preset pairs a short name with a precise instruction. Store them in a dict where the name is the key and the guidance is the value:
 
 \`\`\`python
 TONE_PRESETS = {
@@ -421,7 +418,7 @@ TONE_PRESETS = {
 }
 \`\`\`
 
-Now "formal" isn't a guess, it's a definition. The preset text drops into your template so the system prompt carries the full description, not just the label:
+Now "formal" isn't a guess; it's a definition. The preset text drops into your template so the system prompt carries the full description rather than just the label:
 
 \`\`\`python
 SYSTEM_TEMPLATE = (
@@ -437,15 +434,11 @@ def build_system(tone):
 
 ## Why presets beat free-text tones
 
-Three wins:
-
-- **Consistency.** The same preset produces the same style every time, because the model reads the same detailed guidance, not a word it's free to interpret.
-- **Discoverability.** \`list(TONE_PRESETS)\` is your menu. A UI can show the available tones without hardcoding them anywhere else.
-- **Extensibility.** Adding "playful" or "urgent" is one new dict entry. No code changes, just data.
+The same preset produces the same style every time, because the model reads the same detailed guidance instead of a lone word it's free to interpret. You also get a menu for free: \`list(TONE_PRESETS)\` is the set of tones a UI can show without hardcoding them anywhere else. And adding "playful" or "urgent" is one new dict entry, no code change, just data.
 
 ## Looking one up safely
 
-Reaching for \`TONE_PRESETS[tone]\` crashes if the tone isn't there. Use \`.get\` with a fallback, or check membership first, so an unknown tone degrades gracefully instead of throwing. You'll build that fallback properly in lesson 6; for now, know that the lookup is the one spot where a bad tone name bites.
+Reaching for \`TONE_PRESETS[tone]\` crashes if the tone isn't there. Use \`.get\` with a fallback, or check membership first, so an unknown tone degrades gracefully instead of throwing. You'll build that fallback properly in lesson 6. For now, know that the lookup is the one spot where a bad tone name bites.
 
 ## The mental model to keep
 
@@ -538,18 +531,15 @@ main()
     order: 5,
     title: "Change the Style, Keep the Meaning",
     concept: "preserving meaning",
-    explanation: `This is the lesson that makes a tone rewriter trustworthy. It's easy to make text *sound* different. The hard part is making sure it still *says* the same thing. A rewriter that turns "Ship 3 boxes by Friday" into "Please send some boxes soon" has failed, it changed the meaning while chasing a friendlier tone.
+    explanation: `This is the lesson that makes a tone rewriter trustworthy. Making text *sound* different is easy. The hard part is making sure it still *says* the same thing. A rewriter that turns "Ship 3 boxes by Friday" into "Please send some boxes soon" has failed: it changed the meaning while chasing a friendlier tone.
 
 ## Two levers pull against each other
 
-- The **tone** lever wants to change words.
-- The **meaning** lock wants to keep facts.
-
-When you push tone too hard, the model starts paraphrasing away specifics: numbers get vague, names get dropped, a firm deadline becomes "soon." Your prompt has to hold the meaning lock firmly while the tone lever moves.
+The tone lever wants to change words. The meaning lock wants to keep facts. When you push tone too hard, the model starts paraphrasing away specifics: numbers go vague, names get dropped, a firm deadline becomes "soon." Your prompt has to hold the meaning lock firmly while the tone lever moves.
 
 ## Pin the facts in the prompt
 
-The fix is to state what "keep the meaning" concretely forbids. Vague rules get vague obedience:
+The fix is to spell out what "keep the meaning" concretely forbids. Vague rules get vague obedience:
 
 \`\`\`python
 SYSTEM = (
@@ -567,7 +557,7 @@ Spelling out "keep all names, numbers, dates" gives the model a checklist instea
 
 ## Verify, don't just hope
 
-Even a good prompt slips occasionally, so a real rewriter *checks* the output. The cheapest useful check: the facts that are easy to extract, numbers, dates, dollar amounts, should all survive the rewrite. If the original mentions "3 boxes" and "5pm" but the rewrite dropped the 5, something went wrong and you can flag it or retry.
+Even a good prompt slips now and then, so a real rewriter *checks* its output. The cheapest useful check is the easy-to-extract facts: numbers, dates, and dollar amounts should all survive the rewrite. If the original mentions "3 boxes" and "5pm" but the rewrite dropped the 5, something went wrong, and you can flag it or retry.
 
 \`\`\`python
 import re
@@ -579,7 +569,7 @@ def meaning_preserved(original, rewrite):
     return numbers_in(original).issubset(numbers_in(rewrite))
 \`\`\`
 
-This won't catch every meaning change, paraphrase can lose nuance a regex can't see, but a dropped number is the single most common and most damaging failure, and it's trivial to detect. Catch the easy 80%.
+This won't catch every meaning change. Paraphrase can lose nuance a regex will never see. But a dropped number is the single most common and most damaging failure, and it's trivial to detect. Catch the easy cases cheaply and move on.
 
 ## The mental model to keep
 
@@ -691,14 +681,11 @@ main()
 
 ## Two inputs, two failure modes
 
-A rewrite request has a **tone** and a **text**, and each breaks differently:
-
-- **Tone** might be mis-cased ("Formal"), padded (" formal "), or unknown ("sarcastic"). None should crash the tool.
-- **Text** might be empty or whitespace-only. There's nothing to rewrite, so calling the API just wastes money and returns nonsense.
+A rewrite request has a tone and a text, and each breaks in its own way. The tone might be mis-cased ("Formal"), padded (" formal "), or unknown ("sarcastic"), and none of those should crash the tool. The text might be empty or whitespace-only, in which case there's nothing to rewrite and calling the API just wastes money on a nonsense reply.
 
 ## Normalize the tone before you look it up
 
-Lowercase it and strip whitespace so "  FORMAL " and "formal" hit the same preset. Then, if it's still not a known tone, fall back to a sensible default instead of crashing:
+Lowercase it and strip the whitespace so "  FORMAL " and "formal" hit the same preset. Then, if it's still not a known tone, fall back to a sensible default instead of crashing:
 
 \`\`\`python
 DEFAULT_TONE = "neutral"
@@ -710,7 +697,7 @@ def resolve_tone(raw_tone, presets):
     return DEFAULT_TONE
 \`\`\`
 
-Falling back beats erroring here: the user still gets a rewrite, just in the safe default tone, and you can tell them "unknown tone, used neutral." Graceful degradation over a hard stop.
+Falling back beats erroring here. The user still gets a rewrite, just in the safe default tone, and you can tell them "unknown tone, used neutral." Better to degrade gracefully than to hard-stop.
 
 ## Reject empty text early
 
@@ -723,11 +710,11 @@ def validate_text(text):
     return text.strip()
 \`\`\`
 
-Catching this early saves an API call, a token bill, and a confusing empty reply. The cheapest call is the one you don't make.
+Catching this early saves an API call, a token bill, and a confusing empty reply. The cheapest call is the one you never make.
 
 ## Order matters
 
-Check text first (fatal, stop), then resolve tone (recoverable, fall back). A tool that validates in the right order fails fast on the unrecoverable problem and quietly patches the recoverable one. That ordering is the difference between "helpful error" and "mysterious empty output."
+Check text first (fatal, stop), then resolve tone (recoverable, fall back). Validate in that order and the tool fails fast on the unrecoverable problem while quietly patching the recoverable one. Get the order wrong and you land somewhere between a helpful error and mysterious empty output.
 
 ## The mental model to keep
 
@@ -837,11 +824,11 @@ main()
     order: 7,
     title: "Cheap, Clean, and Unbreakable",
     concept: "cost and defensive parsing",
-    explanation: `Two things stand between a working demo and a tool you'd let other people use: the model's reply is messier than you hope, and every call costs money. This lesson hardens both.
+    explanation: `Two things stand between a working demo and a tool you'd let other people use. The model's reply is messier than you hope, and every call costs money. This lesson hardens both.
 
 ## The model wraps the rewrite
 
-You asked for "only the rewritten text." The model, being helpful, sometimes returns:
+You asked for "only the rewritten text." The model, trying to be helpful, sometimes returns this instead:
 
 \`\`\`
 Here is the rewritten text:
@@ -850,7 +837,7 @@ Could you please send that over?
 \\\`\\\`\\\`
 \`\`\`
 
-If you display that raw, your user sees code fences and a chatty preamble around their rewrite. Clean it defensively: drop fence lines, strip a leading label, trim blank edges:
+Display that raw and your user sees code fences and a chatty preamble wrapped around their rewrite. Clean it defensively: drop fence lines, strip a leading label, trim the blank edges:
 
 \`\`\`python
 def clean_reply(text):
@@ -863,11 +850,11 @@ def clean_reply(text):
     return "\\n".join(lines).strip()
 \`\`\`
 
-The rule: never trust the reply to be exactly what you asked for. Strip the wrapper every time. It's cheap insurance against ugly output.
+The rule is simple: never trust the reply to be exactly what you asked for. Strip the wrapper every time. It's cheap insurance against ugly output.
 
 ## Cost is length times frequency
 
-Every call spends tokens on the *input* (system prompt + text) and the *output* (the rewrite). A rough rule: one token per four characters. Two habits keep the bill sane:
+Every call spends tokens on the *input* (system prompt plus text) and the *output* (the rewrite). A rough rule of thumb is one token per four characters. Two habits keep the bill sane:
 
 \`\`\`python
 def estimate_tokens(text):
@@ -880,16 +867,16 @@ def guard_cost(text):
         raise ValueError("Text too long; split it into chunks first.")
 \`\`\`
 
-- **Cap the input.** A user pasting a whole book shouldn't trigger one giant, expensive call. Set a ceiling and refuse (or chunk) past it.
-- **Set \`max_tokens\` sanely.** A rewrite is about the same length as the input, so you don't need \`max_tokens=4000\` for a two-line email. Right-size it.
+- **Cap the input.** A user pasting a whole book shouldn't trigger one giant, expensive call. Set a ceiling and refuse (or chunk) anything past it.
+- **Set \`max_tokens\` sanely.** A rewrite runs about the same length as the input, so a two-line email doesn't need \`max_tokens=4000\`. Right-size it.
 
 ## Fail politely, not silently
 
-Networks drop and models occasionally return junk. Wrap the call so a failure gives the user their original text back with a note, rather than a stack trace. A rewriter that returns the original on failure is still useful; one that crashes is not.
+Networks drop and models occasionally return junk. Wrap the call so a failure hands the user their original text back with a note rather than a stack trace. A rewriter that returns the original when it fails is still useful. One that crashes is not.
 
 ## The mental model to keep
 
-Treat the reply like produce from a market: rinse it before serving. And treat every call like it's on your credit card, because it is. Clean what comes back, cap what goes out, and the tool stays both presentable and affordable.`,
+Treat the reply like produce from a market and rinse it before serving. Treat every call like it's on your credit card, because it is. Clean what comes back, cap what goes out, and the tool stays both presentable and affordable.`,
     starter_code: `# Clean a messy model reply: strip code fences and blank edges.
 
 def clean_reply(text):
@@ -982,7 +969,7 @@ main()
 
 ## The whole pipeline, in order
 
-Each request flows through the same steps, and the order is the design:
+Each request flows through the same steps, and the order is the design.
 
 \`\`\`python
 import os, re
@@ -1020,23 +1007,19 @@ def rewrite(text, tone):
     return clean_reply(resp.content[0].text)
 \`\`\`
 
-Validate, resolve the preset, template the system prompt, call, clean the reply. That's the tool. Wrap it in a tiny CLI (\`input()\` for the text and tone, \`print()\` for the result) and it's usable by a human.
+Validate, resolve the preset, template the system prompt, call, clean the reply. That's the tool. Wrap it in a tiny CLI (\`input()\` for the text and tone, \`print()\` for the result) and a human can use it.
 
 ## What "shipped" means here
 
-Three things, all of which you've built:
-
-1. It runs from a clean start: pick a tone, paste text, get a rewrite.
-2. It handles bad input, empty text, unknown tone, without crashing.
-3. Someone else could use it from a one-line description: "rewrites text into a tone you choose."
+By now you've built all three parts of it. The tool runs from a clean start: pick a tone, paste text, get a rewrite. It handles bad input, both empty text and an unknown tone, without crashing. And someone else could pick it up from a one-line description: "rewrites text into a tone you choose."
 
 ## It lands in your Portfolio
 
-Finishing this final lesson saves the **Tone Rewriter** to your Portfolio tab automatically, title and deliverable recorded. Keep an example with it: an original scrappy note and its formal rewrite, side by side, proves the tool works at a glance. That before/after pair is your demo.
+Finishing this final lesson saves the **Tone Rewriter** to your Portfolio tab automatically, with the title and deliverable recorded. Keep an example alongside it. A scrappy original note next to its formal rewrite shows the tool working at a glance, and that before/after pair is your demo.
 
 ## The mental model to keep
 
-You didn't build eight features; you built one pipeline and hardened each stage. Input goes in dirty, flows through validate, resolve, template, call, clean, and comes out as a tone-shifted rewrite that still means what the original meant. That pipeline is the product. Ship it.`,
+You didn't build eight features. You built one pipeline and hardened each stage. Input goes in dirty, flows through validate, resolve, template, call, and clean, and comes out as a tone-shifted rewrite that still means what the original meant. That pipeline is the product. Ship it.`,
     starter_code: `# Run the full rewrite pipeline offline (simulated model, no network).
 
 TONE_PRESETS = {

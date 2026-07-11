@@ -62,7 +62,7 @@ The first instinct is to send everything to the model, and eventually we will. B
 
 ## The mental model to keep
 
-The transcript is ore; action items are the metal. The model is the smelter, but you still decide what goes in, what a clean nugget looks like, and how to store it. Below, build the candidate filter by hand, no API yet. Get a feel for the raw material before you automate it.`,
+Think of the transcript as raw ore and the action items as the metal you want out of it. The model does the smelting later, but you still decide what goes in and what a clean result looks like. Below, build the candidate filter by hand, no API yet, so you get a feel for the raw material before you automate it.`,
       starter_code: `# First pass, no API yet: pull the candidate action lines out of a transcript.
 # An action line tends to contain a trigger word like "will", "todo", "action".
 
@@ -303,7 +303,7 @@ main()
       order: 3,
       title: "Owner, Task, Deadline",
       concept: "reliable three-field extraction",
-      explanation: `One clean sentence is easy. Real transcripts aren't clean. Somebody says "we should update the wiki" with no owner. Somebody says "Priya, can you review the PR?" with no deadline. If your extractor assumes every item has all three fields, it breaks the first time reality shows up. This lesson makes the three-field extraction *robust*: always three fields, even when the transcript only gives you one or two.
+      explanation: `One clean sentence is easy. Real transcripts aren't clean. Somebody says "we should update the wiki" with no owner. Somebody says "Priya, can you review the PR?" with no deadline. If your extractor assumes every item has all three fields, it breaks the first time reality shows up. This lesson makes the three-field extraction hold up: always three fields, even when the transcript only gives you one or two.
 
 ## Prompt for the missing case explicitly
 
@@ -336,7 +336,7 @@ The \`x or default\` idiom is the workhorse here: an empty string is falsy, so \
 
 ## Why the split of duties matters
 
-There are two places a rule can live: in the prompt (the model applies it) or in your code (you apply it). Extraction rules ("what was actually said") belong to the model because only it can read the language. Policy rules ("blanks display as Unassigned") belong to your code because they're deterministic and free, no reason to spend a token or risk the model forgetting. Getting this division right is most of what separates a flaky extractor from a reliable one.
+There are two places a rule can live: in the prompt (the model applies it) or in your code (you apply it). Extraction rules ("what was actually said") belong to the model because only it can read the language. Policy rules ("blanks display as Unassigned") belong to your code because they're deterministic and free, so there's no reason to spend a token or risk the model forgetting. Get this division wrong and your extractor turns flaky; get it right and it stays predictable.
 
 ## The mental model to keep
 
@@ -440,7 +440,7 @@ main()
       order: 4,
       title: "Make It Return JSON",
       concept: "structured JSON output",
-      explanation: `Pipe-delimited lines got us this far, but they're fragile. What if a task itself contains a pipe? What if you later want a fourth field like priority? Delimited text falls apart. The industry-standard shape for structured model output is **JSON**, and switching to it is the upgrade that makes this product production-grade.
+      explanation: `Pipe-delimited lines got us this far, but they're fragile. What if a task itself contains a pipe? What if you later want a fourth field like priority? Delimited text falls apart. The standard shape for structured model output is **JSON**, and switching to it is what takes this product from a demo to something you'd actually run.
 
 ## Ask for JSON, precisely
 
@@ -465,7 +465,7 @@ Now one call returns *all* the items as a list of dicts, exactly the structure y
 
 ## The model wraps its JSON, deal with it
 
-Here's the reality nobody warns you about: even when you say "only JSON", models often wrap it in chatty text or a Markdown code fence like \\\`\\\`\\\`json ... \\\`\\\`\\\`. A raw \`json.loads\` on that reply throws. The fix is to grab the JSON array out of whatever surrounds it by finding the first \`[\` and the last \`]\`:
+Even when you say "only JSON", models often wrap it in chatty text or a Markdown code fence like \\\`\\\`\\\`json ... \\\`\\\`\\\`. A raw \`json.loads\` on that reply throws. The fix is to grab the JSON array out of whatever surrounds it by finding the first \`[\` and the last \`]\`:
 
 \`\`\`python
 def extract_json(text):
@@ -474,7 +474,7 @@ def extract_json(text):
     return json.loads(text[start:end])
 \`\`\`
 
-This defensive extraction is the single most useful trick in structured-output work. It survives code fences, leading "Here are the items:", and trailing "Hope that helps!" all at once.
+This one guard handles most of what goes wrong with structured output. It survives code fences, a leading "Here are the items:", and a trailing "Hope that helps!" without any special-casing.
 
 ## Validate every item
 
@@ -491,7 +491,7 @@ def is_valid(item):
 
 ## The mental model to keep
 
-JSON is the handshake between the model's language world and your program's data world. You ask for a precise shape, extract it defensively because the model gets chatty, then validate before you trust it. Below, take a realistic messy reply, pull the JSON out of the surrounding text, and keep only the complete items.`,
+JSON is the handoff point between what the model writes and what your program can work with. You ask for a precise shape, pull it out defensively because the model gets chatty, then validate before you trust it. Below, take a realistic messy reply, pull the JSON out of the surrounding text, and keep only the complete items.`,
       starter_code: `import json
 
 # The model returned JSON, but wrapped in chatty text (as it often does).
@@ -634,7 +634,7 @@ Within each owner, the tasks stay in transcript order, which is usually the orde
 
 ## Where the model stops and code takes over
 
-Notice the division of labor across this project. The model did the hard, fuzzy part: reading language and pulling out commitments. Everything since, defaulting fields, validating, and now grouping and sorting, is plain deterministic Python. That's the right shape for an AI product: use the model for the one thing only it can do, and use ordinary code for everything that's a simple, reliable transform. It's cheaper, faster, and never hallucinates a group.
+Notice the division of labor across this project. The model did the hard, fuzzy part: reading language and pulling out commitments. Everything since, defaulting fields, validating, and now grouping and sorting, is plain deterministic Python. Use the model for the one thing only it can do, and use ordinary code for the transforms that are simple and predictable. Ordinary code is cheaper, and it will never hallucinate a group that wasn't there.
 
 ## The mental model to keep
 
@@ -781,7 +781,7 @@ Every one of these items came from a model call you paid for. When you retry a m
 
 ## The mental model to keep
 
-Cleaning is the bouncer at the door: junk gets turned away, the incomplete get fixed up, and everyone inside is guaranteed to be in order. Below, write the one pass that drops taskless items and defaults the blanks.`,
+Cleaning is the bouncer at the door: junk gets turned away and the incomplete get patched up, so everything past that point is in order. Below, write the one pass that drops taskless items and defaults the blanks.`,
       starter_code: `# Harden the extractor: drop junk items, repair the fixable ones.
 
 raw_items = [
@@ -942,7 +942,7 @@ A \`set\` gives O(1) membership checks, so this stays fast even on a long day's 
 
 ## The mental model to keep
 
-A long meeting is a book, not a page. You read it a chapter at a time, jot the commitments from each, then merge your notes and cross out the ones you wrote twice. Chunk to fit and to budget; dedup to clean up the seams. Below, chunk a transcript, estimate each chunk's tokens, and dedup repeated lines.`,
+A long meeting is more like a book than a single page. You read it a chapter at a time, jot the commitments from each, then merge your notes and cross out the ones you wrote twice. Chunk to fit the context and the budget; dedup to clean up the seams. Below, chunk a transcript, estimate each chunk's tokens, and dedup repeated lines.`,
       starter_code: `# Scale up: chunk a long transcript, gauge cost, and remove duplicates.
 
 transcript_lines = [
@@ -1100,7 +1100,7 @@ The model appears once, at the top, doing the one thing only it can. Everything 
 
 ## The report a human actually reads
 
-The deliverable isn't a list of dicts; it's a document. Group by owner, sort, and format as Markdown so it drops straight into a doc, an email, or a ticket:
+Nobody wants a list of dicts handed to them; they want a document they can read. Group by owner, sort, and format as Markdown so it drops straight into a doc, an email, or a ticket:
 
 \`\`\`python
 def render_report(items):

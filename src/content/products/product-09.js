@@ -3,7 +3,7 @@ export default {
     id: "prod-09",
     title: "FAQ Support Bot",
     description:
-      "Build a support bot that answers only from a small FAQ document you provide, refuses anything the docs don't cover, and always points back to the exact line it used. You'll stuff a doc into context, ground every answer in it, and harden the whole thing against cost blowups and bad output.",
+      "Build a support bot that answers only from a small FAQ you provide. It refuses anything the docs don't cover and points back to the exact line it used. You'll stuff a doc into context, ground every answer in it, then guard the whole thing against runaway cost and bad output.",
     difficulty: "intermediate",
     category: "chatbots_agents",
     estimated_time: 130,
@@ -21,11 +21,11 @@ export default {
       order: 1,
       title: "Load the FAQ into Numbered Lines",
       concept: "loading and numbering the docs",
-      explanation: `A support bot that "knows your product" doesn't actually know anything on its own. The model has never seen your FAQ. Every answer it gives has to come from text you hand it, in the same call, every single time. This lesson builds the first piece: turning a plain FAQ file into something the model can point back to.
+      explanation: `A support bot that "knows your product" knows nothing on its own. The model has never seen your FAQ. Every answer it gives has to come from text you hand it, in the same call, every time. This lesson builds the first piece: turning a plain FAQ file into something the model can point back to.
 
 ## What we're building
 
-By lesson 8 you'll have a bot that answers strictly from your own docs and says "I don't know" when the docs don't cover it. The whole system rests on one trick: instead of dumping the FAQ as one blob of text, you **number every line** before it goes anywhere near the model. A blob is just words; a numbered blob is an address book. Line 7 can be cited. Line 7 of an unnumbered wall of text cannot.
+By lesson 8 you'll have a bot that answers strictly from your own docs and says "I don't know" when the docs don't cover it. The whole thing rests on one move: instead of dumping the FAQ as one blob of text, you **number every line** before it goes anywhere near the model. Give line 7 a number and you can cite it. Leave it buried in a wall of text and you can't.
 
 ## Numbering the source
 
@@ -44,19 +44,19 @@ for num, line in faq:
     print(num, line)
 \`\`\`
 
-Each entry is now a \`(line_number, text)\` pair. That's the whole trick for this lesson: nothing fancy, just an index. Later lessons will feed these numbered lines into the prompt and ask the model to name the line it used, which only works because you numbered them first.
+Each entry is now a \`(line_number, text)\` pair. Nothing fancy, just an index. Later lessons feed these numbered lines into the prompt and ask the model to name the line it used, and that only works because you numbered them first.
 
 ## Why numbering instead of raw text
 
-If you hand the model a raw FAQ and ask "cite your source," it will happily invent a plausible-sounding citation, a page number, a heading, anything, none of it checkable. A line number is different: it's a fact you control, not a story the model makes up. You can verify a cited line number in one line of Python: check it's in range and print what's actually there. That verifiability is the entire point of grounding a bot in your own docs instead of trusting it to "just know."
+Hand the model a raw FAQ and ask it to cite its source, and it will invent something plausible: a page number, a heading, whatever sounds right. You can't check any of it. A line number is a fact you control instead of a story the model makes up. You verify a cited number in one line of Python: check it's in range and print what's actually there. That is the point of grounding a bot in your own docs rather than trusting it to just know.
 
 ## Keeping the doc small on purpose
 
-This project deliberately works with a **small** FAQ, a handful to a few dozen lines. That's not a limitation to work around later; it's the right scope for this build. Once a knowledge base grows past what comfortably fits in one prompt, you'd reach for a search step to pick the relevant chunk first (that's a different, larger project). Here, the whole FAQ fits in context every time, so there's no retrieval to get wrong, only grounding and refusal, which is what this project is actually teaching.
+This project works with a **small** FAQ, a handful to a few dozen lines. That's the right scope for this build, not a shortcut you patch later. Once a knowledge base grows past what fits in one prompt, you add a search step to pick the relevant chunk first, and that's a bigger, different project. Here the whole FAQ fits in context every time, so there's no retrieval to get wrong. What's left is grounding and refusal, which is what these lessons are about.
 
 ## The mental model to keep
 
-Think of the FAQ as a numbered exhibit list before a trial. Nobody testifies from memory; every claim points at "Exhibit 7." Your job over the next few lessons is building the bot that only ever testifies from the exhibit list, and says "not in evidence" when it isn't there.`,
+Picture the FAQ as a numbered exhibit list before a trial. Nobody testifies from memory; every claim points at "Exhibit 7." Over the next few lessons you're building the bot that only ever testifies from the exhibit list and says "not in evidence" when the answer isn't there.`,
       starter_code: `# Turn a raw FAQ string into numbered (line_number, text) entries.
 # No API call here, just the data shape the rest of the bot depends on.
 
@@ -161,11 +161,11 @@ main()
       order: 2,
       title: "The Grounded-Answer Prompt",
       concept: "stuffing docs into context",
-      explanation: `Now that the FAQ is numbered, wire it into a real prompt: the smallest version of the bot that answers a question using only the FAQ text you hand it. This is "stuffing" in the plain sense, you're literally stuffing the whole document into the system prompt.
+      explanation: `The FAQ is numbered. Now wire it into a real prompt: the smallest version of the bot that answers a question using only the FAQ text you hand it. This is "stuffing" in the literal sense. You put the whole document into the system prompt.
 
 ## What context stuffing means
 
-**Context stuffing** is the simplest way to ground a model in your own data: paste the entire source document into the prompt, then ask the question. There's no search step, no database, no embeddings, you just hand over everything and trust the model to read it. It only works because your FAQ is small enough to fit comfortably in one call. That's exactly the scope of this project.
+**Context stuffing** is the simplest way to ground a model in your own data. Paste the entire source document into the prompt, then ask the question. No search step, no database, no embeddings. You hand over everything and let the model read it. This only works because your FAQ is small enough to fit in one call, which is the scope of this project.
 
 ## Building the system prompt
 
@@ -199,18 +199,15 @@ resp = client.messages.create(
 print(resp.content[0].text)
 \`\`\`
 
-The FAQ lives in \`system\` because it's the standing reference material for every question in this session, not a one-off message. The user's actual question goes in \`messages\`, same split you've used in every project so far: config on one channel, live input on the other.
+The FAQ lives in \`system\` because it's the standing reference material for every question in the session, not a one-off message. The user's actual question goes in \`messages\`. It's the same split you've used in every project: config on one channel, live input on the other.
 
 ## Why the wording of the rules matters
 
-"Answer using the FAQ" alone is too soft, the model will still reach for its general knowledge if the FAQ is thin. Two things tighten it:
-
-1. **"ONLY"** in the system prompt, repeated in the rules. Redundancy here is deliberate; a single soft instruction gets ignored more often than a rule stated twice.
-2. **An explicit instruction for the "not covered" case.** Without it, the model fills gaps with plausible-sounding invented answers instead of admitting the FAQ is silent. Lesson 4 turns this into a real, checkable refusal; for now the point is just to plant the instruction.
+"Answer using the FAQ" alone is too soft. The model still reaches for its general knowledge when the FAQ is thin. Two things tighten it. First, **"ONLY"** appears in the system prompt and again in the rules; that redundancy is deliberate, because a single soft instruction gets ignored more often than a rule stated twice. Second, an **explicit instruction for the "not covered" case**. Without it, the model fills gaps with invented answers instead of admitting the FAQ is silent. Lesson 4 turns this into a real, checkable refusal. For now you're just planting the instruction.
 
 ## The mental model to keep
 
-Picture handing someone a single-page reference sheet and saying "answer questions using only this page." That's the entire system prompt: FAQ text plus a leash. Every later lesson tightens the leash, adding a strict refusal (lesson 4) and a citation requirement (lesson 5), but the shape you're building right now, doc in the system prompt, question in messages, never changes.`,
+Picture handing someone a single-page reference sheet and saying "answer questions using only this page." That's the whole system prompt: FAQ text plus a leash. Later lessons tighten the leash with a strict refusal (lesson 4) and a citation requirement (lesson 5), but the shape never changes: doc in the system prompt, question in messages.`,
       starter_code: `# Build the system prompt that stuffs a numbered FAQ into context.
 # No API call, just the string construction the real bot depends on.
 
@@ -327,11 +324,11 @@ main()
       order: 3,
       title: "Matching a Question to a Line",
       concept: "keyword grounding check",
-      explanation: `Before you trust the model's answer, you need a way to check it yourself: does this question actually connect to something in the FAQ, or is it about to answer from thin air? This lesson builds a plain-Python grounding check that runs *before* you ever call the model, a first line of defense that costs nothing and catches the obvious misses.
+      explanation: `Before you trust the model's answer, check it yourself: does this question connect to anything in the FAQ, or is the model about to answer from thin air? This lesson builds a plain-Python grounding check that runs *before* you call the model. It costs nothing and catches the obvious misses.
 
 ## Why check before calling the model
 
-The model can be told "only use the FAQ" and still occasionally wander. Rather than relying on instructions alone, you build a **pre-check**: a keyword overlap test between the user's question and each FAQ line. If nothing overlaps, you already know the FAQ doesn't cover this, and you can skip the call entirely or flag the answer as unsupported before it even ships. This is the same instinct as lesson 5 in the playbook module, verify before you trust, applied specifically to grounding.
+You can tell the model "only use the FAQ" and it will still wander now and then. So don't rely on instructions alone. Build a **pre-check**: a keyword overlap test between the user's question and each FAQ line. If nothing overlaps, the FAQ doesn't cover this, and you can skip the call or flag the answer as unsupported before it ships. It's the same instinct as lesson 5 in the playbook module, verify before you trust, aimed here at grounding.
 
 ## A simple overlap score
 
@@ -353,19 +350,15 @@ def best_match(question, numbered_faq):
     return best_num, best_score
 \`\`\`
 
-\`best_match\` returns the line number with the most overlapping keywords, and the score itself. A score of 0 means no FAQ line shares a single meaningful word with the question, a strong signal the FAQ simply doesn't cover it.
+\`best_match\` returns the line number with the most overlapping keywords, plus the score. A score of 0 means no FAQ line shares a single meaningful word with the question, a strong signal the FAQ doesn't cover it.
 
 ## What this buys you
 
-This isn't a substitute for the model reading the FAQ, it's a cheap, deterministic sanity check that runs in pure Python with no network call. Three things fall out of it:
-
-- **A candidate citation.** Whatever line scores highest is your best guess at "the line this question is about," useful for lesson 5's citation requirement.
-- **An early refusal signal.** Score of 0 across every line means you can refuse before spending a single token on an API call.
-- **A tie-breaker for ambiguous questions.** If two lines tie, you know the question is genuinely ambiguous and might need a different reply than a single confident answer.
+This doesn't replace the model reading the FAQ. It's a cheap, deterministic sanity check in pure Python with no network call, and two things fall out of it. The highest-scoring line is your best guess at "the line this question is about," which feeds lesson 5's citation requirement. And a score of 0 across every line means you can refuse before spending a single token on an API call.
 
 ## The mental model to keep
 
-Think of this as the bouncer who checks a list before the client (the model) even talks to the customer. The bouncer isn't perfect, it works on keyword overlap, not real understanding, but it stops the cheapest, most obvious mismatches before they cost you a call or an invented answer. Real grounding will always be the model reading the actual FAQ text; this keyword check is the fast, free layer in front of it.`,
+Think of this as the bouncer checking a list before the model ever talks to the customer. The bouncer works on keyword overlap, not real understanding, so it's not perfect, but it stops the cheapest, most obvious mismatches before they cost you a call or produce an invented answer. Real grounding is still the model reading the actual FAQ text. This keyword check is the fast, free layer in front of it.`,
       starter_code: `# Score how well a question overlaps with each FAQ line, pure Python.
 import re
 
@@ -497,14 +490,11 @@ main()
       order: 4,
       title: "Refusing What's Not There",
       concept: "refusing unsupported questions",
-      explanation: `The single most important behavior of this bot isn't answering well, it's knowing when to say **no**. A support bot that confidently answers a question your FAQ never covered is worse than useless, it's actively misleading. This lesson builds the refusal path: a strict, checkable rule for when the bot should decline.
+      explanation: `The most important behavior of this bot isn't answering well. It's knowing when to say **no**. A support bot that confidently answers a question your FAQ never covered is worse than useless, because it misleads the user. This lesson builds the refusal path: a strict, checkable rule for when the bot should decline.
 
 ## What "refusal" means here
 
-**Refusal** is the bot recognizing a question falls outside its FAQ and returning a fixed, honest "I don't have that in my docs" response instead of guessing. This has to be reliable in two places at once:
-
-1. **In the prompt.** Tell the model explicitly what to say when it's not covered, and give it an exact phrase to use.
-2. **In your own code.** Don't just trust the model's judgment, use the keyword pre-check from lesson 3 as a second layer that can force a refusal even if the model tries to answer anyway.
+**Refusal** is the bot recognizing that a question falls outside its FAQ and returning a fixed, honest "I don't have that in my docs" instead of guessing. It has to hold in two places at once. In the prompt, you tell the model exactly what to say when a question isn't covered and give it an exact phrase to use. In your own code, you use the keyword pre-check from lesson 3 as a second layer that forces a refusal even when the model tries to answer anyway.
 
 ## Prompting for a strict refusal
 
@@ -525,11 +515,11 @@ Rules:
 """
 \`\`\`
 
-Giving the model an **exact string** to use for refusal, instead of "say you don't know," does two things: it makes refusals recognizable in code (\`if reply == REFUSAL\`), and it removes room for the model to hedge with a half-answer that sounds like a refusal but sneaks in a guess.
+Giving the model an **exact string** for refusal, instead of "say you don't know," makes refusals recognizable in code (\`if reply == REFUSAL\`) and leaves no room for the model to hedge with a half-answer that reads like a refusal but sneaks in a guess.
 
 ## Backing it up in code
 
-The prompt alone is a soft guarantee, models sometimes ignore instructions. So you layer the lesson-3 keyword check as a hard guarantee:
+The prompt alone is a soft guarantee, since models sometimes ignore instructions. So you layer the lesson-3 keyword check on top as a hard one:
 
 \`\`\`python
 def answer(question, numbered_faq, model_reply):
@@ -539,15 +529,15 @@ def answer(question, numbered_faq, model_reply):
     return model_reply
 \`\`\`
 
-If the keyword overlap is zero, you **override** whatever the model said and force the refusal yourself. This is defense in depth: the prompt asks nicely, the code enforces it. Even a model that ignores the system prompt entirely can't get an unsupported answer past this check.
+When the keyword overlap is zero, you **override** whatever the model said and force the refusal yourself. This is defense in depth: the prompt asks nicely, the code enforces. A model that ignores the system prompt entirely still can't get an unsupported answer past this check.
 
 ## Why this is the core of the whole product
 
-Everything else in this project, numbering, stuffing, citing, is in service of this one behavior: never say something your docs don't back up. A bot that answers 80% of questions correctly and confidently makes up the other 20% is unusable in support, because a user can't tell which 20% to distrust. A bot that answers correctly or clearly says "I don't know" is trustworthy even when it can't help, which is the actual bar for shipping something like this.
+Everything else here, numbering, stuffing, citing, serves this one behavior: never say something your docs don't back up. A bot that answers 80% of questions correctly and confidently makes up the other 20% is unusable in support, because the user can't tell which 20% to distrust. A bot that either answers correctly or clearly says "I don't know" stays trustworthy even when it can't help, and that's the bar for shipping something like this.
 
 ## The mental model to keep
 
-Think of the refusal as a circuit breaker, it isn't there to prevent every possible mistake, it's there to fail safe. The keyword check trips the breaker on the obvious misses; the model's own instructions catch subtler ones. Both exist because either one alone would eventually let something through.`,
+Think of the refusal as a circuit breaker. It doesn't prevent every possible mistake; it fails safe. The keyword check trips the breaker on the obvious misses, and the model's own instructions catch subtler ones. Both exist because either one alone would eventually let something through.`,
       starter_code: `# Combine a model reply with a keyword grounding check to enforce refusal.
 import re
 
@@ -685,7 +675,7 @@ main()
 
 ## What we're adding
 
-You'll change the prompt to require a citation in a fixed, parseable format, then write a Python check that confirms the cited line actually exists and is one of the lines the model was shown. A citation the model invents (a line number that doesn't exist) is exactly as dangerous as an invented fact, so it gets the same treatment: verify, don't trust.
+You'll change the prompt to require a citation in a fixed, parseable format, then write a Python check that confirms the cited line exists and is one of the lines the model was shown. A citation the model invents, a line number that doesn't exist, is as dangerous as an invented fact, so it gets the same treatment: verify, don't trust.
 
 ## Prompting for a structured citation
 
@@ -707,7 +697,7 @@ Rules:
 # "We're open 9am-5pm Monday through Friday.\\nSource: line 2"
 \`\`\`
 
-Asking for a fixed literal format, \`"Source: line N"\`, is what makes this checkable at all. If you instead asked "cite your source" with no format, you'd get free-text citations in a dozen different phrasings, impossible to parse reliably.
+Asking for a fixed literal format, \`"Source: line N"\`, is what makes this checkable. Ask "cite your source" with no format and you get free-text citations in a dozen phrasings that you can't parse reliably.
 
 ## Parsing and verifying the citation
 
@@ -730,15 +720,15 @@ def verify_citation(reply, numbered_faq):
     return True, cited
 \`\`\`
 
-\`verify_citation\` returns a clean pass/fail plus either the verified line number or why it failed. Two distinct failure modes matter here: **no citation at all** (the model ignored the format) and **a citation to a line that doesn't exist** (the model hallucinated a number). Both are bugs worth catching before the answer reaches a user, and both are now one function call to detect.
+\`verify_citation\` returns a pass/fail plus either the verified line number or the reason it failed. Two failure modes matter here. The model ignores the format and gives **no citation at all**, or it cites **a line that doesn't exist** and hallucinates a number. Both are bugs worth catching before the answer reaches a user, and both are now one function call to detect.
 
 ## Why citation-checking, not just citation-asking
 
-Asking the model to cite is a prompting trick; verifying the citation is a code guarantee. The distinction matters because a model under load, or given an ambiguous question, will sometimes cite line 12 when line 12 doesn't exist in a 9-line FAQ. Catching that with one \`in\` check is nearly free, and it's the difference between a bot that merely *looks* trustworthy and one that actually is.
+Asking the model to cite is a prompting trick. Verifying the citation is a code guarantee. The distinction matters because a model under load, or handed an ambiguous question, will sometimes cite line 12 when line 12 doesn't exist in a 9-line FAQ. Catching that with one \`in\` check is nearly free, and it's the difference between a bot that looks trustworthy and one that is.
 
 ## The mental model to keep
 
-Every non-refused answer now carries a receipt. You don't have to re-read the whole FAQ to trust the bot, you check the receipt: does this line number exist, and does it say roughly what the bot claimed? That receipt is what turns "the bot said so" into "the bot said so, and here's exactly where."`,
+Every non-refused answer now carries a receipt. You don't re-read the whole FAQ to trust the bot; you check the receipt. Does this line number exist, and does it say roughly what the bot claimed? That receipt turns "the bot said so" into "the bot said so, and here's exactly where."`,
       starter_code: `# Parse and verify a "Source: line N" citation against the real FAQ.
 import re
 
@@ -865,13 +855,13 @@ main()
       order: 6,
       title: "Off-Topic and Malformed Input",
       concept: "handling off-topic and malformed replies",
-      explanation: `Real users don't ask clean questions. They ask about the weather, paste in three questions at once, submit an empty string, or the model itself replies in a shape you didn't ask for. This lesson hardens the bot against the messy middle: inputs and outputs that aren't wrong exactly, just not what you planned for.
+      explanation: `Real users don't ask clean questions. They ask about the weather, paste three questions at once, submit an empty string. Sometimes the model itself replies in a shape you didn't ask for. This lesson hardens the bot against the messy middle: inputs and outputs that aren't wrong exactly, just not what you planned for.
 
 ## Three categories of mess
 
-1. **Off-topic input.** "What's your favorite movie?" isn't a support question at all. The keyword check from lesson 3 already scores this near zero against a real FAQ, so it naturally routes to refusal, but it's worth being explicit that off-topic and unsupported-but-on-topic get the same treatment: refuse.
-2. **Empty or junk input.** A blank question, or one that's just whitespace or punctuation, has no keywords at all. \`keywords("")\` returns an empty set, which means every score against it is 0, safe by construction, but only if you check for it before doing anything expensive.
-3. **Malformed model output.** The model is supposed to answer in one sentence plus a citation line. Sometimes it won't: it might skip the citation, add extra commentary, or wrap the answer in markdown. Your citation-parsing code from lesson 5 already treats "no citation found" as a distinct, handleable case rather than crashing.
+1. **Off-topic input.** "What's your favorite movie?" isn't a support question. The keyword check from lesson 3 already scores this near zero against a real FAQ, so it routes to refusal on its own. Worth stating plainly: off-topic and unsupported-but-on-topic get the same treatment, which is refuse.
+2. **Empty or junk input.** A blank question, or one that's only whitespace or punctuation, has no keywords. \`keywords("")\` returns an empty set, so every score against it is 0. That's safe by construction, but only if you check for it before doing anything expensive.
+3. **Malformed model output.** The model is supposed to answer in one sentence plus a citation line. Sometimes it won't: it skips the citation, adds commentary, or wraps the answer in markdown. Your citation-parsing code from lesson 5 already treats "no citation found" as a handleable case instead of crashing.
 
 ## A guarded answer function
 
@@ -890,19 +880,19 @@ def guarded_answer(question, numbered_faq, model_reply):
     return model_reply, result
 \`\`\`
 
-Notice the shape: every failure path, empty input, zero keyword overlap, bad or missing citation, converges on the same \`REFUSAL\` output. There's exactly one way to say "I can help" and several distinct ways to say "I can't," and all of them are explicit checks rather than places where the code might silently do the wrong thing.
+Notice the shape. Every failure path, empty input, zero keyword overlap, missing or bad citation, converges on the same \`REFUSAL\` output. There's one way to say "I can help" and several ways to say "I can't," and all of them are explicit checks instead of spots where the code might silently do the wrong thing.
 
 ## Why converge on one refusal path
 
-A bot with five different failure messages ("hmm", "unclear", "error", "not sure", "invalid") looks broken. A bot with one clean, consistent refusal message looks intentional, like it's designed to say "no" cleanly rather than accidentally producing garbage. Users trust a firm, consistent "I don't know" far more than an inconsistent one that sometimes glitches.
+A bot with five different failure messages ("hmm", "unclear", "error", "not sure", "invalid") looks broken. A bot with one consistent refusal message looks intentional, like it was built to say "no" cleanly rather than sputter out garbage. Users trust a firm, consistent "I don't know" far more than one that glitches differently every time.
 
 ## Logging the reason, even if the user doesn't see it
 
-The second return value in \`guarded_answer\`, the reason or citation, isn't shown to the user, it's for you. When you're debugging why the bot refused something it should have answered, "score was 0" versus "citation was invalid" versus "input was empty" are three very different bugs to chase. Keep that detail even though the user-facing message stays identical.
+The second return value in \`guarded_answer\`, the reason or citation, isn't for the user. It's for you. When you're debugging why the bot refused something it should have answered, "score was 0" versus "citation was invalid" versus "input was empty" are three different bugs to chase. Keep that detail even though the user-facing message stays identical.
 
 ## The mental model to keep
 
-Hardening isn't adding more ways to answer, it's making every way to *not* answer converge on one calm, predictable response. The bot should never look confused. It should look like it made a decision, because it did.`,
+Hardening isn't adding more ways to answer. It's making every way to *not* answer land on one calm, predictable response. The bot should never look confused. It should look like it made a decision, because it did.`,
       starter_code: `# Guard the answer path against empty input, low grounding, and bad citations.
 import re
 
@@ -1075,11 +1065,11 @@ main()
       order: 7,
       title: "Watching Cost as the FAQ Grows",
       concept: "cost and token budget",
-      explanation: `Context stuffing works beautifully at 10 FAQ lines and gets expensive fast at 500. Because every question resends the *entire* FAQ, the cost of this bot scales with how big your docs are, not how big the question is. This lesson builds the budget check that catches an FAQ before it grows past what's sane to stuff.
+      explanation: `Context stuffing works fine at 10 FAQ lines and gets expensive fast at 500. Every question resends the *entire* FAQ, so the cost of this bot scales with how big your docs are, not how big the question is. This lesson builds the budget check that catches an FAQ before it grows past what's sane to stuff.
 
 ## Why cost scales with the doc, not the question
 
-Every single call to this bot sends the full numbered FAQ in the system prompt, then a short question in messages. A one-word question and a ten-word question cost almost the same, because the FAQ dominates the token count. That means the lever you actually control is **how big the FAQ is allowed to get**, not how you phrase questions.
+Every call to this bot sends the full numbered FAQ in the system prompt and a short question in messages. A one-word question and a ten-word question cost almost the same, because the FAQ dominates the token count. The lever you actually control is **how big the FAQ is allowed to get**, not how you phrase questions.
 
 ## Estimating the cost per call
 
@@ -1094,7 +1084,7 @@ def estimate_call_cost(numbered_faq, question, system_template_overhead=60):
     return faq_tokens + question_tokens + system_template_overhead
 \`\`\`
 
-\`system_template_overhead\` accounts for the fixed wording around the FAQ, the rules, the "You are a support bot" framing, tokens that exist on every call regardless of doc size. Add it in explicitly rather than pretending the template is free.
+\`system_template_overhead\` accounts for the fixed wording around the FAQ: the rules, the "You are a support bot" framing, tokens that exist on every call no matter the doc size. Add it in explicitly rather than pretend the template is free.
 
 ## Setting a hard ceiling
 
@@ -1112,15 +1102,15 @@ def check_faq_budget(numbered_faq):
     return tokens
 \`\`\`
 
-This check runs once when the FAQ loads, not on every question, since the doc size doesn't change per call. If it fails, that's not a bug to patch, it's a signal you've outgrown context stuffing and need the retrieval step this project deliberately left out (see lesson 1). Raising loudly here is better than silently sending an enormous, expensive prompt on every single question forever.
+This check runs once when the FAQ loads, not on every question, since the doc size doesn't change per call. When it fails, that's not a bug to patch. It's a signal you've outgrown context stuffing and need the retrieval step this project left out (see lesson 1). Raising loudly here beats silently sending an enormous, expensive prompt on every question forever.
 
 ## Why a hard ceiling instead of a soft warning
 
-A warning gets ignored. A raised exception forces a decision at the moment the FAQ is edited, right when a human is looking at it, rather than surfacing as a slow-creeping bill three weeks later. Cost bugs are uniquely bad because nothing looks broken, the bot still answers correctly, it just quietly costs ten times what it should. Catching it at load time, loudly, is the cheap fix.
+A warning gets ignored. A raised exception forces a decision at the moment the FAQ is edited, right when a human is looking at it, instead of surfacing as a slow-creeping bill three weeks later. Cost bugs are uniquely nasty because nothing looks broken: the bot still answers correctly, it just quietly costs ten times what it should. Catching it loudly at load time is the cheap fix.
 
 ## The mental model to keep
 
-Every call to this bot is billed for the whole reference sheet, not just the question asked. That's fine at FAQ size 20; it becomes a real problem at FAQ size 2000. The budget check is a smoke alarm for that specific failure mode: cheap to install, easy to ignore until it matters, and the one check standing between "small doc, small bill" and a bill nobody predicted.`,
+Every call to this bot is billed for the whole reference sheet, not just the question asked. That's fine at FAQ size 20 and a real problem at FAQ size 2000. The budget check is a smoke alarm for that one failure mode. Cheap to install, easy to ignore until it matters, and the one thing standing between "small doc, small bill" and a bill nobody predicted.`,
       starter_code: `# Estimate token cost per call and enforce a hard FAQ size budget.
 
 def estimate_tokens(text):
@@ -1256,7 +1246,7 @@ main()
       order: 8,
       title: "Ship the Support Bot",
       concept: "shipping the finished bot",
-      explanation: `Every piece is built: numbering, stuffing, keyword grounding, strict refusal, citation verification, and a cost ceiling. This lesson wires them into one function you'd actually run, and closes out the project.
+      explanation: `Every piece is built: numbering, stuffing, keyword grounding, strict refusal, citation verification, and a cost ceiling. This lesson wires them into one function you'd actually run and closes out the project.
 
 ## The full pipeline, in order
 
@@ -1292,24 +1282,24 @@ def answer_question(question, numbered_faq):
     return reply, result
 \`\`\`
 
-Read it top to bottom and you can see the whole project as one straight line: check the budget once, guard the input, pre-check grounding cheaply before spending a token, call the model with the stuffed FAQ, then verify what came back before trusting it. Nothing here is new, lesson 8 is assembly, not invention.
+Read it top to bottom and the whole project is one straight line: check the budget once, guard the input, pre-check grounding cheaply before spending a token, call the model with the stuffed FAQ, then verify what came back before trusting it. Nothing here is new. Lesson 8 is assembly, not invention.
 
 ## What "done" means for this bot
 
 - It runs from a clean start: load an FAQ file, call \`answer_question\` in a loop reading from stdin.
-- It never answers from outside the FAQ, verified twice over, once by keyword pre-check, once by citation verification.
-- Every real answer names its line; every refusal is the identical, calm string.
+- It never answers from outside the FAQ, verified twice, once by keyword pre-check and once by citation verification.
+- Every real answer names its line, and every refusal is the same calm string.
 - A too-large FAQ fails loudly at load time instead of quietly ballooning your bill.
 
-If those four hold, this is a shippable support bot, not a demo that happens to work on the examples you tried.
+If those four hold, you've got a shippable support bot, not a demo that happens to work on the examples you tried.
 
 ## Where this fits, and where it doesn't
 
-This design is right for a small, stable FAQ: a handful to a few dozen entries that don't change every day. It is intentionally the wrong tool for a large, growing knowledge base, that's a retrieval system's job, picking the relevant few chunks out of thousands before ever touching the model. Knowing the boundary of what you built is as much a part of shipping as the code itself: this bot is honest about what it can answer, and just as honest about the fact that it wasn't built to scale past a small FAQ.
+This design is right for a small, stable FAQ: a handful to a few dozen entries that don't change every day. It's the wrong tool for a large, growing knowledge base. That's a retrieval system's job, picking the relevant few chunks out of thousands before touching the model. Knowing the boundary of what you built is part of shipping. This bot is honest about what it can answer and just as honest that it wasn't built to scale past a small FAQ.
 
 ## Your Portfolio
 
-Finishing this lesson saves **FAQ Support Bot** to your Portfolio, alongside anything else you've built in this track. You now have a working example of the pattern underneath every "chat with your docs" product you'll ever see: stuff, ground, cite, refuse. Every fancier version, embeddings, vector search, multi-document retrieval, is the same four moves with a smarter first step. You already know the last three.`,
+Finishing this lesson saves **FAQ Support Bot** to your Portfolio, alongside anything else you've built in this track. You now have a working version of the pattern underneath every "chat with your docs" product: stuff, ground, cite, refuse. Fancier versions add embeddings, vector search, or multi-document retrieval, but they're the same four moves with a smarter first step. You already know the last three.`,
       starter_code: `# Assemble the full guarded pipeline, pure Python simulation (no network call).
 import re
 

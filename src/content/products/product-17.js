@@ -3,7 +3,7 @@ export default {
     id: "prod-17",
     title: "Personal Notes Brain",
     description:
-      "Build a question-answering assistant that reads your own notes and cites exactly where each answer came from. You'll index many notes into searchable chunks, retrieve the right ones for a question, and synthesize a grounded, footnoted answer instead of a guess.",
+      "Build a question-answering assistant that reads your own notes and cites exactly where each answer came from. You index your notes into searchable chunks, retrieve the right ones for a question, and write a footnoted answer backed by real sources instead of a guess.",
     difficulty: "advanced",
     category: "rag_search",
     estimated_time: 135,
@@ -20,20 +20,20 @@ export default {
       project_id: "prod-17",
       order: 1,
       title: "Notes Are Too Big to Just Paste In",
-      concept: "chunking notes for retrieval",
-      explanation: `You have hundreds of markdown files: daily journals, meeting notes, recipe scraps, half-finished project plans. You want to ask "what did I decide about the budget last March?" and get a real answer with a pointer back to the note. You cannot paste your whole vault into one prompt, it's too big, too expensive, and mostly irrelevant to any single question. The fix is **RAG**: Retrieval-Augmented Generation.
+      concept: "Split notes into paragraph-sized chunks so retrieval can point at the exact passage that answers a question.",
+      explanation: `You have hundreds of markdown files: daily journals, meeting notes, recipe scraps, half-finished project plans. You want to ask "what did I decide about the budget last March?" and get a real answer with a pointer back to the note. Pasting your whole vault into one prompt does not work. It is too big, too expensive, and mostly irrelevant to any single question. The answer is **RAG**, or Retrieval-Augmented Generation.
 
-## The RAG loop, in one breath
+## The RAG loop
 
-1. **Index** every note once: split it into small, retrievable pieces called **chunks**.
-2. **Retrieve**: at question time, only the chunks that actually relate to the question.
-3. **Synthesize** an answer from just those chunks, and **cite** which chunk backed which claim.
+1. **Index** every note once by splitting it into small, retrievable pieces called **chunks**.
+2. **Retrieve** only the chunks that relate to the question, at question time.
+3. **Synthesize** an answer from those chunks and **cite** which chunk backed which claim.
 
 This lesson builds step 1. The rest of the project builds steps 2 and 3.
 
-## Why chunk at all?
+## Why chunk at all
 
-A whole note is often too coarse. A single journal entry might cover breakfast, a work decision, and a doctor's appointment. If your question is only about the work decision, you don't want to retrieve (and pay to send) the whole entry, you want the one paragraph that matters. Chunking splits each note into paragraph-sized pieces so retrieval can be precise instead of "here's an entire day, good luck."
+A whole note is usually too coarse. One journal entry might cover breakfast, a work decision, and a doctor's appointment. If your question is only about the work decision, retrieving the entire entry wastes tokens on two paragraphs you don't need. Chunking splits each note into paragraph-sized pieces, so retrieval hands back the one paragraph that matters instead of a whole day.
 
 \`\`\`python
 def chunk_notes(notes):
@@ -46,19 +46,19 @@ def chunk_notes(notes):
     return chunks
 \`\`\`
 
-Each chunk remembers **where it came from** (\`note\`, \`chunk_id\`). That metadata is the whole reason citations are possible later, lose it here and you can never point back to a source.
+Each chunk records where it came from in \`note\` and \`chunk_id\`. That metadata is what makes citations possible later. Lose it here and you can never point back to a source.
 
 ## What happens to each chunk next
 
-In the next lesson, every chunk gets turned into a vector (an **embedding**) that captures its meaning, and those vectors get stored alongside the chunk's text and metadata. That collection of (text, metadata, vector) triples is your **index**, built once, reused for every question you ever ask.
+In the next lesson, every chunk gets turned into a vector, called an **embedding**, that captures its meaning. Those vectors get stored next to the chunk's text and metadata. The collection of (text, metadata, vector) triples is your **index**. You build it once and reuse it for every question you ask.
 
 ## Why this matters
 
-Skip chunking and you're stuck choosing between two bad options: send the whole vault every time (slow, expensive, mostly noise) or send nothing and let the model guess from thin air (confident-sounding, wrong). Chunking is what makes "search my own notes precisely" possible at all.
+Without chunking you are stuck between two bad options. Send the whole vault every time and you pay for slow, noisy prompts. Send nothing and the model guesses from thin air, which sounds confident and is often wrong. Chunking is what makes precise search over your own notes possible.
 
 ## The mental model
 
-Think of a librarian who, instead of shelving whole books, cuts every book into index cards, one idea per card, each card labeled with which book and page it came from. When you ask a question, she doesn't hand you a book, she hands you the three cards that actually answer it. Below, build that card-cutting step in pure Python, no network needed yet.`,
+Picture a librarian who cuts every book into index cards instead of shelving it whole, one idea per card, each card labeled with its book and page. When you ask a question she does not hand you a book. She hands you the three cards that answer it. Below you build that card-cutting step in pure Python. No network yet.`,
       starter_code: `# Split multiple notes into numbered chunks (by paragraph).
 # Each note is a title mapped to its raw text; paragraphs are
 # separated by a blank line.
@@ -109,7 +109,7 @@ for c in result:
       ],
       challenge_title: "Chunk the Notes",
       challenge_description:
-        "Split a batch of notes into numbered chunks so each piece can later be retrieved and cited independently.",
+        "Split a batch of notes into numbered chunks so each piece can be retrieved and cited on its own.",
       challenge_language: "python",
       challenge_starter_code: `import sys
 
@@ -173,12 +173,12 @@ main()
       project_id: "prod-17",
       order: 2,
       title: "Turning Text Into Numbers You Can Compare",
-      concept: "embeddings and cosine similarity",
-      explanation: `Two sentences can mean almost the same thing while sharing barely a word: "I need to fix the login bug" and "auth is broken again." Keyword search misses that match entirely. To find notes by **meaning**, not exact words, you turn every chunk into a vector of numbers, an **embedding**, and compare vectors instead of text.
+      concept: "Turn each chunk into an embedding vector and rank chunks by cosine similarity so search matches on meaning, not exact words.",
+      explanation: `Two sentences can mean almost the same thing while sharing barely a word. "I need to fix the login bug" and "auth is broken again" point at the same problem, and keyword search misses the match completely. To find notes by meaning, you turn every chunk into a vector of numbers, an **embedding**, and compare vectors instead of text.
 
 ## What an embedding is
 
-An embedding is a list of floats (often hundreds or thousands of them) produced by a model trained so that similar meanings land near each other in that number space. You call an embedding model once per chunk when indexing, and once per question at query time:
+An embedding is a list of floats, often hundreds or thousands of them, produced by a model trained so that similar meanings land near each other in that number space. You call an embedding model once per chunk when indexing, and once per question at query time.
 
 \`\`\`python
 import os, voyageai
@@ -193,11 +193,11 @@ result = vo.embed(
 vectors = result.embeddings  # two lists of floats, close together in space
 \`\`\`
 
-You embed once and store the vector next to the chunk's text and metadata. You never re-embed a chunk that hasn't changed, that's the whole point of building an index instead of embedding on every question.
+You embed once and store the vector next to the chunk's text and metadata. A chunk that has not changed never gets re-embedded. That is the reason you build an index instead of embedding on every question.
 
-## Comparing vectors: cosine similarity
+## Comparing vectors with cosine similarity
 
-To measure "how similar" two vectors are, you use **cosine similarity**: the cosine of the angle between them. It ranges from -1 (opposite meaning) to 1 (identical direction), and, crucially, it ignores vector *length* and only cares about *direction*. That matters because a short question and a long chunk can still point the same way in meaning-space even though their raw magnitudes differ.
+To measure how similar two vectors are, use **cosine similarity**, the cosine of the angle between them. It ranges from -1 for opposite meaning to 1 for identical direction. It ignores vector *length* and looks only at *direction*. That matters because a short question and a long chunk can point the same way in meaning-space even when their raw magnitudes differ.
 
 \`\`\`python
 import math
@@ -209,15 +209,15 @@ def cosine_similarity(a, b):
     return dot / (norm_a * norm_b)
 \`\`\`
 
-Dot product measures raw alignment; dividing by both magnitudes normalizes it into that -1..1 range so scores are comparable across chunks of any length.
+The dot product measures raw alignment. Dividing by both magnitudes normalizes it into the -1 to 1 range, so scores stay comparable across chunks of any length.
 
 ## Why this matters
 
-Retrieval is only as good as this one number. Rank every chunk's embedding against the question's embedding by cosine similarity, and the highest scores are your most relevant notes, regardless of exact wording. Get this step wrong (or skip normalizing) and your "search" becomes noise.
+Retrieval is only as good as this one number. Rank every chunk's embedding against the question's embedding by cosine similarity, and the highest scores are your most relevant notes, whatever the exact wording was. Get this step wrong, or skip normalizing, and your search turns into noise.
 
 ## The mental model
 
-Imagine every sentence as an arrow pointing in some direction in a giant idea-space. Similar ideas point roughly the same way. Cosine similarity is just "how parallel are these two arrows," a number you can sort by. Below, implement it in pure Python and use it to rank a few toy vectors, no network call needed, the real embedding call is what you just read above.`,
+Picture every sentence as an arrow pointing somewhere in a giant idea-space. Similar ideas point roughly the same way. Cosine similarity answers how parallel two arrows are, and it gives you a number you can sort by. Below you implement it in pure Python and use it to rank a few toy vectors. No network call here. The real embedding call is the code you just read above.`,
       starter_code: `import math
 
 def cosine_similarity(a, b):
@@ -324,13 +324,13 @@ main()
       project_id: "prod-17",
       order: 3,
       title: "Retrieval: Picking the Best Notes, and Admitting When None Fit",
-      concept: "top-k retrieval with a similarity threshold",
-      explanation: `Ranking every chunk (lesson 2) isn't retrieval by itself, it just orders everything. A real retriever also decides **how many** chunks to hand the model and **whether any of them are actually good enough**. That second part matters more than it sounds: forcing through the "best" match when even the best match is a 0.1 similarity score is how RAG apps confidently answer questions their notes never covered.
+      concept: "Cap retrieval at the top k chunks and drop anything below a similarity threshold, so the model gets relevant context or none.",
+      explanation: `Ranking every chunk in lesson 2 is not retrieval on its own. It just orders everything. A real retriever also decides how many chunks to hand the model and whether any of them are good enough to send. That second decision matters more than it sounds. Forcing through the best match when even the best match scores 0.1 is how RAG apps confidently answer questions their notes never covered.
 
 ## Two knobs: k and threshold
 
-- **k** caps how many chunks you send, keep it small (3 to 5 is typical). More chunks means more tokens, more cost, and more chances for the model to get distracted by a less-relevant chunk.
-- **threshold** is a minimum similarity score. A chunk that ranks first among bad options is still a bad option if its score is 0.12. Anything below the threshold gets discarded, even if it would otherwise make the top k.
+- **k** caps how many chunks you send. Keep it small; 3 to 5 is typical. More chunks means more tokens, more cost, and more room for the model to get distracted by a weaker chunk.
+- **threshold** is a minimum similarity score. A chunk that ranks first among bad options is still a bad option if its score is 0.12. Anything below the threshold gets dropped, even when it would otherwise make the top k.
 
 \`\`\`python
 def retrieve(index, query_vector, k=4, threshold=0.35):
@@ -343,19 +343,19 @@ def retrieve(index, query_vector, k=4, threshold=0.35):
     return scored[:k]
 \`\`\`
 
-Filter **before** you slice to k, not after. Slice first and you might keep three barely-relevant chunks just because nothing better existed; filter first and an empty or short result is the honest signal that nothing in the vault matches.
+Filter before you slice to k, not after. Slice first and you might keep three barely-relevant chunks because nothing better existed. Filter first and an empty or short result becomes the honest signal that nothing in the vault matches.
 
 ## Tuning the threshold
 
-There's no universal "right" number, it depends on your embedding model and how tightly your notes are written. Start around 0.3-0.4 for cosine similarity and adjust by testing real questions: too low and you drag in noise, too high and you starve the model of context it actually needed.
+There is no universal right number. It depends on your embedding model and how tightly your notes are written. Start around 0.3 to 0.4 for cosine similarity, then adjust by testing real questions. Too low drags in noise. Too high starves the model of context it needed.
 
 ## Why this matters
 
-An empty or filtered retrieval result is not a failure, it's information. It tells the next stage of the pipeline "the notes vault has nothing on this," which is exactly the signal a later lesson uses to skip the API call entirely and return an honest "I don't know" instead of letting the model improvise an answer from nothing.
+An empty result after filtering is not a failure. It is information. It tells the next stage of the pipeline that the vault has nothing on this question, which is the exact signal a later lesson uses to skip the API call and return an honest "I don't know" instead of letting the model improvise from nothing.
 
 ## The mental model
 
-A good research assistant hands you the three most relevant books off the shelf, and if none of them are actually about your topic, says "I don't have anything on this" instead of handing you the least-irrelevant book anyway. Below, implement that filter-then-rank-then-cap retriever in pure Python.`,
+A good research assistant hands you the three most relevant books off the shelf. If none of them are actually about your topic, she says she has nothing on this instead of handing you the least-irrelevant book anyway. Below you implement that filter-then-rank-then-cap retriever in pure Python.`,
       starter_code: `import math
 
 def cosine_similarity(a, b):
@@ -412,7 +412,7 @@ for h in hits:
       ],
       challenge_title: "Retrieve the Top-K Above Threshold",
       challenge_description:
-        "Score chunks against a query, drop anything below a similarity threshold, and keep only the top k survivors.",
+        "Score chunks against a query, drop anything below the similarity threshold, and keep only the top k survivors.",
       challenge_language: "python",
       challenge_starter_code: `import sys, math
 
@@ -504,8 +504,8 @@ main()
       project_id: "prod-17",
       order: 4,
       title: "Writing the Cited-Answer Prompt",
-      concept: "prompting for grounded, footnoted answers",
-      explanation: `You now have the top few relevant chunks. The next job is turning them into a prompt that makes the model answer **only** from those chunks, and mark **which** chunk backed each part of the answer. This is what separates "an AI chatbot" from "a research assistant with footnotes."
+      concept: "Number the retrieved chunks and instruct the model to answer only from them, tagging each claim with the source number that backs it.",
+      explanation: `You now have the top few relevant chunks. The next job is turning them into a prompt that makes the model answer only from those chunks and mark which chunk backed each part of the answer. That is the difference between a chatbot and a research assistant with footnotes.
 
 ## Numbering the sources
 
@@ -539,19 +539,19 @@ resp = client.messages.create(
 )
 \`\`\`
 
-Notice the shape: the system prompt carries the *rule* ("cite every claim, refuse to guess"), the user turn carries the *data* (numbered sources plus the actual question). That separation is the same discipline as any other product in this track, rules and input never mix.
+Notice the shape. The system prompt carries the *rule*, which is cite every claim and refuse to guess. The user turn carries the *data*, which is the numbered sources plus the actual question. That separation is the same discipline as every other product in this track: rules and input never mix.
 
 ## Why citation numbers, not source names
 
-Numbers are compact and unambiguous. "According to [2]" is one token; "According to your March 4th standup notes" is many, and gets paraphrased inconsistently across calls. You map the number back to the real title and file path yourself, after the model replies, that's the next lesson's job.
+Numbers are compact and unambiguous. "According to [2]" is one token. "According to your March 4th standup notes" is many, and the model paraphrases it inconsistently from one call to the next. You map the number back to the real title and file path yourself after the model replies. That is the next lesson's job.
 
 ## Why this matters
 
-Without an explicit citation rule, a model answering from context still writes fluent, confident prose with no way to tell which sentence came from which note, or whether it came from the notes at all versus its own general knowledge. The instruction to cite is what turns "plausible-sounding answer" into "answer you can actually verify by clicking through to the source."
+Without an explicit citation rule, a model answering from context still writes fluent, confident prose, and you cannot tell which sentence came from which note, or whether it came from the notes at all instead of the model's general knowledge. The instruction to cite is what turns a plausible-sounding answer into one you can verify by clicking through to the source.
 
 ## The mental model
 
-You're handing the model a numbered stack of index cards and one strict rule: every sentence needs a card number, or it doesn't get written. Below, build the numbered context block and the combined prompt in pure Python; the actual API call is the two lines shown above.`,
+You are handing the model a numbered stack of index cards and one strict rule: every sentence needs a card number, or it does not get written. Below you build the numbered context block and the combined prompt in pure Python. The actual API call is the two lines shown above.`,
       starter_code: `def build_context_block(chunks):
     # chunks is a list of dicts: {"title": ..., "text": ...}, already retrieved.
     # TODO: return a single string with one line per chunk:
@@ -597,7 +597,7 @@ print("turns:", len(messages))
       ],
       challenge_title: "Number the Sources",
       challenge_description:
-        "Build the numbered context block that gets handed to the model, one bracketed source per line.",
+        "Build the numbered context block handed to the model, one bracketed source per line.",
       challenge_language: "python",
       challenge_starter_code: `import sys
 
@@ -649,8 +649,8 @@ main()
       project_id: "prod-17",
       order: 5,
       title: "Extracting and Verifying Citations",
-      concept: "parsing and fact-checking citation markers",
-      explanation: `The model replied with something like "You bake bread at 450F [1]." Great, but your job isn't done: you need to pull the citation numbers back out of that text, map them to real note titles for display, and, critically, check that every number the model used actually corresponds to a source you gave it. Models occasionally cite a number that doesn't exist, especially in longer answers. That's a hallucinated citation, and it's worse than no citation at all because it *looks* trustworthy.
+      concept: "Parse the citation markers out of the answer and check every number against the sources you actually sent, catching hallucinated citations.",
+      explanation: `The model replied with something like "You bake bread at 450F [1]." Your job is not done. You need to pull the citation numbers back out of that text, map them to real note titles for display, and check that every number the model used points to a source you actually gave it. Models sometimes cite a number that does not exist, especially in longer answers. A hallucinated citation is worse than no citation, because it *looks* trustworthy.
 
 ## Pulling citations out with a regex
 
@@ -662,7 +662,7 @@ def extract_citations(text):
     return list(dict.fromkeys(int(n) for n in found))  # unique, first-seen order
 \`\`\`
 
-\`re.findall\` grabs every \`[n]\` pattern as a string; converting to \`int\` and deduping with \`dict.fromkeys\` keeps the order they first appeared while dropping repeats, since a chunk might get cited multiple times in one answer.
+\`re.findall\` grabs every \`[n]\` pattern as a string. Converting to \`int\` and deduping with \`dict.fromkeys\` keeps first-appearance order while dropping repeats, since a chunk can get cited several times in one answer.
 
 ## Verifying against the real source list
 
@@ -674,20 +674,20 @@ def footnotes(cited, chunks):
     return [f"[{n}] {chunks[n - 1]['note']}" for n in cited if 1 <= n <= len(chunks)]
 \`\`\`
 
-If \`verify_citations\` returns anything non-empty, the model referenced a source number that was never in the context you sent, a hallucinated citation. That's your signal to either retry the call with a firmer instruction or strip the bad marker before showing the user anything.
+If \`verify_citations\` returns anything non-empty, the model referenced a source number that was never in the context you sent. That is a hallucinated citation, and it is your signal to either retry the call with a firmer instruction or strip the bad marker before showing the user anything.
 
 ## Why this matters
 
-Citations only build trust if they're actually checked. A UI that prints "[1] Recipes" underneath an answer is only honest if you verified \`[1]\` really is what the model was pointing at. Skipping verification turns citations into decoration, numbers that look like proof but were never confirmed to mean anything.
+Citations only build trust if you actually check them. A UI that prints "[1] Recipes" under an answer is honest only when you have verified that \`[1]\` is really what the model pointed at. Skip verification and citations become decoration: numbers that look like proof but were never confirmed to mean anything.
 
 ## Two failure modes to catch
 
-- **Out-of-range citation**: the model wrote \`[7]\` when you only gave it 3 sources. Always a bug, never valid.
-- **No citations at all**: the model answered with zero \`[n]\` markers. That's not automatically wrong (a "the notes don't say" answer needs none), but for a factual claim it's a red flag worth flagging to the user or retrying.
+- **Out-of-range citation**: the model wrote \`[7]\` when you gave it 3 sources. Always a bug, never valid.
+- **No citations at all**: the model answered with zero \`[n]\` markers. That is not automatically wrong, since a "the notes don't say" answer needs none, but for a factual claim it is a red flag worth surfacing to the user or retrying.
 
 ## The mental model
 
-You're the fact-checking editor at a magazine: every footnote in the draft gets checked against the actual source list before it goes to print. A footnote pointing at a source that doesn't exist gets caught here, not by the reader. Below, build the extractor and the verifier in pure Python.`,
+You are the fact-checking editor at a magazine. Every footnote in the draft gets checked against the source list before it goes to print. A footnote pointing at a source that does not exist gets caught here, not by the reader. Below you build the extractor and the verifier in pure Python.`,
       starter_code: `import re
 
 def extract_citations(text):
@@ -730,7 +730,7 @@ print("grounded:", len(invalid) == 0)
       ],
       challenge_title: "Fact-Check the Footnotes",
       challenge_description:
-        "Extract the citation numbers from a model's answer and verify each one refers to a real, in-range source.",
+        "Extract the citation numbers from a model's answer and verify each one points to a real, in-range source.",
       challenge_language: "python",
       challenge_starter_code: `import sys, re
 
@@ -792,16 +792,16 @@ main()
       project_id: "prod-17",
       order: 6,
       title: "When Nothing Matches: Refusing Gracefully",
-      concept: "no-answer fallback and confidence bands",
-      explanation: `Ask your notes brain something your notes never covered, "what's my dentist's phone number," when you never wrote it down, and a model handed empty or near-empty context will often still produce a fluent, confident-sounding guess. That's the single most damaging failure mode in RAG: an answer that reads like it came from your notes but didn't. Hardening a notes brain starts with refusing well.
+      concept: "Split the top retrieval score into confidence bands so a no-match question returns an honest refusal instead of a fabricated answer.",
+      explanation: `Ask your notes brain for your dentist's phone number when you never wrote it down, and a model handed empty or near-empty context will often still produce a fluent, confident-sounding guess. That is the most damaging failure mode in RAG: an answer that reads like it came from your notes but did not. Hardening a notes brain starts with refusing well.
 
 ## Confidence bands from the top retrieval score
 
-Rather than a single yes/no threshold, split retrieval scores into three bands:
+Instead of a single yes/no threshold, split retrieval scores into three bands:
 
-- **CONFIDENT** (score above a high bar): answer normally.
-- **WEAK** (score in a middle band): the notes barely relate. Still worth trying, but tell the model to hedge and admit uncertainty.
-- **NO_MATCH** (score below both): don't call the model at all.
+- **CONFIDENT**, score above a high bar: answer normally.
+- **WEAK**, score in a middle band: the notes barely relate. Still worth trying, but tell the model to hedge and admit uncertainty.
+- **NO_MATCH**, score below both: do not call the model at all.
 
 \`\`\`python
 def classify_confidence(top_score, confident_t=0.5, weak_t=0.3):
@@ -828,19 +828,19 @@ def answer_question(question, index):
     ...  # build the cited prompt from hits and call the model
 \`\`\`
 
-Notice: NO_MATCH never reaches the API. That's not just a UX choice, it's a cost and correctness choice, sending a model an empty or irrelevant context and asking it to answer anyway is *inviting* a hallucination, and you'd pay for the privilege.
+NO_MATCH never reaches the API. That is a cost and correctness decision as much as a UX one. Sending a model empty or irrelevant context and asking it to answer anyway invites a hallucination, and you pay for the privilege.
 
 ## Why the system prompt's refusal rule still matters
 
-Confidence bands catch the "obviously nothing matched" case. But even a CONFIDENT retrieval can be wrong in a subtler way, the top chunk might be tangentially related without actually answering the question. That's why lesson 4's system prompt line, "if the notes don't contain the answer, say so," stays in every prompt regardless of band: it's the model's own second line of defense after your retrieval gate.
+Confidence bands catch the case where nothing obviously matched. But even a CONFIDENT retrieval can be wrong in a quieter way: the top chunk might be tangentially related without actually answering the question. That is why lesson 4's system prompt line, "if the notes don't contain the answer, say so," stays in every prompt whatever the band. It is the model's second line of defense behind your retrieval gate.
 
 ## Why this matters
 
-A tool that says "I don't know" when it genuinely doesn't is more useful, not less, than one that never admits uncertainty. Users learn fast which assistants they can trust; one confidently wrong answer costs more trust than ten honest "not found in your notes."
+A tool that says "I don't know" when it genuinely does not know is more useful than one that never admits uncertainty. Users learn fast which assistants they can trust, and one confidently wrong answer costs more trust than ten honest "not found in your notes."
 
 ## The mental model
 
-A good research assistant has three gears: answer confidently, answer with a hedge, or say "I couldn't find anything on that in your files," and picks the right gear before opening their mouth, not after. Below, build the classifier and the fallback dispatcher in pure Python.`,
+A good research assistant has three gears: answer confidently, answer with a hedge, or say she could not find anything on that in your files. She picks the gear before opening her mouth, not after. Below you build the classifier and the fallback dispatcher in pure Python.`,
       starter_code: `def classify_confidence(top_score, confident_threshold, weak_threshold):
     # TODO: top_score >= confident_threshold -> "CONFIDENT"
     # TODO: elif top_score >= weak_threshold  -> "WEAK"
@@ -886,7 +886,7 @@ for score in [0.8, 0.4, 0.1]:
       ],
       challenge_title: "Pick the Confidence Band",
       challenge_description:
-        "Classify a batch of top retrieval scores into CONFIDENT, WEAK, or NO_MATCH before deciding whether to even call the model.",
+        "Classify a batch of top retrieval scores into CONFIDENT, WEAK, or NO_MATCH before deciding whether to call the model.",
       challenge_language: "python",
       challenge_starter_code: `import sys
 
@@ -944,12 +944,12 @@ main()
       project_id: "prod-17",
       order: 7,
       title: "Cost and Scale: Deduping Notes Before You Pay to Embed",
-      concept: "deduplication and index cost budgeting",
-      explanation: `A real notes vault is messy. Daily journals often copy-paste the same template ("Mood:", "Top priority:", boilerplate headers) into dozens of entries. Every one of those repeated chunks costs an embedding call, takes up a slot in your index, and can crowd out genuinely unique content in retrieval results. Before you scale to hundreds of notes, dedupe.
+      concept: "Drop exact-duplicate chunks before embedding and estimate the token bill, so a template-heavy vault does not triple your index cost.",
+      explanation: `A real notes vault is messy. Daily journals copy-paste the same template into dozens of entries: "Mood:", "Top priority:", the same boilerplate headers. Every repeated chunk costs an embedding call, takes a slot in your index, and crowds genuinely unique content out of retrieval results. Before you scale to hundreds of notes, dedupe.
 
 ## Exact-duplicate detection
 
-The cheapest, most reliable dedup catches chunks that are the same content with different casing or spacing, "Buy milk" vs "BUY MILK" vs "Buy   milk", by normalizing before comparing:
+The cheapest, most reliable dedup catches chunks that are the same content with different casing or spacing, like "Buy milk" against "BUY MILK" against "Buy   milk", by normalizing before comparing.
 
 \`\`\`python
 def normalize(text):
@@ -966,15 +966,15 @@ def dedup_chunks(chunks):
     return unique
 \`\`\`
 
-Keep the **first** occurrence's original text (so display casing looks natural) while using the normalized key only for comparison.
+Keep the first occurrence's original text so display casing looks natural, and use the normalized key only for comparison.
 
-## Near-duplicate detection, conceptually
+## Near-duplicate detection
 
-Exact-text dedup won't catch two chunks that say almost the same thing in different words, that requires comparing their *embeddings*, not their raw text: if two chunks' cosine similarity is above a very high bar, like 0.98, they're near-duplicates even with different wording. That check happens after embedding, as a housekeeping pass over the index, using the exact same \`cosine_similarity\` function you already built.
+Exact-text dedup will not catch two chunks that say almost the same thing in different words. That needs a comparison of their *embeddings*, not their raw text. If two chunks' cosine similarity is above a very high bar, say 0.98, they are near-duplicates even with different wording. That check runs after embedding, as a housekeeping pass over the index, using the same \`cosine_similarity\` function you already built.
 
 ## Budgeting the embedding cost before you index
 
-Embedding is billed per token, same as any model call. Before indexing a big vault, estimate the bill:
+Embedding is billed per token, like any model call. Before indexing a big vault, estimate the bill.
 
 \`\`\`python
 def estimate_tokens(text):
@@ -985,15 +985,15 @@ def estimate_index_cost(chunks, cost_per_1k_tokens):
     return total_tokens, (total_tokens / 1000) * cost_per_1k_tokens
 \`\`\`
 
-Dedup first, then estimate, dropping duplicate chunks directly lowers this number, which is exactly why dedup belongs in the hardening lessons: it's not a nice-to-have, it's a real cost lever on a vault of any size.
+Dedup first, then estimate. Dropping duplicate chunks lowers this number directly, which is why dedup belongs in the hardening lessons. It is a real cost lever on a vault of any size.
 
 ## Why this matters
 
-At ten notes, duplication is a curiosity. At a thousand notes with a shared daily template, it can be a third of your entire index, tripling embedding cost and diluting every retrieval with repeated boilerplate that was never worth searching in the first place.
+At ten notes, duplication is a curiosity. At a thousand notes with a shared daily template, it can be a third of your entire index. That triples embedding cost and dilutes every retrieval with repeated boilerplate that was never worth searching.
 
 ## The mental model
 
-Before shelving a new batch of index cards, a careful librarian checks whether she's already filed this exact card, word for word, and tosses the copy. Below, implement that check in pure Python.`,
+Before shelving a new batch of index cards, a careful librarian checks whether she has already filed this exact card, word for word, and tosses the copy. Below you implement that check in pure Python.`,
       starter_code: `def normalize(text):
     # TODO: lowercase and collapse all whitespace to single spaces
     pass
@@ -1042,7 +1042,7 @@ print("tokens to embed:", total_tokens)
       ],
       challenge_title: "Dedup Before You Pay to Embed",
       challenge_description:
-        "Remove exact duplicate notes (ignoring case and extra whitespace) before they get embedded and indexed.",
+        "Remove exact duplicate notes, ignoring case and extra whitespace, before they get embedded and indexed.",
       challenge_language: "python",
       challenge_starter_code: `import sys
 
@@ -1106,8 +1106,8 @@ main()
       project_id: "prod-17",
       order: 8,
       title: "Ship the Notes Brain",
-      concept: "assembling the full cited RAG pipeline",
-      explanation: `Every piece exists: chunking, embedding, ranked retrieval with a threshold, a citation-aware prompt, citation extraction and verification, a graceful no-match fallback, and dedup to keep the index lean. This lesson wires them into one command-line tool and ships it.
+      concept: "Wire chunking, retrieval, the cited prompt, citation verification, and the no-match fallback into one command-line tool and ship it.",
+      explanation: `Every piece exists now: chunking, embedding, ranked retrieval with a threshold, a citation-aware prompt, citation extraction and verification, a graceful no-match fallback, and dedup to keep the index lean. This lesson wires them into one command-line tool and ships it.
 
 ## The end-to-end flow
 
@@ -1133,11 +1133,11 @@ def notes_brain(question, index, confident_t=0.5, weak_t=0.3):
     return answer, notes if not invalid else []
 \`\`\`
 
-Read it top to bottom and you're reading the whole project: retrieve, gate on confidence, prompt with numbered sources, call the model, extract and verify citations, hand back an answer plus a clean footnote list (or an empty one if verification failed, better than showing a broken citation).
+Read it top to bottom and you are reading the whole project: retrieve, gate on confidence, prompt with numbered sources, call the model, extract and verify citations, hand back an answer plus a clean footnote list. If verification fails, hand back an empty footnote list, which beats showing a broken citation.
 
 ## Cache the index, don't rebuild it every run
 
-Embedding every note on every single question would be slow and wasteful. Real tools embed once, save the vectors (with a hash of each chunk's text as the cache key), and only re-embed chunks whose text actually changed since last time. That one habit is what turns "runs once as a demo" into "runs instantly every day, and cheaply, on an ever-growing vault."
+Embedding every note on every question would be slow and wasteful. Real tools embed once, save the vectors with a hash of each chunk's text as the cache key, and re-embed only the chunks whose text changed since last time. That one habit is what turns a tool that runs once as a demo into one that runs instantly and cheaply every day on a growing vault.
 
 ## Wrap it as a CLI
 
@@ -1160,15 +1160,15 @@ Now \`python notes_brain.py "what did I decide about the budget?"\` reads your r
 
 ## What "shipped" means here
 
-It runs from a clean start with one command, it handles an empty vault or an off-topic question without crashing or fabricating, and someone else could point it at their own notes folder from your instructions alone.
+It runs from a clean start with one command. It handles an empty vault or an off-topic question without crashing or fabricating. And someone else could point it at their own notes folder from your instructions alone.
 
 ## Into your Portfolio
 
-Finishing this lesson records the Personal Notes Brain in your **Portfolio** tab. It joins your shelf of working AI tools, this one grounded, cited, and honest about what it doesn't know.
+Finishing this lesson records the Personal Notes Brain in your **Portfolio** tab. It joins your shelf of working AI tools. This one is grounded, cited, and honest about what it does not know.
 
 ## The mental model
 
-A shipped RAG tool hides all of this behind one question typed at a prompt. Underneath, it quietly indexes, retrieves, gates on confidence, cites, and verifies, every lesson in this project collapsed into one clean answer with receipts. Below, build the final report that ties retrieval, citation-checking, and status together.`,
+A shipped RAG tool hides all of this behind one question typed at a prompt. Underneath, it indexes, retrieves, gates on confidence, cites, and verifies, with every lesson in this project collapsed into one answer that comes with receipts. Below you build the final report that ties retrieval, citation-checking, and status together.`,
       starter_code: `def classify_confidence(top_score, confident_t, weak_t):
     if top_score >= confident_t:
         return "CONFIDENT"

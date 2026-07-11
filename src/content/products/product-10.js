@@ -3,7 +3,7 @@ export default {
     id: "prod-10",
     title: "Tool-Using Agent",
     description:
-      "Build an agent that doesn't just talk, it acts: it can run a calculator, check the weather, and search for facts by calling real functions and reading their results back into its own answer. You'll learn function calling end to end, from defining a tool schema to running the execute-and-respond loop safely.",
+      "Build an agent that acts instead of only talking. It runs a calculator, checks the weather, and looks up facts by calling real functions and reading their results back into its own answer. You will learn function calling from end to end: defining a tool schema, then running the execute-and-respond loop without letting it crash or run away.",
     difficulty: "intermediate",
     category: "chatbots_agents",
     estimated_time: 130,
@@ -21,15 +21,15 @@ export default {
       order: 1,
       title: "Give the Model a Tool",
       concept: "defining a tool schema",
-      explanation: `A plain chatbot can only talk. Ask it "what's 847 times 293?" and it guesses at arithmetic in its head, sometimes wrong. Ask it "what's the weather in Tokyo right now?" and it has no way to know, it was trained on old text, not a live feed. **Tool use** (also called **function calling**) fixes both problems: you hand the model a menu of functions it's allowed to ask for, and when it needs one, it tells you which one and with what arguments. You run the real function. It never runs code itself.
+      explanation: `A plain chatbot can only talk. Ask it "what's 847 times 293?" and it does the arithmetic in its head, sometimes wrong. Ask it "what's the weather in Tokyo right now?" and it has no way to know, because it was trained on old text, not a live feed. Tool use (also called function calling) fixes both problems. You hand the model a menu of functions it is allowed to ask for. When it needs one, it tells you which one and with what arguments, and you run the real function. The model never runs code itself.
 
 ## What we're building
 
-By lesson 8 you'll have an agent with three tools: a **calculator** for real arithmetic, a **weather** lookup, and a **search** tool for facts. The model picks the right tool for each question, you execute it in Python, and the model folds the real result into its final answer.
+By lesson 8 you'll have an agent with three tools: a calculator for real arithmetic, a weather lookup, and a search tool for facts. The model picks the right tool for each question, you run it in Python, and the model folds the real result into its final answer.
 
 ## A tool is a JSON schema, not code
 
-You never send the model your Python function. You send a **description** of it: a name, a plain-English description of what it does, and an \`input_schema\` describing the arguments as JSON Schema.
+You never send the model your Python function. You send a description of it: a name, a plain-English description of what it does, and an \`input_schema\` describing the arguments as JSON Schema.
 
 \`\`\`python
 calculator_tool = {
@@ -59,15 +59,15 @@ resp = client.messages.create(
 )
 \`\`\`
 
-The model reads the schema like a menu. \`name\` is how it refers to the tool. \`description\` is the only thing that tells it *when* to reach for this tool versus another, so write it like you're briefing a new hire, not a code comment. \`input_schema\` pins down exactly what arguments it must supply and their types, so \`required\` catches the model trying to call a tool with a missing argument.
+The model reads the schema like a menu. \`name\` is how it refers to the tool. \`description\` is the only thing that tells it when to reach for this tool over another, so write it like you're briefing a new hire, not scribbling a code comment. \`input_schema\` pins down which arguments it must supply and their types, and \`required\` is what catches the model trying to call a tool with an argument left out.
 
-## Why this matters
+## Why the schema has to be right
 
-Everything downstream depends on this schema being precise. A vague description ("does math stuff") means the model might not call it when it should, or call it when it shouldn't. A loose \`input_schema\` (no \`required\`, wrong \`type\`) means you'll get called with arguments you don't know how to handle. The schema is a contract: you're telling the model exactly what it can ask for and exactly what shape the answer will come in. Get the contract right before you write a single line of execution logic.
+Everything downstream depends on this schema being precise. A vague description like "does math stuff" means the model might skip the tool when it should call it, or call it when it shouldn't. A loose \`input_schema\` with no \`required\` and a wrong \`type\` means you get called with arguments you don't know how to handle. The schema is a contract. You are telling the model exactly what it can ask for and exactly what shape the answer will come back in. Get that contract right before you write a single line of execution logic.
 
 ## The mental model to keep
 
-A tool definition is a job posting, not a job. You're not giving the model the ability to run code, you're giving it the ability to *request* that you run code, with a precise form to fill out. Below you'll build that job-posting dict by hand and check it has the shape the API expects, no network call yet.`,
+A tool definition is a job posting, not a job. You aren't giving the model the ability to run code. You are giving it the ability to request that you run code, with a precise form to fill out. Below you'll build that job-posting dict by hand and check that it has the shape the API expects. No network call yet.`,
       starter_code: `# Build a tool schema dict by hand, no API call yet.
 # The API expects: name, description, input_schema (JSON Schema style).
 
@@ -193,11 +193,11 @@ main()
       order: 2,
       title: "The Model Asks for a Tool",
       concept: "reading a tool_use block",
-      explanation: `You sent the model a calculator tool and asked "what's 847 * 293?" The model doesn't answer with a number. It answers with a request: "please run the calculator tool with this expression." Your job in this lesson is learning to read that request.
+      explanation: `You sent the model a calculator tool and asked "what's 847 * 293?" The model doesn't answer with a number. It answers with a request: run the calculator tool with this expression. This lesson is about reading that request.
 
 ## What comes back isn't plain text
 
-When the model decides to use a tool, its reply has \`stop_reason == "tool_use"\` and its \`content\` list contains one or more blocks of type \`"tool_use"\`, sitting alongside any \`"text"\` blocks it also wrote:
+When the model decides to use a tool, its reply has \`stop_reason == "tool_use"\`, and its \`content\` list holds one or more blocks of type \`"tool_use"\` next to any \`"text"\` blocks it also wrote:
 
 \`\`\`python
 resp = client.messages.create(
@@ -216,19 +216,19 @@ for block in resp.content:
         print(block.input)  # {"expression": "847 * 293"}
 \`\`\`
 
-Three fields matter on a \`tool_use\` block: \`id\` uniquely tags *this specific request* so you can match your answer back to it later, \`name\` tells you which tool it wants, and \`input\` is a dict matching the \`input_schema\` you defined, already parsed as real Python types, no JSON string to decode yourself.
+Three fields matter on a \`tool_use\` block. \`id\` tags this specific request so you can match your answer back to it later. \`name\` tells you which tool it wants. \`input\` is a dict matching the \`input_schema\` you defined, already parsed into real Python types, with no JSON string for you to decode.
 
 ## Why stop_reason matters
 
-\`stop_reason\` is how you tell "the model gave a final answer" apart from "the model wants a tool run first." If it's \`"end_turn"\`, just print \`resp.content[0].text\` like a normal chatbot reply. If it's \`"tool_use"\`, the model isn't done, it's paused, waiting on you. Checking \`stop_reason\` before you touch the content is the first branch of every agent loop you'll build from here on.
+\`stop_reason\` is how you tell a final answer apart from a request for a tool run. If it is \`"end_turn"\`, print \`resp.content[0].text\` like a normal chatbot reply. If it is \`"tool_use"\`, the model isn't done. It is paused, waiting on you. Checking \`stop_reason\` before you touch the content is the first branch of every agent loop you'll write from here on.
 
 ## The model can talk and call in the same turn
 
-Sometimes the model writes a sentence like "Let me calculate that for you" as a text block *before* the tool_use block. Both live in the same \`content\` list. For execution purposes you only care about the tool_use block(s); the leading text is just narration you can choose to show the user or ignore.
+Sometimes the model writes a sentence like "Let me calculate that for you" as a text block before the tool_use block. Both live in the same \`content\` list. For running the tool you only care about the tool_use block. The leading text is narration you can show the user or ignore.
 
 ## The mental model to keep
 
-A \`tool_use\` block is a filled-out request form: which tool (\`name\`), what to run it with (\`input\`), and a tracking number (\`id\`) so the answer comes back to the right request. Nothing has actually run yet. Below you'll practice pulling that form out of a message's content list, using a plain Python list standing in for what the API would hand you, no network required.`,
+A \`tool_use\` block is a filled-out request form: which tool (\`name\`), what to run it with (\`input\`), and a tracking number (\`id\`) so the answer comes back to the right request. Nothing has run yet. Below you'll pull that form out of a message's content list, using a plain Python list in place of what the API would hand you. No network required.`,
       starter_code: `# Simulate a model reply's content blocks (no API call).
 # Each block is a dict with a "type", and tool_use blocks also have
 # "id", "name", and "input".
@@ -347,11 +347,11 @@ main()
       order: 3,
       title: "Run It and Answer Back",
       concept: "executing a tool and sending tool_result",
-      explanation: `The model asked for the calculator. You found the request. Now comes the part that makes this an *agent* and not just a fancy parser: you actually run the function, and you send the answer back in a very specific shape so the model can use it.
+      explanation: `The model asked for the calculator. You found the request. Now comes the part that makes this an agent instead of a fancy parser: you run the function, and you send the answer back in a specific shape the model can use.
 
 ## Step 1: run your own Python function
 
-The model never executes code. \`input["expression"]\` is just a string it wants evaluated; you write real Python to do that safely (never raw \`eval\` on untrusted text, more on that in a later lesson):
+The model never executes code. \`input["expression"]\` is a string it wants evaluated, and you write real Python to do that safely. Never run raw \`eval\` on untrusted text; a later lesson covers why:
 
 \`\`\`python
 import operator, re
@@ -364,7 +364,7 @@ def run_calculator(expression):
 
 ## Step 2: send the result back as a tool_result
 
-The API needs two messages appended to your history: the assistant's turn (exactly what it sent you, tool_use block and all), then a **user** turn containing a \`tool_result\` block that names which request it's answering:
+The API needs two messages appended to your history. First the assistant's turn, exactly what it sent you, tool_use block and all. Then a user turn holding a \`tool_result\` block that names which request it answers:
 
 \`\`\`python
 messages.append({"role": "assistant", "content": resp.content})
@@ -393,15 +393,15 @@ print(final.content[0].text)
 
 ## Why the tool_use_id matters
 
-\`tool_result\` is a **user** role message, which feels backwards, you didn't type it, your code did. But from the API's perspective, anything that isn't the assistant is the "other side" of the conversation. The \`tool_use_id\` is what stitches the result to the *specific* request: if the model ever asks for two tools in one turn, each result must carry the matching id, or the model can't tell which answer belongs to which question.
+\`tool_result\` is a user-role message, which feels backwards since your code wrote it, not a person. But from the API's side, anything that isn't the assistant is the other side of the conversation. The \`tool_use_id\` is what stitches the result to its request. If the model asks for two tools in one turn, each result has to carry the matching id, or the model can't tell which answer belongs to which question.
 
-## Why this matters
+## Why this is the whole mechanism
 
-This round trip, assistant asks, you run, you answer, model responds, is the entire mechanism of tool use. There's no magic beyond it: three messages appended to a list, one Python function call in between. Everything harder in later lessons (multiple tools, loops, error handling) is this same pattern repeated and made sturdier.
+This round trip is all there is to tool use: the assistant asks, you run the function, you answer, the model responds. Three messages appended to a list, one Python function call in between. Everything harder in later lessons, like multiple tools and loops and error handling, is this same pattern repeated and made sturdier.
 
 ## The mental model to keep
 
-Think of it as a relay handoff. The model hands you a baton (the tool_use block). You run to the function, get the result, and hand the baton back tagged with the same race number (\`tool_use_id\`) so the model knows exactly which leg of the race it belongs to.`,
+Think of it as a relay handoff. The model hands you a baton, the tool_use block. You run to the function, get the result, and hand the baton back tagged with the same race number, the \`tool_use_id\`, so the model knows which leg of the race it belongs to.`,
       starter_code: `# Build the assistant + tool_result round trip by hand (no API call).
 
 def run_calculator(expression):
@@ -538,11 +538,11 @@ main()
       order: 4,
       title: "Choosing Among Several Tools",
       concept: "routing to the right tool",
-      explanation: `One tool is a demo. A real agent has a toolbox, and the model has to pick the right tool for each question on its own. This lesson adds a **weather** tool and a **search** tool alongside the calculator, and shows how you route each request to the matching Python function once the model picks one.
+      explanation: `One tool is a demo. A real agent has a toolbox, and the model has to pick the right tool for each question on its own. This lesson adds a weather tool and a search tool next to the calculator, then shows how you route each request to the matching Python function once the model picks one.
 
 ## Register more than one tool
 
-You just add more schemas to the same \`tools\` list. Each one gets its own name, description, and input_schema:
+Add more schemas to the same \`tools\` list. Each gets its own name, description, and input_schema:
 
 \`\`\`python
 weather_tool = {
@@ -573,11 +573,11 @@ resp = client.messages.create(
 )
 \`\`\`
 
-The model reads all three descriptions and picks based on the question. Ask about weather, it calls \`get_weather\`. Ask it to multiply two numbers, it calls \`calculator\`. Ask "who won the last World Cup", it calls \`web_search\`. You never tell it which one, that's the whole point of good descriptions from lesson 1.
+The model reads all three descriptions and picks based on the question. Ask about weather and it calls \`get_weather\`. Ask it to multiply two numbers and it calls \`calculator\`. Ask "who won the last World Cup" and it calls \`web_search\`. You never tell it which one. That is the payoff of the good descriptions you wrote in lesson 1.
 
 ## Routing the call in your code
 
-Once you get a \`tool_use\` block back, you look up \`block["name"]\` in a dispatch table instead of writing a long if/elif chain:
+Once you get a \`tool_use\` block back, look up \`block["name"]\` in a dispatch table instead of writing a long if/elif chain:
 
 \`\`\`python
 TOOLS = {
@@ -591,15 +591,15 @@ def execute_tool(block):
     return fn(**block["input"])
 \`\`\`
 
-\`**block["input"]\` unpacks the dict straight into keyword arguments, so \`run_weather(city="Tokyo")\` gets called correctly no matter which tool fired, as long as your function's parameter names match the schema's property names exactly.
+\`**block["input"]\` unpacks the dict straight into keyword arguments, so \`run_weather(city="Tokyo")\` gets called correctly whichever tool fired, as long as your function's parameter names match the schema's property names exactly.
 
-## Why this matters
+## Why a dispatch dict
 
-A dispatch dict scales to ten tools as easily as three; an if/elif chain gets uglier every time you add one. It also makes an unknown tool name a single clean check (\`if block["name"] not in TOOLS\`) rather than a silent fall-through, which matters a lot once you're hardening the agent in lesson 6.
+A dispatch dict scales to ten tools as easily as three, while an if/elif chain gets uglier every time you add one. It also turns an unknown tool name into a single clean check, \`if block["name"] not in TOOLS\`, instead of a silent fall-through. That check matters once you harden the agent in lesson 6.
 
 ## The mental model to keep
 
-Think of the model as a customer at an information desk with three counters: math, weather, facts. It reads the signage (your descriptions) and walks to the right counter itself. Your job is just to staff each counter with the right clerk, keyed by name, in a dict.`,
+Think of the model as a customer at an information desk with three counters: math, weather, facts. It reads the signage, your descriptions, and walks to the right counter itself. Your job is to staff each counter with the right clerk, keyed by name, in a dict.`,
       starter_code: `# Route a tool_use block to the right stub function, no API call.
 
 def run_calculator(expression):
@@ -729,11 +729,11 @@ main()
       order: 5,
       title: "The Agent Loop",
       concept: "looping until the model is done",
-      explanation: `Real questions sometimes need more than one tool call before the model has enough to answer, "what's the weather in Tokyo, and what's that in Fahrenheit if it's given in Celsius" might call \`get_weather\` first, then \`calculator\` once it has a number. A single request/execute/respond round trip isn't enough. You need a **loop** that keeps running tools until the model finally says it's done.
+      explanation: `Real questions sometimes need more than one tool call before the model has enough to answer. "What's the weather in Tokyo, and what's that in Fahrenheit if it's given in Celsius" might call \`get_weather\` first, then \`calculator\` once it has a number. A single request/execute/respond round trip won't cover that. You need a loop that keeps running tools until the model says it's done.
 
 ## The loop, precisely
 
-Every turn, you check \`stop_reason\`. If it's \`"tool_use"\`, execute and continue. If it's \`"end_turn"\`, stop and print the final text:
+Every turn, check \`stop_reason\`. If it is \`"tool_use"\`, run the tool and continue. If it is \`"end_turn"\`, stop and print the final text:
 
 \`\`\`python
 messages = [{"role": "user", "content": "Weather in Tokyo, then double the temperature."}]
@@ -761,19 +761,19 @@ while True:
     })
 \`\`\`
 
-Notice the loop's shape: append the assistant's turn *unconditionally*, then branch on \`stop_reason\`. If it wants a tool, execute it, append the \`tool_result\`, and go around again, the model sees the new result added to \`messages\` and decides what to do next: call another tool, or finally answer.
+Notice the loop's shape. Append the assistant's turn every time, then branch on \`stop_reason\`. If it wants a tool, run it, append the \`tool_result\`, and go around again. The model sees the new result added to \`messages\` and decides what to do next: call another tool, or answer.
 
 ## Why a loop, not a fixed number of round trips
 
-You genuinely don't know in advance how many tool calls a question needs. Some questions need zero (pure chat), some need one, some need three chained together. A loop that keeps going until \`stop_reason\` says otherwise handles all of them with the same code, instead of you hard-coding "call once, then always answer," which breaks the moment a question needs two tools.
+You don't know in advance how many tool calls a question needs. Some need zero and are pure chat. Some need one. Some need three chained together. A loop that keeps going until \`stop_reason\` says otherwise handles all of them with the same code. Hard-coding "call once, then always answer" breaks the moment a question needs two tools.
 
-## Why this matters
+## Why this loop is the agent
 
-This loop *is* the agent. Everything before this lesson was pieces: define a tool, read a request, execute, answer once. This lesson assembles them into something that keeps working, turn after turn, until the model has what it needs. That's the difference between a script that calls a tool and an agent that solves a task.
+Everything before this lesson was pieces: define a tool, read a request, run it, answer once. This lesson assembles them into something that keeps working turn after turn until the model has what it needs. That is the difference between a script that calls a tool and an agent that solves a task.
 
 ## The mental model to keep
 
-Picture a research assistant fetching one book at a time from the stacks, coming back to your desk after each one to check "do I have enough now, or do I need another book?" Each pass through the loop is one trip to the stacks. The loop ends the moment the assistant says "I have what I need" and starts writing the answer.`,
+Picture a research assistant fetching one book at a time from the stacks, coming back to your desk after each one to check whether they have enough now or need another book. Each pass through the loop is one trip to the stacks. The loop ends the moment the assistant says "I have what I need" and starts writing the answer.`,
       starter_code: `# Drive a scripted agent loop, no API call.
 # 'script' stands in for a sequence of model responses: each is either
 # {"stop_reason": "tool_use", "tool": name, "input": args}
@@ -906,15 +906,15 @@ main()
       order: 6,
       title: "Don't Trust the Arguments",
       concept: "validating tool calls",
-      explanation: `The loop works when everything goes right. It doesn't yet handle a model that asks for a tool that doesn't exist, or hands you an argument that's missing or the wrong type. Models are usually good at following a schema, but "usually" is not a word you want anywhere near code that runs \`eval()\`. This lesson hardens \`execute_tool\` before it ever runs anything.
+      explanation: `The loop works when everything goes right. It doesn't yet handle a model that asks for a tool that doesn't exist, or hands you an argument that's missing or the wrong type. Models are usually good at following a schema, but "usually" is not a word you want near code that runs \`eval()\`. This lesson hardens \`execute_tool\` before it runs anything.
 
 ## Three ways a tool call can be bad
 
-1. **Unknown tool name.** The model (or a bug, or a model update) asks for a tool you never registered.
-2. **Missing required argument.** \`input_schema\` said \`required: ["expression"]\`, but the block's \`input\` dict doesn't have that key.
-3. **Wrong type.** The schema said \`"type": "integer"\` for \`days\`, and you got the string \`"three"\`.
+1. Unknown tool name. The model, or a bug, or a model update, asks for a tool you never registered.
+2. Missing required argument. \`input_schema\` said \`required: ["expression"]\`, but the block's \`input\` dict has no such key.
+3. Wrong type. The schema said \`"type": "integer"\` for \`days\`, and you got the string \`"three"\`.
 
-None of these should crash your program or, worse, silently do the wrong thing. Each should turn into a clear, short error message you send back as the \`tool_result\`, so the model gets a chance to notice and correct itself on the next turn.
+None of these should crash your program, and none should silently do the wrong thing. Each turns into a short, clear error message you send back as the \`tool_result\`, so the model can notice and correct itself on the next turn.
 
 \`\`\`python
 def safe_execute(block, tools_registry, schemas):
@@ -934,11 +934,11 @@ def safe_execute(block, tools_registry, schemas):
         return f"error: tool raised {exc.__class__.__name__}: {exc}"
 \`\`\`
 
-That result string, error message and all, still goes back through the normal \`tool_result\` message. The model reads \`"error: missing required argument 'city'"\` the same way it reads \`"Sunny, 24C"\`, it's just text, and a well-behaved model will apologize, fix its input, and try again.
+That result string, error message and all, goes back through the normal \`tool_result\` message. The model reads \`"error: missing required argument 'city'"\` the same way it reads \`"Sunny, 24C"\`. It is text either way, and a well-behaved model apologizes, fixes its input, and tries again.
 
 ## Never eval untrusted text blindly
 
-The calculator's \`eval\` from earlier lessons is a real risk if the "expression" string could ever contain more than arithmetic. Restrict it before evaluating, whitelist the characters you allow:
+The calculator's \`eval\` from earlier lessons is a real risk if the "expression" string could ever contain more than arithmetic. Restrict it first by allowing only the characters you expect:
 
 \`\`\`python
 import re
@@ -951,11 +951,11 @@ def run_calculator(expression):
 
 ## Why this matters
 
-An agent that trusts every tool call blindly is one bad model output away from a stack trace in production, or worse, from running an expression that reaches outside the sandbox. Validating before executing turns a crash into a recoverable error message, and the model, seeing the error, often just tries again with corrected input. That's a much better user experience than the whole agent dying mid-answer.
+An agent that trusts every tool call blindly is one bad model output away from a stack trace in production, or from running an expression that reaches outside the sandbox. Validating before you execute turns a crash into a recoverable error message. The model sees the error and often tries again with corrected input, which beats the whole agent dying in the middle of an answer.
 
 ## The mental model to keep
 
-Treat every tool_use block like an unverified form submission from the internet: check it exists, check it's complete, check its shape, *then* run it. The model is usually right, but "usually" is exactly why you check.`,
+Treat every tool_use block like an unverified form submission from the internet. Check that the tool exists, check the call is complete, check its shape, then run it. The model is usually right, and "usually" is exactly why you check.`,
       starter_code: `# Validate a tool call before executing it, no API call.
 
 TOOLS = {
@@ -1136,11 +1136,11 @@ main()
       order: 7,
       title: "Stop the Runaway Agent",
       concept: "capping iterations and recovering from tool errors",
-      explanation: `A validated tool call still isn't a safe agent. Two failure modes remain, and both are about the *loop*, not a single call: it can run forever, and a tool can raise an exception mid-execution instead of just returning a bad result.
+      explanation: `A validated tool call still isn't a safe agent. Two failure modes remain, and both are about the loop, not a single call. The loop can run forever, and a tool can raise an exception mid-execution instead of returning a bad result.
 
 ## Failure 1: the loop never stops
 
-Nothing in the loop from lesson 5 guarantees the model ever reaches \`stop_reason == "end_turn"\`. A confused model can call tools back-to-back indefinitely, chasing an answer it never lands on, and every pass costs real tokens and real money. The fix is a hard ceiling:
+Nothing in the loop from lesson 5 guarantees the model ever reaches \`stop_reason == "end_turn"\`. A confused model can call tools back to back forever, chasing an answer it never lands on, and every pass costs real tokens and real money. The fix is a hard ceiling:
 
 \`\`\`python
 MAX_ITERATIONS = 8
@@ -1170,11 +1170,11 @@ def run_agent(client, tools_schema, tools_registry, user_message):
     return "I couldn't finish this in a reasonable number of steps."
 \`\`\`
 
-The \`for i in range(MAX_ITERATIONS)\` replaces \`while True\`. If the model still hasn't finished after 8 tool calls, you stop yourself, on your terms, with a clear message instead of an unbounded bill.
+The \`for i in range(MAX_ITERATIONS)\` replaces \`while True\`. If the model still hasn't finished after 8 tool calls, you stop on your own terms with a clear message instead of an unbounded bill.
 
 ## Failure 2: the tool itself throws
 
-Lesson 6 caught bad *input*. But a tool can still fail for reasons that have nothing to do with the arguments, a weather API can be down, a network call can time out. \`safe_execute\` should catch exceptions raised *during* execution, not just reject malformed input beforehand:
+Lesson 6 caught bad input. But a tool can fail for reasons that have nothing to do with the arguments: a weather API can be down, a network call can time out. \`safe_execute\` should catch exceptions raised during execution, not only reject malformed input beforehand:
 
 \`\`\`python
 def safe_execute(name, args, tools_registry):
@@ -1184,15 +1184,15 @@ def safe_execute(name, args, tools_registry):
         return f"error: tool failed ({exc.__class__.__name__}: {exc})"
 \`\`\`
 
-That error string flows back as a normal \`tool_result\`. The model sees "the weather tool failed" and can apologize, try a different tool, or answer without it, instead of your whole program crashing on an exception three tool calls deep into a conversation.
+That error string flows back as a normal \`tool_result\`. The model sees that the weather tool failed and can apologize, try a different tool, or answer without it, instead of your whole program crashing three tool calls deep into a conversation.
 
 ## Why this matters
 
-Robustness here isn't about pretty error messages, it's about cost and reliability at scale. An uncapped loop against a paid API is a runaway bill waiting to happen. An unguarded tool call is one flaky dependency away from taking down every conversation using it. Both fixes are small: a loop counter, a try/except. Both are the difference between a demo and something you'd trust with real traffic.
+What you gain here is cost control and reliability at scale, not prettier error messages. An uncapped loop against a paid API is a runaway bill waiting to happen. An unguarded tool call is one flaky dependency away from taking down every conversation that uses it. Both fixes are small, a loop counter and a try/except, and both are the difference between a demo and something you'd trust with real traffic.
 
 ## The mental model to keep
 
-Give the agent a leash (\`MAX_ITERATIONS\`) and a helmet (\`try/except\` around execution). Neither stops it from doing its job; both stop one bad turn from becoming an unbounded, unrecoverable failure.`,
+Give the agent a leash, \`MAX_ITERATIONS\`, and a helmet, the \`try/except\` around execution. Neither stops it from doing its job. Both stop one bad turn from becoming an unbounded, unrecoverable failure.`,
       starter_code: `# Simulate a capped agent loop with tool-error recovery, no API call.
 # Each turn is "TOOL <name>", "ERROR <name>" (tool raised, but is caught),
 # or "FINAL <text>".
@@ -1309,7 +1309,7 @@ main()
       order: 8,
       title: "Ship the Tool-Using Agent",
       concept: "assembling and shipping the agent",
-      explanation: `Every piece is built: schemas, request-reading, execution, routing across tools, the loop, validation, and a hard cap with error recovery. This lesson wires all of it into one script you can actually run, and finishing it lands the build in your **Portfolio**.
+      explanation: `Every piece is built: schemas, reading a request, execution, routing across tools, the loop, validation, and a hard cap with error recovery. This lesson wires all of it into one script you can run, and finishing it lands the build in your Portfolio.
 
 ## The finished shape
 
@@ -1356,27 +1356,27 @@ if __name__ == "__main__":
     print(run_agent(question))
 \`\`\`
 
-That's the whole product. Every function it calls, \`safe_execute\`, the three \`run_*\` tool implementations, the three schema dicts, is a lesson you already built.
+That's the whole product. Every function it calls is a lesson you already built: \`safe_execute\`, the three \`run_*\` tool implementations, and the three schema dicts.
 
 ## What "shipped" means for an agent
 
 Three checks, from the playbook:
 
 1. It runs from a clean start with one command and a real question.
-2. Weird input doesn't crash it, an unknown city, a malformed expression, a tool that errors, all come back as a graceful message instead of a stack trace.
-3. Someone else could point it at their own API key and use it immediately.
+2. Weird input doesn't crash it. An unknown city, a malformed expression, a tool that errors: each comes back as a graceful message, not a stack trace.
+3. Someone else could point it at their own API key and use it right away.
 
 ## Watching cost on a tool-using agent
 
-Every extra tool call is another full round trip through the API, system prompt and growing history included. \`MAX_ITERATIONS\` isn't just a safety net against infinite loops, it's a cost ceiling per question. If you find real usage regularly hitting the cap, that's a sign to either raise it deliberately or tighten your tool descriptions so the model needs fewer calls to get what it needs.
+Every extra tool call is another full round trip through the API, system prompt and growing history included. \`MAX_ITERATIONS\` is not only a guard against infinite loops. It is a cost ceiling per question. If real usage keeps hitting the cap, that is a sign to raise it deliberately or tighten your tool descriptions so the model needs fewer calls.
 
 ## Into your Portfolio
 
-Finishing this lesson records the Tool-Using Agent in your **Portfolio** tab alongside anything else you've shipped. Keep one example question that needed a tool (like a live weather check) and one that needed none, proof the routing genuinely works both ways.
+Finishing this lesson records the Tool-Using Agent in your Portfolio tab next to anything else you've shipped. Keep one example question that needed a tool, like a live weather check, and one that needed none, as proof the routing works both ways.
 
 ## The mental model to keep
 
-You built a small, capable employee: it knows three things it's allowed to do, it asks before doing them, it reports back honestly when something goes wrong, and it knows when to stop asking and just answer. That's what "agent" means here, nothing mystical, just a loop with good manners around a handful of real functions.`,
+You built a small, capable employee. It knows three things it's allowed to do, it asks before doing them, it reports back honestly when something goes wrong, and it knows when to stop asking and answer. That is all "agent" means here: a loop with good manners around a handful of real functions.`,
       starter_code: `# Assemble the full agent: dispatch table, validation, and a capped loop
 # over a scripted conversation, no real API call.
 

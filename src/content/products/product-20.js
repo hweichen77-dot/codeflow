@@ -3,7 +3,7 @@ export default {
     id: "prod-20",
     title: "Streaming Writing Assistant",
     description:
-      "Build a small web app that streams AI-generated writing token by token, so a user watches an essay outline or email draft appear live instead of staring at a spinner. You'll wire a minimal backend endpoint that streams over Server-Sent Events, a front end that renders tokens as they arrive, and the buffering, cost, and cancellation logic that keep it solid under real network conditions.",
+      "Build a small web app that streams AI-generated writing token by token, so a user watches an essay outline or email draft appear live instead of staring at a spinner. You'll wire a minimal backend endpoint that streams over Server-Sent Events and a front end that renders tokens as they arrive. Along the way you'll add the buffering that survives a choppy network and the budget guard that stops a runaway generation from quietly running up a bill.",
     difficulty: "advanced",
     category: "production_ops",
     estimated_time: 135,
@@ -21,13 +21,13 @@ export default {
       order: 1,
       title: "What Makes Text Stream Over HTTP",
       concept: "Server-Sent Events (SSE)",
-      explanation: `A normal HTTP response is one round trip: the client asks, the server computes everything, then sends it back as a single block. That's fine for a JSON reply, but it's exactly why a naive "AI writing assistant" endpoint feels frozen for several seconds before the whole essay dumps onto the screen at once. This project fixes that by keeping the connection open and sending the reply in pieces as it's generated.
+      explanation: `A normal HTTP response is one round trip: the client asks, the server computes everything, then sends it back as a single block. That's fine for a JSON reply. It's also exactly why a naive "AI writing assistant" endpoint feels frozen for several seconds before the whole essay dumps onto the screen at once. This project fixes that by keeping the connection open and sending the reply in pieces as it's generated.
 
 ## The protocol we'll use: SSE
 
-**Server-Sent Events (SSE)** is a plain-HTTP way to stream data from server to client, one direction only. No new protocol, no special port, just a response that never quite "finishes": the server keeps the connection open and writes small framed messages to it over time. Browsers and HTTP clients already know how to read this format natively.
+**Server-Sent Events (SSE)** is a plain-HTTP way to stream data from server to client, one direction only. There's no new protocol and no special port. The server keeps the connection open and writes small framed messages to it over time, so the response never quite finishes. Browsers and HTTP clients already read this format natively.
 
-An SSE frame has a strict, boring shape: a line starting with \`data: \`, followed by the payload, followed by a **blank line** that marks the end of that event.
+An SSE frame has a strict, boring shape: a line starting with \`data: \`, then the payload, then a **blank line** that marks the end of that event.
 
 \`\`\`
 data: Once
@@ -38,11 +38,11 @@ data: a time
 
 \`\`\`
 
-That trailing blank line (\`\\n\\n\`) is not decoration, it's the delimiter. Without it, a receiver can't tell where one chunk ends and the next begins.
+That trailing blank line (\`\\n\\n\`) is the delimiter, not decoration. Without it, a receiver can't tell where one chunk ends and the next begins.
 
 ## Why SSE instead of a WebSocket
 
-WebSockets are bidirectional and heavier to set up (a handshake, a different scheme, your own framing). A writing assistant only needs one direction, server to client, so SSE is the lazier, correct tool: it rides on normal HTTP, works through most proxies, and browsers auto-reconnect a dropped SSE connection for you. Save WebSockets for chat-style apps where the client also needs to push data mid-stream.
+WebSockets are bidirectional and heavier to set up: a handshake, a different scheme, your own framing. A writing assistant only needs one direction, server to client, so SSE is the simpler correct tool. It rides on normal HTTP, works through most proxies, and browsers auto-reconnect a dropped SSE connection for you. Save WebSockets for chat-style apps where the client also needs to push data mid-stream.
 
 ## What the server actually does
 
@@ -55,11 +55,11 @@ for token in ["Once", "upon", "a", "time"]:
     # in a real server this gets written to the response stream, not returned
 \`\`\`
 
-Every later lesson builds on this one function: whatever you want to send, you wrap it in \`data: ...\\n\\n\` before it goes out the socket. The content-type header for a real endpoint is \`text/event-stream\`, which tells the browser "don't buffer this, hand me pieces as they arrive."
+Every later lesson builds on this one function. Whatever you want to send, you wrap it in \`data: ...\\n\\n\` before it goes out the socket. A real endpoint sets the content-type header to \`text/event-stream\`, which tells the browser to hand you pieces as they arrive instead of buffering them.
 
 ## The mental model
 
-Think of SSE as a radio broadcast, not a phone call: the server just keeps transmitting frames, and anyone tuned in receives them in order, one at a time, with a clear "end of this message" marker between them. Below, you'll write the framing function by hand and use it on a list of words, no network involved yet, just getting the wire format exactly right, since every bug in later lessons traces back to this shape.`,
+Think of SSE as a radio broadcast rather than a phone call. The server keeps transmitting frames, and anyone tuned in receives them in order, one at a time, with a clear end-of-message marker between them. Below, you'll write the framing function by hand and run it on a list of words. No network yet, just the wire format, because every bug in later lessons traces back to getting this shape right.`,
       starter_code: `# Format plain strings into the SSE wire format: "data: <text>\\n\\n"
 
 def format_sse(data):
@@ -153,11 +153,11 @@ main()
       order: 2,
       title: "The Smallest Streaming Endpoint",
       concept: "a generator-based route",
-      explanation: `You have the wire format. Now build the smallest backend that actually uses it: one route that keeps the connection open and yields SSE frames as a Python generator produces them.
+      explanation: `You have the wire format. Now build the smallest backend that uses it: one route that keeps the connection open and yields SSE frames as a Python generator produces them.
 
 ## A generator is the whole trick
 
-A normal route handler builds a full response, then returns it. A streaming route instead returns a **generator**, a function that \`yield\`s pieces over time instead of \`return\`ing one value. The web framework reads from that generator and writes each yielded piece straight to the open socket as soon as it appears.
+A normal route handler builds a full response, then returns it. A streaming route returns a **generator** instead, a function that \`yield\`s pieces over time instead of \`return\`ing one value. The framework reads from that generator and writes each yielded piece straight to the open socket as soon as it appears.
 
 \`\`\`python
 from flask import Flask, Response
@@ -174,7 +174,7 @@ def generate():
     return Response(token_stream(prompt), mimetype="text/event-stream")
 \`\`\`
 
-FastAPI's version is the same idea with a different name (\`StreamingResponse\`):
+FastAPI does the same thing under a different name, \`StreamingResponse\`:
 
 \`\`\`python
 from fastapi import FastAPI
@@ -187,11 +187,11 @@ def generate(prompt: str):
     return StreamingResponse(token_stream(prompt), media_type="text/event-stream")
 \`\`\`
 
-Both frameworks do the same job: hold the connection open, pull the next item from the generator when it's ready, write it out, repeat until the generator is exhausted, then close the connection.
+Both frameworks do the same job: hold the connection open, pull the next item from the generator when it's ready, write it out, and repeat until the generator is exhausted. Then close the connection.
 
 ## Where the real model plugs in
 
-In production, \`token_stream\` doesn't split a fake string, it iterates the model's own streaming API and re-wraps each piece as an SSE frame:
+In production, \`token_stream\` doesn't split a fake string. It iterates the model's own streaming API and re-wraps each piece as an SSE frame:
 
 \`\`\`python
 def token_stream(prompt):
@@ -204,15 +204,15 @@ def token_stream(prompt):
             yield f"data: {text}\\n\\n"
 \`\`\`
 
-Notice the endpoint's job is thin: it doesn't decide *what* to write, it just re-frames whatever the model hands it. That's deliberate, keep the streaming plumbing dumb and reusable, and let the model do the generating.
+The endpoint's job is thin. It doesn't decide *what* to write, it just re-frames whatever the model hands it. Keep the streaming plumbing dumb and reusable, and let the model do the generating.
 
 ## Why generators, not lists
 
-If \`token_stream\` built a list of all frames and returned it, you'd be right back to waiting for the whole reply before sending anything, streaming would just be a false label on a blocking call. The generator is what makes "send as it's produced" literally true: each \`yield\` hands one piece to the framework immediately, instead of accumulating.
+If \`token_stream\` built a list of all frames and returned it, you'd be back to waiting for the whole reply before sending anything. Streaming would be a false label on a blocking call. The generator is what makes "send as it's produced" literally true: each \`yield\` hands one piece to the framework immediately instead of accumulating.
 
 ## The mental model
 
-A streaming endpoint is a pipe, not a bucket. A bucket fills up, then you dump it out all at once. A pipe lets water flow through continuously as it arrives at one end. Below, build the generator and framing together in pure Python: simulate the model's output as a list of words, wrap each in SSE, and print the assembled stream, no network yet, just the shape of the endpoint's core loop.`,
+A streaming endpoint is a pipe, not a bucket. A bucket fills up and then you dump it out all at once; a pipe lets water flow through as it arrives at one end. Below, build the generator and framing together in pure Python. Simulate the model's output as a list of words, wrap each in SSE, and print the assembled stream. No network yet, just the shape of the endpoint's core loop.`,
       starter_code: `# Simulate a streaming endpoint's core loop: consume tokens from a
 # fake generator, wrap each in the SSE frame, and assemble the stream.
 
@@ -310,11 +310,11 @@ main()
       order: 3,
       title: "Chunking the Reply Into Deltas",
       concept: "delta chunking",
-      explanation: `Real model APIs don't send you whole words at civilized boundaries. They send **deltas**, small, arbitrary-sized pieces of text that arrive as the model produces them. Sometimes a delta is a whole word, sometimes half a word, sometimes just punctuation. Your job as the client is to not care, and just concatenate everything in order.
+      explanation: `Real model APIs don't send you whole words at civilized boundaries. They send **deltas**: small, arbitrary-sized pieces of text that arrive as the model produces them. Sometimes a delta is a whole word, sometimes half a word, sometimes just punctuation. Your job as the client is to not care, and to concatenate everything in order.
 
 ## What a delta actually is
 
-A delta is "whatever text arrived in this event." There's no promise it aligns with words, sentences, or anything meaningful on its own:
+A delta is whatever text arrived in this event. Nothing promises it aligns with words, sentences, or anything meaningful on its own:
 
 \`\`\`python
 with client.messages.stream(
@@ -326,26 +326,26 @@ with client.messages.stream(
         print(repr(delta))
 \`\`\`
 
-That might print \`'Ra'\`, then \`'in'\`, then \`' falls'\`, then \`' softly'\`, and so on, unpredictable boundaries every run. This is exactly why lesson 2's endpoint just re-frames whatever it receives instead of trying to buffer up to word boundaries: the API already decided the chunking, you just relay it.
+That might print \`'Ra'\`, then \`'in'\`, then \`' falls'\`, then \`' softly'\`, with unpredictable boundaries every run. This is why lesson 2's endpoint re-frames whatever it receives instead of buffering up to word boundaries. The API already decided the chunking; you just relay it.
 
 ## Order is the only thing that matters
 
-Deltas are meaningless individually and only make sense **concatenated in arrival order**. If you drop one, skip one, or reorder two, the final text is corrupted, there's no "close enough." That's the whole contract: receive in order, join with nothing in between, done.
+Deltas are meaningless individually and only make sense **concatenated in arrival order**. Drop one, skip one, or reorder two, and the final text is corrupted. There's no close enough. The whole contract is: receive in order, join with nothing in between, done.
 
 \`\`\`python
 def reconstruct(deltas):
     return "".join(deltas)
 \`\`\`
 
-No spaces added, no separators, the deltas already contain any spacing the model produced. Adding your own separator between deltas is one of the most common streaming bugs, it silently inserts extra whitespace that wasn't in the original reply.
+No spaces added, no separators. The deltas already contain any spacing the model produced. Adding your own separator between deltas is one of the most common streaming bugs; it silently inserts whitespace that wasn't in the original reply.
 
 ## Chunk size is a knob, not a rule
 
-If you're chunking text yourself (say, replaying a cached reply, or building a demo without live network calls), you get to pick delta size. Small chunks (a few characters) feel smoother and more "typed live" but mean more frames and slightly more overhead per character sent. Larger chunks are cheaper per byte but feel more like stutter-then-dump. Most production streams don't chunk at a fixed size at all, the model decides, and you just relay; you'll only pick a chunk size yourself when simulating or testing.
+If you're chunking text yourself, say replaying a cached reply or building a demo without live network calls, you get to pick the delta size. Small chunks of a few characters feel smoother and more like live typing, but they mean more frames and slightly more overhead per character. Larger chunks are cheaper per byte but feel more like stutter-then-dump. Most production streams don't chunk at a fixed size at all: the model decides and you relay. You'll only pick a chunk size yourself when simulating or testing.
 
 ## The mental model
 
-A delta is one puzzle piece with no picture printed on the box. You can't tell what the final image looks like from one piece, you can only place pieces down in the order they're handed to you and trust that concatenation reveals the whole picture. Below, you'll split a full string into fixed-size deltas and prove that reconstructing it, in order, with no separators, gives back the exact original.`,
+A delta is one puzzle piece with no picture printed on the box. You can't tell what the final image looks like from a single piece. You can only place pieces down in the order they're handed to you and trust that concatenation reveals the whole picture. Below, you'll split a full string into fixed-size deltas and prove that reconstructing it in order, with no separators, gives back the exact original.`,
       starter_code: `# Split a full reply into fixed-size deltas, then verify reconstruction
 # by concatenating them back together in order.
 
@@ -439,7 +439,7 @@ main()
       order: 4,
       title: "The Front End That Renders Live",
       concept: "parsing SSE on the client",
-      explanation: `The backend is streaming frames. Now build the other half: a browser page that reads those frames as they arrive and paints each one onto the screen the moment it shows up, no full-page wait.
+      explanation: `The backend is streaming frames. Now build the other half: a browser page that reads those frames as they arrive and paints each one onto the screen the moment it shows up, with no full-page wait.
 
 ## Reading a stream in the browser
 
@@ -468,19 +468,19 @@ async function renderStream(prompt, targetEl) {
 }
 \`\`\`
 
-Look closely at \`frames.pop()\`. \`buffer.split("\\n\\n")\` may cut a frame in half if the network delivered fewer bytes than a full frame. The last element after splitting is whatever's left over, possibly a complete frame, possibly a fragment. Popping it off and keeping it in \`buffer\` for the next read is what makes this safe: you never render a half-arrived chunk, you only render frames you know are complete.
+Look closely at \`frames.pop()\`. \`buffer.split("\\n\\n")\` may cut a frame in half if the network delivered fewer bytes than a full frame. The last element after splitting is whatever's left over, which might be a complete frame or a fragment. Popping it off and keeping it in \`buffer\` for the next read is what makes this safe: you never render a half-arrived chunk, only frames you know are complete.
 
 ## The DOM update is the whole point
 
-\`targetEl.textContent += frame.slice(6)\` is the line that makes this feel alive. Each time a frame completes, you append its payload directly onto whatever's already on the page, the essay draft visibly grows word by word instead of appearing as one block after a multi-second wait. \`slice(6)\` strips the \`"data: "\` prefix (6 characters), leaving just the payload.
+\`targetEl.textContent += frame.slice(6)\` is the line that makes this feel alive. Each time a frame completes, you append its payload onto whatever's already on the page, so the essay draft visibly grows word by word instead of appearing as one block after a multi-second wait. \`slice(6)\` strips the \`"data: "\` prefix, six characters, and leaves just the payload.
 
 ## Why this mirrors the backend exactly
 
-The client-side parser and the SSE format from lesson 1 are two ends of the same contract: the server promises "every event ends in a blank line," and the client's whole parsing strategy, buffer bytes, split on \`\\n\\n\`, keep the remainder, is built entirely around trusting that promise. Get the framing wrong on either side and the other side's assumptions break.
+The client-side parser and the SSE format from lesson 1 are two ends of the same contract. The server promises that every event ends in a blank line, and the client's whole parsing strategy is built on trusting that promise: buffer bytes, split on \`\\n\\n\`, keep the remainder. Get the framing wrong on either side and the other side's assumptions break.
 
 ## The mental model
 
-The reader is a person transcribing a radio broadcast live: they write down each complete sentence the instant they hear it end, but they hold onto an unfinished sentence in their head until the rest of it arrives. Below, you'll write that same parser in pure Python: given raw multi-frame text, split it into individual payloads, exactly what the JavaScript above does one \`fetch\` chunk at a time.`,
+The reader is a person transcribing a radio broadcast live. They write down each complete sentence the instant they hear it end, but they hold an unfinished sentence in their head until the rest of it arrives. Below, you'll write that same parser in pure Python: given raw multi-frame text, split it into individual payloads, exactly what the JavaScript above does one \`fetch\` chunk at a time.`,
       starter_code: `# Parse raw SSE text back into a list of payload strings.
 # Frames are separated by a blank line ("\\n\\n"); only "data: " frames count.
 
@@ -570,12 +570,12 @@ main()
       order: 5,
       title: "Stream to Show, Store to Remember",
       concept: "assembling and saving the draft",
-      explanation: `Streaming is a display trick. It changes what the user sees while the reply is being generated, but it does nothing on its own to remember what got written. If your writing assistant needs a "continue this draft" or "regenerate" button, you need the complete text saved somewhere the moment the stream ends, not just painted onto the screen and forgotten.
+      explanation: `Streaming is a display trick. It changes what the user sees while the reply is generated, but on its own it does nothing to remember what got written. If your writing assistant needs a "continue this draft" or "regenerate" button, you need the complete text saved somewhere the moment the stream ends, not just painted onto the screen and forgotten.
 
 ## Two separate jobs
 
 - **Stream to show**: append each delta to the page as it arrives, so the user watches the draft appear live.
-- **Store to remember**: once the stream finishes, take the full assembled text and save it, into a history list, a database row, a file, whatever your app needs next.
+- **Store to remember**: once the stream finishes, take the full assembled text and save it into a history list, a database row, a file, whatever your app needs next.
 
 \`\`\`python
 def generate_and_store(prompt, history):
@@ -594,19 +594,19 @@ def generate_and_store(prompt, history):
     return full_reply
 \`\`\`
 
-Notice \`full_reply\` is built the exact same way as lesson 3's \`reconstruct\`: concatenate deltas, in order, no separators. The printing and the accumulating happen in the same loop, but they're doing different jobs, one is for the user's eyes, one is for your data.
+\`full_reply\` is built the same way as lesson 3's \`reconstruct\`: concatenate deltas, in order, no separators. The printing and the accumulating happen in the same loop, but they do different jobs. One is for the user's eyes, one is for your data.
 
 ## Why a writing assistant especially needs this
 
-A summarizer or chatbot needs history so the model remembers earlier turns. A writing assistant needs it for a slightly different reason: users iterate. "Make the second paragraph shorter," "give me a punchier opening," these follow-up requests only make sense if the assistant can see the draft it just streamed. Skip the store step and every "regenerate" starts from nothing, the model has no memory of what it just wrote, even though the user watched it happen a second ago.
+A summarizer or chatbot needs history so the model remembers earlier turns. A writing assistant needs it for a slightly different reason: users iterate. "Make the second paragraph shorter," "give me a punchier opening", these follow-ups only make sense if the assistant can see the draft it just streamed. Skip the store step and every regenerate starts from nothing. The model has no memory of what it just wrote, even though the user watched it happen a second ago.
 
 ## The failure mode this prevents
 
-Imagine a UI that streams beautifully, tokens flowing onto the page, users delighted, but the JavaScript never saves the assembled text anywhere. Refresh the page and the draft is gone. Ask for a revision and the model has no prior draft to revise. The stream looked complete, but nothing was ever stored, that gap is invisible until a user hits it.
+Picture a UI that streams beautifully, tokens flowing onto the page, users happy, but the JavaScript never saves the assembled text. Refresh the page and the draft is gone. Ask for a revision and the model has no prior draft to revise. The stream looked complete, but nothing was stored, and that gap stays invisible until a user hits it.
 
 ## The mental model
 
-Streaming is the live performance; storing is the recording. An audience watching a concert live still needs someone to actually hit record if anyone's going to listen to it again. Below, you'll assemble a streamed reply from its chunks and append it as a new turn onto a growing history list, the store half of "stream to show, store to remember."`,
+Streaming is the live performance; storing is the recording. An audience watching a concert still needs someone to hit record if anyone's going to hear it again. Below, you'll assemble a streamed reply from its chunks and append it as a new turn onto a growing history list, the store half of "stream to show, store to remember."`,
       starter_code: `# Assemble a streamed reply from its chunks, then append it as a new
 # assistant turn onto the existing conversation history.
 
@@ -719,11 +719,11 @@ main()
       order: 6,
       title: "Buffers Don't Respect Your Frame Boundaries",
       concept: "partial-frame buffering",
-      explanation: `Real networks don't deliver data in tidy, frame-sized packages. A single \`read()\` on the client might return half of an SSE frame, or three and a half frames, cut off wherever the network happened to hand you bytes. If your parser assumes every read boundary lines up with a frame boundary, it will occasionally slice a payload in half or silently drop a frame that arrived split across two reads.
+      explanation: `Real networks don't deliver data in tidy, frame-sized packages. A single \`read()\` on the client might return half of an SSE frame, or three and a half frames, cut off wherever the network happened to hand you bytes. If your parser assumes every read boundary lines up with a frame boundary, it will occasionally slice a payload in half or drop a frame that arrived split across two reads.
 
 ## The buffering rule
 
-Whenever you receive raw bytes from a stream, **append them to a running buffer**, then split that buffer on the frame delimiter (\`\\n\\n\`). Every piece except the very last one is a **complete** frame, safe to process. The last piece is whatever's left over after the final delimiter you found, it might be empty (the stream ended cleanly), or it might be a real frame that hasn't finished arriving yet. Either way, you hold it back and wait for more data before treating it as complete.
+Whenever you receive raw bytes from a stream, **append them to a running buffer**, then split that buffer on the frame delimiter (\`\\n\\n\`). Every piece except the last one is a **complete** frame, safe to process. The last piece is whatever's left after the final delimiter you found. It might be empty, meaning the stream ended cleanly, or it might be a real frame that hasn't finished arriving. Either way, you hold it back and wait for more data before treating it as complete.
 
 \`\`\`python
 buffer = ""
@@ -738,19 +738,19 @@ def on_network_chunk(raw_bytes_as_text):
             handle(frame[6:])       # only complete frames reach here
 \`\`\`
 
-This is the exact same \`frames.pop()\` move from lesson 4's JavaScript reader, now in Python, because it's a network-level problem, not a language-level one. Whatever language you write the client in, the fix is identical: buffer, split, hold the tail.
+This is the same \`frames.pop()\` move from lesson 4's JavaScript reader, now in Python, because it's a network-level problem rather than a language-level one. Whatever language you write the client in, the fix is identical: buffer, split, hold the tail.
 
 ## Why the tail can't just be processed anyway
 
-Suppose a chunk splits mid-frame: \`"data: hello wo"\` arrives, then \`"rld\\n\\n"\` arrives a moment later. If you process \`"data: hello wo"\` immediately as if it were complete, you've rendered a broken half-word to the user and lost the rest when the second half arrives with no matching frame to attach it to. Holding the incomplete tail and prepending the next chunk to it is what stitches \`"data: hello wo"\` and \`"rld\\n\\n"\` back into the single frame they always were.
+Suppose a chunk splits mid-frame: \`"data: hello wo"\` arrives, then \`"rld\\n\\n"\` arrives a moment later. Process \`"data: hello wo"\` immediately as if it were complete and you've rendered a broken half-word to the user, then lost the rest when the second half arrives with no matching frame to attach it to. Holding the incomplete tail and prepending the next chunk to it is what stitches \`"data: hello wo"\` and \`"rld\\n\\n"\` back into the single frame they always were.
 
 ## Applying this to a whole finished transcript
 
-If you're handed a complete raw stream all at once (a saved log, a test fixture, a full response body), the same logic still applies: split on \`\\n\\n\`, and treat only the pieces **before** the final split as guaranteed-complete frames. If the stream ends without a trailing \`\\n\\n\`, that last piece is an unfinished frame that was cut off, correctly discarded rather than rendered as garbled text.
+If you're handed a complete raw stream all at once, a saved log, a test fixture, a full response body, the same logic applies: split on \`\\n\\n\`, and treat only the pieces **before** the final split as guaranteed complete. If the stream ends without a trailing \`\\n\\n\`, that last piece is an unfinished frame that was cut off, and it's correctly discarded rather than rendered as garbled text.
 
 ## The mental model
 
-You're assembling a jigsaw puzzle from a box that gets refilled while you work. You never place a piece you're not sure is whole, you set uncertain-looking pieces aside and check again once more pieces arrive. Below, you'll implement exactly that: recover every complete frame from a raw stream, and correctly drop anything left dangling at the end.`,
+You're assembling a jigsaw puzzle from a box that gets refilled while you work. You never place a piece you're not sure is whole; you set uncertain pieces aside and check again once more pieces arrive. Below, you'll implement exactly that: recover every complete frame from a raw stream, and drop anything left dangling at the end.`,
       starter_code: `# Recover complete SSE frames from a raw stream, dropping any
 # incomplete trailing frame that hasn't finished arriving.
 
@@ -843,22 +843,22 @@ main()
       order: 7,
       title: "Streaming Still Costs Tokens",
       concept: "budget-aware streaming",
-      explanation: `Streaming changes how a reply *feels*, not what it *costs*. Every token the model generates is still billed, whether you display it all at once or one piece at a time. A writing assistant that lets users generate long drafts on repeat needs a way to cap spend and stop generation early, without waiting for the model to decide it's done on its own.
+      explanation: `Streaming changes how a reply *feels*, not what it *costs*. Every token the model generates is billed, whether you display it all at once or one piece at a time. A writing assistant that lets users generate long drafts on repeat needs a way to cap spend and stop generation early, without waiting for the model to decide it's done on its own.
 
 ## The token estimate you already know
 
-Same rough rule as anywhere else in this track: about four characters per token in English.
+Same rough rule as everywhere else in this track: about four characters per token in English.
 
 \`\`\`python
 def estimate_tokens(text):
     return max(1, len(text) // 4)
 \`\`\`
 
-As chunks stream in, keep a running total. The moment the next chunk would push you over budget, stop consuming, close the connection, and truncate the draft, rather than let the model keep generating (and billing) past the limit you set.
+As chunks stream in, keep a running total. The moment the next chunk would push you over budget, stop consuming, close the connection, and truncate the draft, rather than letting the model keep generating (and billing) past the limit you set.
 
 ## Stopping a live stream, for real
 
-With the Anthropic SDK, closing the \`with\` block early ends the request, you don't have to let \`stream.text_stream\` run to exhaustion:
+With the Anthropic SDK, closing the \`with\` block early ends the request. You don't have to let \`stream.text_stream\` run to exhaustion:
 
 \`\`\`python
 def stream_within_budget(prompt, budget_tokens):
@@ -878,15 +878,15 @@ def stream_within_budget(prompt, budget_tokens):
     return full_reply, used
 \`\`\`
 
-The \`break\` inside the \`with\` block is what actually stops the spend, once you exit the context manager without draining the stream, the SDK closes the connection instead of paying for tokens you'll never show anyone.
+The \`break\` inside the \`with\` block is what actually stops the spend. Once you exit the context manager without draining the stream, the SDK closes the connection instead of paying for tokens you'll never show anyone.
 
 ## Why check *before* adding, not after
 
-Notice the check happens before \`used\` is updated: \`if used + cost > budget_tokens\`. That guarantees you never report a total that exceeds the budget, and never include a chunk that would have pushed you over. Checking after the fact ("stop once we're over") means you always slightly overshoot, exactly the kind of off-by-one that turns "budget: 1000 tokens" into "actually billed 1050."
+The check happens before \`used\` is updated: \`if used + cost > budget_tokens\`. That guarantees you never report a total over the budget and never include a chunk that would have pushed you over. Checking after the fact ("stop once we're over") means you always slightly overshoot, the kind of off-by-one that turns "budget: 1000 tokens" into "actually billed 1050."
 
 ## Why this matters for a writing assistant specifically
 
-Essay drafts, email rewrites, and outline generators are exactly the kind of request users click "regenerate" on repeatedly. Without a budget guard, a single runaway prompt (or a user mashing the button) can quietly rack up a large bill across dozens of long, unwatched generations. A budget check turns "hope it stays cheap" into "guaranteed it stays under this number."
+Essay drafts, email rewrites, and outline generators are exactly what users click "regenerate" on repeatedly. Without a budget guard, a single runaway prompt, or a user mashing the button, can quietly rack up a large bill across dozens of long, unwatched generations. A budget check turns "hope it stays cheap" into "guaranteed under this number."
 
 ## The mental model
 
@@ -1055,19 +1055,19 @@ Run it with \`uvicorn app:app --reload\`, open \`http://localhost:8000\`, type a
 
 ## What "shipped" means here
 
-Same three checks as every build in this track: it runs from a clean start with one command (\`uvicorn app:app\`), it survives an empty prompt or a dropped connection without crashing (lessons 6 and 7's guards), and someone else could point their browser at it and use it with no explanation beyond "type a prompt, click Generate."
+Same checks as every build in this track. It runs from a clean start with one command (\`uvicorn app:app\`). It survives an empty prompt or a dropped connection without crashing, thanks to lessons 6 and 7's guards. And someone else could point their browser at it and use it with no explanation beyond "type a prompt, click Generate."
 
 ## Don't skip the harden lessons in the real build
 
-It's tempting to wire the happy path (lessons 1-5) and call it done. The two harden lessons are what keep this from breaking the first time a user's connection hiccups or someone leaves a huge budget-less prompt running: buffer partial frames on the client (lesson 6), and cap spend with a token budget on the server (lesson 7). A demo that only works on a fast, stable connection isn't shipped, it's a screen recording waiting to happen.
+It's tempting to wire the happy path (lessons 1-5) and call it done. The two harden lessons are what keep this from breaking the first time a user's connection hiccups or someone leaves a huge budget-less prompt running: buffer partial frames on the client (lesson 6), and cap spend with a token budget on the server (lesson 7). A demo that only works on a fast, stable connection isn't shipped. It's a screen recording waiting to happen.
 
 ## Into your Portfolio
 
-Finishing this lesson records the Streaming Writing Assistant in your **Portfolio** tab, title, what it does, and that it's built. Keep an example prompt and a screenshot of it mid-stream next to it as proof it works; a live-streaming UI is one of the more visually convincing things in your shelf of built products.
+Finishing this lesson records the Streaming Writing Assistant in your **Portfolio** tab: its title, what it does, and that it's built. Keep an example prompt and a screenshot of it mid-stream next to it as proof it works. A live-streaming UI is one of the more visually convincing things you can put on your shelf of built products.
 
 ## The mental model
 
-A shipped streaming app hides all of this lesson's plumbing behind one button. The user never thinks about SSE frames, buffers, or token budgets, they just watch words appear. Below, wire the pipeline end to end in pure Python: chunk a reply, frame it, parse it back, and enforce the budget, one function that does what your whole app does, the last piece before it's done.`,
+A shipped streaming app hides all of this lesson's plumbing behind one button. The user never thinks about SSE frames, buffers, or token budgets; they just watch words appear. Below, wire the pipeline end to end in pure Python: chunk a reply, frame it, parse it back, and enforce the budget. One function that does what your whole app does, the last piece before it's done.`,
       starter_code: `# The full pipeline in one function: chunk a reply, frame it as SSE,
 # parse the frames back, and enforce a token budget on what's kept.
 

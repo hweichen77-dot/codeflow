@@ -3,7 +3,7 @@ export default {
     id: "prod-15",
     title: "Chat With Your PDF",
     description:
-      "Build an app that reads a PDF, breaks it into searchable chunks, and answers questions using only what's actually in the document. You'll learn chunking, embeddings, cosine-similarity retrieval, and how to keep the model grounded instead of guessing.",
+      "Build an app that reads a PDF, breaks it into searchable chunks, and answers questions using only what's actually in the document. Along the way you'll write the chunker, the embedding calls, cosine-similarity retrieval, and the guards that keep the model from making things up when the document stays silent.",
     difficulty: "intermediate",
     category: "rag_search",
     estimated_time: 130,
@@ -21,11 +21,11 @@ export default {
       order: 1,
       title: "Turn a PDF Into Text You Can Search",
       concept: "chunking a document",
-      explanation: `A chatbot that "reads" your PDF isn't actually reading the whole file every time you ask a question. It never sees the PDF at all. What it sees are small pieces of text you hand-pick and paste into the prompt. This lesson builds the very first piece: turning a document into text, then slicing that text into pieces small enough to search and cheap enough to send.
+      explanation: `A chatbot that "reads" your PDF never touches the whole file when you ask a question. It never sees the PDF at all. What it sees are a few small pieces of text you pick out and paste into the prompt. This lesson builds the first piece: turn a document into text, then slice that text into pieces small enough to search and cheap enough to send.
 
 ## What we're building
 
-By lesson 8 you'll have an app: upload a document, ask a question, get an answer sourced from the document. That's **RAG**, retrieval-augmented generation: retrieve the relevant pieces of a document, then generate an answer grounded in them. Every RAG app starts the same way, get clean text out of the source file.
+By lesson 8 you'll have a working app. Upload a document, ask a question, get an answer sourced from the document. That is **RAG**, retrieval-augmented generation: pull the relevant pieces of a document, then generate an answer grounded in them. Every RAG app begins by getting clean text out of the source file.
 
 ## Extracting the text
 
@@ -43,7 +43,7 @@ The \`or ""\` matters: a scanned image page has no extractable text and returns 
 
 ## Why you can't just paste the whole thing in
 
-Two reasons. First, the **context window**: the model can only read so many tokens in one call, and a real document can exceed that easily. Second, and more important even when it fits: dumping 40 pages into every question wastes tokens (you pay for all of it) and drowns the model in irrelevant text, making it harder to find the one paragraph that actually answers the question. You want to search the document first, then hand the model only the relevant slice.
+Two reasons. First, the **context window**: the model reads only so many tokens per call, and a real document blows past that limit fast. Second, and this holds even when the document does fit: dumping 40 pages into every question burns tokens you pay for and buries the one paragraph that answers the question under 39 pages that don't. Search the document first. Then hand the model only the slice it needs.
 
 ## Chunking: cut it into searchable pieces
 
@@ -59,11 +59,11 @@ def chunk_text(text, size=800, overlap=100):
     return chunks
 \`\`\`
 
-Two knobs matter. \`size\` is how big each chunk is, big enough to hold a full idea, small enough to be precise when retrieved. \`overlap\` repeats a little text between consecutive chunks so an idea sitting right on a chunk boundary doesn't get sliced in half and lost from both sides.
+Two knobs matter. \`size\` sets how big each chunk is: big enough to hold a full idea, small enough to stay precise once retrieved. \`overlap\` repeats a little text between consecutive chunks so an idea sitting right on a boundary doesn't get sliced in half and lost from both windows.
 
-## The mental model
+## A way to picture it
 
-Think of the document as a long hallway of paragraphs. Chunking puts a sign every few hundred characters and lets neighboring signs share a bit of hallway so nothing falls in a gap. Nothing here is smart yet, no meaning, no ranking, that comes next lesson. Right now the goal is only: one long string in, a list of overlapping windows out. Build that below in pure Python, no PDF needed yet.`,
+Think of the document as a long hallway of paragraphs. Chunking drops a marker every few hundred characters and lets neighboring markers share a bit of hallway so nothing falls in a gap. None of this understands meaning yet. Ranking comes next lesson. Right now the job is exactly one long string in, a list of overlapping windows out. Build that below in pure Python. You don't need a PDF yet.`,
       starter_code: `# Split text into overlapping, fixed-size windows.
 # start advances by (size - overlap) each step so windows overlap.
 
@@ -104,7 +104,7 @@ for i, c in enumerate(result):
       ],
       challenge_title: "Chunk With Overlap",
       challenge_description:
-        "Split text into fixed-size, overlapping character windows, matching exactly how a document gets chunked before retrieval.",
+        "Split text into fixed-size, overlapping character windows, the same way a document gets chunked before retrieval.",
       challenge_language: "python",
       challenge_starter_code: `import sys
 
@@ -164,15 +164,15 @@ main()
       order: 2,
       title: "Turning Text Into Numbers: Embeddings",
       concept: "embeddings",
-      explanation: `You now have a pile of text chunks. To find the ones relevant to a question, you need a way to compare "meaning," and computers can't compare meaning directly, they compare numbers. That's what an **embedding** gives you.
+      explanation: `You have a pile of text chunks. To find the ones relevant to a question, you need to compare meaning, and a computer can't compare meaning directly. It compares numbers. An **embedding** is how you turn meaning into numbers it can work with.
 
 ## What an embedding is
 
-An embedding model takes a piece of text and returns a **vector**: a fixed-length list of floating-point numbers, often a thousand or more of them, that represents the text's meaning as a point in space. Texts about similar things end up as vectors that point in similar directions. "The cat sat on the mat" and "a feline rested on the rug" end up close together, even though they don't share a single word. That's the entire trick RAG search relies on.
+An embedding model takes a piece of text and returns a **vector**: a fixed-length list of floating-point numbers, often a thousand or more, that places the text's meaning as a point in space. Texts about similar things point in similar directions. "The cat sat on the mat" and "a feline rested on the rug" land close together even though they share no words. That closeness is the whole basis of RAG search.
 
 ## Calling an embedding model
 
-Anthropic recommends Voyage AI for embeddings; you call it much like any other model API, sending text in and getting vectors back:
+Anthropic recommends Voyage AI for embeddings. You call it like any other model API: text goes in, vectors come back.
 
 \`\`\`python
 import os
@@ -189,14 +189,14 @@ vectors = result.embeddings
 print(len(vectors), len(vectors[0]))   # e.g. 2 chunks, 1024 numbers each
 \`\`\`
 
-You embed every chunk **once**, right after chunking, and store the vectors alongside their chunk text. Later, you'll also embed the user's *question* with the same model, and compare that one vector against all your stored chunk vectors. Same embedding call, different input.
+You embed every chunk **once**, right after chunking, and store each vector next to its chunk text. At query time you embed the user's *question* with the same model and compare that one vector against every stored chunk vector. Same embedding call, different input.
 
 ## Vectors as plain lists of numbers
 
-Strip away the API and a vector is just \`[0.12, -0.87, 0.33, ...]\`. Two basic measurements matter for everything that follows in this project:
+Strip away the API and a vector is just \`[0.12, -0.87, 0.33, ...]\`. Two measurements carry the rest of this project:
 
-- **Magnitude** (length): how "big" the vector is, computed as the square root of the sum of its squared components.
-- **Direction**: which way it points, that's the part that actually encodes meaning.
+- **Magnitude** (length): how big the vector is, the square root of the sum of its squared components.
+- **Direction**: which way it points. This is the part that encodes meaning.
 
 \`\`\`python
 def magnitude(v):
@@ -207,15 +207,15 @@ def normalize(v):
     return [x / m for x in v] if m else v
 \`\`\`
 
-\`normalize\` rescales a vector to length 1 while keeping its direction, useful because next lesson's similarity measure cares only about direction, not size.
+\`normalize\` rescales a vector to length 1 while keeping its direction. That's handy because next lesson's similarity measure cares about direction, not size.
 
-## Why this matters
+## What's actually yours to write
 
-You never write your own embedding math, the model does that. What you own is the *plumbing*: embed each chunk once, store the vectors, embed the question at query time, and hand both to a similarity function. Get the vector bookkeeping right here and the retrieval logic in the next lesson is just arithmetic on lists.
+You never write the embedding math. The model does that. Your job is the plumbing: embed each chunk once, store the vectors, embed the question at query time, and pass both to a similarity function. Get the vector bookkeeping right here and the retrieval logic next lesson is arithmetic on lists.
 
-## The mental model
+## A way to picture it
 
-An embedding is a GPS coordinate for meaning. Two texts about the same topic land near each other on the map; two unrelated texts land far apart. Below, practice the vector math (magnitude and normalization) you'll lean on immediately in the next lesson, no network call needed.`,
+An embedding is a GPS coordinate for meaning. Two texts about the same topic sit near each other on the map. Two unrelated texts sit far apart. Below, practice the magnitude and normalization math you'll reach for in the next lesson. No network call needed.`,
       starter_code: `# Practice the vector math behind embeddings: magnitude and normalization.
 
 def magnitude(v):
@@ -261,7 +261,7 @@ for name, v in vectors.items():
       ],
       challenge_title: "Rank Vectors by Magnitude",
       challenge_description:
-        "Order embedding-like integer vectors by their magnitude without using floating-point square roots, avoiding rounding mismatches.",
+        "Order embedding-like integer vectors by magnitude without floating-point square roots, so rounding never breaks a tie the wrong way.",
       challenge_language: "python",
       challenge_starter_code: `import sys
 
@@ -318,11 +318,11 @@ main()
       order: 3,
       title: "Finding the Best Match: Cosine Similarity",
       concept: "cosine similarity retrieval",
-      explanation: `You have a vector for every chunk and, in a moment, a vector for the user's question. Now you need one number that says "how relevant is this chunk to this question." That number is **cosine similarity**, the engine that makes retrieval work.
+      explanation: `You have a vector for every chunk and, in a moment, a vector for the user's question. Now you need one number that answers "how relevant is this chunk to this question." That number is **cosine similarity**. It's what turns a pile of vectors into a ranked search result.
 
 ## Why not just compare the raw numbers?
 
-You might reach for the dot product, multiply matching entries and sum them. The problem: dot product is inflated by vector *length*, not just direction. A long, verbose chunk can score high purely because its numbers are bigger, not because it's more relevant. You want to compare **direction only**, ignoring size.
+You might reach for the dot product: multiply matching entries, sum the results. The catch is that the dot product grows with vector *length*, not just direction. A long, verbose chunk can score high because its numbers are bigger, not because it answers the question. You want to compare direction and throw away size.
 
 ## Cosine similarity
 
@@ -342,7 +342,7 @@ def cosine_similarity(a, b):
     return dot(a, b) / (ma * mb)
 \`\`\`
 
-The result always falls between -1 and 1. **1** means the vectors point in exactly the same direction (near-identical meaning). **0** means unrelated. **-1** means opposite. In practice, relevant chunks for a real question usually land somewhere between 0.2 and 0.6, rarely near 1.
+The result always falls between -1 and 1. **1** means the vectors point the same way (near-identical meaning). **0** means unrelated. **-1** means opposite. In practice, relevant chunks for a real question land somewhere around 0.2 to 0.6 and rarely near 1.
 
 ## Retrieval is just ranking
 
@@ -358,15 +358,15 @@ def retrieve(question_vector, chunk_vectors):
     return scored
 \`\`\`
 
-That's the whole "search engine" underneath a RAG app: no keyword matching, no database query language, just arithmetic on lists of numbers, sorted.
+That's the entire search engine underneath a RAG app. No keyword index, no query language, just sorted arithmetic on lists of numbers.
 
-## Why it matters
+## Where it earns its keep
 
-This single function is why RAG beats keyword search on real questions. A user can ask "how much does it cost to cancel early" and match a chunk that says "early termination incurs a fee," no shared words at all, because the embeddings land close together in meaning-space even though the wording is completely different.
+This one function is why RAG beats keyword search on real questions. A user asks "how much does it cost to cancel early" and matches a chunk that says "early termination incurs a fee." They share no words. The embeddings still land close in meaning-space, so the match holds.
 
-## The mental model
+## A way to picture it
 
-Every chunk is a point on a meaning-map; the question is another point dropped onto that same map. Cosine similarity measures the angle between the question and each chunk from the origin, not the distance, so a short chunk and a long chunk saying the same thing score the same. Below, implement cosine similarity and use it to rank a few chunks against a query, no network required.`,
+Every chunk is a point on a meaning-map, and the question is another point dropped onto the same map. Cosine similarity reads the angle between the question and each chunk from the origin rather than the straight-line distance, so a short chunk and a long chunk that say the same thing score the same. Below, implement cosine similarity and use it to rank a few chunks against a query. No network required.`,
       starter_code: `# Rank fixed vectors by cosine similarity to a query vector.
 
 def dot(a, b):
@@ -492,11 +492,11 @@ main()
       order: 4,
       title: "Retrieve Then Ask: Assembling the RAG Prompt",
       concept: "the RAG prompt",
-      explanation: `You can now find the chunks most relevant to a question. The next step is turning "here are three relevant chunks" into a prompt the model can actually answer from, correctly, and without inventing anything the chunks don't say.
+      explanation: `You can find the chunks most relevant to a question. The next step turns "here are three relevant chunks" into a prompt the model answers from correctly, without inventing anything the chunks never said.
 
 ## The RAG prompt has a fixed shape
 
-Unlike a normal chat prompt, a RAG prompt always carries three parts: the rules, the retrieved context, and the question.
+A RAG prompt always carries three parts: the rules, the retrieved context, and the question.
 
 \`\`\`python
 def build_context(chunks):
@@ -517,15 +517,15 @@ def build_rag_request(question, chunks):
     }
 \`\`\`
 
-Notice each chunk gets a **number label**, \`[1]\`, \`[2]\`, and so on. That label is what lets the model cite its source, and lets you later check that its citations actually point at real chunks instead of numbers it made up.
+Notice each chunk gets a **number label**: \`[1]\`, \`[2]\`, and so on. That label lets the model cite its source, and it lets you check later that a citation points at a real chunk rather than a number the model invented.
 
-## Why the wording of the system prompt matters
+## Why the system prompt is worded this way
 
-Three lines carry almost the entire weight of a trustworthy RAG app:
+Three lines carry most of the weight of a trustworthy RAG app:
 
-1. **"ONLY the provided context"** stops the model from answering out of its own general knowledge when the document doesn't cover the topic, the single biggest source of RAG hallucination.
-2. **"Cite the source number(s)"** gives you a way to verify the answer is grounded, and gives the user a way to check it themselves.
-3. **"If the answer is not in the context, say you don't know"** gives the model an explicit, permitted way to refuse instead of confabulating a plausible-sounding wrong answer.
+1. **"ONLY the provided context"** stops the model from answering out of its own general knowledge when the document doesn't cover the topic. That's the biggest single source of RAG hallucination.
+2. **"Cite the source number(s)"** gives you a way to verify the answer is grounded, and gives the user a way to check it too.
+3. **"If the answer is not in the context, say you don't know"** hands the model a permitted way to refuse instead of confabulating a plausible wrong answer.
 
 ## Calling it
 
@@ -534,11 +534,11 @@ resp = client.messages.create(**build_rag_request(question, top_chunks))
 answer = resp.content[0].text
 \`\`\`
 
-Everything before this call is search; everything from here is a normal model call, identical in shape to any other project in this track. RAG isn't a different kind of API call, it's the same call with smarter input.
+Everything before this call is search. Everything from here is a normal model call, the same shape as any other project in this track. The API call doesn't change for RAG. You just feed it smarter input.
 
-## The mental model
+## A way to picture it
 
-A RAG prompt is an open-book exam question: you hand the model the exact pages it's allowed to use, numbered, and tell it to cite the page it pulled each fact from. It can't flip to a page you didn't hand it. Below, build the context-assembly and prompt-building step in pure Python, no network call needed.`,
+A RAG prompt is an open-book exam question. You hand the model the exact pages it's allowed to use, numbered, and tell it to cite the page each fact came from. It can't flip to a page you never handed it. Below, build the context-assembly and prompt-building step in pure Python. No network call needed.`,
       starter_code: `# Assemble retrieved chunks into a numbered context block and a request payload.
 
 def build_context(chunks):
@@ -664,11 +664,11 @@ main()
       order: 5,
       title: "Multiple Chunks: Top-K and Deduplication",
       concept: "top-k retrieval and deduplication",
-      explanation: `A real question is often answered by more than one paragraph, spread across the document. So you don't retrieve just the single best chunk, you retrieve the top few. But the overlapping windows from lesson 1 create a new problem: several of your top matches can be near-duplicates of each other, and stuffing three copies of the same sentence into the prompt wastes budget without adding information.
+      explanation: `A real question is often answered by more than one paragraph, spread across the document. So you retrieve the top few chunks, not just the single best one. But the overlapping windows from lesson 1 introduce a new problem: several of your top matches can be near-duplicates of each other, and three copies of the same sentence eat prompt budget without adding a thing.
 
 ## Top-k retrieval
 
-**Top-k** just means "take the k highest-scoring chunks instead of one." A typical RAG app uses k between 3 and 6.
+**Top-k** means "take the k highest-scoring chunks instead of one." A typical RAG app sets k between 3 and 6.
 
 \`\`\`python
 def top_k(scored_chunks, k):
@@ -676,11 +676,11 @@ def top_k(scored_chunks, k):
     return ranked[:k]
 \`\`\`
 
-That alone is enough for a document with no overlap. But remember, your chunker used a sliding window with overlap, so chunk 4 and chunk 5 can legitimately share most of their text. If both happen to score high, top-k hands the model the same sentence twice under two different labels.
+That's enough for a document with no overlap. But your chunker used a sliding window, so chunk 4 and chunk 5 can share most of their text by design. If both score high, top-k hands the model the same sentence twice under two different labels.
 
 ## Deduplicating near-identical chunks
 
-A lightweight, effective check: if one chunk's text is fully contained inside another's, they're saying the same thing, drop the shorter one.
+Here's a cheap check that works: if one chunk's text sits entirely inside another's, they say the same thing, so drop the shorter one.
 
 \`\`\`python
 def is_duplicate(candidate, kept):
@@ -692,7 +692,7 @@ def is_duplicate(candidate, kept):
 
 ## Combine them: scan until you have k unique chunks
 
-The production pattern isn't "top-k then dedupe" (which can leave you with fewer than k). It's "scan in score order, skipping duplicates, until you've collected k unique chunks":
+Don't dedupe after slicing the top k, because that can leave you with fewer than k chunks. Instead, scan in score order, skip duplicates as you go, and stop once you've collected k unique chunks:
 
 \`\`\`python
 def retrieve_unique(scored_chunks, k):
@@ -707,15 +707,15 @@ def retrieve_unique(scored_chunks, k):
     return kept
 \`\`\`
 
-This keeps looking past the naive top-k cutoff, so a duplicate at rank 2 doesn't shrink your final context to fewer, more useful chunks than you asked for.
+This keeps looking past the naive top-k cutoff, so a duplicate at rank 2 doesn't quietly shrink your final context below the k chunks you asked for.
 
-## Why it matters
+## Where it earns its keep
 
-Without dedup, overlapping chunks quietly eat your context budget: you can end up sending 3 chunks that really only cover 2 distinct ideas, using tokens (and money) to say the same sentence twice. Scanning past duplicates instead of stopping at a fixed cutoff means your k chunks are k genuinely different pieces of the document.
+Without dedup, overlapping chunks eat your context budget. You can send 3 chunks that really cover 2 distinct ideas, paying tokens to repeat one sentence. Scanning past duplicates instead of cutting at a fixed rank means your k chunks are k genuinely different pieces of the document.
 
-## The mental model
+## A way to picture it
 
-Top-k picks the highest scores; dedup makes sure you don't accidentally pick the same paragraph wearing two different chunk IDs. Below, implement the scan-and-skip retrieval exactly as described, no network needed, just ranking and substring checks.`,
+Top-k picks the highest scores. Dedup makes sure you don't pick the same paragraph twice under two different chunk IDs. Below, implement the scan-and-skip retrieval described above. No network needed, just ranking and substring checks.`,
       starter_code: `# Scan chunks in score order, skipping near-duplicates, until k uniques are kept.
 
 def is_duplicate(candidate, kept):
@@ -844,16 +844,16 @@ main()
       order: 6,
       title: "When the Answer Isn't in the Document",
       concept: "grounding and refusal",
-      explanation: `The most dangerous failure mode in a RAG app isn't a crash, it's a confident, well-written answer that's simply wrong because the document never covered the question at all. This lesson is about catching that before it reaches the user.
+      explanation: `The worst failure in a RAG app is rarely a crash. It's a confident, well-written answer that happens to be wrong because the document never covered the question. This lesson catches that before it reaches the user.
 
-## Two different guards, two different jobs
+## Two guards, two jobs
 
-- **Before the call**: if nothing retrieved is actually relevant, don't even ask the model, just say so.
-- **After the call**: if the model claims to cite a source, check the citation is real.
+- **Before the call**: if nothing retrieved is actually relevant, don't ask the model at all. Say so.
+- **After the call**: if the model cites a source, check the citation is real.
 
 ## Guard one: the similarity floor
 
-Cosine similarity gives you a warning sign for free. If the *best* chunk still scores low, the document probably doesn't cover the topic, and no amount of clever prompting fixes that. Set a floor and refuse below it:
+Cosine similarity hands you a warning sign for free. If the *best* chunk still scores low, the document probably doesn't cover the topic, and no amount of clever prompting fixes that. Set a floor and refuse below it:
 
 \`\`\`python
 def should_answer(top_score, threshold=0.2):
@@ -866,11 +866,11 @@ else:
     print(resp.content[0].text)
 \`\`\`
 
-This also saves money: a question with no relevant match skips the (more expensive) generation call entirely.
+It also saves money. A question with no relevant match skips the more expensive generation call entirely.
 
 ## Guard two: citation validation
 
-Even with good context, a model occasionally cites a source number that doesn't exist, "[5]" when you only sent 3 chunks, a small but real hallucination. Catch it with a simple regex:
+Even with good context, a model will sometimes cite a source number that doesn't exist, like "[5]" when you sent only 3 chunks. That's a small but real hallucination. Catch it with a regex:
 
 \`\`\`python
 import re
@@ -882,15 +882,15 @@ def citations_valid(citations, num_chunks):
     return all(1 <= c <= num_chunks for c in citations)
 \`\`\`
 
-If \`citations_valid\` fails, treat the answer as untrustworthy: retry, strip the bad citation, or fall back to "I couldn't verify this answer."
+If \`citations_valid\` fails, treat the answer as untrustworthy. Retry, strip the bad citation, or fall back to "I couldn't verify this answer."
 
-## Why it matters
+## Where it earns its keep
 
-A RAG app that never says "I don't know" isn't more helpful, it's less trustworthy, because you can't tell its confident wrong answers from its confident right ones. The similarity floor and the citation check are cheap, and they're the difference between a demo that impresses on the happy path and a tool people can actually rely on when the document doesn't have the answer.
+A RAG app that never says "I don't know" is harder to trust, because you can't tell its confident wrong answers from its confident right ones. The similarity floor and the citation check cost almost nothing. They're what separates a demo that shines on the happy path from a tool people rely on when the document falls short.
 
-## The mental model
+## A way to picture it
 
-Treat every answer as a claim that must show its work. No relevant chunk above the floor means the model shouldn't even try. A citation pointing outside the numbered sources you actually sent means the model is citing something you never gave it, a fabricated reference. Below, implement both checks in pure Python.`,
+Treat every answer as a claim that has to show its work. No relevant chunk above the floor means the model shouldn't even try. A citation pointing outside the numbered sources you sent means the model is quoting something you never gave it. Below, implement both checks in pure Python.`,
       starter_code: `# Two grounding guards: a similarity floor, and a citation validator.
 import re
 
@@ -1009,15 +1009,15 @@ main()
       order: 7,
       title: "Harden: Big PDFs, Embedding Cost, and Bad Input",
       concept: "robustness and cost",
-      explanation: `Your app works on the one clean PDF you tested with. A real user uploads a 300-page manual, re-uploads the same file twice, asks a blank question, or hits a flaky network mid-embed. This lesson closes those gaps.
+      explanation: `Your app works on the one clean PDF you tested with. A real user uploads a 300-page manual, re-uploads the same file twice, asks a blank question, or loses the network mid-embed. This lesson closes those gaps.
 
 ## Embedding costs money, per chunk
 
-Every chunk you embed is an API call (or a batched call) that costs tokens. A 300-page manual chunked at 800 characters can produce hundreds of chunks, hundreds of embedding calls, every single upload. That adds up fast if users re-upload the same document.
+Every chunk you embed is an API call (batched or not) that costs tokens. A 300-page manual chunked at 800 characters can produce hundreds of chunks, so hundreds of embedding calls on every upload. That bill climbs fast when users re-upload the same document.
 
 ## Cache embeddings by content
 
-The fix is simple: hash each chunk's exact text, and skip re-embedding a chunk you've already embedded before.
+The fix is simple. Hash each chunk's exact text and skip any chunk you've already embedded.
 
 \`\`\`python
 import hashlib
@@ -1034,7 +1034,7 @@ def embed_new_only(chunks, cache):
     return {chunk_hash(c): cache[chunk_hash(c)] for c in chunks}
 \`\`\`
 
-An unchanged re-upload now costs zero new embedding calls. Only genuinely new or edited chunks get billed.
+An unchanged re-upload now costs zero new embedding calls. Only new or edited chunks get billed.
 
 ## Guard the edges before you spend anything
 
@@ -1047,11 +1047,11 @@ def prepare_upload(text, question):
         raise ValueError("Ask a question before searching the document.")
 \`\`\`
 
-A scanned PDF with no OCR text, or a user hitting "ask" with an empty box, should fail with a clear message, not a mysterious empty-vector crash three functions later.
+A scanned PDF with no OCR text, or a user hitting "ask" with an empty box, should fail with a clear message. Not a mysterious empty-vector crash three functions later.
 
-## Retry the flaky call, but don't double-bill silently
+## Retry the flaky call, but count every attempt
 
-Embedding and generation calls both time out occasionally. Wrap them in a retry, and when you tally cost, remember every attempt, including the failed ones, still spent input tokens:
+Embedding and generation calls both time out now and then. Wrap them in a retry. And when you tally cost, remember that every attempt spent input tokens, failed ones included:
 
 \`\`\`python
 import time
@@ -1066,13 +1066,13 @@ def call_with_retry(fn, tries=3):
             time.sleep(2 ** attempt)
 \`\`\`
 
-## Why this matters
+## Where it earns its keep
 
-RAG apps look cheap in a demo and get expensive in production, because the embedding step scales with document size and re-uploads, not with how many questions get asked. Caching by content hash is the single highest-leverage fix: most re-uploads are edits to a handful of pages, not the whole document.
+RAG apps look cheap in a demo and turn expensive in production, because the embedding step scales with document size and re-uploads, not with how many questions people ask. Caching by content hash is the highest-leverage fix here. Most re-uploads edit a handful of pages, not the whole document.
 
-## The mental model
+## A way to picture it
 
-Never pay to embed the same sentence twice. Below, tally the real embedding bill for a batch of chunks where some are exact repeats of earlier ones, in pure Python, mirroring the content-hash cache above.`,
+Never pay to embed the same sentence twice. Below, tally the real embedding bill for a batch of chunks where some are exact repeats of earlier ones. Pure Python, mirroring the content-hash cache above.`,
       starter_code: `# Bill only chunks that haven't been seen (embedded) before in this batch.
 
 def token_cost(text):
@@ -1185,7 +1185,7 @@ main()
       order: 8,
       title: "Ship: The Full Chat-With-PDF Pipeline",
       concept: "shipping the RAG app",
-      explanation: `Every piece is built. Now wire chunking, embedding, retrieval, dedup, the similarity floor, and the grounded prompt into one pipeline someone else could actually run. Finish this lesson and Chat With Your PDF lands in your **Portfolio**.
+      explanation: `Every piece is built. Now wire chunking, embedding, retrieval, dedup, the similarity floor, and the grounded prompt into one pipeline someone else could run from scratch. Finish this lesson and Chat With Your PDF lands in your **Portfolio**.
 
 ## The full pipeline, end to end
 
@@ -1212,7 +1212,7 @@ def ask(question, chunks, vectors, threshold=0.2, k=4):
     return resp.content[0].text
 \`\`\`
 
-Notice this is nothing new, it's every earlier lesson's function called in the order you built them: ingest once per document, then \`ask\` once per question, cheaply, because the expensive chunking and embedding already happened.
+Nothing here is new. It's every earlier lesson's function called in the order you built them: ingest once per document, then \`ask\` once per question. The questions run cheap because the expensive chunking and embedding already happened.
 
 ## Wrap it in a small CLI
 
@@ -1231,19 +1231,19 @@ if __name__ == "__main__":
     main()
 \`\`\`
 
-One command, \`python chat_pdf.py report.pdf\`, then a loop of questions. Ingest happens once; every question after that reuses the same chunks and vectors.
+One command, \`python chat_pdf.py report.pdf\`, then a loop of questions. Ingest runs once. Every question after that reuses the same chunks and vectors.
 
 ## What "shipped" means here
 
-Same three checks from the playbook: it runs from a clean start with one command, it survives an empty document or a blank question without crashing (lesson 7's guards), and it refuses honestly instead of hallucinating when the document doesn't cover the question (lesson 6). Hit those three and it's a real deliverable.
+The same three checks from the playbook. It runs from a clean start with one command. It survives an empty document or a blank question without crashing (lesson 7's guards). And it refuses honestly instead of hallucinating when the document doesn't cover the question (lesson 6). Hit those three and you have a real deliverable.
 
 ## Into your Portfolio
 
-Finishing this lesson records Chat With Your PDF in your **Portfolio** tab. Keep one real document and a question-and-answer pair as proof it actually retrieves and grounds correctly, that's your demo.
+Finishing this lesson records Chat With Your PDF in your **Portfolio** tab. Keep one real document and a question-and-answer pair around as proof it retrieves and grounds correctly. That's your demo.
 
-## The mental model
+## A way to picture it
 
-A shipped RAG app hides five lessons of machinery behind one loop: ask a question, get a grounded answer with sources, or an honest "I don't know." Below, wire the final dispatcher together in pure Python, no network required, then it's done.`,
+A shipped RAG app hides five lessons of machinery behind one loop: ask a question, get back a grounded answer with sources, or an honest "I don't know." Below, wire the final dispatcher together in pure Python. No network required, and then it's done.`,
       starter_code: `# The final dispatcher: rank, floor-check, dedup, and assemble context, all in one pass.
 
 def cosine_similarity(a, b):

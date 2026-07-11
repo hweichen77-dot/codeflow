@@ -2,7 +2,7 @@ const project = {
   id: "prod-13",
   title: "Receipt Scanner",
   description:
-    "Turn a photo of a receipt into structured expense JSON: merchant, date, line items, and totals. You'll teach the model to read an image, force its answer into a strict schema, and check the math before you trust it.",
+    "Turn a photo of a receipt into structured expense JSON: merchant, date, line items, and totals. You'll teach the model to read an image, pin its answer to a strict schema, and check the arithmetic before you trust a single number it hands back.",
   difficulty: "intermediate",
   category: "vision_multimodal",
   estimated_time: 130,
@@ -21,11 +21,11 @@ const lessons = [
     order: 1,
     title: "Handing the Model a Photo",
     concept: "image content blocks",
-    explanation: `A vision model doesn't get a separate "image" parameter. It gets the same \`messages\` list you'd use for plain text, except one of the blocks in that list is a picture instead of words. Once you see that, the whole receipt scanner is just "the usual chat API, with a photo taped into the envelope."
+    explanation: `A vision model doesn't take a separate "image" parameter. It takes the same \`messages\` list you'd use for plain text. The only difference is that one block in that list is a picture instead of words. Once that clicks, the whole receipt scanner stops looking exotic: it's the chat API you already know, with a photo tucked into the same envelope as the text.
 
 ## What an image content block is
 
-A normal text message has \`content\` as a plain string. A multimodal message has \`content\` as a **list of blocks**, where each block has a \`type\`. You can mix an image block and a text block in the same user turn:
+A plain text message has \`content\` as a string. A multimodal message has \`content\` as a **list of blocks**, and each block carries its own \`type\`. You can put an image block and a text block in the same user turn:
 
 \`\`\`python
 messages = [
@@ -46,11 +46,11 @@ messages = [
 ]
 \`\`\`
 
-The \`source\` dict is the important part: \`type\` says how the bytes are encoded (\`base64\` for a raw upload), \`media_type\` is the real MIME type of the file (\`image/jpeg\`, \`image/png\`, and a few others), and \`data\` is the actual base64 string.
+The \`source\` dict is where the real work happens. \`type\` says how the bytes are encoded (\`base64\` for a raw upload). \`media_type\` is the file's actual MIME type, like \`image/jpeg\` or \`image/png\`. \`data\` is the base64 string itself.
 
 ## Getting a photo into base64
 
-Images don't travel over JSON as raw bytes, they travel as base64 text. Reading a file and encoding it is three lines:
+JSON can't carry raw bytes, so an image rides across the wire as base64 text. Reading a file and encoding it is three lines:
 
 \`\`\`python
 import base64
@@ -59,7 +59,7 @@ with open("receipt.jpg", "rb") as f:
     image_b64 = base64.standard_b64encode(f.read()).decode("utf-8")
 \`\`\`
 
-Then you call the API exactly like any other chat call, just with this richer \`content\` list:
+Then you call the API the same way you'd make any chat call, passing this richer \`content\` list:
 
 \`\`\`python
 import os
@@ -77,11 +77,11 @@ print(response.content[0].text)
 
 ## Why the media_type has to be honest
 
-If the file is actually a PNG but you label it \`image/jpeg\`, decoding can fail or the model can misread the picture. There's no magic detection happening on your side, you're telling the API what format the bytes are in, so get it from the real file extension, not a guess. Also note base64 inflates size by roughly a third, a 3 MB photo becomes about 4 MB of text on the wire, something you'll come back to when this scanner processes a whole batch of receipts.
+If the file is actually a PNG but you label it \`image/jpeg\`, decoding can fail or the model can misread the picture. Nothing on your side sniffs the real format. You are declaring what the bytes are, so pull the type from the actual file extension rather than a hopeful guess. One more thing to file away: base64 inflates the payload by about a third. A 3 MB photo becomes roughly 4 MB of text on the wire. That matters later, once this scanner is chewing through a whole batch of receipts.
 
-## The mental model to keep
+## What to hold onto
 
-Nothing here is a special "vision endpoint." It's the same message-list shape you already know, with one block that happens to be a photo instead of a sentence. Everything else, the loop of send-and-parse, still applies exactly as before.`,
+There is no special "vision endpoint" here. It's the message-list shape you already know, with one block that happens to be a photo instead of a sentence. The send-and-parse loop around it works exactly as it did for text.`,
     starter_code: `def build_image_message(image_b64, media_type, question):
     # TODO: return a messages list with one user turn whose "content" is
     # a list containing an image block first, then a text block with
@@ -194,11 +194,11 @@ main()
     order: 2,
     title: "Ask for JSON, Not a Paragraph",
     concept: "structured JSON extraction",
-    explanation: `The model can describe a receipt in a friendly paragraph. You don't want a paragraph, you want a Python dict with \`merchant\`, \`date\`, and \`total\` you can save to a database. Getting there means writing a prompt that demands JSON, and writing code that survives the model's habit of wrapping JSON in extra chatter anyway.
+    explanation: `The model will happily describe a receipt in a chatty paragraph. That does you no good. You want a Python dict with \`merchant\`, \`date\`, and \`total\` that goes straight into a database. Getting there takes two things: a prompt that asks for JSON and nothing else, and parsing code that still works when the model ignores you and wraps its JSON in chatter anyway.
 
-## Demanding the shape you need
+## Asking for the exact shape
 
-Tell the model exactly what keys you want and exactly what format, in the system prompt:
+Spell out the keys and the format you want, right in the system prompt:
 
 \`\`\`python
 SYSTEM = """Look at the receipt image and return ONLY a JSON object,
@@ -218,15 +218,15 @@ response = client.messages.create(
 raw_reply = response.content[0].text
 \`\`\`
 
-Naming the exact keys and formats up front is the single biggest lever you have. "Return the date" gets you five different date formats across five receipts. "Return the date as YYYY-MM-DD" gets you one.
+Naming the keys and formats up front is the biggest lever you have. "Return the date" gets you five different date formats across five receipts. "Return the date as YYYY-MM-DD" gets you one.
 
-## Reality: the model still adds chatter
+## The model still adds chatter
 
-Even with a strict prompt, replies often look like \`"Sure, here's the data: {...} Let me know if you need more."\` or wrap the JSON in a markdown code fence. Your prompt reduces this, it doesn't eliminate it. So parsing needs to be defensive: find the JSON object embedded in the text, rather than assuming the whole reply *is* JSON.
+Even with a strict prompt, replies come back looking like \`"Sure, here's the data: {...} Let me know if you need more."\`, or with the JSON buried in a markdown code fence. A good prompt shrinks how often this happens. It won't stop it entirely. So your parser has to go looking for the JSON object inside the text instead of assuming the whole reply *is* JSON.
 
 ## Pulling the JSON out of the noise
 
-The trick is simple: find the first \`{\` and the last \`}\` in the reply, slice out everything between them, and hand that slice to \`json.loads\`. Anything before the first brace or after the last one gets thrown away.
+The trick is short: find the first \`{\` and the last \`}\` in the reply, slice out everything between them, and hand that slice to \`json.loads\`. Anything before the first brace or after the last one gets dropped.
 
 \`\`\`python
 import json
@@ -237,20 +237,20 @@ def extract_json(text):
     return json.loads(text[start:end])
 \`\`\`
 
-\`text.index("{")\` finds the *first* opening brace, and \`text.rindex("}")\` finds the *last* closing brace, which matters because a receipt's JSON might itself contain nested braces (once you add line items in the next lesson). If either brace is missing, or the sliced text still isn't valid JSON, this raises an exception, which is your signal to retry or flag the receipt for review, a pattern you'll build out properly a few lessons from now.
+\`text.index("{")\` finds the *first* opening brace and \`text.rindex("}")\` finds the *last* closing brace. That last-brace detail matters once you add line items next lesson, because the receipt's JSON will contain nested braces of its own. If a brace is missing, or the slice still isn't valid JSON, this raises an exception. Treat that exception as your cue to retry or flag the receipt for review. You'll wire up that handling properly a few lessons from now.
 
 ## Checking the fields actually showed up
 
-Extracting JSON isn't the same as extracting the *right* JSON. Even a well-formed object might be missing \`total\` because the model couldn't find it on a smudged receipt. After parsing, check every required key is present before you trust the data:
+Getting valid JSON is not the same as getting the JSON you asked for. A well-formed object can still be missing \`total\` because the model couldn't read it off a smudged receipt. After parsing, confirm every required key is present before you trust the data:
 
 \`\`\`python
 required = ["merchant", "date", "total"]
 missing = [k for k in required if k not in data]
 \`\`\`
 
-## The mental model to keep
+## What to hold onto
 
-Treat the model's reply as an envelope, not a package. The envelope might have a sticky note attached, a rubber band around it, whatever. Your job is to find the actual package (the JSON object) inside the envelope, open it, and check nothing's missing before you use what's inside.`,
+Treat the model's reply as an envelope, not the package itself. There might be a sticky note stuck to it or a rubber band around it. Your job is to find the package inside (the JSON object), open it, and check nothing is missing before you use what's in there.`,
     starter_code: `import json
 
 RAW_REPLY = 'Sure thing! Here is what I found on the receipt: {"merchant": "Cafe Luna", "date": "2026-07-01", "total": 12.5} Let me know if you need anything else.'
@@ -365,11 +365,11 @@ main()
     order: 3,
     title: "Line Items Are a List of Objects",
     concept: "nested schema validation",
-    explanation: `A receipt isn't just \`merchant\`, \`date\`, and \`total\`, the useful part is the list of things someone bought. That list has a different shape than the flat fields you validated last lesson: it's a variable-length array of objects, and each object can be wrong in its own way.
+    explanation: `\`merchant\`, \`date\`, and \`total\` are the easy part. The useful part of a receipt is the list of things someone actually bought. That list has a different shape than the flat fields you validated last lesson. It's a variable-length array of objects, and every object can go wrong in its own way.
 
 ## Asking for a list of objects
 
-Extend the schema in your prompt to include an \`items\` array, and show the model exactly what one item looks like:
+Extend the prompt's schema with an \`items\` array, and show the model exactly what one item looks like:
 
 \`\`\`python
 SYSTEM = """Return ONLY JSON with these keys:
@@ -384,15 +384,15 @@ SYSTEM = """Return ONLY JSON with these keys:
 Example item: {"name": "Latte", "quantity": 2, "price": 4.5}"""
 \`\`\`
 
-Showing one concrete example item inside the prompt does more work than describing the shape in words. Models are much better at copying a pattern than following an abstract spec.
+One concrete example item in the prompt does more work than a paragraph describing the shape. Models copy a pattern far more reliably than they follow an abstract spec.
 
-## Why line items go wrong more than flat fields
+## Why line items break more than flat fields
 
-A blurry photo or a cramped receipt can make the model merge two items into one, invent a quantity it can't actually read, or return a price as the string \`"$4.50"\` instead of the number \`4.5\`. A flat field just goes missing; a list field can have *some* good entries and some broken ones mixed together. You need to validate every item independently, not just check that \`items\` exists.
+A blurry photo or a cramped receipt can push the model into merging two items into one, or inventing a quantity it couldn't actually read, or handing back a price as the string \`"$4.50"\` when you wanted the number \`4.5\`. A flat field either shows up or goes missing. A list field is messier: it can carry some good entries and some broken ones in the same array. That means validating each item on its own, not just checking that \`items\` exists.
 
 ## What "valid" means for one item
 
-Three checks, applied to every entry in the list:
+Three checks, run against every entry in the list:
 
 - \`name\` is a non-empty string.
 - \`quantity\` is a positive integer.
@@ -412,15 +412,15 @@ def is_valid_item(item):
     )
 \`\`\`
 
-The \`not isinstance(x, bool)\` checks look odd, but they matter: in Python, \`bool\` is a subclass of \`int\`, so \`True\` and \`False\` silently pass an \`isinstance(x, int)\` check. Without excluding \`bool\` explicitly, a stray \`True\` from a malformed reply could sneak through as a "valid quantity of 1."
+The \`not isinstance(x, bool)\` checks look fussy, but they earn their place. In Python, \`bool\` is a subclass of \`int\`, so \`True\` and \`False\` quietly pass an \`isinstance(x, int)\` check. Leave \`bool\` out of the exclusion and a stray \`True\` from a malformed reply slides through as a "valid quantity of 1."
 
-## Deciding what to do with a mixed bag
+## What to do with a mixed bag
 
-Once you know which items are valid and which aren't, you have a choice: drop the bad ones and keep going with what you have, or refuse the whole receipt until it's re-scanned. For this project, keep the valid items and record which indexes failed, that gives you a usable partial result plus a clear list of what a human should double check.
+Once you know which items are valid and which aren't, you get to choose. Drop the bad ones and keep going with what parsed, or reject the whole receipt until someone re-scans it. This project takes the first path: keep the valid items and record the indexes that failed. You end up with a usable partial result and a short list of what a human should double check.
 
-## The mental model to keep
+## What to hold onto
 
-A flat field is either there or it's not. A list of objects is a batch of independent decisions, some pass, some fail, and your validator's job is to sort them, not to give one verdict for the whole receipt.`,
+A flat field is there or it isn't. A list of objects is a stack of independent verdicts, some passing and some failing. Your validator sorts them into two piles. It doesn't hand down one ruling for the entire receipt.`,
     starter_code: `def validate_items(items):
     valid = []
     invalid = []
@@ -561,13 +561,13 @@ main()
     order: 4,
     title: "Do the Totals Add Up?",
     concept: "totals-check with tolerance",
-    explanation: `A receipt scanner that just repeats back whatever the model claims the total is isn't trustworthy, it's a transcription of a guess. The one check that catches most bad reads is arithmetic: the line items should sum to the subtotal, and the subtotal plus tax should equal the total. If they don't, something on the receipt was misread.
+    explanation: `A scanner that parrots back whatever total the model claims isn't a scanner. It's a transcription of a guess. The check that catches the most bad reads is plain arithmetic: the line items should sum to the subtotal, and the subtotal plus tax should equal the total. When they don't, something on the receipt got misread.
 
-## Why you can't compare with ==
+## Why == won't work here
 
-Money is stored as floats, and floats don't compare exactly the way you'd expect. \`0.1 + 0.2 == 0.3\` is \`False\` in Python, not because the math is wrong, but because binary floating point can't represent every decimal exactly. On top of that, receipts round to the cent while intermediate math might not, so a computed sum can land a fraction of a cent off from the printed subtotal even when everything was read correctly.
+Money lives in floats, and floats don't compare the way you'd hope. \`0.1 + 0.2 == 0.3\` is \`False\` in Python. The math isn't broken; binary floating point just can't represent every decimal exactly. Receipts add their own wrinkle: they round to the cent, while your intermediate math doesn't. So a computed sum can land a fraction of a cent off the printed subtotal even when every number was read correctly.
 
-The fix is a **tolerance**: instead of asking "are these exactly equal," ask "are these within a cent or two of each other."
+The fix is a **tolerance**. Instead of "are these exactly equal," you ask "are these within a cent or two of each other."
 
 \`\`\`python
 def approx_equal(a, b, tolerance=0.01):
@@ -576,7 +576,7 @@ def approx_equal(a, b, tolerance=0.01):
 
 ## Building the totals check
 
-Two comparisons cover the whole receipt: the items should sum to the subtotal, and the subtotal plus tax should equal the total.
+Two comparisons cover the whole receipt. The items should sum to the subtotal, and the subtotal plus tax should equal the total.
 
 \`\`\`python
 def check_totals(items, subtotal, tax, total, tolerance=0.01):
@@ -590,25 +590,21 @@ def check_totals(items, subtotal, tax, total, tolerance=0.01):
     }
 \`\`\`
 
-Notice \`items_sum\` multiplies price by quantity for every item, not just adding the prices, two lattes at \\$4.50 contribute \\$9.00, not \\$4.50.
+Notice that \`items_sum\` multiplies price by quantity for each item instead of just adding prices. Two lattes at \\$4.50 contribute \\$9.00, not \\$4.50.
 
 ## What a mismatch actually tells you
 
-A mismatch doesn't always mean the model hallucinated. It might mean:
+A mismatch doesn't automatically mean the model hallucinated. It could be a line item whose quantity or price got misread. It could be a tip or discount line your schema doesn't capture yet. It could even be the subtotal or total field itself that was read wrong, with the items fine.
 
-- One line item's quantity or price was misread.
-- The receipt has a tip or discount line your schema doesn't capture yet.
-- The subtotal or total field itself was misread, not the items.
-
-You can't tell which from the numbers alone, so the right move is to **flag it**, not silently accept or silently reject. Mark the receipt \`needs_review\` and surface which check failed, subtotal or total, so a human glancing at it knows exactly where to look.
+The numbers alone won't tell you which. So the right move is to **flag it** rather than quietly accept or quietly reject. Mark the receipt \`needs_review\` and surface which check failed, subtotal or total, so a human glancing at it knows where to look first.
 
 ## Why this check earns its keep
 
-This one arithmetic check catches a large share of misreads for almost no extra API calls, it's pure math on data you already extracted. It's the cheapest reliability you'll add to this whole project, and it's the difference between "a tool that prints numbers" and "a tool that tells you when to double check the numbers."
+This one arithmetic check catches a large share of misreads for almost no extra API cost. It's pure math on data you already pulled out. It's the cheapest reliability you'll add anywhere in this project, and it's what separates a tool that prints numbers from a tool that tells you when to stop trusting them.
 
-## The mental model to keep
+## What to hold onto
 
-Trust, but verify with a calculator. The model read the receipt; a few lines of arithmetic double-check that reading against itself before you write it down as fact.`,
+Trust, but verify with a calculator. The model read the receipt. A few lines of arithmetic check that reading against itself before you write anything down as fact.`,
     starter_code: `def check_totals(items, subtotal, tax, total, tolerance=0.01):
     items_sum = sum(item["price"] * item["quantity"] for item in items)
     # TODO: compute whether items_sum matches subtotal within \`tolerance\`,
@@ -710,11 +706,11 @@ main()
     order: 5,
     title: "Cleaning Up Messy Fields",
     concept: "normalizing amounts and dates",
-    explanation: `Ask a vision model for a dollar amount and you might get \`12.5\`, \`"$12.50"\`, or \`"1,234.56"\`. Ask for a date and you might get \`"07/01/2026"\`, \`"2026-07-01"\`, or \`"Jan 5, 2026"\`. All of these are correct readings of the receipt, they just aren't in a single consistent shape yet. Before you can do math on amounts or sort receipts by date, you need to normalize every field into one predictable type.
+    explanation: `Ask a vision model for a dollar amount and you might get \`12.5\`, \`"$12.50"\`, or \`"1,234.56"\`. Ask for a date and back comes \`"07/01/2026"\`, \`"2026-07-01"\`, or \`"Jan 5, 2026"\`. Every one of those is a correct reading of the receipt. They just aren't in the same shape yet. Before you can do math on an amount or sort receipts by date, each field has to become one predictable type.
 
 ## Normalizing a currency string
 
-The plan: strip a leading currency symbol, remove thousands-separator commas, then convert to \`float\`. If conversion fails, return \`None\` rather than crashing, a bad field shouldn't take down the whole receipt.
+The plan is short: strip a leading currency symbol, drop the thousands-separator commas, then convert to \`float\`. If the conversion fails, return \`None\` instead of crashing. One bad field shouldn't sink the whole receipt.
 
 \`\`\`python
 import re
@@ -728,11 +724,11 @@ def normalize_amount(raw):
         return None
 \`\`\`
 
-\`re.sub(r"^[$€£]", "", cleaned)\` removes exactly one currency symbol *if it's at the very start* of the string, the \`^\` anchor is what limits it to the front, so it won't strip a \`$\` that somehow appears mid-string. Stripping commas after that turns \`"1,234.56"\` into \`"1234.56"\`, which \`float()\` can parse.
+\`re.sub(r"^[$€£]", "", cleaned)\` removes exactly one currency symbol, and only when it sits at the very start of the string. The \`^\` anchor pins it to the front, so a stray \`$\` in the middle survives. Dropping commas afterward turns \`"1,234.56"\` into \`"1234.56"\`, which \`float()\` handles fine.
 
 ## Normalizing a date string
 
-Dates are trickier because there's no single separator to strip, the whole *format* varies. The practical fix: try a short list of known formats in order, and use whichever one successfully parses.
+Dates are harder because there's no single separator to strip. The whole *format* shifts from receipt to receipt. The practical fix is to try a short list of known formats in order and keep whichever one parses.
 
 \`\`\`python
 import datetime
@@ -747,15 +743,15 @@ def normalize_date(raw, formats=("%m/%d/%Y", "%Y-%m-%d", "%b %d, %Y")):
     return None
 \`\`\`
 
-Each \`strptime\` attempt either succeeds and returns a \`datetime\`, or raises \`ValueError\` and you move to the next format. Once one succeeds, \`strftime("%Y-%m-%d")\` reformats it to a single consistent output regardless of which input format matched. If none of the formats fit, you get \`None\`, a clean signal that this field needs a human to look at it rather than a silently wrong date.
+Each \`strptime\` attempt either succeeds and returns a \`datetime\` or raises \`ValueError\`, at which point you move on to the next format. When one lands, \`strftime("%Y-%m-%d")\` rewrites it into one consistent output no matter which input format matched. If nothing fits, you get \`None\`, which flags the field for a human instead of storing a silently wrong date.
 
 ## Where this fits in the pipeline
 
-Normalize right after extracting the JSON and before running the totals check from the last lesson, comparing \`"$12.00"\` to the float \`12.0\` with \`abs()\` will crash, comparing \`12.0\` to \`12.0\` won't. Every downstream step, math, storage, display, assumes clean types. Do the cleanup once, right after parsing, instead of re-cleaning the same field in five different places.
+Normalize right after you extract the JSON and before you run last lesson's totals check. Feeding \`"$12.00"\` and the float \`12.0\` into \`abs()\` crashes; feeding it \`12.0\` and \`12.0\` doesn't. Everything downstream, whether it's math, storage, or display, assumes clean types. Clean each field once, right after parsing, so you're not re-cleaning the same value in five different places.
 
-## The mental model to keep
+## What to hold onto
 
-The model reads receipts the way a human would, in whatever format the receipt happens to print things. Your code has to speak one dialect: floats for money, ISO strings for dates. Normalization is the translator that sits between "however the model wrote it" and "however your program needs it."`,
+The model reads a receipt the way a person would, in whatever format the paper happens to print. Your code speaks exactly one dialect: floats for money, ISO strings for dates. Normalization is the translator sitting between how the model wrote it and how your program needs it.`,
     starter_code: `import re
 
 def normalize_amount(raw):
@@ -867,11 +863,11 @@ main()
     order: 6,
     title: "When the Photo Is Bad",
     concept: "retries and manual review",
-    explanation: `Some receipts are blurry, crumpled, or shot at an angle with half the total cut off. On those, the model sometimes returns malformed JSON, or JSON that parses fine but is missing the fields you need. A production scanner can't just crash on the first bad photo, it needs a plan for "this one didn't work" that doesn't involve a human staring at a stack trace.
+    explanation: `Some receipts are blurry, or crumpled, or shot at an angle with half the total off the edge of the frame. On those, the model sometimes hands back malformed JSON, or JSON that parses cleanly but is missing the fields you need. A production scanner can't fall over on the first bad photo. It needs a plan for "this one didn't work" that doesn't end with a person reading a stack trace.
 
 ## The retry loop
 
-The fix is small: if the reply doesn't parse cleanly, ask again, up to a small capped number of attempts. A slightly reworded follow-up prompt ("Return ONLY the JSON object, nothing else") often succeeds where the first attempt didn't, because you're pushing the model away from whatever formatting habit tripped it up the first time.
+The fix is small. If the reply doesn't parse, ask again, up to a small capped number of attempts. A reworded follow-up like "Return ONLY the JSON object, nothing else" often works where the first try failed, because you're nudging the model off whatever formatting habit tripped it up the first time.
 
 \`\`\`python
 import time
@@ -887,26 +883,26 @@ def scan_receipt(image_b64, media_type, max_retries=3):
             time.sleep(1)
 \`\`\`
 
-The cap matters as much as the retry itself. Without \`max_retries\`, a receipt that will *never* parse (a photo of a cat, say) retries forever, burning API calls and money on something that was never going to work.
+The cap matters as much as the retry. Without \`max_retries\`, a receipt that will *never* parse (a photo of a cat, say) retries forever, burning API calls and money on something that was doomed from the start.
 
-## Returning None is a feature, not a bug
+## Returning None on purpose
 
-When every attempt fails, the function returns \`None\` instead of raising an exception. That's deliberate: one bad receipt in a batch of fifty shouldn't crash the other forty-nine. \`None\` is a clean, checkable signal that means "this one needs a human," and the code calling \`scan_receipt\` can act on it: log it, skip it, add it to a "needs manual entry" list, whatever fits the product.
+When every attempt fails, the function returns \`None\` rather than raising. That's deliberate. One bad receipt in a batch of fifty shouldn't take down the other forty-nine. \`None\` is a checkable signal that means "this one needs a human," and whatever calls \`scan_receipt\` can act on it however the product wants: log it, skip it, drop it into a manual-entry queue.
 
-## Asking the model to admit uncertainty
+## Letting the model admit uncertainty
 
-You can also reduce bad extractions at the source. Instead of forcing the model to always fill in every field, explicitly permit \`null\`:
+You can also head off bad extractions at the source. Rather than forcing the model to fill in every field, explicitly allow \`null\`:
 
 \`\`\`python
 SYSTEM = """... If any field is unreadable in the photo, use null
 for that field instead of guessing."""
 \`\`\`
 
-A model that's allowed to say "I don't know" for one blurry field returns far more trustworthy data than one that feels obligated to invent a plausible-looking total. A guessed \`$47.32\` that's actually wrong is worse than an honest \`null\`, because the wrong guess looks correct until someone checks it by hand.
+A model allowed to say "I don't know" for one blurry field gives you far better data than one that feels obliged to invent a plausible total. A guessed \`$47.32\` that happens to be wrong is worse than an honest \`null\`, because the guess looks right until someone checks it by hand.
 
-## The mental model to keep
+## What to hold onto
 
-Every real system that calls an unreliable process needs two things: a bounded number of retries, and a defined "give up" state that downstream code can check for. \`scan_receipt\` either returns a receipt or returns \`None\`; there's no third outcome where it just hangs or crashes, and that's what makes it safe to run unattended on a whole folder of photos.`,
+Any real system that leans on an unreliable process needs two things: a bounded retry count and a defined give-up state that downstream code can check. \`scan_receipt\` returns a receipt or returns \`None\`. There is no third outcome where it hangs or crashes. That is exactly what makes it safe to point at a whole folder of photos and walk away.`,
     starter_code: `def parse_attempt(reply):
     # A "successful" reply looks like "OK:<merchant name>".
     # A failed attempt is exactly "BAD".
@@ -1008,11 +1004,11 @@ main()
     order: 7,
     title: "Watching the Cost of Every Photo",
     concept: "image cost and batching",
-    explanation: `Text is cheap to send, a few hundred words is a few hundred tokens. Photos are not cheap the same way: a full-resolution image can cost more tokens than a page of text, and if this scanner is meant to process a shoebox full of receipts instead of one at a time, that cost adds up fast. This lesson is about seeing that cost coming and handling a batch without one bad file taking down the rest.
+    explanation: `Text is cheap to send. A few hundred words is a few hundred tokens. Photos don't work that way. A full-resolution image can cost more tokens than a page of text, and once this scanner is meant to work through a shoebox of receipts rather than one at a time, that adds up quickly. This lesson is about seeing the cost coming and running a batch so one bad file doesn't take down the rest.
 
-## Roughly estimating image cost
+## Estimating image cost
 
-Vision APIs bill image tokens based on pixel count, not file size in bytes. A common rule of thumb some providers use is roughly one token per 750 pixels of the image:
+Vision APIs bill image tokens by pixel count, not file size in bytes. A rough rule of thumb some providers use is about one token per 750 pixels:
 
 \`\`\`python
 import math
@@ -1021,11 +1017,11 @@ def estimate_image_tokens(width, height):
     return math.ceil((width * height) / 750)
 \`\`\`
 
-The exact formula varies by provider and model, but the shape of the lesson doesn't: a 4000×3000 photo straight off a phone camera is enormously more expensive than the same receipt resized down to something readable, like 1000×750. Before sending an image, it's worth asking whether you actually need full camera resolution to read a receipt, usually you don't.
+The exact formula shifts by provider and model, but the point holds either way. A 4000x3000 photo straight off a phone camera costs far more than the same receipt scaled down to something readable like 1000x750. Before you send an image, ask whether you really need full camera resolution to read a receipt. You almost never do.
 
 ## Resizing before you send
 
-A quick resize with an imaging library cuts cost with almost no loss in what the model needs to read:
+A quick resize with an imaging library cuts the cost with almost no loss in what the model has to read:
 
 \`\`\`python
 from PIL import Image
@@ -1039,11 +1035,11 @@ def resize_and_encode(path, max_dim=1200):
     return base64.standard_b64encode(buf.getvalue()).decode("utf-8")
 \`\`\`
 
-Capping the longest side at 1200 pixels keeps receipt text legible while shrinking the token bill substantially compared to an uncompressed phone photo.
+Capping the longest side at 1200 pixels keeps receipt text legible while cutting the token bill well below an uncompressed phone photo.
 
 ## Batching without one failure taking down the rest
 
-If you're scanning a folder of receipts, the batch loop needs to keep going even when one image fails or comes back malformed, exactly the retry-and-give-up pattern from last lesson, just applied across many files instead of one:
+Scanning a folder of receipts, the batch loop has to keep going even when one image fails or comes back malformed. It's the same retry-and-give-up pattern from last lesson, applied across many files instead of one:
 
 \`\`\`python
 results = []
@@ -1052,15 +1048,15 @@ for path in receipt_paths:
     results.append(result)
 \`\`\`
 
-Note that you still pay for the API call whether or not it produced a usable result. A receipt that needed all three retries before giving up cost you three image-token charges, not zero. That's real money spent on a receipt you still have to review by hand, which is exactly why the retry cap from the last lesson exists, unlimited retries on a bad photo isn't just slow, it's an unbounded bill.
+You pay for the API call whether or not it gave you anything usable. A receipt that burned all three retries before giving up cost you three image-token charges. That's real money spent on a receipt you still have to key in by hand, and it's the whole reason the retry cap from last lesson exists. Unlimited retries on a bad photo aren't merely slow. They're an unbounded bill.
 
 ## Tallying the damage
 
-At the end of a batch run, you want two numbers: how many receipts actually succeeded, and how much this batch cost in estimated tokens, success and failure alike. That's the number you'd report if someone asked "what did scanning this month's receipts cost us?"
+At the end of a batch run you want two numbers: how many receipts succeeded, and what the batch cost in estimated tokens across successes and failures together. That second number is the one you'd quote if someone asked what scanning this month's receipts cost.
 
-## The mental model to keep
+## What to hold onto
 
-Every image you send has a price tag before the model even reads it, set by its pixel count, not by whether the extraction eventually works. Resize before you send, cap your retries, and always count the cost of the failures alongside the successes, they're on the same bill.`,
+Every image carries a price tag before the model reads a word of it, set by pixel count and not by whether the extraction eventually works. Resize before you send. Cap the retries. Count the cost of the failures next to the successes, because they land on the same bill.`,
     starter_code: `import math
 
 def estimate_image_tokens(width, height):
@@ -1184,7 +1180,7 @@ main()
     order: 8,
     title: "Ship the Scanner",
     concept: "assembling the full pipeline",
-    explanation: `Every piece is built: send the photo, force JSON out of the reply, validate the line items, check the totals, normalize the messy fields, retry on failure, and watch the cost. Shipping is just wiring those pieces into one function that takes a photo and hands back a trustworthy result, plus a thin script around it that a person can actually run.
+    explanation: `Every piece is built. You send the photo, pull JSON out of the reply, validate the line items, check the totals, normalize the messy fields, retry on failure, and watch the cost. Shipping is wiring those pieces into one function that takes a photo and returns a result you can trust, plus a thin script around it that a person can actually run.
 
 ## One function, start to finish
 
@@ -1210,11 +1206,11 @@ def scan_receipt_from_file(path, client, max_retries=3):
                 return {"status": "manual_review", "path": path}
 \`\`\`
 
-Every function called here, \`build_image_message\`, \`extract_json\`, \`process_receipt\`, is something you already wrote in an earlier lesson. Shipping isn't new logic, it's assembly.
+Every function called here (\`build_image_message\`, \`extract_json\`, \`process_receipt\`) is something you already wrote in an earlier lesson. Shipping isn't new logic. It's assembly.
 
 ## The final validation pass
 
-\`process_receipt\` is where extraction, normalization, and the totals check all come together into one verdict:
+\`process_receipt\` is where extraction, normalization, and the totals check meet and settle into one verdict:
 
 \`\`\`python
 def process_receipt(data, tolerance=0.01):
@@ -1236,26 +1232,26 @@ def process_receipt(data, tolerance=0.01):
     }
 \`\`\`
 
-The output is small and deliberate: enough to act on (\`merchant\`, \`total\`, \`status\`), with the full itemized receipt still available on \`data\` if you want to store or display more.
+The output stays small and deliberate: enough to act on with \`merchant\`, \`total\`, and \`status\`, while the full itemized receipt is still sitting on \`data\` if you want to store or display more.
 
 ## A script someone else can run
 
-The last mile of "shipped" is a command a stranger could run without reading your source code:
+The last mile of "shipped" is a command a stranger could run without opening your source:
 
 \`\`\`bash
 python scan_receipt.py path/to/photo.jpg
 # writes result.json, prints: {"merchant": "Cafe Luna", "total": 13.0, "status": "ok"}
 \`\`\`
 
-That's it: one command in, a JSON file out, a status you can trust because it survived a retry loop and an arithmetic check, not just a single hopeful API call.
+That's the whole thing: one command in, a JSON file out, and a status you can trust because it survived a retry loop and an arithmetic check instead of a single hopeful API call.
 
 ## It lands in your Portfolio
 
-Finish this lesson and the Receipt Scanner is recorded in your **Portfolio** tab automatically, alongside the description, and it becomes something you can point to as a real, working tool: point a phone camera at a receipt, get back clean expense data, know when the numbers don't add up. That's the whole arc of this build, from "send one photo, get one string back" in lesson one, to a scanner that catches its own mistakes.
+Finish this lesson and the Receipt Scanner is recorded in your **Portfolio** tab automatically, alongside its description. It becomes something you can point to as a real, working tool. Aim a phone camera at a receipt and you get back clean expense data plus a warning when the numbers don't add up. That's the arc of the whole build, from "send one photo, get one string back" in lesson one to a scanner that catches its own mistakes.
 
-## The mental model to keep
+## What to hold onto
 
-A shipped product is not more code than a rough prototype, it's the same code with the gaps filled in: what happens when a call fails, when a field is missing, when the math doesn't add up. You already wrote all of that. Today you just connected the wires.`,
+A shipped product isn't more code than a rough prototype. It's the same code with the gaps filled in: what happens when a call fails, when a field is missing, when the math doesn't reconcile. You already wrote all of that. Today you connected the wires.`,
     starter_code: `import json, re
 
 def extract_json(text):

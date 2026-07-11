@@ -3,7 +3,7 @@ export default {
     id: "prod-22",
     title: "Ship & Monitor an LLM App (Capstone)",
     description:
-      "The capstone build: package your model-calling code into a real HTTP endpoint, deploy it somewhere real, and wrap it in structured logging, per-call cost tracking, and a usage dashboard. By the end you have a live, monitored LLM service with error handling and a budget guard, not just a script that worked once on your laptop.",
+      "The capstone build. You take your model-calling code, wrap it in a real HTTP endpoint, deploy it, and add structured logging, per-call cost tracking, and a usage dashboard. By the end you have a live LLM service that logs what it does, catches its own failures, and refuses to blow past a budget. Not a script that worked once on your laptop.",
     difficulty: "advanced",
     category: "production_ops",
     estimated_time: 140,
@@ -21,11 +21,11 @@ export default {
     order: 1,
     title: "Package the Model Call as One Function",
     concept: "packaging for deployment",
-    explanation: `Every project you've built so far has been a script: run it, watch the terminal, done. Shipping is different, someone else's browser, curl command, or front-end hits a URL and your code has to answer without you standing next to it. The first move toward that is **packaging**: pull every place you call the model into one function with one clear job, so the rest of your app (a route, a CLI, a test) just calls that function and never touches the API directly.
+    explanation: `Every project you've built so far has been a script. You run it, you watch the terminal, you're done. Shipping is different. Someone else's browser or curl command hits a URL and your code has to answer without you standing next to it. The first move toward that is packaging. You pull every place that calls the model into one function with one job, so the rest of your app (a route, a CLI, a test) calls that function and never touches the API directly.
 
-## What "packaging" means here
+## What packaging means here
 
-Right now your model-calling code is probably scattered: a system prompt here, a \`client.messages.create(...)\` there, some parsing after it. Packaging means collecting all of that into a single entry point, usually called something like \`handle_request\`, that takes one plain input (a dict) and returns one plain output (a dict). Everything downstream, a web route, a test, a CLI, calls this one function and never touches the Anthropic client directly.
+Right now your model-calling code is probably scattered around: a system prompt in one spot, a \`client.messages.create(...)\` in another, some parsing after it. Packaging collects all of that into a single entry point, usually named something like \`handle_request\`, that takes one plain dict in and returns one plain dict out. Everything downstream (a web route, a test, a CLI) calls this one function and never touches the Anthropic client.
 
 \`\`\`python
 import os
@@ -52,17 +52,17 @@ def handle_request(payload):
 
 ## Why one entry point matters
 
-Every layer you add for the rest of this capstone, the web route in the next lesson, the logger, the cost calculator, the budget guard, wraps around \`handle_request\`. If your model call is scattered across five files, you'd patch five places every time you add a feature. With one entry point, you patch once and every caller gets the improvement for free.
+Every layer you add for the rest of this capstone wraps around \`handle_request\`: the web route in the next lesson, the logger, the cost calculator, the budget guard. If your model call is scattered across five files, you patch five places every time you add a feature. With one entry point you patch once and every caller gets the fix.
 
-It also makes your app testable without a network. \`handle_request({"prompt": "hi"})\` is a plain function call with a plain dict in and a plain dict out. You can call it from a test, a CLI, or an HTTP route and it behaves identically every time, which is exactly what you want before you start deploying anything.
+It also makes your app testable without a network. \`handle_request({"prompt": "hi"})\` is a plain function call, dict in, dict out. Call it from a test, a CLI, or an HTTP route and it behaves the same way every time. That's what you want in place before you deploy anything.
 
 ## Validate before you spend money
 
-Packaging is also your first line of defense: check the input *before* you call the model. A missing or empty prompt should never reach the API, you'd be paying to fail. Return a structured \`{"ok": False, "error": ...}\` instead of calling the model on garbage, and give the caller a real reason instead of a stack trace.
+Packaging is also your first line of defense. Check the input before you call the model. A missing or empty prompt should never reach the API, because you'd be paying to fail. Return a structured \`{"ok": False, "error": ...}\` instead of calling the model on garbage, and hand the caller a real reason instead of a stack trace.
 
 ## The mental model
 
-Think of \`handle_request\` as the front door to your whole app. Everyone, the web server, a test, future-you debugging at 2am, walks through that same door with a dict and gets a dict back. Below, build that validation gate in pure Python: no network yet, just the contract every layer after this depends on.`,
+Think of \`handle_request\` as the front door to your whole app. The web server, a test, future-you debugging at 2am all walk through that same door with a dict and get a dict back. Below, build that validation gate in pure Python. No network yet, just the contract every layer after this depends on.`,
     starter_code: `def call_model(prompt):
     return f"[stub reply to: {prompt}]"
 
@@ -143,11 +143,11 @@ main()`,
     order: 2,
     title: "Stand Up the Endpoint",
     concept: "deploying an HTTP endpoint",
-    explanation: `The function from last lesson is solid, but nobody can hit a Python function from a browser. This lesson wraps \`handle_request\` in an actual HTTP server and gets one route live: \`POST /generate\` in, JSON out. That's the smallest deployable unit, one endpoint, one job, running as a real process listening on a port.
+    explanation: `The function from last lesson works, but nobody can hit a Python function from a browser. This lesson wraps \`handle_request\` in an HTTP server and gets one route live: \`POST /generate\` in, JSON out. That's the smallest thing you can deploy. One endpoint, one job, running as a process that listens on a port.
 
 ## Picking a framework
 
-FastAPI is the standard choice for a small Python API today: it's fast, it validates requests for you, and it pairs with \`uvicorn\` to run as a real server process.
+FastAPI is the usual choice for a small Python API. It's quick to write, it validates request bodies for you, and it runs under \`uvicorn\` as a real server process.
 
 \`\`\`python
 from fastapi import FastAPI
@@ -168,7 +168,7 @@ def health():
     return {"status": "ok"}
 \`\`\`
 
-Notice \`generate\` is a thin wrapper: FastAPI parses and validates the JSON body into \`req\`, then hands it straight to the \`handle_request\` function you already built. You didn't rewrite your model logic for the web; you exposed the function you already had.
+Notice \`generate\` is a thin wrapper. FastAPI parses and validates the JSON body into \`req\`, then hands it straight to the \`handle_request\` function you already built. You didn't rewrite your model logic for the web. You exposed the function you already had.
 
 ## Running it for real
 
@@ -177,11 +177,11 @@ pip install fastapi uvicorn[standard]
 uvicorn main:app --host 0.0.0.0 --port 8000
 \`\`\`
 
-\`uvicorn\` is the process that actually listens on a port and forwards requests into your FastAPI app. \`--host 0.0.0.0\` means "accept connections from outside this machine," not just \`localhost\`. That's the difference between "runs on my laptop" and "reachable from the internet" once it's deployed somewhere.
+\`uvicorn\` is the process that listens on a port and forwards requests into your FastAPI app. \`--host 0.0.0.0\` means accept connections from outside this machine, not just \`localhost\`. That's the difference between runs on my laptop and reachable from the internet once it's deployed somewhere.
 
 ## Where it actually runs
 
-"Deploying" just means running that same \`uvicorn\` command on a machine that stays on and has a public address, instead of your laptop. Small managed platforms (Render, Fly.io, Railway) do this for you: you push code, they run the process and give you a URL. A Dockerfile like this works on any of them:
+Deploying means running that same \`uvicorn\` command on a machine that stays on and has a public address, instead of your laptop. Small managed platforms (Render, Fly.io, Railway) do this for you. You push code, they run the process and give you a URL. A Dockerfile like this works on any of them:
 
 \`\`\`dockerfile
 FROM python:3.12-slim
@@ -193,11 +193,11 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ## Why a health route
 
-\`/health\` isn't optional decoration. Every deployment platform, load balancer, and monitor pings a health route to decide "is this instance alive?" Returning a fast, dependency-free \`{"status": "ok"}\`, no model call inside it, lets infrastructure check you're up without spending a token every few seconds.
+\`/health\` isn't decoration. Deployment platforms, load balancers, and monitors ping a health route to decide whether the instance is alive. Return a fast \`{"status": "ok"}\` with no model call inside it, and infrastructure can check you're up without spending a token every few seconds.
 
 ## The mental model
 
-A web framework is a router: it matches an incoming method and path to a Python function, and hands back whatever that function returns. Below, build that same routing logic in pure Python, no network, no framework: a dict of registered routes and a dispatcher that decides 200 or 404 for each request. That's the concept a real deployed server runs on; here we build it offline first.`,
+A web framework is a router. It matches an incoming method and path to a Python function and hands back whatever that function returns. Below, build that routing logic in pure Python with no network and no framework: a dict of registered routes and a dispatcher that decides 200 or 404 for each request. That's what a deployed server does under the hood. Here you build it offline first.`,
     starter_code: `routes = {}
 
 def add_route(method, path, handler):
@@ -290,7 +290,7 @@ main()`,
     order: 3,
     title: "Log Every Request",
     concept: "structured request logging",
-    explanation: `Once your endpoint is live, \`print()\` statements stop being useful, nobody is watching the terminal of a server running on someone else's machine. The fix is **structured logging**: for every request, write one record with a fixed shape (timestamps, token counts, latency, status) that a machine can read back later. This is the raw material every later lesson in this capstone builds on: cost tracking, the dashboard, and error monitoring all start by reading these records.
+    explanation: `Once your endpoint is live, \`print()\` stops being useful. Nobody is watching the terminal of a server running on someone else's machine. The fix is structured logging. For every request, write one record with a fixed shape (timestamps, token counts, latency, status) that a machine can read back later. Every later lesson in this capstone reads these records: cost tracking, the dashboard, error monitoring all start here.
 
 ## What one log record looks like
 
@@ -312,7 +312,7 @@ def make_log_record(model, input_tokens, output_tokens, latency_ms, status="ok")
     }
 \`\`\`
 
-Note what's *not* in there: the full prompt or reply text. Logging every character of every conversation is a privacy and storage liability you don't need for monitoring; token counts and timing tell you almost everything about cost and health without storing what people actually said.
+Note what's missing: the full prompt or reply text. Logging every character of every conversation is a privacy and storage liability you don't need for monitoring. Token counts and timing tell you almost everything about cost and health without storing what people actually said.
 
 ## Timing the call
 
@@ -324,11 +324,11 @@ reply = call_model(prompt)
 latency_ms = int((time.perf_counter() - start) * 1000)
 \`\`\`
 
-\`time.perf_counter()\` is a high-resolution clock meant exactly for measuring "how long did this take," unlike \`time.time()\` which is meant for wall-clock timestamps and can jump around.
+\`time.perf_counter()\` is a high-resolution clock built for measuring how long something took. \`time.time()\` is for wall-clock timestamps and can jump around when the system clock adjusts, so it's the wrong tool for durations.
 
 ## Where records go
 
-For a small service, appending one JSON line per request to a file (\`log.jsonl\`, one record per line) is enough, and it's the industry-standard "JSON Lines" format: easy to append, easy to stream, easy to parse one line at a time later without loading the whole file. Production systems swap the file for a database table or a logging service, but the record shape stays identical.
+For a small service, appending one JSON line per request to a file (\`log.jsonl\`, one record per line) is enough. This is the JSON Lines format: you append a line at a time, you can stream it, and you can parse one line without loading the whole file. Production systems swap the file for a database table or a logging service, but the record shape stays the same.
 
 \`\`\`python
 def write_log(record, path="log.jsonl"):
@@ -338,11 +338,11 @@ def write_log(record, path="log.jsonl"):
 
 ## Why it matters
 
-Without this, "how many requests did we serve today" and "why did the bill spike" are unanswerable questions after the fact. With it, every later feature, cost totals, the dashboard, error rates, budget alerts, is just arithmetic over a list of these records. Logging isn't a nice-to-have bolted on at the end; it's the data source everything else in this capstone reads from.
+Without this, "how many requests did we serve today" and "why did the bill spike" have no answer after the fact. With it, every later feature is arithmetic over a list of records: cost totals, the dashboard, error rates, budget alerts. Logging isn't a nice-to-have bolted on at the end. It's the data source everything else in this capstone reads from.
 
 ## The mental model
 
-Every request should leave a receipt behind, even if nobody looks at it that day. Below, build the record shape and a tiny in-memory log, no file or network yet, just the structure you'll aggregate in the coming lessons.`,
+Every request leaves a receipt behind, even if nobody reads it that day. Below, build the record shape and a small in-memory log. No file or network yet, just the structure you'll aggregate in the coming lessons.`,
     starter_code: `def make_log_record(input_tokens, output_tokens, latency_ms, status="ok"):
     # TODO: return a dict with keys: input_tokens, output_tokens,
     #       total_tokens (input + output), latency_ms, status
@@ -438,11 +438,11 @@ main()`,
     order: 4,
     title: "Compute the Cost of Every Call",
     concept: "token pricing and cost calculation",
-    explanation: `Every log record already has token counts; this lesson turns those counts into money. Model providers charge per token, and input and output tokens are priced *differently*, usually output costs several times more than input, because generating text is more expensive than reading it. Get this calculation wrong and your dashboard will confidently show a number that's wrong by a multiple.
+    explanation: `Every log record already has token counts. This lesson turns those counts into money. Providers charge per token, and input and output tokens are priced differently. Output usually costs several times more than input, because generating text is more expensive than reading it. Get this wrong and your dashboard shows a number that's off by a multiple.
 
 ## The pricing shape
 
-Providers publish price per million tokens, split by input and output:
+Providers publish a price per million tokens, split by input and output:
 
 \`\`\`python
 PRICING = {
@@ -457,7 +457,7 @@ def cost_for_call(model, input_tokens, output_tokens):
     return input_cost + output_cost
 \`\`\`
 
-Notice output is priced roughly 5x input here. A summarizer that reads a huge document but writes three sentences is cheap; a code generator that writes a thousand lines from a short prompt is not. The ratio matters more than either number alone.
+Output is priced roughly 5x input here. A summarizer that reads a huge document but writes three sentences is cheap. A code generator that writes a thousand lines from a short prompt is not. The ratio matters more than either number alone.
 
 ## Attaching cost to the log record
 
@@ -468,19 +468,19 @@ record = make_log_record(model, input_tokens, output_tokens, latency_ms)
 record["cost_usd"] = cost_for_call(model, input_tokens, output_tokens)
 \`\`\`
 
-Now every downstream aggregate, daily spend, per-model spend, "how much did this one request cost", is just reading a field, not recomputing pricing math in five different places.
+Now every downstream aggregate reads a field instead of recomputing pricing math in five places: daily spend, per-model spend, the cost of one request.
 
 ## Why per-request cost, not just a monthly total
 
-Your provider's dashboard will eventually show you a monthly bill, but by then it's too late to catch a bug. Computing cost per request, live, lets you catch problems immediately: a prompt that's accidentally including a whole document on every call, a loop calling the model far more than intended, a model swapped to a pricier tier by mistake. The per-call number is what makes the usage dashboard in the next lesson actually useful instead of a surprise at the end of the month.
+Your provider's dashboard eventually shows you a monthly bill, but by then it's too late to catch a bug. Computing cost per request live lets you catch problems the moment they happen: a prompt that accidentally includes a whole document on every call, a loop calling the model far more than intended, a model swapped to a pricier tier by mistake. The per-call number is what makes the dashboard in the next lesson useful instead of a surprise at the end of the month.
 
 ## A note on precision
 
-Money math with floats can drift by fractions of a cent over millions of calls. For this lesson we work in plain floats since the scale is small, but production billing systems typically track cost in integer cents to avoid rounding surprises compounding over time. Keep that in your back pocket if this ever needs to reconcile against a real invoice.
+Money math with floats can drift by fractions of a cent over millions of calls. This lesson uses plain floats since the scale is small, but production billing systems track cost in integer cents so rounding errors don't compound. Keep that in your back pocket if this ever has to reconcile against a real invoice.
 
 ## The mental model
 
-Token counts are the ingredients; the pricing table is the recipe; cost is what falls out when you combine them. Below, compute cost per call in pure Python using fixed integer prices (cents per 1,000 tokens) so the arithmetic is exact, no floating point rounding to fight with.`,
+Token counts are the ingredients, the pricing table is the recipe, and cost is what falls out when you combine them. Below, compute cost per call in pure Python using fixed integer prices (cents per 1,000 tokens) so the arithmetic is exact, with no floating point rounding to fight.`,
     starter_code: `PRICING = {
     "haiku": {"input": 25, "output": 125},
     "sonnet": {"input": 300, "output": 1500},
@@ -601,11 +601,11 @@ main()`,
     order: 5,
     title: "Build the Usage Dashboard",
     concept: "aggregating logs into a dashboard",
-    explanation: `A pile of individual log records isn't a dashboard, it's a haystack. This lesson turns the raw log into the rolled-up numbers a dashboard actually shows: requests and cost broken down by model, plus the totals across everything. The core technique is a single pass over your records, grouping as you go.
+    explanation: `A pile of individual log records isn't a dashboard, it's a haystack. This lesson turns the raw log into the rolled-up numbers a dashboard shows: requests and cost broken down by model, plus the totals across everything. The technique is a single pass over your records, grouping as you go.
 
 ## Group, don't re-scan
 
-The naive way to build "total cost for sonnet" is to filter the whole log every time you need a number: \`sum(r["cost_usd"] for r in log if r["model"] == "sonnet")\`. That works for one number, but a dashboard needs a dozen numbers, and re-scanning the whole log for each one is wasteful and easy to get subtly inconsistent. The better way: **one pass, grouped**.
+The naive way to get total cost for sonnet is to filter the whole log every time you need a number: \`sum(r["cost_usd"] for r in log if r["model"] == "sonnet")\`. That works for one number. But a dashboard needs a dozen numbers, and re-scanning the whole log for each one is wasteful and easy to get subtly inconsistent. Do one grouped pass instead.
 
 \`\`\`python
 from collections import defaultdict
@@ -625,11 +625,11 @@ def build_dashboard(records):
     }
 \`\`\`
 
-\`defaultdict\` is the trick that makes this clean: the first time you touch \`by_model["sonnet"]\`, it silently creates a fresh \`{"count": 0, ...}\` bucket instead of raising a \`KeyError\`. You never have to check "have I seen this model before?", the dict handles it.
+\`defaultdict\` is what keeps this clean. The first time you touch \`by_model["sonnet"]\`, it creates a fresh \`{"count": 0, ...}\` bucket instead of raising a \`KeyError\`. You never write "have I seen this model before" checks. The dict handles it.
 
 ## Serving it
 
-The simplest real dashboard is one more route that returns this same dict as JSON, which any front-end can render as a table or chart:
+The simplest dashboard is one more route that returns this dict as JSON, which any front-end can render as a table or chart:
 
 \`\`\`python
 @app.get("/dashboard")
@@ -637,15 +637,15 @@ def dashboard():
     return build_dashboard(read_all_logs())
 \`\`\`
 
-You don't need a fancy charting library to start. A JSON summary endpoint, or even a plain HTML table generated with an f-string, is a real dashboard. Polish comes later; the numbers being *correct* comes first.
+You don't need a charting library to start. A JSON summary endpoint, or even a plain HTML table built with an f-string, is a real dashboard. Polish comes later. The numbers being correct comes first.
 
-## What a dashboard is actually for
+## What a dashboard is for
 
-The point isn't the visual, it's catching problems early: a spike in requests from one model, a cost total climbing faster than usual, an error rate creeping up. Every one of those is a question you can only answer if the aggregation is right. Get the grouping logic solid here, and rendering it prettier later is just formatting.
+The point isn't the visual. It's catching problems early: a spike in requests from one model, a cost total climbing faster than usual, an error rate creeping up. You can only answer any of those if the aggregation is right. Get the grouping solid here, and rendering it prettier later is just formatting.
 
 ## The mental model
 
-One pass over the log, one bucket per group, running totals updated as you go, that's every "dashboard" you'll ever build, whether it renders as a table, a JSON blob, or a chart. Below, build the same grouped aggregation in pure Python over a small in-memory record list.`,
+One pass over the log, one bucket per group, running totals updated as you go. That's every dashboard you'll ever build, whether it renders as a table, a JSON blob, or a chart. Below, build the same grouped aggregation in pure Python over a small in-memory record list.`,
     starter_code: `def build_dashboard(records):
     by_model = {}
     for r in records:
@@ -759,7 +759,7 @@ main()`,
     order: 6,
     title: "Handle Failures Without Taking Down the Dashboard",
     concept: "error handling and status codes",
-    explanation: `A deployed endpoint will fail in ways your laptop never showed you: the model provider times out, you hit a rate limit, or a caller sends garbage. An unhandled exception in a web route doesn't just fail that one request, it can crash the worker process serving *other* users' requests too. This lesson wraps the whole request path in defense so one bad call degrades gracefully instead of taking the service down.
+    explanation: `A deployed endpoint fails in ways your laptop never showed you. The provider times out, you hit a rate limit, a caller sends garbage. An unhandled exception in a web route doesn't just fail that one request. It can crash the worker process that's serving other users' requests too. This lesson wraps the request path in defenses so one bad call degrades gracefully instead of taking the service down.
 
 ## Catch specific things, not everything
 
@@ -784,27 +784,27 @@ def safe_generate(payload):
         return {"ok": False, "status": 502, "error": f"upstream error: {e}"}
 \`\`\`
 
-Each branch returns the same shape (\`ok\`, \`status\`, plus either \`reply\` or \`error\`), so every caller, the web route, the logger, a test, handles success and failure identically. That consistency is what keeps error handling from turning into a maze of special cases.
+Each branch returns the same shape (\`ok\`, \`status\`, plus either \`reply\` or \`error\`), so every caller handles success and failure the same way, whether it's the web route, the logger, or a test. That consistency keeps error handling from turning into a maze of special cases.
 
 ## Status codes carry meaning
 
-- **400**: the caller's fault (bad input); don't retry without fixing the request.
-- **429**: you're being rate limited; the caller should back off and retry later.
-- **502/504**: the upstream model provider failed or timed out; often safe to retry once.
+- **400**: the caller's fault (bad input). Don't retry without fixing the request.
+- **429**: you're being rate limited. Back off and retry later.
+- **502/504**: the upstream provider failed or timed out. Often safe to retry once.
 
-Picking the right code isn't pedantry, it's what lets a caller (or a monitoring system) react correctly without reading your error string.
+Picking the right code isn't pedantry. It's what lets a caller (or a monitoring system) react correctly without parsing your error string.
 
 ## Log the failure too
 
-An error is still a request that happened. Write a log record for it with \`status="error"\` and \`cost_usd=0\` (a failed call before the model responds usually isn't billed), so your error rate on the dashboard reflects reality instead of only counting successes.
+An error is still a request that happened. Write a log record for it with \`status="error"\` and \`cost_usd=0\` (a call that fails before the model responds usually isn't billed), so the error rate on your dashboard reflects reality instead of counting only successes.
 
 ## Why it matters
 
-Without this, one flaky upstream response takes your whole service down, or worse, half-crashes it in a way that's hard to reproduce. With it, a bad request gets a clear 400, a busy provider gets a clear 429 or 504, and your dashboard's error-rate number actually means something instead of silently under-counting failures nobody logged.
+Without this, one flaky upstream response takes your whole service down, or half-crashes it in a way that's hard to reproduce. With it, a bad request gets a clean 400, a busy provider gets a clean 429 or 504, and your dashboard's error rate means something instead of quietly under-counting failures nobody logged.
 
 ## The mental model
 
-Every failure mode gets caught, classified, and returned in the same shape as success, never left to crash the process. Below, build that classification logic in pure Python: given a fake call function that raises different exception types, map each to the right status code.`,
+Every failure mode gets caught, classified, and returned in the same shape as success, never left to crash the process. Below, build that classification in pure Python: given a fake call function that raises different exception types, map each one to the right status code.`,
     starter_code: `class RateLimitError(Exception):
     pass
 
@@ -952,7 +952,7 @@ main()`,
     order: 7,
     title: "Guard the Budget",
     concept: "cost caps and spend guardrails",
-    explanation: `Logging and cost tracking tell you what happened. A budget guard stops something *before* it happens: it refuses a call that would push total spend over a limit you set, instead of finding out at the end of the month. This is the last piece standing between "the demo works" and "someone accidentally racked up a bill running it in a loop overnight."
+    explanation: `Logging and cost tracking tell you what happened. A budget guard stops something before it happens. It refuses a call that would push total spend over a limit you set, instead of you finding out at the end of the month. This is the last piece between "the demo works" and "someone left it running in a loop overnight and racked up a bill."
 
 ## A guard that tracks and enforces
 
@@ -969,7 +969,7 @@ class BudgetGuard:
         return True
 \`\`\`
 
-The order matters: check *before* you update \`spent_cents\`. If the check fails, nothing is charged and the call never reaches the model. This is a hard cap, not a warning, once you're at the limit, \`charge()\` returns \`False\` every time until the window resets (daily, monthly, whatever you choose).
+The order matters. Check before you update \`spent_cents\`. If the check fails, nothing is charged and the call never reaches the model. This is a hard cap, not a warning. Once you're at the limit, \`charge()\` returns \`False\` every time until the window resets (daily, monthly, whatever you choose).
 
 ## Wiring it into the request path
 
@@ -988,19 +988,19 @@ def handle_request(payload):
     return safe_generate({"prompt": prompt})
 \`\`\`
 
-\`402 Payment Required\` is the (rarely used, but semantically perfect) status code for exactly this situation. The guard sits *before* the model call, right after input validation, so a request that would blow the budget never spends a token.
+\`402 Payment Required\` is the status code for exactly this situation, rarely used but a clean fit. The guard sits before the model call, right after input validation, so a request that would blow the budget never spends a token.
 
 ## Rate limiting is the same idea, different resource
 
-Budget guards a dollar amount; a rate limiter guards a request count over a time window (say, 60 requests per minute). Both are the same pattern: track a running counter, compare it to a limit, allow or reject, reset the counter on a schedule. If you build one, the other is a small variation.
+A budget guards a dollar amount. A rate limiter guards a request count over a time window (say, 60 requests per minute). Both follow the same pattern: track a running counter, compare it to a limit, allow or reject, reset the counter on a schedule. Build one and the other is a small variation.
 
 ## Alerting, briefly
 
-A guard that silently rejects is only half the job, you also want to know *before* you hit the wall. In production this usually means firing a Slack or email webhook when spend crosses 80% of the cap, so a human can look before requests start getting rejected. The mechanism (an HTTP POST to a webhook URL) is simple; the important part is picking a threshold below 100% so you have time to react.
+A guard that silently rejects is only half the job. You want to know before you hit the wall. In production this usually means firing a Slack or email webhook when spend crosses 80% of the cap, so a human can look before requests start getting rejected. The mechanism (an HTTP POST to a webhook URL) is simple. The part that matters is picking a threshold below 100% so you have time to react.
 
 ## The mental model
 
-Every dollar spent has to clear the guard first. No exceptions, no "just this once", the guard's whole job is saying no consistently so a bug or a loop can't turn into a surprise invoice. Below, build the guard and run it against a sequence of charges.`,
+Every dollar spent clears the guard first. No exceptions, no "just this once." The guard's whole job is saying no consistently so a bug or a loop can't turn into a surprise invoice. Below, build the guard and run it against a sequence of charges.`,
     starter_code: `class BudgetGuard:
     def __init__(self, limit):
         self.limit = limit
@@ -1092,7 +1092,7 @@ main()`,
     order: 8,
     title: "Ship the Endpoint and the Dashboard",
     concept: "final deployment and the finished capstone",
-    explanation: `Every piece is built: a packaged request handler, a live HTTP route, structured logs, per-call cost, an aggregated dashboard, graceful error handling, and a budget guard. This lesson wires them into one running service, deploys it somewhere real, and calls the capstone done. Finishing this lesson lands the whole build in your **Portfolio** as a live, monitored LLM service you can point anyone to.
+    explanation: `Every piece is built: a packaged request handler, a live HTTP route, structured logs, per-call cost, an aggregated dashboard, graceful error handling, and a budget guard. This lesson wires them into one running service, deploys it, and calls the capstone done. Finishing it lands the whole build in your Portfolio as a live, monitored LLM service you can point anyone to.
 
 ## Wiring it all together
 
@@ -1124,29 +1124,29 @@ def health():
     return {"status": "ok"}
 \`\`\`
 
-Each route is thin on purpose, it calls the functions built in earlier lessons instead of reimplementing anything. That's the payoff of packaging everything as reusable functions from lesson 1 onward: the "app" is really just three routes gluing existing pieces together.
+Each route is thin on purpose. It calls the functions built in earlier lessons instead of reimplementing anything. That's the payoff of packaging everything as reusable functions from lesson 1 on: the app is really three routes gluing existing pieces together.
 
 ## Deploying it
 
-Push the code to a small platform (Render, Fly.io, Railway) or a VPS with the Dockerfile from lesson 2, set \`ANTHROPIC_API_KEY\` as an environment variable (never in code), and start the process. You now have a public URL. \`https://your-app.onrender.com/generate\` is a real endpoint anyone can \`curl\`, and \`/dashboard\` shows real usage.
+Push the code to a small platform (Render, Fly.io, Railway) or a VPS with the Dockerfile from lesson 2, set \`ANTHROPIC_API_KEY\` as an environment variable (never in code), and start the process. Now you have a public URL. \`https://your-app.onrender.com/generate\` is a real endpoint anyone can \`curl\`, and \`/dashboard\` shows real usage.
 
-## The "done" checklist
+## The done checklist
 
-Before calling it shipped, the same three questions from every project in this track, now with teeth:
+Before you call it shipped, three questions, now with teeth:
 
 1. **Runs from a clean start**: a fresh clone, one install command, one run command, no manual steps you forgot to write down.
-2. **Survives bad input**: a missing prompt, a huge prompt, a burst of requests, none of them should crash the process (lessons 6-7 exist for exactly this).
+2. **Survives bad input**: a missing prompt, a huge prompt, a burst of requests. None of them should crash the process. Lessons 6-7 exist for this.
 3. **Someone else could use it**: a README with the URL, an example \`curl\` command, and what the dashboard shows.
 
 ## What actually got built
 
-Trace the arc: lesson 1 packaged the model call into one function; lesson 2 put an HTTP route in front of it; lessons 3-5 built logging, cost, and the dashboard; lessons 6-7 hardened it against failures and runaway spend. None of that was throwaway scaffolding, it's the exact shape of a small production LLM service.
+Trace the arc. Lesson 1 packaged the model call into one function. Lesson 2 put an HTTP route in front of it. Lessons 3-5 built logging, cost, and the dashboard. Lessons 6-7 hardened it against failures and runaway spend. None of that was throwaway scaffolding. It's the shape of a small production LLM service.
 
 ## Into your Portfolio
 
-Finishing this lesson records **Ship & Monitor an LLM App** in your Portfolio: a live URL, what it does, and the fact that it's monitored, not just running blind. This is the capstone project of the track, the shelf of tools you've built all led here: a real, deployed, observable AI product with your name on it.
+Finishing this lesson records Ship & Monitor an LLM App in your Portfolio: a live URL, what it does, and the fact that it's monitored rather than running blind. This is the capstone of the track. Every tool you've built led here, to a deployed, observable AI product with your name on it.
 
-Below, build the final piece: a plain-text render of the dashboard, the same numbers a \`/dashboard\` route would hand back as JSON, just formatted for a human to read.`,
+Below, build the final piece: a plain-text render of the dashboard, the same numbers a \`/dashboard\` route hands back as JSON, formatted for a human to read.`,
     starter_code: `def render_dashboard(summary):
     requests = summary["requests"]
     errors = summary["errors"]

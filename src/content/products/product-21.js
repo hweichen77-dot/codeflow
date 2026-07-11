@@ -3,7 +3,7 @@ export default {
     id: "prod-21",
     title: "AI Evals Harness",
     description:
-      "Build a harness that runs a test set of inputs through an AI feature and automatically grades each result with rule-based checks and an LLM-as-judge. By the end you'll have a script that scores pass rates by category, catches regressions against a baseline, and prints a report you could wire into CI.",
+      "Build a harness that runs a test set of inputs through an AI feature and grades each result automatically, using rule-based checks and an LLM as judge. By the end you have a script that scores pass rates by category, catches regressions against a baseline, and prints a report you can wire into CI.",
     difficulty: "advanced",
     category: "production_ops",
     estimated_time: 135,
@@ -21,15 +21,15 @@ export default {
       order: 1,
       title: "The Shape of an Eval",
       concept: "test cases and a scored loop",
-      explanation: `Ship an AI feature and someone will ask "does it actually work?" Eyeballing five examples in a notebook isn't an answer at scale. That's what an eval harness is for: a test set run through your feature over and over, every result graded automatically, so "does it work" becomes a number you can watch instead of a feeling you have to trust.
+      explanation: `Ship an AI feature and someone will ask "does it actually work?" Eyeballing five examples in a notebook doesn't answer that at scale. An eval harness does: you run a test set through your feature, grade every result automatically, and "does it work" becomes a number you can watch instead of a feeling you have to trust.
 
 ## What we're building
 
-By lesson 8 you'll have a script: point it at a test set and a function that calls your AI feature, and it prints a scored report, no manual review required. Under the hood it's three parts, a **test set** (inputs plus what a correct answer looks like), a **grader** (code that decides pass or fail for one case), and a **runner** that loops the test set through your feature and the grader, then tallies the result.
+By lesson 8 you have a script. Point it at a test set and a function that calls your AI feature, and it prints a scored report with no manual review. It has three parts. A **test set** holds inputs plus what a correct answer looks like. A **grader** decides pass or fail for one case. A **runner** loops the test set through your feature and the grader, then tallies the results.
 
 ## The anatomy of a test case
 
-The smallest useful test case is just an input and an expected outcome:
+The smallest useful test case is an input and an expected outcome:
 
 \`\`\`python
 test_cases = [
@@ -56,15 +56,15 @@ def run_model(input_text):
     return resp.content[0].text.strip().lower()
 \`\`\`
 
-The harness then compares that output to \`expected\`, case by case, and records a pass or a fail.
+The harness compares that output to \`expected\`, case by case, and records a pass or a fail.
 
 ## Why this matters
 
-Prompts drift. You tweak a system prompt to fix one bad answer and quietly break three others you never re-checked. Without a harness, you find out when a user complains. With one, you re-run the whole test set in seconds and see exactly what changed, before it ships.
+Prompts drift. You tweak a system prompt to fix one bad answer and quietly break two others you never re-checked. Without a harness you find out when a user complains. With one you re-run the whole test set in seconds and see exactly what changed before it ships.
 
 ## The mental model to keep
 
-An eval harness is a test suite where the assertions are graded by comparing model output to an expected answer, and the real engineering is in that grader, not the loop. Below, wire up the loop itself against a stand-in for the model, so you can see the whole shape before any network call enters the picture.`,
+An eval harness is a test suite where the assertions come from comparing model output to an expected answer. The real engineering lives in the grader, not the loop. Below, wire up the loop against a stand-in for the model so you can see the whole shape before any network call enters the picture.`,
       starter_code: `# Simulated AI feature: a canned lookup standing in for a real API call.
 
 FAKE_MODEL_OUTPUTS = {
@@ -177,11 +177,11 @@ main()
       order: 2,
       title: "Your First Pass Rate",
       concept: "aggregate scoring and a threshold gate",
-      explanation: `A dozen PASS/FAIL lines is progress, but nobody wants to read a hundred of them to decide whether a feature is ready. The next step turns those lines into one number, a **pass rate**, and one decision, a **gate**: did the feature clear the bar or not.
+      explanation: `A dozen PASS/FAIL lines is progress, but nobody wants to read a hundred of them to decide whether a feature is ready. The next step turns those lines into one number, a **pass rate**, and one decision, a **gate**. Did the feature clear the bar or not.
 
 ## From lines to a number
 
-Once every case has a boolean result, the pass rate is just arithmetic:
+Once every case has a boolean result, the pass rate is arithmetic:
 
 \`\`\`python
 results = [run_model(c["input"]) == c["expected"] for c in test_cases]
@@ -192,7 +192,7 @@ pass_rate = sum(results) / len(results)
 
 ## The gate
 
-A pass rate alone doesn't tell you whether to ship. You need a **threshold**: the minimum rate you've decided is acceptable for this feature. Below it, the build fails; at or above it, it's good to go.
+A pass rate alone doesn't tell you whether to ship. You need a **threshold**, the minimum rate you've decided is acceptable for this feature. Below it, the build fails. At or above it, it ships.
 
 \`\`\`python
 THRESHOLD = 0.8
@@ -201,19 +201,19 @@ def gate(rate, threshold=THRESHOLD):
     return rate >= threshold
 \`\`\`
 
-This is the same idea as a unit test suite failing the build when coverage drops, except the "assertion" here is fuzzier: it's model output compared to expected output, aggregated across many cases instead of one exact assert.
+This is the same idea as a unit test suite failing the build when coverage drops. The assertion here is just fuzzier. It's model output compared to expected output, aggregated across many cases instead of one exact assert.
 
 ## Why a number, not a vibe
 
-"It seemed fine when I tried it" doesn't survive a prompt change six weeks later. A pass rate does: run the harness, get 82%, change the prompt, run it again, get 71%, and you know immediately something broke, without re-reading a single transcript by hand. The threshold turns that number into an automatic decision instead of a judgment call someone has to remember to make.
+"It seemed fine when I tried it" doesn't survive a prompt change six weeks later. A pass rate does. Run the harness, get 82%, change the prompt, run it again, get 71%, and you know immediately that something broke, without re-reading a single transcript by hand. The threshold turns that number into an automatic decision instead of a judgment call someone has to remember to make.
 
 ## Picking a threshold
 
-There's no universal number. A feature where mistakes are cheap (a fun chatbot persona) can ship at 70%. A feature where mistakes are expensive (extracting refund amounts) might need 98%. The threshold is a product decision, encoded once, so every future run is judged by the same bar you chose deliberately, not whatever felt okay that day.
+There's no universal number. A feature where mistakes are cheap, like a fun chatbot persona, can ship at 70%. A feature where mistakes are expensive, like extracting refund amounts, might need 98%. The threshold is a product decision you encode once, so every future run is judged by the same bar you chose deliberately, not whatever felt okay that day.
 
 ## The mental model to keep
 
-Per-case grading tells you *what* broke. The pass rate and gate tell you *whether to ship*. Below, build both pieces in pure Python: turn a list of results into a percentage, then turn that percentage into a pass or fail verdict against a threshold.`,
+Per-case grading tells you *what* broke. The pass rate and gate tell you *whether to ship*. Below, build both pieces in pure Python. Turn a list of results into a percentage, then turn that percentage into a pass or fail verdict against a threshold.`,
       starter_code: `results = [True, True, False, True, True, False, True, True, True, True]  # 8 of 10 passed
 
 def pass_rate(results):
@@ -298,21 +298,17 @@ main()
       order: 3,
       title: "Writing a Good Test Set",
       concept: "test case design and categories",
-      explanation: `A pass rate is only as honest as the test set behind it. Ten easy, hand-picked examples will always score well and tell you nothing. The real skill in evals isn't the grading loop, it's building a test set that would actually catch a regression.
+      explanation: `A pass rate is only as honest as the test set behind it. Ten easy, hand-picked examples will always score well and tell you nothing. The real skill in evals isn't the grading loop. It's building a test set that would actually catch a regression.
 
 ## What a real test set contains
 
-A good test set is not a pile of your favorite examples. It deliberately mixes:
+A good test set is not a pile of your favorite examples. It mixes three kinds of case on purpose. **Typical cases** are the everyday inputs you expect most of the time. **Edge cases** are empty input, very long input, weird formatting, ambiguous phrasing. **Known failure cases** are real mistakes the model made in production, turned into permanent regression tests so that bug can never silently come back.
 
-- **Typical cases**: the bread-and-butter inputs you expect most of the time.
-- **Edge cases**: empty input, extremely long input, weird formatting, ambiguous phrasing.
-- **Known failure cases**: real mistakes the model made in production, turned into permanent regression tests so that bug can never silently come back.
-
-Where do these come from? The best source is real usage: pull a sample of actual production inputs, including the ones that got complaints, and turn them into golden test cases with a human-verified expected answer.
+Where do these come from? The best source is real usage. Pull a sample of actual production inputs, including the ones that got complaints, and turn them into golden test cases with a human-verified expected answer.
 
 ## Tagging by category
 
-A single overall pass rate hides where the failures live. Tag each case with a **category**, and you can see that your 90% overall score is actually 100% on greetings and 40% on refund requests, the category that matters most:
+A single overall pass rate hides where the failures live. Tag each case with a **category** and you can see that your 90% overall score is really 100% on greetings and 40% on refund requests, the category that matters most:
 
 \`\`\`python
 test_cases = [
@@ -332,11 +328,11 @@ def report_by_category(results):
 
 ## Why this matters
 
-An overall pass rate is a summary that can hide exactly the thing you need to see. A feature that's great at small talk and bad at the one task customers actually rely on can still post an impressive-looking 85%. Category breakdowns are how you find that before a customer does.
+An overall pass rate can hide exactly the thing you need to see. A feature that's great at small talk and bad at the one task customers actually rely on can still post an impressive-looking 85%. Category breakdowns are how you find that before a customer does.
 
 ## The mental model to keep
 
-Think of your test set as a map of the territory your feature has to survive, not a highlight reel of what it's good at. Categories are how you keep the map honest: they turn "it works" into "it works here, and not yet there." Below, build the category breakdown in pure Python over a small set of already-graded results.`,
+Think of your test set as a map of the territory your feature has to survive, not a highlight reel of what it's good at. Categories keep the map honest. They turn "it works" into "it works here, and not yet there." Below, build the category breakdown in pure Python over a small set of already-graded results.`,
       starter_code: `test_cases = [
     {"id": "t1", "category": "greeting", "expected": "hello", "actual": "hello"},
     {"id": "t2", "category": "greeting", "expected": "hi", "actual": "hi"},
@@ -456,7 +452,7 @@ main()
       order: 4,
       title: "Rule-Based Graders",
       concept: "grader functions for different task types",
-      explanation: `"Compare to the expected string" only works when there's one correct answer. A classifier has one right label, but a chatbot reply, an extracted number, or a JSON blob each need their own way of deciding pass or fail. That's what a **grader** is: a small function with the signature \`grader(actual, expected) -> bool\`, swapped in per test case.
+      explanation: `"Compare to the expected string" only works when there's one correct answer. A classifier has one right label. A chatbot reply, an extracted number, and a JSON blob each need their own way of deciding pass or fail. That's a **grader**: a small function with the signature \`grader(actual, expected) -> bool\`, swapped in per test case.
 
 ## Four graders that cover most tasks
 
@@ -475,9 +471,9 @@ def has_keys(actual_dict, required_keys):
 \`\`\`
 
 - \`exact_match\` for classifiers and short structured labels.
-- \`contains\` for free-form text where you only need one key fact present, like a support reply that must mention the refund amount somewhere.
-- \`in_range\` for numeric extraction, where the model might say "9.8" and you meant "10.0"; a small tolerance forgives rounding without letting real errors slip through.
-- \`has_keys\` for a JSON-shaped output where you care that the schema was respected, not the exact wording.
+- \`contains\` for free-form text where you only need one fact present, like a support reply that has to mention the refund amount somewhere.
+- \`in_range\` for numeric extraction, where the model might say "9.8" and you meant "10.0". A small tolerance forgives rounding without letting real errors through.
+- \`has_keys\` for JSON-shaped output where you care that the schema was respected, not the exact wording.
 
 ## Routing to the right grader
 
@@ -491,15 +487,15 @@ def grade(case):
     return grader_fn(case["actual"], case["expected"])
 \`\`\`
 
-That one dictionary lookup is what lets a single harness grade a sentiment classifier, a support-reply generator, and a price extractor with the same runner loop, just different grader entries per case.
+That one dictionary lookup lets a single harness grade a sentiment classifier, a support-reply generator, and a price extractor through the same runner loop. Only the grader entry per case changes.
 
 ## Why this matters
 
-A harness that only does exact match will either reject perfectly good free-form answers (too strict) or, worse, get quietly replaced with something looser that lets real bugs through. Naming the grader per test case, instead of hard-coding one comparison everywhere, is what makes the harness reusable across an entire product, not just one endpoint.
+A harness that only does exact match will reject perfectly good free-form answers for being too strict, or get quietly replaced with something looser that lets real bugs through. Naming the grader per test case, instead of hard-coding one comparison everywhere, makes the harness reusable across an entire product rather than one endpoint.
 
 ## The mental model to keep
 
-The runner doesn't know or care what "correct" means for a given test case; it just calls whichever grader that case declares. Below, wire up the dispatcher and three of these graders over a small mixed test set.`,
+The runner doesn't know what "correct" means for a given case. It calls whichever grader that case declares. Below, wire up the dispatcher and three of these graders over a small mixed test set.`,
       starter_code: `def exact_match(actual, expected):
     return actual == expected
 
@@ -620,11 +616,11 @@ main()
       order: 5,
       title: "LLM-as-Judge",
       concept: "using a model to grade subjective quality",
-      explanation: `Some outputs have no single correct string to compare against. "Is this customer reply polite and helpful?" isn't an exact-match question. For tasks like that, you grade with a second model call: the **judge**. You show it the input, the output, and a rubric, and ask it to return a structured verdict.
+      explanation: `Some outputs have no single correct string to compare against. "Is this customer reply polite and helpful?" isn't an exact-match question. For tasks like that, you grade with a second model call, the **judge**. You show it the input, the output, and a rubric, and ask it to return a structured verdict.
 
 ## The judge prompt
 
-A judge system prompt pins down exactly what to score and exactly what shape to return, the same discipline as any other structured-output prompt:
+A judge system prompt pins down what to score and what shape to return, the same discipline as any other structured-output prompt:
 
 \`\`\`python
 JUDGE_SYSTEM = """You are grading a customer support reply for quality.
@@ -644,7 +640,7 @@ def judge(customer_message, reply):
 
 ## Parsing the verdict defensively
 
-The judge is still an LLM, so its reply can arrive with a stray preamble or a code fence around the JSON, exactly like any other structured-output call. You extract and validate it the same way you would any model JSON, and you also sanity-check the score is actually in range, because a judge that returns "score": 9 on a 1-5 scale is a broken verdict, not a real one:
+The judge is still an LLM, so its reply can arrive with a stray preamble or a code fence around the JSON, like any other structured-output call. You extract and validate it the way you would any model JSON. You also check the score is in range, because a judge that returns "score": 9 on a 1-5 scale gave you a broken verdict, not a real one:
 
 \`\`\`python
 import json
@@ -664,11 +660,11 @@ def parse_judgment(raw_reply):
 
 ## Why this matters, and its limits
 
-LLM-as-judge lets you grade tone, helpfulness, faithfulness to a source document, anything a rule can't cleanly check. But the judge is not ground truth: it can be miscalibrated, inconsistent, or fooled by confident-sounding wrong answers. Treat it as a second opinion you spot-check against a handful of human ratings occasionally, not an oracle you trust blindly forever.
+An LLM judge lets you grade tone, helpfulness, or faithfulness to a source document, things a rule can't cleanly check. But the judge is not ground truth. It can be miscalibrated, inconsistent, or fooled by a confident-sounding wrong answer. Treat it as a second opinion you spot-check against a handful of human ratings now and then, not an oracle you trust blindly.
 
 ## The mental model to keep
 
-A rule-based grader answers "did it match a pattern?" A judge answers "would a careful reader say this is good?" Both return the same thing to your harness in the end, a pass/fail or a score, just computed differently. Below, build the defensive parser and see it reject a malformed verdict exactly like a real one would.`,
+A rule-based grader answers "did it match a pattern?" A judge answers "would a careful reader say this is good?" Both hand your harness the same thing in the end, a pass/fail or a score, just computed differently. Below, build the defensive parser and watch it reject a malformed verdict the way a real one would.`,
       starter_code: `import json
 
 def parse_judgment(raw_reply):
@@ -784,11 +780,11 @@ main()
       order: 6,
       title: "Harden: Flaky Judges and Retries",
       concept: "majority vote and graceful degradation",
-      explanation: `The judge is itself an LLM, which means it inherits every unreliability you've learned to guard against elsewhere: it can time out, return malformed JSON, or simply disagree with itself on two runs of the exact same case. A harness that trusts a single judge call at face value will produce a noisy, hard-to-trust score. Two hardening moves fix that.
+      explanation: `The judge is itself an LLM, so it inherits every unreliability you've learned to guard against elsewhere. It can time out, return malformed JSON, or disagree with itself on two runs of the exact same case. A harness that trusts a single judge call at face value produces a noisy score nobody trusts. Two hardening moves fix that.
 
 ## Retry, and record failure as its own outcome
 
-If a judge reply fails to parse, don't silently count it as a fail, and don't crash the whole run. Retry it a couple times, and if it still won't parse, record a distinct **judge error** so you can tell "the feature failed" apart from "the judge glitched":
+If a judge reply fails to parse, don't silently count it as a fail, and don't crash the whole run. Retry it a couple of times, and if it still won't parse, record a distinct **judge error** so you can tell "the feature failed" apart from "the judge glitched":
 
 \`\`\`python
 def judge_with_retry(customer_message, reply, tries=3):
@@ -802,7 +798,7 @@ def judge_with_retry(customer_message, reply, tries=3):
 
 ## Vote out the noise
 
-Even a well-formed judge can wobble between a 3 and a 4 on the same input across runs, especially near your pass threshold. Instead of trusting one call, run the judge a handful of times and take the **median**, which is far less sensitive to a single odd-one-out score than an average would be:
+Even a well-formed judge can wobble between a 3 and a 4 on the same input across runs, especially near your pass threshold. Instead of trusting one call, run the judge a handful of times and take the **median**. The median barely moves when one call comes back an outlier, where an average would drag toward it:
 
 \`\`\`python
 import statistics
@@ -814,15 +810,15 @@ def aggregate_judge_scores(scores):
     return round(statistics.median(valid))
 \`\`\`
 
-If every attempt for a case comes back as \`None\`, that case gets \`"NO_VERDICT"\`, a visible signal that the judge itself is broken for this input, worth investigating separately from a genuine quality failure.
+If every attempt for a case comes back \`None\`, that case gets \`"NO_VERDICT"\`. That's a visible signal the judge is broken for this input, worth investigating on its own rather than as a quality failure.
 
 ## Why this matters
 
-An eval harness that occasionally crashes on a malformed judge reply, or that reports a false regression because one noisy judge call landed low, trains people to ignore it. The whole point of automating grading is that people can trust the number without re-checking it by hand; that trust depends on the harness handling its own failure modes as carefully as it grades the feature under test.
+An eval harness that crashes on a malformed judge reply, or reports a false regression because one noisy judge call landed low, trains people to ignore it. The point of automating grading is that people can trust the number without re-checking it by hand. That trust depends on the harness handling its own failure modes as carefully as it grades the feature under test.
 
 ## The mental model to keep
 
-Never let the grader's own flakiness look like the feature's flakiness. Retry judge calls before giving up, vote across repeats to smooth genuine noise, and label total failure as \`NO_VERDICT\`, never as a silent zero. Below, build the aggregator over a small batch of repeated judge scores, some of which are missing entirely.`,
+Never let the grader's own flakiness look like the feature's flakiness. Retry judge calls before giving up, vote across repeats to smooth real noise, and label total failure as \`NO_VERDICT\` rather than a silent zero. Below, build the aggregator over a small batch of repeated judge scores, some of them missing entirely.`,
       starter_code: `import statistics
 
 def aggregate_judge_scores(scores):
@@ -933,7 +929,7 @@ main()
       order: 7,
       title: "The Weighted Report and Regression Gate",
       concept: "combining graders and catching regressions",
-      explanation: `A real feature usually gets both kinds of grading at once, a cheap rule check plus a nuanced judge score, and neither one alone tells the whole story. This lesson combines them into one number per case, and then compares today's overall number against yesterday's, because a single run in isolation can't tell you if you just made things worse.
+      explanation: `A real feature usually gets both kinds of grading at once, a cheap rule check plus a nuanced judge score, and neither one alone tells the whole story. This lesson combines them into one number per case, then compares today's overall number against yesterday's. A single run in isolation can't tell you whether you just made things worse.
 
 ## One composite score per case
 
@@ -946,15 +942,15 @@ def composite_score(rule_pass, judge_score, rule_weight=0.4, judge_weight=0.6):
     return rule_weight * rule_part + judge_weight * judge_part
 \`\`\`
 
-When there's no judge score for a case (maybe it's cheap enough to skip judging on every run), the composite falls back to the rule result alone instead of silently zeroing it out.
+When a case has no judge score, maybe it's cheap enough to skip judging on every run, the composite falls back to the rule result instead of silently zeroing it out.
 
 ## Sampling the judge to control cost
 
-Judge calls are extra API calls, and running one on every case, every commit, adds up fast on a large test set. A common pattern: run the cheap rule grader on the full set every time, but only run the judge on a random sample in CI, and on the full set nightly or before a release. You trade a little precision for a much smaller bill on the runs that happen most often.
+Judge calls are extra API calls, and running one on every case on every commit adds up fast on a large test set. A common pattern runs the cheap rule grader on the full set every time, but only runs the judge on a random sample in CI, and on the full set nightly or before a release. You trade a little precision for a much smaller bill on the runs that happen most often.
 
 ## Catching a regression
 
-An overall score by itself doesn't tell you if it's better or worse than last time. Store the last known-good score as a **baseline**, and fail the build when today's score drops by more than a small tolerance, not on any drop at all, since a point or two of noise is expected:
+An overall score by itself doesn't tell you whether it's better or worse than last time. Store the last known-good score as a **baseline** and fail the build when today's score drops by more than a small tolerance. Don't fail on any drop at all, since a point or two of noise is expected:
 
 \`\`\`python
 def check_regression(overall, baseline, tolerance=0.05):
@@ -963,11 +959,11 @@ def check_regression(overall, baseline, tolerance=0.05):
 
 ## Why this matters
 
-Without a baseline, "68%" is just a number with no context. With one, it's a decision: better, about the same, or a real regression worth blocking on. That's the difference between an eval harness you run once out of curiosity and one that actually guards a shipped feature over time.
+Without a baseline, "68%" is a number with no context. With one, it's a decision: better, about the same, or a real regression worth blocking on. That's the difference between an eval harness you run once out of curiosity and one that guards a shipped feature over time.
 
 ## The mental model to keep
 
-Composite scoring answers "how good was this run, overall, blending every signal we have?" The regression gate answers "is that worse than what we already trusted?" Below, compute both over a small batch of graded cases.`,
+Composite scoring answers "how good was this run overall, across every signal we have?" The regression gate answers "is that worse than what we already trusted?" Below, compute both over a small batch of graded cases.`,
       starter_code: `cases = [
     {"id": "c1", "rule_pass": True, "judge_score": 5},
     {"id": "c2", "rule_pass": True, "judge_score": 3},
@@ -1083,15 +1079,11 @@ main()
       order: 8,
       title: "Ship the Harness",
       concept: "the final report and shipping",
-      explanation: `Every piece is built: test cases, rule graders, an LLM judge, retries and majority voting, weighted scoring, and a regression gate. The last step is packaging it all into one report a person or a CI pipeline can read in five seconds. Finish this lesson and the AI Evals Harness lands in your **Portfolio**.
+      explanation: `Every piece is built: test cases, rule graders, an LLM judge, retries and majority voting, weighted scoring, and a regression gate. The last step packages it all into one report a person or a CI pipeline can read in five seconds. Finish this lesson and the AI Evals Harness lands in your **Portfolio**.
 
 ## What the final report needs
 
-A report earns its keep by answering three questions immediately, without anyone opening a log file:
-
-- **Overall**: one number, the composite pass rate across the whole test set.
-- **By category**: where the failures actually live, not just that some exist.
-- **Pass or fail**: the gate verdict against your threshold, and whether it's a regression against the last known-good baseline.
+A report earns its keep by answering three questions immediately, without anyone opening a log file. **Overall** is one number, the composite pass rate across the whole test set. **By category** is where the failures actually live, not just that some exist. **Pass or fail** is the gate verdict against your threshold, plus whether it's a regression against the last known-good baseline.
 
 \`\`\`python
 def build_report(cases):
@@ -1111,7 +1103,7 @@ def build_report(cases):
 
 ## Wrapping it as a runnable tool
 
-A real harness is invoked with one command against a test-set file and a function reference to whatever's under test:
+You invoke a real harness with one command, against a test-set file and a function reference to whatever's under test:
 
 \`\`\`python
 def run_harness(test_cases, run_model, grade_fn, baseline=None, tolerance=0.05):
@@ -1130,15 +1122,15 @@ One function call, one report, run on every commit or nightly, your choice.
 
 ## What "shipped" means here
 
-Same three checks as always: it runs from a clean start with one command, an empty test set doesn't crash it (\`build_report\` above guards the zero-total division), and someone else could point it at their own test cases and function from your instructions alone.
+The same three checks as always. It runs from a clean start with one command. An empty test set doesn't crash it, since \`build_report\` above guards the zero-total division. And someone else could point it at their own test cases and function from your instructions alone.
 
 ## Into your Portfolio
 
-Finishing this lesson records the AI Evals Harness in your **Portfolio** tab. It's the tool that answers "does it still work?" for every other project you've built in this track, or any AI feature you ship after it.
+Finishing this lesson records the AI Evals Harness in your **Portfolio** tab. It's the tool that answers "does it still work?" for every other project you've built in this track, and any AI feature you ship after it.
 
 ## The mental model to keep
 
-A finished harness hides its own machinery behind one clean report. Underneath: a test set, graders, a judge with retries and voting, a weighted composite, and a baseline comparison, but the person reading the output just sees a pass rate, a category breakdown, and a verdict. Below, build that final report function, the last piece.`,
+A finished harness hides its machinery behind one clean report. Underneath sit a test set, graders, a judge with retries and voting, a weighted composite, and a baseline comparison. The person reading the output sees a pass rate, a category breakdown, and a verdict. Below, build that final report function, the last piece.`,
       starter_code: `cases = [
     {"id": "c1", "category": "refunds", "passed": True},
     {"id": "c2", "category": "refunds", "passed": False},

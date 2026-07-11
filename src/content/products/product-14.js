@@ -3,7 +3,7 @@ export default {
     id: "prod-14",
     title: "Screenshot Describer",
     description:
-      "Build a tool that turns a UI screenshot into a structured description or matching starter HTML you can build on. You'll learn how to send an image to the model, prompt for a structured layout, turn that structure into markup and layout CSS, and harden the pipeline against bad JSON and oversized images.",
+      "Build a tool that turns a UI screenshot into a structured description or matching starter HTML you can build on. You send an image to the model, prompt it for a structured layout, turn that structure into markup and layout CSS, then guard the pipeline against bad JSON and oversized images.",
     difficulty: "intermediate",
     category: "vision_multimodal",
     estimated_time: 130,
@@ -21,15 +21,15 @@ export default {
       order: 1,
       title: "Sending a Screenshot to the Model",
       concept: "encoding images for the API",
-      explanation: `A vision model doesn't take a file path. It takes bytes, turned into text, sitting inside the same message list you already know from text-only prompts. This lesson builds the one new piece every later lesson depends on: getting an image into the request correctly.
+      explanation: `A vision model doesn't take a file path. It takes bytes, turned into text, sitting inside the same message list you already use for text-only prompts. This lesson builds the one new piece every later lesson depends on: getting an image into the request correctly.
 
 ## What we're building
 
-By lesson 8 you'll have a tool: point it at a screenshot, get back a structured description or matching starter HTML. Every piece stacks on this first one, an image the model can actually read.
+By lesson 8 you have a tool. Point it at a screenshot, get back a structured description or matching starter HTML. Every piece stacks on this first one, an image the model can actually read.
 
 ## Images ride as content blocks
 
-A text-only user turn is a plain string. An image turn is a **list of content blocks**, mixing an image block and a text block in one message:
+A text-only user turn is a plain string. An image turn is a **list of content blocks**, an image block and a text block together in one message:
 
 \`\`\`python
 import base64
@@ -66,19 +66,19 @@ print(resp.content[0].text)
 
 ## Why base64
 
-Raw bytes can't travel inside JSON, which is what the API speaks. **Base64** re-encodes bytes as plain text characters (letters, digits, a few symbols), safe to drop into a string field. \`base64.b64encode\` does the encoding; \`.decode("utf-8")\` turns the resulting bytes object into a normal Python string you can put in a dict.
+Raw bytes can't travel inside JSON, and JSON is what the API speaks. Base64 re-encodes bytes as plain text characters (letters, digits, a few symbols) that drop safely into a string field. \`base64.b64encode\` does the encoding. \`.decode("utf-8")\` turns the resulting bytes object into a normal Python string you can put in a dict.
 
 ## The shape to memorize
 
-Every image turn has the same skeleton: an image block first (with a nested \`source\` dict naming the encoding, the media type, and the data), then a text block with your instruction. Order matters little to the model, but keeping image-then-text is the convention you'll see everywhere.
+Every image turn has the same skeleton. An image block first, with a nested \`source\` dict naming the encoding, the media type, and the data. Then a text block with your instruction. The model doesn't care much about order, but image-then-text is the convention you'll see everywhere.
 
 ## Why this matters
 
-Get this shape wrong, wrong key name, forgotten \`decode\`, mismatched \`media_type\`, and the API rejects the call before your prompt even gets read. Nail it once here and every later lesson just reuses \`build_image_message\`.
+Get this shape wrong (wrong key name, forgotten \`decode\`, mismatched \`media_type\`) and the API rejects the call before your prompt even gets read. Get it right once here and every later lesson just reuses \`build_image_message\`.
 
 ## The mental model
 
-Text prompts are one string in a dict. Image prompts are two dicts in a list: a picture wrapped in an envelope labeled with its encoding, sitting next to your instruction. Below, build that envelope in pure Python, no network, so you own the exact structure before you ever spend an API call on it.`,
+Text prompts are one string in a dict. Image prompts are two dicts in a list: a picture wrapped in an envelope labeled with its encoding, next to your instruction. Below, build that envelope in pure Python with no network, so you own the exact structure before you spend an API call on it.`,
       starter_code: `# Build the content-block list a vision message needs, no network call.
 import base64
 
@@ -175,11 +175,11 @@ main()
       order: 2,
       title: "Reading the Reply's Content Blocks",
       concept: "parsing the model's response",
-      explanation: `You sent the image. Something came back. Now: how do you actually get the description out of it, and out of that in a way that doesn't break the moment the reply isn't perfectly simple?
+      explanation: `You sent the image. Something came back. Now you need the description out of it, in a way that won't break the moment the reply isn't perfectly simple.
 
 ## The smallest thing that works
 
-For most calls, the answer is the one line you've likely seen before:
+For most calls, the answer is one line you've probably seen before:
 
 \`\`\`python
 resp = client.messages.create(
@@ -191,13 +191,13 @@ description = resp.content[0].text
 print(description)
 \`\`\`
 
-That's a real, working screenshot describer already: image in, one paragraph out. Ship-small is a legitimate first milestone.
+That's a working screenshot describer already: image in, one paragraph out. Shipping something small is a fine first milestone.
 
 ## But content is a list, not a string
 
-\`resp.content\` is not text, it's a **list of content blocks**, and \`[0].text\` only works because the first block usually is the reply text. Vision replies can occasionally include more than one block, for instance the model reasoning aloud in one block before answering in another. Grabbing only \`content[0]\` silently drops anything after it.
+\`resp.content\` is not text. It's a **list of content blocks**, and \`[0].text\` only works because the first block usually is the reply text. A vision reply can include more than one block, for instance the model reasoning in one block before answering in another. Grabbing only \`content[0]\` silently drops anything after it.
 
-The robust version loops over every block and keeps only the text ones:
+The safer version loops over every block and keeps only the text ones:
 
 \`\`\`python
 def extract_text(blocks):
@@ -210,15 +210,15 @@ def extract_text(blocks):
 description = extract_text(resp.content)
 \`\`\`
 
-This never assumes the reply is exactly one block. It filters by \`type\` and stitches whatever text blocks exist, in order, into one string. Non-text blocks (a future tool call, an image the model somehow returned) are simply skipped, not crashed on.
+This never assumes the reply is exactly one block. It filters by \`type\` and stitches whatever text blocks exist, in order, into one string. A non-text block (a future tool call, an image the model returned) gets skipped instead of crashing the code.
 
 ## Why bother when \`[0].text\` "works"
 
-It works until the day it doesn't, on some input, some model version, some edge case where the API adds an extra block you didn't expect. \`extract_text\` costs four lines and never breaks that way. This is the same lesson as the playbook's "handle reality" step, applied to the read side instead of the write side: don't trust the shape of what comes back, filter it.
+It works until the day it doesn't: some input, some model version, some case where the API adds a block you didn't expect. \`extract_text\` costs four lines and never breaks that way. It's the "handle reality" step applied to the read side instead of the write side. Don't trust the shape of what comes back. Filter it.
 
 ## The mental model
 
-Think of \`resp.content\` as an inbox, not a single letter. Most days there's exactly one letter (a text block) waiting, so grabbing the first one feels fine. But an inbox can hold more than one item, and code that only ever checks the first slot eventually misses something real. Below, practice reading a content list defensively, purely in Python, no network needed.`,
+Think of \`resp.content\` as an inbox, not a single letter. Most days one letter (a text block) is waiting, so grabbing the first one feels fine. But an inbox can hold more than one item, and code that only ever checks the first slot eventually misses something real. Below, practice reading a content list defensively in pure Python, no network needed.`,
       starter_code: `# The reply's content is a list of blocks. Pull out only the text ones.
 
 def extract_text(blocks):
@@ -319,11 +319,11 @@ main()
       order: 3,
       title: "Prompting for a Structured Description",
       concept: "structured UI JSON output",
-      explanation: `A paragraph description is nice to read. It's useless to a program. Lesson 4 wants to generate HTML from what the model saw, and HTML generation needs data, not prose. This lesson turns the description into JSON your code can walk.
+      explanation: `A paragraph description is nice to read and useless to a program. Lesson 4 generates HTML from what the model saw, and HTML generation needs data, not prose. This lesson turns the description into JSON your code can walk.
 
 ## Design the schema first
 
-Before writing the prompt, decide the shape you want back. A workable UI schema:
+Before writing the prompt, decide the shape you want back. Here's a UI schema that works:
 
 \`\`\`json
 {
@@ -335,7 +335,7 @@ Before writing the prompt, decide the shape you want back. A workable UI schema:
 }
 \`\`\`
 
-\`layout\` is a short label for the overall arrangement. \`components\` is a list, each one an element the model spotted, with its \`type\` (button, heading, text, input, image, link) and its visible \`text\`.
+\`layout\` is a short label for the overall arrangement. \`components\` is a list, each entry an element the model spotted, with its \`type\` (button, heading, text, input, image, link) and its visible \`text\`.
 
 ## The prompt pins the schema down
 
@@ -349,11 +349,11 @@ Return ONLY a JSON object, no prose, no code fences, with these keys:
 Do not invent components that aren't visible in the image."""
 \`\`\`
 
-Naming the exact keys, and the exact allowed \`type\` values, is what separates a schema the model mostly follows from one it improvises a new shape for on every run.
+Naming the exact keys, and the exact allowed \`type\` values, is what separates a schema the model mostly follows from one where it improvises a new shape every run.
 
 ## Parse it defensively
 
-Models still occasionally wrap JSON in a sentence or a code fence despite being told not to. Slice out the object before trusting it:
+Models still wrap JSON in a sentence or a code fence sometimes, even when told not to. Slice out the object before trusting it:
 
 \`\`\`python
 import json
@@ -364,15 +364,15 @@ def parse_description(raw_text):
     return json.loads(raw_text[start:end])
 \`\`\`
 
-Finding the first \`{\` and the last \`}\` throws away any wrapper text and hands \`json.loads\` a clean object, the same trick you'd use parsing any structured reply.
+Finding the first \`{\` and the last \`}\` throws away any wrapper text and hands \`json.loads\` a clean object. It's the same trick you'd use parsing any structured reply.
 
 ## Why this matters
 
-Everything from lesson 4 onward, HTML generation, layout CSS, validation, reads fields off this dictionary. A vague prompt gives you a dictionary with keys that change shape every run, and every downstream lesson breaks on it. Pin the schema once, here, and the rest of the build gets to assume it holds.
+Everything from lesson 4 onward reads fields off this dictionary: HTML generation, layout CSS, validation. A vague prompt gives you keys that change shape every run, and every downstream lesson breaks on it. Pin the schema down here, once, and the rest of the build gets to assume it holds.
 
 ## The mental model
 
-Prose is for humans; JSON is for the next function in your pipeline. The prompt is where you trade the model's freedom for your code's ability to trust the shape of what it gets. Below, parse a sample structured reply and count what it found, no network call needed.`,
+Prose is for humans. JSON is for the next function in your pipeline. The prompt is where you trade the model's freedom for your code's ability to trust the shape of what it gets. Below, parse a sample structured reply and count what it found, no network call needed.`,
       starter_code: `# Extract and parse a structured UI description from a raw model reply.
 import json
 
@@ -467,11 +467,11 @@ main()
       order: 4,
       title: "From Description to Starter Markup",
       concept: "generating HTML from components",
-      explanation: `You have a list of components: type and text. Now turn that data into something a browser can render, real starter HTML the user can drop into a project and keep building.
+      explanation: `You have a list of components, each with a type and text. Turn that data into something a browser can render: starter HTML the user can drop into a project and keep building.
 
 ## One mapping, one function
 
-Each component \`type\` corresponds to one HTML tag. Build that mapping once, as a plain dictionary:
+Each component \`type\` maps to one HTML tag. Build that mapping once, as a plain dictionary:
 
 \`\`\`python
 TAG_MAP = {
@@ -493,7 +493,7 @@ def component_to_html(component):
     return f"<{tag}>{text}</{tag}>"
 \`\`\`
 
-Two small decisions carry the whole function. \`TAG_MAP.get(..., "div")\` means an unrecognized type doesn't crash the generator, it just falls back to a generic \`div\`, so a weird model output degrades gracefully instead of blowing up the build. And \`input\`/\`img\` are self-closing tags in HTML, they don't wrap text, so they need their own branch.
+Two small decisions carry the whole function. \`TAG_MAP.get(..., "div")\` means an unrecognized type falls back to a generic \`div\` instead of crashing the generator, so odd model output degrades quietly instead of blowing up the build. And \`input\`/\`img\` are self-closing tags in HTML. They don't wrap text, so they need their own branch.
 
 ## Real usage: describe, then render
 
@@ -509,15 +509,15 @@ That loop is the entire "generate starter code" half of this product's name. Eve
 
 ## Why a dictionary beats an if/elif chain
 
-Six \`type\` values today might be twelve next month, a nav bar, a checkbox, a dropdown. Adding a row to \`TAG_MAP\` is a one-line change. An if/elif chain would need a new branch each time, and it's easy to forget the \`else\` case entirely, which is exactly the crash \`.get(..., "div")\` prevents for free.
+Six \`type\` values today might be twelve next month once you add a nav bar or a dropdown. Adding a row to \`TAG_MAP\` is a one-line change. An if/elif chain needs a new branch each time, and it's easy to forget the \`else\` case, which is exactly the crash \`.get(..., "div")\` prevents for free.
 
 ## Why this matters
 
-This is the step that turns "the model described a UI" into "here's a file to edit." A description that only prints prose is a novelty; one that emits real, structurally-correct starter tags is a tool someone can actually build on. It doesn't need to produce pixel-perfect final markup, just a sane starting skeleton, which is exactly what "starter code" means.
+This step turns "the model described a UI" into "here's a file to edit." A description that only prints prose is a novelty. One that emits structurally correct starter tags is something someone can build on. It doesn't have to produce pixel-perfect final markup, just a sane starting skeleton, which is what "starter code" means.
 
 ## The mental model
 
-A component is data; a tag is its rendering. The map is the entire translation layer between them, and a safe default is what keeps an unexpected \`type\` from becoming a crash instead of a slightly-generic \`<div>\`. Below, build that translation in pure Python.`,
+A component is data. A tag is its rendering. The map is the whole translation layer between them, and a safe default keeps an unexpected \`type\` from becoming a crash instead of a slightly generic \`<div>\`. Below, build that translation in pure Python.`,
       starter_code: `# Map each component's type to an HTML tag and render it.
 
 TAG_MAP = {
@@ -655,17 +655,17 @@ main()
       order: 5,
       title: "Turning Regions into Layout CSS",
       concept: "layout and positioning",
-      explanation: `Tags without layout are a pile of elements stacked top to bottom. A screenshot has structure, a header up top, a sidebar on the left, a footer at the bottom, and the starter code should hint at that structure, not throw it away.
+      explanation: `Tags without layout are a pile of elements stacked top to bottom. A screenshot has structure: a header up top, a sidebar on the left, a footer at the bottom. The starter code should hint at that structure instead of throwing it away.
 
 ## Add a region to the schema
 
-Extend lesson 3's component schema with one more field: which part of the page it lives in.
+Extend lesson 3's component schema with one more field: which part of the page the element lives in.
 
 \`\`\`json
 {"type": "button", "text": "Submit", "region": "main"}
 \`\`\`
 
-A small, fixed set of regions keeps this predictable: \`header\`, \`sidebar\`, \`main\`, \`footer\`. You'd add \`region\` to the system prompt's schema right alongside \`type\` and \`text\` from lesson 3.
+A small fixed set of regions keeps this predictable: \`header\`, \`sidebar\`, \`main\`, \`footer\`. You'd add \`region\` to the system prompt's schema right alongside \`type\` and \`text\` from lesson 3.
 
 ## CSS Grid speaks the same language
 
@@ -678,7 +678,7 @@ def css_rule(component, index):
     return f"#{element_id} {{ grid-area: {region}; }}"
 \`\`\`
 
-\`component.get("region") or "main"\` is doing two jobs at once: it handles a missing \`region\` key *and* an empty-string region, falling back to \`main\` either way, since screenshots are mostly "main content" and that's the safest default when the model isn't sure.
+\`component.get("region") or "main"\` does two jobs at once. It handles a missing \`region\` key *and* an empty-string region, falling back to \`main\` either way. Most of a screenshot is main content, so that's the safest default when the model isn't sure.
 
 ## Pairing it with the HTML
 
@@ -693,15 +693,15 @@ for i, c in enumerate(description["components"], start=1):
     css_lines.append(css_rule(c, i))
 \`\`\`
 
-Now the starter bundle has three matching parts: an HTML element, an id, and a CSS rule that places it in the right region of a grid.
+Now the starter bundle has matching parts: an HTML element, an id, and a CSS rule that places it in the right region of a grid.
 
 ## Why not compute exact pixel positions
 
-You could ask the model for x/y coordinates and hard-code absolute positions, but that produces a layout frozen to one screen size, brittle the moment the browser window resizes. Naming a *region* instead of a *coordinate* is the same idea as writing "sidebar" instead of "the box at x=0, y=140": it survives resizing, content changes, and being edited by a human afterward. That's the difference between a screenshot clone and reusable starter code.
+You could ask the model for x/y coordinates and hard-code absolute positions, but that freezes the layout to one screen size and breaks the moment the window resizes. Naming a *region* instead of a *coordinate* is the same idea as writing "sidebar" instead of "the box at x=0, y=140." It survives resizing, content changes, and a human editing it afterward. That's the difference between a screenshot clone and reusable starter code.
 
 ## The mental model
 
-A component's type says what it is; its region says where it roughly belongs. Grid areas are the bridge between "roughly belongs in the sidebar" and actual working CSS. Below, generate the grid-area rule for a list of components, pure Python, no browser needed to check your work.`,
+A component's type says what it is. Its region says where it roughly belongs. Grid areas are the bridge between "roughly belongs in the sidebar" and working CSS. Below, generate the grid-area rule for a list of components in pure Python, no browser needed to check your work.`,
       starter_code: `# Generate a CSS grid-area rule for each component, based on its region.
 
 def css_rule(component, index):
@@ -792,11 +792,11 @@ main()
       order: 6,
       title: "Harden: Fixing Broken Descriptions",
       concept: "validating and repairing model output",
-      explanation: `Lesson 3's prompt asks nicely for a fixed schema. Nice requests aren't guarantees. Somewhere down the line the model will hand you a description missing \`layout\`, a component missing \`text\`, or a \`type\` value that was never in your allowed list. This lesson stops those from becoming crashes.
+      explanation: `Lesson 3's prompt asks nicely for a fixed schema. A nice request isn't a guarantee. Sooner or later the model hands you a description missing \`layout\`, a component missing \`text\`, or a \`type\` value that was never in your allowed list. This lesson stops those from becoming crashes.
 
 ## Normalize, don't trust
 
-The fix is one function that takes whatever came back and returns something guaranteed to have every field your renderer needs:
+The fix is one function that takes whatever came back and returns something with every field your renderer needs:
 
 \`\`\`python
 ALLOWED_TYPES = {"button", "heading", "text", "input", "image", "link"}
@@ -815,29 +815,29 @@ def normalize(description):
     return {"layout": layout, "components": fixed}
 \`\`\`
 
-Read the defaults carefully, each one closes a specific way things go wrong:
+Read the defaults carefully. Each one closes a specific way things go wrong:
 
-- No \`layout\` key at all → \`"single-column"\`, a safe, generic fallback.
+- No \`layout\` key at all → \`"single-column"\`, a generic fallback.
 - No \`components\` key, or it's \`null\` → an empty list, not a crash on the next loop.
 - A component missing \`type\` → treated as plain \`"text"\`, the most harmless guess.
-- A \`type\` the model invented that isn't in your allowed set (say, \`"navbar-thing"\`) → downgraded to \`"div"\`, same fallback lesson 4's renderer already uses.
+- A \`type\` the model invented that isn't in your allowed set (say, \`"navbar-thing"\`) → downgraded to \`"div"\`, the same fallback lesson 4's renderer already uses.
 - A component missing \`text\` → empty string, never \`None\` leaking into an f-string as the literal word "None".
 
 ## Why normalize once, here
 
-Without this step, every later function, the HTML renderer, the CSS generator, the CLI, would need its own defensive \`.get(..., default)\` calls scattered everywhere, and it's easy to miss one. Normalizing once, right after parsing, means everything downstream can assume a clean shape and just use \`description["layout"]\` without flinching.
+Skip this step and every later function needs its own defensive \`.get(..., default)\` calls scattered around: the HTML renderer, the CSS generator, the CLI. Miss one and it crashes. Normalizing right after parsing lets everything downstream assume a clean shape and use \`description["layout"]\` without flinching.
 
 ## Pairing with a retry
 
-If \`json.loads\` fails outright (the model's "JSON" wasn't valid JSON at all), that's not a normalization problem, it's a call you retry, same pattern as any structured-output tool: try, catch the parse error, ask again with a firmer instruction, give up gracefully after a couple of attempts.
+If \`json.loads\` fails outright (the model's "JSON" wasn't valid JSON at all), that's not a normalization problem. It's a call you retry, the same pattern as any structured-output tool: try, catch the parse error, ask again with a firmer instruction, give up gracefully after a couple of attempts.
 
 ## Why this matters
 
-A description tool that occasionally throws a \`KeyError\` on a live screenshot isn't a tool, it's a demo that works on your test image. Normalizing turns "the model's JSON was almost right" into "the JSON is exactly right, downstream code doesn't need to know it was ever wrong."
+A description tool that throws a \`KeyError\` on a live screenshot isn't a tool. It's a demo that works on your test image. Normalizing turns "the model's JSON was almost right" into "the JSON is exactly right, and downstream code never has to know it was ever wrong."
 
 ## The mental model
 
-Treat the model's structured output the way you'd treat form input from a stranger on the internet: plausible, usually fine, never fully trusted. Normalize once at the door, and every room past it is safe. Below, build that normalizer in pure Python.`,
+Treat the model's structured output the way you'd treat form input from a stranger on the internet: plausible, usually fine, never fully trusted. Normalize once at the door and every room past it is safe. Below, build that normalizer in pure Python.`,
       starter_code: `# Normalize a messy description dict into a guaranteed-clean shape.
 
 ALLOWED_TYPES = {"button", "heading", "text", "input", "image", "link"}
@@ -963,11 +963,11 @@ main()
       order: 7,
       title: "Harden: Big Screenshots Cost Tokens",
       concept: "image size and token cost",
-      explanation: `A screenshot from a modern laptop can be 3000 pixels wide. Send that straight to the model and two things happen: the request gets slow, and the bill for that one call jumps, images aren't free, they're billed in tokens just like text.
+      explanation: `A screenshot from a modern laptop can be 3000 pixels wide. Send that straight to the model and the request gets slow and the bill for that one call jumps. Images aren't free. They're billed in tokens, just like text.
 
 ## Images cost tokens too
 
-Anthropic's models estimate an image's token cost from its pixel area. A workable rule of thumb: **tokens ≈ (width × height) / 750**. A 1024×1024 screenshot costs roughly 1,400 tokens before you've sent a single word of prompt. A giant 4K screenshot at full resolution can cost tens of thousands of tokens for one image, more than most entire text prompts.
+Anthropic's models estimate an image's token cost from its pixel area. A rule of thumb: tokens are about (width x height) / 750. A 1024x1024 screenshot costs roughly 1,400 tokens before you've sent a single word of prompt. A full-resolution 4K screenshot can cost tens of thousands of tokens for one image, more than most entire text prompts.
 
 \`\`\`python
 def estimate_image_tokens(width, height):
@@ -976,7 +976,7 @@ def estimate_image_tokens(width, height):
 
 ## Downscale before you send
 
-The model doesn't need every pixel to read a button label. Capping the longest side to something like 1024 or 1568 pixels keeps quality plenty good for describing UI while cutting the token bill dramatically:
+The model doesn't need every pixel to read a button label. Capping the longest side to something like 1024 or 1568 pixels keeps the image sharp enough to describe a UI while cutting the token bill sharply:
 
 \`\`\`python
 def resize_dimensions(width, height, max_dim):
@@ -988,11 +988,11 @@ def resize_dimensions(width, height, max_dim):
     return new_width, new_height
 \`\`\`
 
-This keeps the aspect ratio: both sides shrink by the same factor, computed as integer math so the result is exact and predictable rather than drifting from floating-point rounding. In a real tool you'd hand these dimensions to an image library (Pillow's \`Image.resize\`) before base64-encoding the result.
+This keeps the aspect ratio. Both sides shrink by the same factor, computed with integer math so the result is exact rather than drifting from floating-point rounding. In a real tool you'd hand these dimensions to an image library (Pillow's \`Image.resize\`) before base64-encoding the result.
 
 ## The order of operations matters
 
-Resize *before* you base64-encode, not after. Base64 only re-encodes whatever bytes you give it; shrinking the image first is what actually cuts the token cost, encoding a giant image efficiently doesn't exist, the pixels are still the pixels.
+Resize *before* you base64-encode, not after. Base64 only re-encodes whatever bytes you give it. Shrinking the image first is what actually cuts the token cost. There's no such thing as encoding a giant image efficiently, since the pixels are still the pixels.
 
 \`\`\`python
 from PIL import Image
@@ -1005,11 +1005,11 @@ img = img.resize((new_w, new_h))
 
 ## Why this matters
 
-A describer tool that works fine on your 800px test image and silently costs ten times as much (or times out) on a real user's 4K screenshot isn't production-ready. Capping dimensions before every call is a cheap, boring guard that makes the cost predictable no matter what gets uploaded.
+A describer tool that works fine on your 800px test image but silently costs ten times as much (or times out) on a real user's 4K screenshot isn't production-ready. Capping dimensions before every call is a cheap, boring guard that makes the cost predictable no matter what gets uploaded.
 
 ## The mental model
 
-Every extra pixel is tokens you're paying for and didn't need to read a button label. Resize down to "just enough to read," and both your latency and your bill stop depending on what camera or monitor the user happened to screenshot from. Below, compute the resized dimensions and the resulting token estimate, pure math, no image library needed.`,
+Every extra pixel is tokens you pay for and didn't need to read a button label. Resize down to just enough to read, and both your latency and your bill stop depending on what monitor the user happened to screenshot from. Below, compute the resized dimensions and the resulting token estimate. Pure math, no image library needed.`,
       starter_code: `# Cap an image's dimensions and estimate the resulting token cost.
 
 def resize_dimensions(width, height, max_dim):
@@ -1111,11 +1111,11 @@ main()
       order: 8,
       title: "Ship the Screenshot Describer",
       concept: "shipping the tool",
-      explanation: `Every piece exists: image encoding, structured parsing, HTML rendering, layout CSS, validation, and a size guard. Lesson 8 wires them into one command someone can actually run, and finishes by landing the build in your **Portfolio**.
+      explanation: `Every piece exists now: image encoding, structured parsing, HTML rendering, layout CSS, validation, and a size guard. Lesson 8 wires them into one command someone can run, and finishes by landing the build in your **Portfolio**.
 
 ## Two modes, one pipeline
 
-The tool does one of two things depending on what the user wants: a plain-English description, or generated starter code. Both modes share every step up through normalization; only the last step differs.
+The tool does one of two things depending on what the user wants: a plain-English description, or generated starter code. Both modes share every step up through normalization. Only the last step differs.
 
 \`\`\`python
 def render_describe(description):
@@ -1164,7 +1164,7 @@ if __name__ == "__main__":
 
 ## What "shipped" means here
 
-Three checks, the same three from every product in this track: it runs from a clean start with one command, it survives a broken reply or an oversized image without crashing (that's lessons 6 and 7 doing their job), and someone else could point it at their own screenshot from your instructions alone.
+The same three checks as every product in this track. It runs from a clean start with one command. It survives a broken reply or an oversized image without crashing, which is lessons 6 and 7 doing their job. And someone else could point it at their own screenshot from your instructions alone.
 
 ## Into your Portfolio
 
@@ -1172,7 +1172,7 @@ Finishing this lesson records the Screenshot Describer in your **Portfolio** tab
 
 ## The mental model
 
-A shipped tool hides its own plumbing behind one flag. The user picks "describe" or "code"; everything about images, JSON, and defaults happens quietly underneath. Below, build that final dispatcher, the last piece, then it's done.`,
+A shipped tool hides its plumbing behind one flag. The user picks "describe" or "code," and everything about images, JSON, and defaults happens underneath. Below, build that final dispatcher. Last piece, then it's done.`,
       starter_code: `# The final dispatcher: pick describe-text or generated-HTML output.
 
 def render_describe(description):

@@ -3,7 +3,7 @@ export default {
     id: "prod-06",
     title: "Structured JSON Extractor",
     description:
-      "Build a tool that reads messy free text, a signature block, a pasted receipt, a paragraph of notes, and returns the same strict JSON every time. You'll extract contacts and invoices, parse and repair the model's reply, and validate that every required field is present before you trust it.",
+      "Build a tool that reads messy free text (a signature block, a pasted receipt, a paragraph of notes) and returns the same strict JSON every time. You'll extract contacts and invoices, parse and repair the model's reply, and check that every required field is present before you trust it.",
     difficulty: "intermediate",
     category: "prompting",
     estimated_time: 120,
@@ -21,11 +21,11 @@ export default {
       order: 1,
       title: "Turning Mess into a Fixed Shape",
       concept: "the extraction job",
-      explanation: `Raw text is everywhere: a signature block at the bottom of an email, a receipt someone pasted into a chat, a paragraph of meeting notes. A human reads it fine. Software can't do anything with it until it has structure. A **structured extractor** is the bridge: it reads messy free text and returns the same fixed set of fields every time, as JSON your program can trust.
+      explanation: `Raw text is everywhere: a signature block at the bottom of an email, a receipt someone pasted into a chat, a paragraph of meeting notes. A human reads it fine. Software can't do anything with it until it has structure. A **structured extractor** closes that gap. It reads messy free text and returns the same fixed set of fields every time, as JSON your program can trust.
 
 ## What we're building
 
-Over eight lessons you'll build a tool that turns messy text into validated structured JSON: **contacts** (name, email, phone) and **invoices** (id, total, line items). The output is never a paragraph, it's a strict object with known keys, ready to drop into a database row or a spreadsheet cell.
+Over eight lessons you'll build a tool that turns messy text into validated JSON: **contacts** (name, email, phone) and **invoices** (id, total, line items). The output is never a paragraph. It's a strict object with known keys, ready to drop into a database row or a spreadsheet cell.
 
 ## The one idea: a target schema
 
@@ -39,11 +39,11 @@ SCHEMA = {
 }
 \`\`\`
 
-The schema is a contract. It names every field, so the model knows what to look for and your code knows what to expect. No schema, no reliability: the model returns a slightly different shape on every call and your parser is left guessing.
+The schema is a contract. It names every field, so the model knows what to look for and your code knows what to expect. Without one, the model returns a slightly different shape on every call and your parser is left guessing.
 
 ## The loop, with the work in two steps
 
-It's the same six-step loop from the playbook. The special work lives in **prompt** and **parse**:
+It's the same six-step loop from the playbook. The interesting work happens in **prompt** and **parse**:
 
 1. **Input**: the messy text.
 2. **Prompt**: "extract exactly these fields as JSON."
@@ -71,11 +71,11 @@ print(msg.content[0].text)
 
 ## Why "every time" is the hard part
 
-Extracting one clean business card is a demo. Extracting ten thousand, some missing a phone, some with two emails, some where the model wrapped the JSON in chatty text, is the actual product. The schema is what makes that survivable: once you know the exact shape you want, you can check the model against it and repair whatever is off.
+Extracting one clean business card is a demo. Extracting ten thousand is the product, and some are missing a phone, some carry two emails, some arrive wrapped in chatty text. The schema is what makes that survivable. Once you know the exact shape you want, you can check the model against it and repair whatever is off.
 
 ## The drill below
 
-No network here. You'll define a schema and write the check that reports which required fields a record is **missing**, the smallest piece of the validation you'll build up over the next seven lessons.`,
+No network here. You'll define a schema and write the check that reports which required fields a record is **missing**. That's the smallest piece of the validation you'll build up over the next seven lessons.`,
       starter_code: `# The smallest piece of validation: which required fields are missing?
 
 SCHEMA = ["name", "email", "phone"]
@@ -174,7 +174,7 @@ main()
       order: 2,
       title: "Put the Schema in the Prompt",
       concept: "schema-in-the-prompt",
-      explanation: `The model will return whatever shape it feels like unless you tell it exactly what you want. "Give me the contact info" gets you a friendly paragraph. The fix is to put the **schema in the prompt**: spell out the exact keys, the exact types, and demand JSON and nothing else.
+      explanation: `The model returns whatever shape it feels like unless you tell it exactly what you want. "Give me the contact info" gets you a friendly paragraph. The fix is to put the **schema in the prompt**. Spell out the exact keys, the exact types, and ask for JSON and nothing else.
 
 ## Describe the shape, key by key
 
@@ -191,15 +191,15 @@ def build_system(schema):
     return "\\n".join(lines)
 \`\`\`
 
-Building the prompt from the schema dict means one source of truth. Change the schema and the instructions change with it, they can't drift apart.
+Building the prompt from the schema dict gives you one source of truth. Change the schema and the instructions change with it. They can't drift apart.
 
 ## Show one tiny example
 
-A single example pins down the shape faster than a paragraph of rules. This is **one-shot prompting**: include an input and its ideal JSON output right in the system prompt. The model pattern-matches on it.
+A single example pins down the shape faster than a paragraph of rules. This is **one-shot prompting**: include an input and its ideal JSON output right in the system prompt, and the model pattern-matches on it.
 
 ## Say what to do with missing data
 
-The most common bug in extraction is invention: no phone in the text, so the model makes one up. Head it off in the prompt: "If a field is not present in the text, use null. Never guess." That one sentence turns a hallucinating extractor into an honest one.
+The most common bug in extraction is invention. There's no phone in the text, so the model makes one up. Head it off in the prompt: "If a field is not present in the text, use null. Never guess." That one sentence turns a hallucinating extractor into an honest one.
 
 ## The real call
 
@@ -214,11 +214,11 @@ import json
 data = json.loads(msg.content[0].text)   # works only when output is clean
 \`\`\`
 
-That \`json.loads\` is the happy path, it works when the model returns bare JSON. Later lessons handle the (frequent) case where it doesn't.
+That \`json.loads\` is the happy path. It works when the model returns bare JSON. Later lessons handle the frequent case where it doesn't.
 
 ## Why this matters
 
-The prompt is the cheapest reliability you can buy. Every field name you spell out, every "use null when absent," every one-shot example, is a bug you don't have to catch downstream. A vague prompt fails silently: the reply looks plausible and breaks your parser one call in a hundred.
+The prompt is the cheapest reliability you can buy. Every field name you spell out, every "use null when absent," every one-shot example is a bug you don't have to catch downstream. A vague prompt fails silently. The reply looks plausible and then breaks your parser one call in a hundred.
 
 ## The drill below
 
@@ -308,7 +308,7 @@ main()
       project_id: "prod-06",
       order: 3,
       title: "Digging the JSON Out of the Reply",
-      concept: "robust JSON parsing",
+      concept: "parsing JSON out of a reply",
       explanation: `You asked for JSON and only JSON. The model, being helpful, often returns \`Sure! Here is the contact:\` and then the JSON, or wraps it in a Markdown code fence. Feed that straight to \`json.loads\` and it throws. The fix is to stop trusting the reply to be clean and instead **dig the JSON object out** of whatever came back.
 
 ## The reply is rarely bare JSON
@@ -332,7 +332,7 @@ def extract_json(text):
     return text[start:end + 1]
 \`\`\`
 
-\`find\` gives the first opening brace, \`rfind\` the last closing brace. Everything before \`start\` and after \`end\` is chatter you throw away. This survives the code fence too, backticks live outside the braces, so slicing skips them.
+\`find\` gives the first opening brace, \`rfind\` the last closing brace. Everything before \`start\` and after \`end\` is chatter you throw away. This handles the code fence too. Backticks live outside the braces, so the slice skips them.
 
 ## Then parse the slice
 
@@ -343,19 +343,19 @@ raw = msg.content[0].text
 data = json.loads(extract_json(raw))
 \`\`\`
 
-Parsing the **slice** instead of the raw reply is the whole trick. \`json.loads(raw)\` chokes on the prefix; \`json.loads(extract_json(raw))\` doesn't, because the prefix is gone.
+Parsing the **slice** instead of the raw reply is the whole trick. \`json.loads(raw)\` chokes on the prefix. \`json.loads(extract_json(raw))\` doesn't, because the prefix is gone.
 
 ## Why not just ask the model to stop adding text?
 
-You do, in the prompt, and it helps. But "return only JSON" is a strong nudge, not a guarantee. Robust products assume the instruction sometimes fails and handle the mess anyway. Prompt for clean output, parse defensively regardless. Belt and suspenders.
+You do, in the prompt, and it helps. But "return only JSON" is a strong nudge, not a guarantee. Assume the instruction sometimes fails and handle the mess anyway. Prompt for clean output and parse defensively regardless. Belt and suspenders.
 
 ## The mental model to keep
 
-The reply is a haystack; the JSON is the needle. Don't demand a needle-only haystack, learn to find the needle. First brace to last brace is your magnet.
+The reply is a haystack and the JSON is the needle. Rather than demand a needle-only haystack, learn to find the needle. First brace to last brace is your magnet.
 
 ## The drill below
 
-You'll write \`extract_json\` and run it over three messy replies, prefix, code fence, trailing note, parsing each one into a dict.`,
+You'll write \`extract_json\` and run it over three messy replies (prefix, code fence, trailing note), parsing each one into a dict.`,
       starter_code: `import json
 
 def extract_json(text):
@@ -446,15 +446,15 @@ main()
       order: 4,
       title: "Repairing Broken JSON",
       concept: "JSON repair",
-      explanation: `Sometimes the slice you dug out still won't parse. The model left a trailing comma, or the whole thing is fenced, or a stray character snuck in. Rather than fail the extraction, you run a small **repair pass**: a few cheap, safe fixes that turn almost-JSON into real JSON before \`json.loads\`.
+      explanation: `Sometimes the slice you dug out still won't parse. The model left a trailing comma, or the whole thing is fenced, or a stray character snuck in. Rather than fail the extraction, run a small **repair pass**: a few cheap, safe fixes that turn almost-JSON into real JSON before \`json.loads\`.
 
 ## The breakages you'll actually see
 
 - **Code fences**: the reply is wrapped in three backticks and \`json\`.
-- **Trailing commas**: \`{"a": 1, "b": 2,}\`, legal in Python, illegal in JSON.
-- **Leading/trailing whitespace** around the object.
+- **Trailing commas**: \`{"a": 1, "b": 2,}\` is legal in Python, illegal in JSON.
+- **Whitespace** padding the object on either side.
 
-Single quotes and unquoted keys also happen, but repairing those safely is hard (an apostrophe inside a name would break naive fixes), so we leave them to a retry, not a regex.
+Single quotes and unquoted keys also happen, but repairing those safely is hard (an apostrophe inside a name breaks naive fixes), so leave them to a retry rather than a regex.
 
 ## A small, safe repair function
 
@@ -471,7 +471,7 @@ def repair_json(text):
     return text
 \`\`\`
 
-The trailing-comma regex reads: a comma followed by optional whitespace and then a closing \`}\` or \`]\`, replace it with just the closing bracket. That single line handles the single most common JSON breakage from LLMs.
+The trailing-comma regex reads: a comma followed by optional whitespace and then a closing \`}\` or \`]\`, replaced with just the closing bracket. That one line handles the most common JSON breakage from LLMs.
 
 ## Repair, then parse, then know when to quit
 
@@ -487,7 +487,7 @@ Return \`None\` on failure rather than crashing. \`None\` is a signal the caller
 
 ## Don't over-repair
 
-Every repair rule is a small risk of corrupting good data. Keep the set tiny and boring: fences and trailing commas cover the vast majority. When those aren't enough, the right move is to **ask the model again** (next lesson), not to bolt on ten more fragile regexes.
+Every repair rule is a small risk of corrupting good data. Keep the set tiny and boring. Fences and trailing commas cover most of what you'll see. When those aren't enough, the right move is to **ask the model again** (next lesson), not to bolt on ten more fragile regexes.
 
 ## The drill below
 
@@ -570,11 +570,11 @@ main()
       order: 5,
       title: "Validating the Required Fields",
       concept: "field validation",
-      explanation: `The JSON parsed. That only means it was well-formed, not that it was **correct**. The extractor's real job is a contract: every required field present, and each value the right type. Parsing is syntax; validation is meaning. This lesson is the spine of the whole tool.
+      explanation: `The JSON parsed. That only means it was well-formed, not that it was **correct**. The extractor's real job is a contract: every required field present, and each value the right type. Parsing checks syntax. Validation checks meaning. This lesson is the spine of the whole tool.
 
 ## Parsing success is not correctness
 
-\`json.loads\` happily accepts \`{"name": "Ada"}\` even when your schema demands name, email, and phone. It accepts \`{"amount": "fifty"}\` when amount should be a number. Nothing is wrong with the JSON; everything is wrong with the data. You have to check it yourself.
+\`json.loads\` happily accepts \`{"name": "Ada"}\` even when your schema demands name, email, and phone. It accepts \`{"amount": "fifty"}\` when amount should be a number. The JSON is fine. The data is wrong. You have to check it yourself.
 
 ## Two checks: presence and type
 
@@ -598,7 +598,7 @@ Presence first: a required key that's absent or \`null\` is a \`missing\` error.
 
 ## Normalize while you're here
 
-Extraction output should be predictable. If an optional field is absent, set it to \`None\` explicitly rather than leaving the key off, so every record has the same keys:
+Extraction output should be predictable. When an optional field is absent, set it to \`None\` explicitly rather than leaving the key off, so every record has the same keys:
 
 \`\`\`python
 def finalize(record, schema):
@@ -609,11 +609,11 @@ Now downstream code can write \`record["phone"]\` without a \`KeyError\`, whethe
 
 ## Why this is the product
 
-An extractor without validation is a guess with extra steps. The value isn't that the model returned *something*, it's that you can **prove** what it returned meets the contract before it lands in your database. Validation is the difference between "the model usually gets it right" and "bad records never reach production." When a record fails, you don't ship it, you retry or flag it, which is exactly the next lesson.
+An extractor without validation is a guess with extra steps. What matters is that you can **prove** the returned record meets the contract before it lands in your database. Validation is the difference between "the model usually gets it right" and "bad records never reach production." When a record fails, you don't ship it. You retry or flag it, which is exactly the next lesson.
 
 ## The drill below
 
-You'll validate a parsed record against a schema of required fields and types, and report each error, catching a value that's the wrong type.`,
+You'll validate a parsed record against a schema of required fields and types and report each error, catching a value that came back the wrong type.`,
       starter_code: `SCHEMA = {"name": str, "email": str, "amount": (int, float)}
 REQUIRED = ["name", "email", "amount"]
 
@@ -712,7 +712,7 @@ main()
       order: 6,
       title: "When It Fails, Ask Again",
       concept: "retry with feedback",
-      explanation: `Real inputs break things. The text is empty. The model returns two fields when you needed three. A value comes back the wrong type. A production extractor doesn't crash on these, it **recovers**: it handles the empty case without a call, and when validation fails it asks the model again, telling it exactly what was wrong.
+      explanation: `Real inputs break things. The text is empty. The model returns two fields when you needed three. A value comes back the wrong type. A production extractor **recovers** instead of crashing. It handles the empty case without a call, and when validation fails it asks the model again, telling it exactly what was wrong.
 
 ## Handle the empty case first
 
@@ -725,11 +725,11 @@ def extract(text, schema):
     # ... otherwise call the model
 \`\`\`
 
-No tokens spent, no hallucinated fields, a predictable all-null record.
+No tokens spent, nothing hallucinated, just a predictable all-null record.
 
 ## Retry with the error in the prompt
 
-When a parsed record fails validation, don't just retry blindly, tell the model what broke. Feeding the validation errors back sharpens the second attempt:
+When a parsed record fails validation, don't retry blindly. Tell the model what broke. Feeding the validation errors back sharpens the second attempt:
 
 \`\`\`python
 def extract_with_retry(text, schema, required, max_retries=2):
@@ -747,15 +747,15 @@ Each retry appends the specific problems (\`missing: phone\`) so the model corre
 
 ## Cap the retries
 
-Retries cost money and time, and some inputs genuinely lack the data, no amount of re-asking will find a phone number that was never in the text. So cap attempts (two retries is a sane default) and, on final failure, return the best record you have with a \`valid: False\` flag. The caller decides: store it flagged, drop it, or send it to a human. What you never do is loop forever.
+Retries cost money and time, and some inputs genuinely lack the data. No amount of re-asking will find a phone number that was never in the text. So cap attempts (two retries is a sane default) and, on final failure, return the best record you have with a \`valid: False\` flag. The caller decides whether to store it flagged, drop it, or send it to a human. What you never do is loop forever.
 
 ## Why this matters
 
-The gap between a demo and a tool is exactly this behavior: fails politely, recovers when it can, and gives up cleanly when it can't. An extractor that surfaces "3 records need review" is trustworthy. One that silently writes garbage, or crashes on row 4,000, is not.
+The gap between a demo and a tool is exactly this behavior: it fails politely, recovers when it can, and gives up cleanly when it can't. An extractor that surfaces "3 records need review" is trustworthy. One that silently writes garbage, or crashes on row 4,000, is not.
 
 ## The drill below
 
-You'll simulate the retry loop over a sequence of fake replies, the first invalid, the next fixed, and confirm it stops as soon as a valid one arrives, reporting how many attempts it took.`,
+You'll simulate the retry loop over a sequence of fake replies, the first invalid and the next fixed, and confirm it stops as soon as a valid one arrives, reporting how many attempts it took.`,
       starter_code: `def validate(record, required):
     return [f"missing: {k}" for k in required if not record.get(k)]
 
@@ -856,7 +856,7 @@ main()
       order: 7,
       title: "Invoices, Nesting, and Cost",
       concept: "nested schemas and totals",
-      explanation: `Contacts are flat, three string fields. Invoices are the harder, more valuable case: an id, a total, and a **list of line items**, each with its own fields. Nesting brings a new kind of validation you can't do on contacts: the numbers have to add up. And bigger documents bring a new concern: cost.
+      explanation: `Contacts are flat, three string fields. Invoices are the harder, more valuable case: an id, a total, and a **list of line items**, each with its own fields. Nesting brings a kind of validation you can't do on contacts, since the numbers have to add up. Bigger documents bring another concern: cost.
 
 ## Nested schema
 
@@ -874,7 +874,7 @@ You spell the item shape out in the prompt too, so the model knows each line nee
 
 ## Validate the arithmetic
 
-The killer check for invoices: the line items must sum to the stated total. If they don't, the extraction is wrong even if every field is present and typed correctly:
+The check that earns its keep for invoices: the line items must sum to the stated total. If they don't, the extraction is wrong even when every field is present and typed correctly:
 
 \`\`\`python
 def validate_invoice(inv):
@@ -894,18 +894,18 @@ This catches the model dropping a line item or misreading a price, errors that p
 
 ## Watch the cost of big documents
 
-A contact is a sentence; an invoice can be a page. Roughly one token per four characters, and you pay for the input on every call, including every retry. A 4,000-character invoice is ~1,000 input tokens, and if you naively resend the whole thing on two retries you've tripled the bill for that record.
+A contact is a sentence. An invoice can be a page. Figure roughly one token per four characters, and you pay for the input on every call, including every retry. A 4,000-character invoice is about 1,000 input tokens, and if you resend the whole thing on two retries you've tripled the bill for that record.
 
 \`\`\`python
 def estimate_tokens(text):
     return max(1, len(text) // 4)
 \`\`\`
 
-Practical levers: don't retry more than you must, extract only the fields you actually need, and for a batch, measure the average document size before you run ten thousand of them.
+A few practical levers: don't retry more than you must, extract only the fields you actually need, and for a batch, measure the average document size before you run ten thousand of them.
 
 ## The drill below
 
-You'll validate an invoice: required top-level fields present, then confirm the line items sum to the stated total, catching the arithmetic, not just the shape.`,
+You'll validate an invoice: check that the required top-level fields are present, then confirm the line items sum to the stated total. This catches the arithmetic, not just the shape.`,
       starter_code: `def validate_invoice(inv):
     # TODO: require invoice_id, total, and items. If any are missing, return those errors.
     # TODO: otherwise check sum(qty * price over items) == total; if not, report the mismatch.
@@ -1009,7 +1009,7 @@ main()
       order: 8,
       title: "Ship the Extractor",
       concept: "the full pipeline",
-      explanation: `Time to assemble the pieces into one function you can point at any messy text and trust the output. Everything you built, schema prompt, brace-slicing, repair, validation, normalization, becomes a single \`extract(text)\` that returns a clean record and a status. This is the deliverable.
+      explanation: `Time to assemble the pieces into one function you can point at any messy text and trust the output. Everything you built (schema prompt, brace-slicing, repair, validation, normalization) collapses into a single \`extract(text)\` that returns a clean record and a status. This is the deliverable.
 
 ## The pipeline, end to end
 
@@ -1041,7 +1041,7 @@ One entry point, three honest outcomes: \`COMPLETE\`, \`INCOMPLETE\`, or \`PARSE
 
 ## Make it a real tool
 
-Wrap it in a tiny CLI so anyone can run it:
+Wrap it in a small CLI so anyone can run it:
 
 \`\`\`python
 import sys
@@ -1052,7 +1052,7 @@ if __name__ == "__main__":
     print("status:", status)
 \`\`\`
 
-Now \`cat email.txt | python extractor.py\` prints validated JSON. That's shippable: it runs from a clean start with one command, it handles empty and malformed input without crashing, and its output is documented by the schema.
+Now \`cat email.txt | python extractor.py\` prints validated JSON. That's shippable. It runs from a clean start with one command, handles empty and malformed input without crashing, and its output is documented by the schema.
 
 ## What "done" means here
 
@@ -1062,11 +1062,11 @@ Now \`cat email.txt | python extractor.py\` prints validated JSON. That's shippa
 
 ## It lands in your Portfolio
 
-Finishing this lesson saves the **Structured JSON Extractor** to your **Portfolio** tab: a real tool that turns messy contacts and invoices into JSON you can trust. Keep a sample input and its output next to it, that pair is the proof it works.
+Finishing this lesson saves the **Structured JSON Extractor** to your **Portfolio** tab: a real tool that turns messy contacts and invoices into JSON you can trust. Keep a sample input and its output next to it. That pair is the proof it works.
 
 ## The drill below
 
-You'll run the whole pipeline in pure Python, repair and parse a fenced, trailing-comma reply, normalize to the schema, and print the record plus its status.`,
+You'll run the whole pipeline in pure Python: repair and parse a fenced, trailing-comma reply, normalize it to the schema, and print the record plus its status.`,
       starter_code: `import json, re
 
 SCHEMA = ["name", "email", "phone"]

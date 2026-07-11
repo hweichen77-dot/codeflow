@@ -21,13 +21,13 @@ export default {
       order: 1,
       title: "The Summarize Prompt",
       concept: "the summarize prompt",
-      explanation: `Every summarizer is the same three-move loop: read the source, ask the model for the gist, print the result. This first lesson builds the one piece everything else hangs on, the **summarize prompt**.
+      explanation: `Every summarizer runs the same loop: read the source, ask the model for the gist, print the result. This lesson builds the piece the rest of the project depends on, the **summarize prompt**.
 
 ## What we're building
 
-By lesson 8 you'll have a command-line tool: paste an article or pipe in a text file, get back a tight summary. Under the hood it's the loop from the playbook, input then prompt then call then parse then ship, doing one job: compress long text into short text without inventing anything.
+By lesson 8 you'll have a command-line tool. Paste an article or pipe in a text file, and you get back a short summary. Inside, it runs the same loop each time: read the input, build the prompt, call the model, parse the reply, print it. The job is narrow. It compresses long text into short text without inventing anything.
 
-The heart of it is the prompt. A summary prompt is not "summarize this please." It's a precise instruction set the model follows every run, on articles you'll never read yourself.
+The prompt does the real work. A summary prompt is more than "summarize this please." It's a precise instruction set the model follows on every run, including articles you'll never read yourself.
 
 ## The prompt has two channels
 
@@ -776,7 +776,7 @@ Read the reduce loop carefully: each pass groups the current summaries (here 5 a
 
 ## Why not just summarize once?
 
-Because a single chunk summary already loses detail, and stacking 60 of them re-creates the length problem you started with. The reduce phase compresses again with the model actively synthesizing, spotting the through-line across chunks rather than concatenating. The result reads like one summary, not a pile of fragments.
+Because a single chunk summary already loses detail, and stacking 60 of them re-creates the length problem you started with. The reduce phase compresses again, and this time the model synthesizes: it finds the through-line across chunks instead of gluing fragments end to end. The result reads like one summary rather than a pile of pieces.
 
 ## The cost you're signing up for
 
@@ -881,7 +881,7 @@ main()
       order: 7,
       title: "Hardening: Errors, Empties, and Cost",
       concept: "robustness and cost",
-      explanation: `Your summarizer works on the article you tested. A tool works on the article you didn't: an empty file, a network blip, a document so long the bill matters. This lesson is the boring, crucial layer that turns a script into something you'd let a stranger run.
+      explanation: `Your summarizer works on the article you tested. A tool works on the article you didn't: an empty file, a network blip, a document so long the bill matters. This lesson adds the unglamorous layer that turns a script into something you'd let a stranger run.
 
 ## Guard the input before you spend a cent
 

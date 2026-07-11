@@ -3,7 +3,7 @@ export default {
     id: "prod-02",
     title: "Smart Reply Generator",
     description:
-      "Build a tool that drafts email and message replies in your own voice, not a generic assistant's. Feed it an incoming message plus a few of your past replies, and it captures your tone, generates several drafts, and hands you the one that sounds most like you.",
+      "Build a tool that drafts email and message replies in your own voice. Feed it an incoming message and a few of your past replies. It measures how you write, produces a handful of drafts, and returns the one that sounds most like you.",
     difficulty: "beginner",
     category: "foundations",
     estimated_time: 120,
@@ -21,13 +21,13 @@ export default {
       order: 1,
       title: "Frame a Reply, Not a Chat",
       concept: "reply generation as a shaped request",
-      explanation: `A Smart Reply Generator does one job: you paste a message someone sent you, and it hands back a reply you could actually send. Before any tone-matching or draft-picking, you need the smallest thing that works, taking an incoming message and turning it into a request the model can answer.
+      explanation: `A Smart Reply Generator does one job. You paste in a message someone sent you, and it hands back a reply you could actually send. Before any tone-matching or draft-picking, build the smallest thing that works: take an incoming message and turn it into a request the model can answer.
 
 ## Reply drafting is not chatting
 
-A chatbot talks *with* you. A reply generator writes *as* you, to a third person. That reframing changes how you build the request. The model isn't your conversation partner here; it's a ghostwriter. So the incoming message is not something you're replying to, it's data the model reads in order to draft *your* reply.
+A chatbot talks *with* you. A reply generator writes *as* you, to a third person. That difference changes how you build the request. The model is not your conversation partner here. It is a ghostwriter. The incoming message is not something you reply to; it is data the model reads to draft *your* reply.
 
-The cleanest way to express that: put a short instruction and the incoming message into one \`user\` turn.
+To express that, put a short instruction and the incoming message into one \`user\` turn.
 
 \`\`\`python
 import os
@@ -48,16 +48,16 @@ print(resp.content[0].text)
 
 ## Why the framing matters
 
-Two rules save you from the most common beginner bug, the model answering the message *to you* instead of drafting a reply *for you*.
+Two rules save you from the most common beginner bug: the model answering the message *to you* instead of drafting a reply *for you*.
 
-- **The system prompt names the job**: "draft a reply in the user's voice." Without it, the model happily chats back.
-- **"Return only the reply"** stops it from wrapping the draft in "Sure! Here's a reply you could send:" preamble that you'd then have to strip.
+- **The system prompt names the job**: "draft a reply in the user's voice." Without it, the model chats back.
+- **"Return only the reply"** stops it from wrapping the draft in a "Sure! Here's a reply you could send:" preamble that you would then have to strip.
 
-Everything else in this product, tone capture, few-shot examples, picking among drafts, hangs off this skeleton. Get the request shape right first, and the smart parts slot in later.
+The rest of this product (tone capture, few-shot examples, picking among drafts) hangs off this skeleton. Get the request shape right first and the smart parts slot in later.
 
-## The mental model to keep
+## Keep this in mind
 
-Think of the incoming message as the *subject line on a task*, not a turn in a conversation. Your program's job is: read the incoming message, wrap it in one clear instruction, and ask for exactly one thing back, a reply, nothing else. In the drill below you'll build that request by hand, no network, just the messages list, because getting the data shape right is the part that actually matters.`,
+Treat the incoming message as the subject line on a task, not a turn in a conversation. Your program reads the incoming message, wraps it in one clear instruction, and asks for exactly one thing back: a reply. In the drill below you build that request by hand. No network, just the messages list. Getting the data shape right is the part that actually matters.`,
       starter_code: `# Turn an incoming message into a draft-reply request (no API yet).
 # We build the messages list by hand so it runs offline.
 
@@ -149,11 +149,11 @@ main()
       order: 2,
       title: "Get One Clean Draft Back",
       concept: "extracting and cleaning the reply text",
-      explanation: `You sent the request; now the model sends something back. The smallest working version of this product needs to pull *one clean draft string* out of that response, ready to drop into an email box. This lesson is that step.
+      explanation: `You sent the request; now the model sends something back. The smallest working version of this product has to pull one clean draft string out of that response, ready to drop into an email box. This lesson is that step.
 
 ## Where the text actually lives
 
-The Messages API doesn't return a bare string. It returns a response object whose text sits inside a content list:
+The Messages API does not return a bare string. It returns a response object whose text sits inside a content list:
 
 \`\`\`python
 resp = client.messages.create(
@@ -165,13 +165,13 @@ resp = client.messages.create(
 draft = resp.content[0].text
 \`\`\`
 
-\`resp.content\` is a list of content blocks; for a plain text reply you want \`content[0].text\`. That's the raw draft.
+\`resp.content\` is a list of content blocks. For a plain text reply you want \`content[0].text\`. That is the raw draft.
 
 ## Raw is not the same as clean
 
-Even when you say "return only the reply," models sometimes lead with a throat-clear: "Sure, here's a reply:" on its own line, then the actual draft. If you paste that straight into an email you've shipped the model's stage directions. So the smallest useful step is a tiny cleaner that drops a leading preamble line.
+Even when you say "return only the reply," models sometimes lead with a throat-clear: "Sure, here's a reply:" on its own line, then the actual draft. Paste that straight into an email and you have shipped the model's stage directions. The smallest useful fix is a tiny cleaner that drops a leading preamble line.
 
-A reliable heuristic: if the first line ends with a colon, it's almost always a preamble ("Here's a draft:", "Sure, here you go:"), so strip it and keep the rest.
+One heuristic works well: if the first line ends with a colon, it is almost always a preamble ("Here's a draft:", "Sure, here you go:"). Strip it and keep the rest.
 
 \`\`\`python
 def extract_draft(raw):
@@ -184,11 +184,11 @@ def extract_draft(raw):
 
 ## Why bother this early
 
-It's tempting to skip cleaning until the "harden" lessons. But a draft with a preamble line *looks* fine in a print statement and quietly breaks the moment a real user copies it. Parsing the reply into exactly the string you'd send is part of the core loop, not a nicety. Later lessons add more cleaning (empty checks, length caps, stray quotes); this is the first and most common case.
+You might want to skip cleaning until the harden lessons. But a draft with a preamble line looks fine in a print statement and breaks the moment a real user copies it. Parsing the reply into exactly the string you would send is part of the core loop, not a nicety. Later lessons add more cleaning for empty checks, length caps, and stray quotes. This is the first and most common case.
 
-## The mental model to keep
+## Keep this in mind
 
-The model hands you a *package*, not a note. Your job is to open the package, response object to content block to text, and then peel off any wrapper the model added. What's left is the draft. In the drill you'll write the peeler against a few realistic raw outputs, so a stray "Here's a reply:" never reaches the user.`,
+The model hands you a package, not a note. Open the package (response object to content block to text), then peel off any wrapper the model added. What is left is the draft. In the drill you write that peeler against a few realistic raw outputs, so a stray "Here's a reply:" never reaches the user.`,
       starter_code: `# Pull a clean draft out of a raw model reply (simulated, no API).
 
 RAW = "Here is a draft:\\n\\nSounds good, Friday works!"
@@ -275,7 +275,7 @@ main()
       order: 3,
       title: "Capture the User's Tone",
       concept: "building a tone profile from sample replies",
-      explanation: `A generic reply is useless. "Thank you for your message. I would be delighted to attend." is technically correct and sounds nothing like how you text a friend. The core of this product is making the draft sound like *you*, and that starts by measuring how you actually write.
+      explanation: `A generic reply is useless. "Thank you for your message. I would be delighted to attend." is technically correct and sounds nothing like how you text a friend. Making the draft sound like *you* is the core of this product, and it starts by measuring how you actually write.
 
 ## Tone is a set of measurable habits
 
@@ -286,7 +286,7 @@ You can't hand the model a vibe, but you can hand it observable habits pulled fr
 - **Sign-off**: do you close with "Thanks" / "Cheers", or just stop?
 - **Energy**: exclamation marks and emoji, or flat and dry?
 
-Compute those from a handful of sample replies and you have a **tone profile**, a small dict that captures your writing fingerprint. You then feed it to the model as explicit instructions:
+Compute those from a handful of sample replies and you have a **tone profile**: a small dict that captures your writing fingerprint. You then feed it to the model as explicit instructions:
 
 \`\`\`python
 profile = build_profile(user_samples)   # e.g. {"avg_words": 6, "greeting": True, ...}
@@ -301,7 +301,7 @@ system = (
 
 ## Why measure instead of guess
 
-If you just wrote "casual and friendly" in the prompt, the model would pick its *own* idea of casual, which drifts toward chirpy customer-service English. Numbers are unambiguous. "About 6 words" is a target the model can hit; "be concise" is not. This is the same lesson as prompt-writing everywhere: specific beats vague, and measured beats specific.
+Write "casual and friendly" in the prompt and the model picks its own idea of casual, which drifts toward chirpy customer-service English. Numbers leave no room for that. "About 6 words" is a target the model can hit; "be concise" is not. It is the same lesson as prompt-writing everywhere: specific beats vague, and measured beats specific.
 
 ## What we build in the drill
 
@@ -312,11 +312,11 @@ A \`build_profile\` function that walks the sample replies and returns the profi
 - \`signoff\`: True if any sample contains thanks/cheers/best/regards.
 - \`exclaim\`: True if any sample uses "!".
 
-No API call, this is pure text analysis, and it's the single most important piece of making replies feel personal.
+No API call. This is pure text analysis, and it is the piece that does the most to make replies feel personal.
 
-## The mental model to keep
+## Keep this in mind
 
-You're not asking the model to *guess* your style, you're *sampling* it from evidence and stating it as rules. The tone profile is a translator: it turns "how this person writes" into instructions a model can follow exactly. Everything downstream (few-shot examples, draft-picking) leans on this profile to keep drafts on-voice.`,
+You are not asking the model to guess your style. You are sampling it from evidence and stating it as rules. The tone profile turns "how this person writes" into instructions a model can follow exactly. The few-shot examples and draft-picking downstream both lean on this profile to keep drafts on-voice.`,
       starter_code: `# Build a tone profile from a user's past replies (pure text analysis).
 
 samples = [
@@ -430,11 +430,11 @@ main()
       order: 4,
       title: "Show, Don't Tell: Few-Shot Examples",
       concept: "steering tone with example reply pairs",
-      explanation: `Describing your tone in rules gets you close. But the most powerful way to make the model write like you is to *show* it you writing, a couple of real (incoming message, your reply) pairs. This is **few-shot prompting**, and it's the single biggest quality jump in this product.
+      explanation: `Describing your tone in rules gets you close. The most direct way to make the model write like you is to *show* it you writing: a couple of real (incoming message, your reply) pairs. This is **few-shot prompting**, and it is the biggest quality jump in this product.
 
 ## What few-shot means
 
-"Zero-shot" is asking with instructions only. "Few-shot" is asking with a handful of worked examples first, so the model pattern-matches off your actual replies instead of its own defaults. You express the examples as prior \`user\`/\`assistant\` turns: the incoming message as a user turn, *your* real reply as the assistant turn. Then you append the *new* incoming message as the final user turn.
+Zero-shot is asking with instructions only. Few-shot is asking with a handful of worked examples first, so the model pattern-matches off your actual replies instead of its own defaults. You express the examples as prior \`user\`/\`assistant\` turns: the incoming message as a user turn, *your* real reply as the assistant turn. Then you append the *new* incoming message as the final user turn.
 
 \`\`\`python
 examples = [
@@ -449,19 +449,19 @@ for incoming, reply in examples:
 messages.append({"role": "user", "content": "Are you free Monday?"})
 \`\`\`
 
-The model reads two rounds where "you" answered short, warm, and exclamation-friendly, then sees the new question and continues the pattern. It's imitation, not instruction, and imitation is what tone actually is.
+The model reads two rounds where "you" answered short, warm, and exclamation-friendly, then sees the new question and continues the pattern. It is imitation, not instruction, and imitation is what tone actually is.
 
 ## Why this beats a longer rulebook
 
-You could write a paragraph describing your voice, but the model still has to *interpret* it. An example removes the interpretation: it literally shows the target output shape, length, and warmth. Two good examples usually outperform ten lines of rules. It also composes with the tone profile from the last lesson, examples for feel, profile numbers for guardrails.
+You could write a paragraph describing your voice, but the model still has to interpret it. An example removes the interpretation. It shows the target output directly: shape, length, warmth. Two good examples usually outperform ten lines of rules. It also composes with the tone profile from the last lesson, examples for feel and profile numbers for guardrails.
 
 ## The shape rule that trips people up
 
-The turns must still alternate user/assistant/user/assistant and start with a user turn, exactly the Messages API rule. Each example is one user turn plus one assistant turn, so pairs keep the alternation intact. The final, real incoming message is one more user turn, leaving the model to produce the next assistant turn: your draft.
+The turns must alternate user/assistant/user/assistant and start with a user turn, which is the Messages API rule. Each example is one user turn plus one assistant turn, so pairs keep the alternation intact. The final, real incoming message is one more user turn, leaving the model to produce the next assistant turn: your draft.
 
-## The mental model to keep
+## Keep this in mind
 
-You're building a *fake transcript* where past-you already answered a few messages in your own voice, then handing the model the newest message mid-conversation. It doesn't know the earlier turns were staged; it just keeps writing in the established style. In the drill you'll assemble that few-shot messages list from example pairs plus a new incoming message.`,
+You are building a fake transcript where past-you already answered a few messages in your own voice, then handing the model the newest message mid-conversation. The model does not know the earlier turns were staged. It just keeps writing in the established style. In the drill you assemble that few-shot messages list from example pairs plus a new incoming message.`,
       starter_code: `# Assemble a few-shot messages list from example (incoming, reply) pairs.
 
 examples = [
@@ -568,11 +568,11 @@ main()
       order: 5,
       title: "Generate Several, Pick the Best",
       concept: "scoring multiple drafts against the tone profile",
-      explanation: `A single draft is a coin flip. Sometimes the model nails your voice; sometimes it's a touch too formal or three words too long. The professional move is to generate *several* drafts and automatically keep the one that best matches your tone. This is where the tone profile pays off a second time.
+      explanation: `A single draft is a coin flip. Sometimes the model nails your voice; sometimes it lands a touch too formal or three words too long. The fix is to generate *several* drafts and automatically keep the one that best matches your tone. This is where the tone profile pays off a second time.
 
 ## Why more than one draft
 
-Language models are non-deterministic, especially with a little \`temperature\`. Ask for the same reply twice and you get two different phrasings. Instead of fighting that, you use it: request a few candidates, then *rank* them and surface the best. The user still sees one clean reply; you just improved your odds behind the scenes.
+Language models are non-deterministic, especially with a little \`temperature\`. Ask for the same reply twice and you get two different phrasings. Rather than fight that, use it: request a few candidates, then rank them and surface the best. The user still sees one clean reply. You improved your odds behind the scenes.
 
 \`\`\`python
 drafts = []
@@ -591,12 +591,12 @@ best = min(drafts, key=lambda d: tone_distance(d, profile))
 
 ## Scoring is just measuring the gap
 
-You already know how to measure tone (lesson 3). To *pick*, you measure how far each draft sits from the profile and take the smallest gap. A simple, effective distance:
+You already know how to measure tone (lesson 3). To pick, measure how far each draft sits from the profile and take the smallest gap. One distance that works:
 
 - Start with the absolute difference between the draft's word count and your \`avg_words\`.
-- Add a penalty when the draft's energy disagrees with your profile (it has no "!" but you use them, or vice versa).
+- Add a penalty when the draft's energy disagrees with your profile (it has no "!" but you use them, or the reverse).
 
-Lower score means closer to your voice. On ties, keep the first, it's deterministic and predictable.
+Lower score means closer to your voice. On ties, keep the first draft so the result stays deterministic.
 
 \`\`\`python
 def tone_distance(draft, profile):
@@ -608,11 +608,11 @@ def tone_distance(draft, profile):
 
 ## Why this matters
 
-Picking-among-drafts is a general reliability pattern, not a one-off. Any time output quality varies, generate a few and select with a cheap scorer you control. You're adding a *judgment* step your program owns, rather than trusting a single roll of the dice. The scorer is deliberately simple and transparent; you can always make it richer later.
+Picking among drafts is a general reliability pattern, not a one-off. Any time output quality varies, generate a few and select with a cheap scorer you control. You add a judgment step your program owns instead of trusting a single roll of the dice. The scorer here is deliberately simple; you can make it richer later.
 
-## The mental model to keep
+## Keep this in mind
 
-Generation is creative and noisy; selection is strict and yours. Let the model brainstorm several replies, then be the editor who keeps the one that sounds most like you. In the drill you'll score a set of candidate drafts against a target and return the best index, exactly the selection half of this pattern.`,
+Generation is creative and noisy. Selection is strict and yours. Let the model brainstorm several replies, then be the editor who keeps the one that sounds most like you. In the drill you score a set of candidate drafts against a target and return the best index, which is the selection half of this pattern.`,
       starter_code: `# Score candidate drafts against a tone target and pick the closest.
 
 target = {"avg_words": 6, "exclaim": True}
@@ -732,14 +732,14 @@ main()
       order: 6,
       title: "When the Draft Comes Back Broken",
       concept: "validating and repairing model output",
-      explanation: `Your generator works on the happy path. Now make it survive the ugly one. Models occasionally return an empty string, a novel three paragraphs long, or a draft wrapped in "quotation marks" as if quoting itself. A tool that copies those straight into someone's inbox isn't finished. This is the hardening lesson.
+      explanation: `Your generator works on the happy path. Now make it survive the ugly one. Models occasionally return an empty string, a novel three paragraphs long, or a draft wrapped in "quotation marks" as if quoting itself. A tool that copies those straight into someone's inbox is not finished. This is the hardening lesson.
 
 ## The three failure shapes
 
 Almost every bad reply is one of these:
 
-1. **Empty or whitespace**: the model returned nothing usable. You must catch this and fall back, never send a blank reply.
-2. **Wrapped in quotes**: it returned \`"Sounds good!"\` with literal quote marks, because it treated the reply as a quotation. Strip surrounding quotes.
+1. **Empty or whitespace**: the model returned nothing usable. Catch this and fall back; never send a blank reply.
+2. **Wrapped in quotes**: it returned \`"Sounds good!"\` with literal quote marks, because it treated the reply as a quotation. Strip the surrounding quotes.
 3. **Too long**: a one-line question got a five-sentence essay. Cap the length so it stays reply-sized.
 
 A single cleaner handles all three:
@@ -755,11 +755,11 @@ def clean_draft(raw, max_words):
     return text
 \`\`\`
 
-Note the order: strip whitespace, then quotes, then whitespace again (a leading space could hide inside the quotes). \`None\` is a deliberate signal that this draft is unusable, your caller can then try the next candidate or a safe default.
+Note the order: strip whitespace, then quotes, then whitespace again, since a leading space can hide inside the quotes. \`None\` is a deliberate signal that this draft is unusable. The caller can then try the next candidate or a safe default.
 
 ## Fallbacks, not crashes
 
-Robustness here means *degrading gracefully*. If every candidate cleans to \`None\`, don't raise, return a safe generic reply like "Thanks, I'll get back to you." A tool that always produces *something* sendable beats one that occasionally explodes. This mirrors the retry-and-repair pattern used across the whole track: assume the model will misbehave sometimes, and design the surrounding code to absorb it.
+Robustness here means degrading gracefully. If every candidate cleans to \`None\`, don't raise. Return a safe generic reply like "Thanks, I'll get back to you." A tool that always produces something sendable beats one that occasionally explodes. This is the same retry-and-repair pattern used across the whole track: assume the model will misbehave sometimes, and design the surrounding code to absorb it.
 
 \`\`\`python
 def choose_reply(candidates, max_words, fallback="Thanks, I'll get back to you."):
@@ -770,11 +770,11 @@ def choose_reply(candidates, max_words, fallback="Thanks, I'll get back to you."
 
 ## Why this matters
 
-The gap between a demo and a tool is exactly this code. The demo shows the model doing something clever once; the tool keeps working when the model returns garbage on a Tuesday. Every guard you add, empty check, quote strip, length cap, is the difference between "cool" and "I actually use this."
+The gap between a demo and a tool is exactly this code. The demo shows the model doing something clever once. The tool keeps working when the model returns garbage on a Tuesday. Each guard you add (empty check, quote strip, length cap) is the difference between "cool" and "I actually use this."
 
-## The mental model to keep
+## Keep this in mind
 
-Treat every draft as untrusted input, because it is, it came from a probabilistic system. Clean it, validate it, and always have a fallback in your back pocket. In the drill you'll build the cleaner that rejects empty drafts and trims overlong ones.`,
+Treat every draft as untrusted input, because it came from a probabilistic system. Clean it, validate it, and keep a fallback in your back pocket. In the drill you build the cleaner that rejects empty drafts and trims overlong ones.`,
       starter_code: `# Clean and validate raw drafts; reject the unusable ones.
 
 drafts = [
@@ -882,7 +882,7 @@ main()
       order: 7,
       title: "Fit the Examples in the Budget",
       concept: "selecting few-shot examples under a token budget",
-      explanation: `Few-shot examples make replies sound like you, but every example you include is text you resend and pay for on every call. As your library of past replies grows, you can't cram them all in. The hardening question: which examples do you keep, and how many fit? This lesson bounds your cost without wrecking your tone.
+      explanation: `Few-shot examples make replies sound like you, but every example is text you resend and pay for on every call. As your library of past replies grows, you can't cram them all in. The hardening question is which examples you keep and how many fit. This lesson bounds your cost without wrecking your tone.
 
 ## Tokens are money, examples are tokens
 
@@ -897,7 +897,7 @@ def estimate_tokens(text):
 
 ## Newest-first is a good default
 
-Which examples to keep? Recency is a strong, cheap heuristic: your *most recent* replies best reflect how you write now, and the freshest context matters most. So walk your examples newest-first and greedily include each while it still fits the budget; stop at the first one that would overflow.
+Which examples to keep? Recency is a cheap, reliable heuristic: your most recent replies best reflect how you write now. Walk your examples newest-first and greedily include each while it still fits the budget. Stop at the first one that would overflow.
 
 \`\`\`python
 def select_examples(costs, budget, max_examples):
@@ -911,15 +911,15 @@ def select_examples(costs, budget, max_examples):
     return kept, used
 \`\`\`
 
-Two knobs guard cost: a **token budget** (hard ceiling on size) and a **max count** (few-shot rarely improves past 3 to 5 examples, and each one still adds latency). Whichever limit you hit first stops the selection.
+Two knobs guard cost: a **token budget** (a hard ceiling on size) and a **max count** (few-shot rarely improves past 3 to 5 examples, and each one still adds latency). Whichever limit you hit first stops the selection.
 
 ## Why bound it two ways
 
-A token budget alone could still pack in a dozen tiny examples, adding latency for little benefit. A count cap alone could still blow past your budget on long examples. Together they give you a predictable worst case, you always know the most this prompt can cost, which is exactly what you want before shipping.
+A token budget alone could still pack in a dozen tiny examples, adding latency for little benefit. A count cap alone could still blow past your budget on long examples. Together they give you a predictable worst case: you always know the most this prompt can cost, which is what you want before shipping.
 
-## The mental model to keep
+## Keep this in mind
 
-Think of few-shot examples as a carry-on bag: fixed space, so you pack the most useful items and leave the rest. Newest replies go in first, you stop when the bag is full or you've hit your item limit, and your cost stays bounded no matter how big the user's history grows. In the drill you'll build that greedy, newest-first selector.`,
+Few-shot examples are like a carry-on bag with fixed space. You pack the most useful items and leave the rest. Newest replies go in first, you stop when the bag is full or you have hit your item limit, and your cost stays bounded no matter how big the user's history grows. In the drill you build that greedy, newest-first selector.`,
       starter_code: `# Select few-shot examples newest-first under a token budget and a count cap.
 
 def estimate_tokens(text):
@@ -1043,7 +1043,7 @@ main()
       order: 8,
       title: "Ship the Smart Reply Generator",
       concept: "assembling the full pipeline",
-      explanation: `Time to wire the pieces into one tool. You've built tone capture, few-shot prompting, multi-draft generation, output cleaning, and cost control as separate parts. Shipping means connecting them into a single flow that turns an incoming message into one sendable, on-voice reply, and finishing this lesson saves the build to your Portfolio.
+      explanation: `Time to wire the pieces into one tool. You built tone capture, few-shot prompting, multi-draft generation, output cleaning, and cost control as separate parts. Shipping connects them into a single flow that turns an incoming message into one sendable, on-voice reply. Finishing this lesson saves the build to your Portfolio.
 
 ## The pipeline, end to end
 
@@ -1070,19 +1070,19 @@ def smart_reply(incoming, samples, examples):
     return min(usable, key=lambda d: tone_distance(d, profile))
 \`\`\`
 
-Read top to bottom, it's the whole product: measure the voice, show examples, brainstorm, clean, choose. Each function is a lesson you already wrote.
+Read top to bottom, it is the whole product: measure the voice, show examples, brainstorm, clean, choose. Each function is a lesson you already wrote.
 
 ## What "shipped" means here
 
-Shipped doesn't require a server. It means the tool runs from a clean start, handles a weird input (empty draft, no examples) without crashing, and always returns something sendable. Those three properties turn a pile of functions into a real deliverable, one you'd trust with an actual inbox.
+Shipped does not require a server. It means the tool runs from a clean start, handles a weird input like an empty draft or no examples without crashing, and always returns something sendable. Those properties turn a pile of functions into a real deliverable, one you would trust with an actual inbox.
 
 ## It lands in your Portfolio
 
-Completing this lesson records the Smart Reply Generator in your **Portfolio** tab, with a note on what it does: drafts on-tone replies from a message plus a few samples. That's the point of the whole track, a shelf of working tools you built, not a score. Keep an example input and its output next to it as proof it works.
+Completing this lesson records the Smart Reply Generator in your **Portfolio** tab, with a note on what it does: drafts on-tone replies from a message plus a few samples. That is the point of the whole track, a shelf of working tools you built rather than a score. Keep an example input and its output next to it as proof it works.
 
-## The mental model to keep
+## Keep this in mind
 
-A finished AI product is a plain pipeline with one clever function in the middle. You now own every stage around that function, so you can trust, tune, and ship the result. In the drill you'll run the assembled pipeline on a sample: capture tone, score candidates, and print the final reply, exactly what the shipped tool does on every message.`,
+A finished AI product is a plain pipeline with one clever function in the middle. You own every stage around that function now, so you can trust, tune, and ship the result. In the drill you run the assembled pipeline on a sample: capture tone, score candidates, and print the final reply, which is what the shipped tool does on every message.`,
       starter_code: `# Run the full Smart Reply pipeline on a sample (pure Python, no API).
 
 samples = ["Hey! Sounds great, see you then.", "Thanks, works for me!"]

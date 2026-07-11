@@ -3,7 +3,7 @@ export default {
     id: "prod-18",
     title: "Codebase Assistant",
     description:
-      "Build a tool that ingests a code repository, splits it into function-sized chunks, and retrieves the pieces most relevant to a question using retrieval tuned specifically for code. Every answer it gives cites the exact file and line range it came from, and gets flagged instead of guessed when the codebase doesn't actually contain the answer.",
+      "Build a tool that reads a code repository, splits it into function-sized chunks, and pulls the pieces most relevant to a question using retrieval built for code rather than prose. Every answer cites the exact file and line range it came from, and the tool says when the codebase has no answer instead of guessing.",
     difficulty: "advanced",
     category: "rag_search",
     estimated_time: 150,
@@ -21,15 +21,15 @@ export default {
       order: 1,
       title: "Walking the Repo, Safely",
       concept: "repo ingestion",
-      explanation: `Before you can answer a single question about a codebase, you need to *read* it, all of it, without choking on the junk. This lesson builds the ingestion step: walk a repository, keep the source files, skip everything that isn't code.
+      explanation: `Before you can answer a question about a codebase, you have to read the whole thing without choking on the junk. This lesson builds the ingestion step: walk a repository, keep the source files, drop everything that isn't code.
 
 ## What we're building
 
-By lesson 8 you'll have a command-line tool: point it at a repo, ask a question in English, get back an answer with the exact file and line numbers it came from. Every RAG product starts the same way though: get the raw documents into memory. For a codebase, the "documents" are source files, and most of a repo isn't source at all.
+By lesson 8 you'll have a command-line tool. Point it at a repo, ask a question in English, and get back an answer with the exact file and line numbers it came from. Every RAG product starts the same way: get the raw documents into memory. For a codebase the documents are source files, and most of a repo isn't source.
 
 ## The problem: repos are mostly noise
 
-A typical repository is full of things you never want to feed to a model: \`.git/\` internals, \`node_modules/\` with tens of thousands of files, compiled artifacts, images, lockfiles. If you naively read every file under a repo root, you'll burn your token budget on a \`package-lock.json\` before you ever reach the function that actually answers the question.
+A typical repository is full of things you never want to feed a model: \`.git/\` internals, \`node_modules/\` with tens of thousands of files, compiled artifacts, images, lockfiles. Read every file under the root and you'll spend your token budget on a \`package-lock.json\` before you reach the function that answers the question.
 
 ## How real ingestion works
 
@@ -50,15 +50,15 @@ def list_source_files(root):
     return sorted(files)
 \`\`\`
 
-Two details matter. First, \`dirnames[:] = ...\` mutates the list \`os.walk\` is iterating *in place*, which is the only way to stop it from descending into \`node_modules\` at all, rather than descending in and filtering results afterward. Second, filtering by extension up front means you never even open a \`.png\` or a \`.lock\` file.
+Two details matter. \`dirnames[:] = ...\` mutates the list \`os.walk\` is iterating, in place. That is the only way to stop it descending into \`node_modules\` at all, instead of descending in and filtering the results afterward. Filtering by extension up front means you never open a \`.png\` or a \`.lock\` file.
 
 ## Why it matters
 
-Ingestion mistakes are invisible until they're expensive: a repo that "sort of works" in a demo can quietly send megabytes of vendored JavaScript to the model on every question, wasting cost and drowning the actual answer in noise. Getting the file list right, before any chunking or embedding happens, is the cheapest correctness you'll buy in this whole project.
+Ingestion mistakes stay invisible until they get expensive. A repo that sort of works in a demo can quietly send megabytes of vendored JavaScript to the model on every question, which wastes money and buries the real answer in noise. Getting the file list right, before any chunking or embedding, is the cheapest correctness you'll buy in this project.
 
 ## The mental model to keep
 
-Think of ingestion as **triage at the door**: every file gets a fast yes/no before it's allowed inside, based only on its path, no need to open and read a file just to reject it by name. Below, build that filter by hand on a small fake repo, no real filesystem needed yet, so you can see exactly which files survive and which get turned away.`,
+Ingestion is triage at the door. Every file gets a fast yes or no from its path alone, so you never open a file just to reject it by name. Below, build that filter by hand on a small fake repo, with no real filesystem yet, and watch which files survive and which get turned away.`,
       starter_code: `REPO_FILES = [
     "src/app.py",
     "src/utils.py",
@@ -204,19 +204,19 @@ main()
       order: 2,
       title: "Chunk by Function, Not by Character",
       concept: "function-level chunking",
-      explanation: `A naive chunker slices code every N characters, and it will happily cut a function in half, leaving one chunk with a signature and no body, and the next with a body and no idea what function it belongs to. Code chunking has to respect syntax, not just length.
+      explanation: `A naive chunker slices code every N characters, and it will cut a function in half. One chunk ends up with a signature and no body; the next has a body with no idea what function it belongs to. Code chunking has to respect syntax, not just length.
 
 ## What we're building
 
-This lesson replaces "split every 500 characters" with "split at every function and class." The unit of meaning in code isn't a paragraph, it's a function: everything inside \`def load_config(path):\` belongs together, and mixing it with half of the next function makes retrieval worse, not just uglier.
+This lesson replaces "split every 500 characters" with "split at every function and class." The unit of meaning in code is the function, not the paragraph. Everything inside \`def load_config(path):\` belongs together, and mixing it with half of the next function makes retrieval worse.
 
 ## Why character-based chunking fails on code
 
-Text chunkers built for prose (split on blank lines, split every N tokens) assume meaning lives in nearby sentences. Code doesn't work that way: a function's signature, its body, and its closing line are one unit whether it's 3 lines or 300. Cut it at a fixed character count and you'll often split a function signature from its logic, so neither half makes sense on its own when it's later retrieved and shown to the model.
+Text chunkers built for prose (split on blank lines, split every N tokens) assume meaning lives in nearby sentences. Code doesn't work that way. A function's signature, body, and closing line are one unit whether it runs 3 lines or 300. Cut it at a fixed character count and you'll split the signature from the logic, so neither half makes sense on its own once it's retrieved and shown to the model.
 
 ## How real chunking works
 
-Python ships a parser for exactly this: the \`ast\` module turns source text into a tree of nodes, and every node knows which lines it spans.
+Python ships a parser for exactly this. The \`ast\` module turns source text into a tree of nodes, and every node knows which lines it spans.
 
 \`\`\`python
 import ast
@@ -237,15 +237,15 @@ def chunk_by_function(source, path):
     return chunks
 \`\`\`
 
-\`node.lineno\` and \`node.end_lineno\` are 1-indexed line numbers \`ast\` computes for you, no manual bracket-counting required. For other languages you'd reach for a tree-sitter parser instead; same idea, let a real parser find function boundaries, don't guess with regex.
+\`node.lineno\` and \`node.end_lineno\` are 1-indexed line numbers \`ast\` computes for you, so there's no manual bracket-counting. For other languages you'd reach for a tree-sitter parser instead. Same idea: let a real parser find function boundaries rather than guessing with regex.
 
 ## Why it matters
 
-A chunk that's a whole function is a chunk that answers a question on its own. When a user asks "how does the app load its config?", a chunk that IS \`load_config\` end-to-end is exactly the right size to retrieve and to quote back with a citation. A 500-character window covering the last third of one function and the first two-thirds of another answers nothing cleanly.
+A chunk that's a whole function answers a question on its own. When a user asks how the app loads its config, a chunk that is \`load_config\` end to end is the right size to retrieve and to quote back with a citation. A 500-character window covering the last third of one function and the first two-thirds of another answers nothing cleanly.
 
 ## The mental model to keep
 
-Chunk at the seams the language already has. A function is a natural, self-contained unit; splitting there instead of at an arbitrary character count is the single highest-leverage decision in a code-RAG pipeline. Below, parse a small file by hand with \`ast\` and confirm each chunk lines up with a real function.`,
+Chunk at the seams the language already gives you. A function is a self-contained unit, and splitting there instead of at an arbitrary character count is the decision that matters most in a code-RAG pipeline. Below, parse a small file by hand with \`ast\` and confirm each chunk lines up with a real function.`,
       starter_code: `import ast
 
 SOURCE = """import os
@@ -391,15 +391,15 @@ main()
       order: 3,
       title: "Tagging Chunks With File and Line Numbers",
       concept: "chunk metadata",
-      explanation: `A chunk of code is useless as an answer's evidence unless you know exactly where it came from. This lesson adds the metadata that turns a chunk of text into a citable fact: which file, and which lines.
+      explanation: `A chunk of code is useless as evidence unless you know exactly where it came from. This lesson adds the metadata that turns a chunk of text into a citable fact: which file, and which lines.
 
 ## What we're building
 
-Every chunk from lesson 2 knows its own start and end line, but only within one file. To answer questions across a whole repo, every chunk needs to be tagged with its file path too, and given a stable ID that uniquely identifies it: \`path:start-end\`. That ID is what eventually shows up in the final answer as \`[src/app.py:12-18]\`.
+Every chunk from lesson 2 knows its own start and end line, but only within one file. To answer questions across a whole repo, each chunk also needs its file path and a stable ID that identifies it: \`path:start-end\`. That ID is what shows up in the final answer as \`[src/app.py:12-18]\`.
 
 ## Building the corpus
 
-Real RAG systems call this collection of tagged, chunked documents the **corpus**. Building it means walking every source file, chunking each one, and stamping every chunk with its origin:
+RAG systems call this collection of tagged, chunked documents the **corpus**. You build it by walking every source file, chunking each one, and stamping every chunk with its origin:
 
 \`\`\`python
 def build_corpus(files):
@@ -416,19 +416,19 @@ def build_corpus(files):
     return corpus
 \`\`\`
 
-Notice the id is deterministic and human-readable on purpose. You could use a random UUID instead, but a UUID tells a user nothing when it shows up in an answer. \`src/app.py:12-18\` tells them exactly where to look, no lookup table required.
+The id is deterministic and readable on purpose. A random UUID would work too, but a UUID tells a user nothing when it shows up in an answer. \`src/app.py:12-18\` tells them exactly where to look, with no lookup table.
 
 ## Why this matters: citations are just IDs, shown
 
-The whole "answer with file and line references" feature you're building toward is really just this: keep the ID attached to every chunk from the moment it's created, all the way through embedding, retrieval, and the final prompt, and then print it back out next to whatever text it produced. If you ever separate a chunk's text from its ID, you cannot recover the citation later. **Metadata has to travel with the chunk everywhere it goes.**
+The whole answer-with-file-and-line feature comes down to this: keep the ID attached to every chunk from the moment it's created, through embedding, retrieval, and the final prompt, then print it back out next to whatever text it produced. Separate a chunk's text from its ID at any point and you can't recover the citation later. **Metadata has to travel with the chunk everywhere it goes.**
 
 ## A common mistake
 
-It's tempting to store chunks as a flat list of strings for simplicity, and keep a separate parallel list of paths. That works until the two lists drift out of sync after one filtering step, and now your citations are silently wrong: confident, specific, and pointing at the wrong file. Keep path, line numbers, and text together in one object per chunk, always.
+It's tempting to store chunks as a flat list of strings and keep a separate parallel list of paths. That works until the two lists drift out of sync after one filtering step, and now your citations are wrong in the worst way: confident, specific, and pointing at the wrong file. Keep path, line numbers, and text together in one object per chunk.
 
 ## The mental model to keep
 
-Every chunk is a **fact with a source**, not just a string. The ID is the footnote number; the path and line range are what that footnote actually says. Below, build a small corpus from a few files by hand and confirm every chunk's ID matches its path and line range exactly.`,
+Every chunk is a **fact with a source**, not just a string. The ID is the footnote number; the path and line range are what the footnote says. Below, build a small corpus from a few files by hand and confirm every chunk's ID matches its path and line range.`,
       starter_code: `FILE_CHUNKS = {
     "src/app.py": [
         {"start_line": 3, "end_line": 5, "text": "def load_config(path):\\n    with open(path) as f:\\n        return f.read()"},
@@ -560,11 +560,11 @@ main()
       order: 4,
       title: "Retrieval Tuned for Code",
       concept: "hybrid code retrieval",
-      explanation: `Plain semantic search, built for prose, has a blind spot on code: an embedding model can miss that a query containing the *exact* function name \`get_user_by_id\` should obviously retrieve the chunk defining \`get_user_by_id\`. Retrieval for code needs a second signal beyond pure semantic similarity: exact identifier matches.
+      explanation: `Semantic search built for prose has a blind spot on code. An embedding model can miss that a query naming the function \`get_user_by_id\` should retrieve the chunk that defines \`get_user_by_id\`. Retrieval for code needs a second signal beyond semantic similarity: exact identifier matches.
 
 ## What we're building
 
-A retriever that combines two scores per chunk: how semantically similar it is to the query (an embedding comparison), and whether the query mentions an identifier, a function or variable name, that appears verbatim in the chunk's name. This is called **hybrid retrieval**, and it's standard practice for code search specifically because identifiers carry more precise meaning in code than in prose.
+A retriever that combines two scores per chunk. One is how semantically similar the chunk is to the query, from an embedding comparison. The other is whether the query mentions an identifier, a function or variable name, that appears verbatim in the chunk's name. This is **hybrid retrieval**, and it's standard for code search because identifiers carry more precise meaning in code than words do in prose.
 
 ## Embedding code with a code-aware model
 
@@ -582,7 +582,7 @@ doc_result = vo.embed(
 query_result = vo.embed([query], model="voyage-code-2", input_type="query")
 \`\`\`
 
-Each chunk and the query become vectors of numbers. Similarity between two vectors is measured with **cosine similarity**: the cosine of the angle between them, from -1 (opposite) to 1 (identical direction). Closer to 1 means more semantically related.
+Each chunk and the query become vectors of numbers. You measure similarity between two vectors with **cosine similarity**: the cosine of the angle between them, from -1 (opposite) to 1 (identical direction). Closer to 1 means more semantically related.
 
 \`\`\`python
 import math
@@ -596,7 +596,7 @@ def cosine_similarity(a, b):
 
 ## Adding the code-specific boost
 
-Cosine similarity alone still misses exact-match cases: a query like "what does load_config do" should heavily favor the chunk literally named \`load_config\`, even if its embedding similarity is only decent. The fix is a simple bonus added on top:
+Cosine similarity alone still misses exact-match cases. A query like "what does load_config do" should favor the chunk named \`load_config\`, even if its embedding similarity is only decent. The fix is a small bonus added on top:
 
 \`\`\`python
 def hybrid_score(cosine_sim, query, chunk_name):
@@ -606,11 +606,11 @@ def hybrid_score(cosine_sim, query, chunk_name):
 
 ## Why it matters
 
-Pure semantic search is tuned for "these two paragraphs mean similar things." Code search often needs "this literal name was mentioned," which is a precision, not a paraphrase, problem. Blending the two catches both cases: a vague conceptual question still finds the right area of code via embeddings, and a specific "what does X do" question reliably finds X, even when its embedding similarity is mediocre.
+Semantic search is tuned for "these two paragraphs mean similar things." Code search often needs "this exact name was mentioned," which is a precision problem, not a paraphrase problem. Blending the two covers both. A vague conceptual question still finds the right area of code through embeddings, and a specific "what does X do" question reliably finds X even when its embedding similarity is mediocre.
 
 ## The mental model to keep
 
-Semantic similarity finds code that *means* the same thing; the identifier bonus finds code that *is* the thing being asked about. Below, rank a small set of chunks by a combined score, no network call, using pre-computed similarity numbers so you can see exactly how the bonus changes the ranking.`,
+Semantic similarity finds code that *means* the same thing; the identifier bonus finds code that *is* the thing being asked about. Below, rank a small set of chunks by a combined score, with no network call, using pre-computed similarity numbers so you can see how the bonus changes the ranking.`,
       starter_code: `CHUNKS = [
     {"name": "load_config", "cosine_sim": 0.62},
     {"name": "save_config", "cosine_sim": 0.58},
@@ -735,11 +735,11 @@ main()
       order: 5,
       title: "Answering With Citations",
       concept: "grounded answers with file:line refs",
-      explanation: `A code assistant that answers confidently but doesn't say where it got the answer isn't trustworthy, it's a black box. This lesson wires retrieval into a prompt that forces every claim to point at a real file and line range.
+      explanation: `A code assistant that answers confidently but won't say where the answer came from is a black box. This lesson wires retrieval into a prompt that forces every claim to point at a real file and line range.
 
 ## What we're building
 
-Given a user's question and the top-ranked chunks from lesson 4, assemble a context block that labels every chunk with its citation, then instruct the model to answer *only* from that context and cite the file:line range for every fact it states.
+Given a user's question and the top-ranked chunks from lesson 4, assemble a context block that labels every chunk with its citation, then tell the model to answer *only* from that context and cite the file:line range for every fact it states.
 
 ## Building the context block
 
@@ -770,11 +770,11 @@ resp = client.messages.create(
 )
 \`\`\`
 
-Two rules do all the work: "answer only from context" stops the model from inventing plausible-sounding code it never actually saw, and "cite in brackets" gives you a citation format you can programmatically check later.
+Two rules do the work. "Answer only from context" stops the model from inventing plausible-looking code it never saw. "Cite in brackets" gives you a citation format you can check in code later.
 
 ## Parsing citations back out
 
-Once the reply comes back, you need to pull the citations out of the text to display them, or, in a later lesson, to verify them:
+Once the reply comes back, pull the citations out of the text so you can display them, or verify them in a later lesson:
 
 \`\`\`python
 import re
@@ -787,11 +787,11 @@ def extract_citations(answer_text):
 
 ## Why it matters
 
-Citations turn a code assistant from "trust me" into "check me." A user reading \`[src/auth.py:40-52]\` in an answer can jump straight to that exact function and verify the claim in seconds, instead of grepping the whole repo hoping to spot what the model meant.
+Citations turn a code assistant from "trust me" into "check me." A user who reads \`[src/auth.py:40-52]\` in an answer can jump straight to that function and verify the claim in seconds, instead of grepping the whole repo to guess what the model meant.
 
 ## The mental model to keep
 
-The context block is evidence, the system prompt is the rule that the model may only speak from evidence, and the citation is the receipt. Below, extract citations from a sample reply with plain regex, no network call, so you can see exactly what the parsing step has to handle.`,
+The context block is the evidence, the system prompt is the rule that the model may only speak from that evidence, and the citation is the receipt. Below, extract citations from a sample reply with plain regex, with no network call, so you can see what the parsing step has to handle.`,
       starter_code: `import re
 
 CITATION_RE = re.compile(r"\\[([\\w./-]+):(\\d+)-(\\d+)\\]")
@@ -905,15 +905,15 @@ main()
       order: 6,
       title: "Budgeting the Retrieval Window",
       concept: "retrieval budget",
-      explanation: `Retrieval doesn't stop at "find the best chunks," it has to stop at "find the best chunks that actually fit." Send too many chunks and you blow past the context window or the bill; send too few and the answer misses key code. This lesson adds the budget check.
+      explanation: `Retrieval doesn't stop at "find the best chunks." It has to stop at "find the best chunks that fit." Send too many and you blow past the context window or the bill; send too few and the answer misses key code. This lesson adds the budget check.
 
 ## What we're building
 
-A function that walks chunks in ranked order (best match first, from lesson 4) and greedily keeps whichever ones fit inside a token budget, skipping any that are exact duplicates of a chunk already included.
+A function that walks chunks in ranked order (best match first, from lesson 4) and greedily keeps whichever ones fit inside a token budget, skipping any that duplicate a chunk already included.
 
 ## Why duplicates happen
 
-It's common for the same exact chunk to surface twice: a query might independently match a function both by embedding similarity and by an identifier bonus, landing it in the ranked list twice with two different scores. Sending the same 40 lines of code to the model twice wastes tokens and adds nothing.
+The same chunk often surfaces twice. A query might match a function by embedding similarity and by the identifier bonus at once, landing it in the ranked list twice with two different scores. Sending the same 40 lines of code to the model twice wastes tokens and adds nothing.
 
 \`\`\`python
 def dedupe_and_budget(ranked_chunks, budget):
@@ -933,19 +933,19 @@ def dedupe_and_budget(ranked_chunks, budget):
     return kept, used
 \`\`\`
 
-Notice this **keeps going past a chunk that doesn't fit**, instead of stopping the moment one is too big. A high-ranked, expensive chunk might not fit, but the next three lower-ranked, smaller chunks still might, and each one you fit is still useful context. Stopping early would waste budget you could have spent.
+Notice this **keeps going past a chunk that doesn't fit** instead of stopping the moment one is too big. A high-ranked, expensive chunk might not fit while the next few smaller ones still do, and each one you fit is useful context. Stopping early would waste budget you could have spent.
 
-## Why the token math matters here specifically
+## Why the token math matters here
 
-Every chunk you include is code, and code is often denser and more repetitive than prose (whitespace, boilerplate, brackets), so a naive character-count estimate can undercount real token cost on some languages. For a first pass, the same rough "4 characters per token" estimate from earlier lessons works fine; for production accuracy, count with the real tokenizer before you ship.
+Every chunk you include is code, and code is often denser than prose, so a character-count estimate can undercount the real token cost on some languages. For a first pass, the rough "4 characters per token" estimate from earlier lessons is fine. For production accuracy, count with the real tokenizer before you ship.
 
 ## Why it matters
 
-Without a budget, a big-repository question ("how does auth work end to end") can retrieve a dozen genuinely relevant functions that together blow past the context window, and the call simply fails. With a budget, you get a deterministic, best-effort selection: the most relevant code that actually fits, guaranteed to make every call succeed.
+Without a budget, a big-repository question like "how does auth work end to end" can retrieve a dozen relevant functions that together blow past the context window, and the call fails. With a budget, you get a deterministic best-effort selection: the most relevant code that fits, and every call succeeds.
 
 ## The mental model to keep
 
-Ranking answers "what's most relevant"; budgeting answers "how much of that can I actually afford to send." They're separate steps on purpose: keep ranking pure and let budgeting decide the cutoff, so you can tune the budget without ever touching how relevance is scored.`,
+Ranking answers "what's most relevant"; budgeting answers "how much of that can I afford to send." They're separate steps on purpose. Keep ranking pure and let budgeting decide the cutoff, so you can tune the budget without touching how relevance is scored.`,
       starter_code: `RANKED_CHUNKS = [
     {"path": "src/auth.py", "start_line": 10, "end_line": 30, "text": "x" * 400},
     {"path": "src/auth.py", "start_line": 10, "end_line": 30, "text": "x" * 400},
@@ -1083,14 +1083,14 @@ main()
       order: 7,
       title: "Guarding Against Hallucinated Citations",
       concept: "citation verification",
-      explanation: `A citation only means something if it's real. A model can format \`[src/auth.py:200-210]\` with total confidence even when no such chunk was ever retrieved, quietly inventing a location that looks exactly as trustworthy as a correct one. This lesson catches that.
+      explanation: `A citation only means something if it's real. A model can format \`[src/auth.py:200-210]\` with full confidence even when no such chunk was ever retrieved, inventing a location that looks as trustworthy as a correct one. This lesson catches that.
 
 ## The failure mode
 
-Everything from lesson 5 makes the model *format* citations correctly. It does not guarantee the citations are *true*. Two ways this breaks in practice:
+Everything from lesson 5 makes the model *format* citations correctly. None of it guarantees the citations are *true*. Two ways this breaks in practice:
 
-1. The model paraphrases from its own training knowledge of common code patterns instead of the actual retrieved chunk, and slaps on a citation that looks plausible but doesn't match anything you actually sent it.
-2. The model cites a real file in the repo, but a line range that was never part of any chunk you retrieved, close enough to be believable, wrong enough to send someone down the wrong path.
+1. The model paraphrases from its own training knowledge of common code patterns instead of the retrieved chunk, then attaches a citation that looks plausible but matches nothing you sent it.
+2. The model cites a real file in the repo but a line range that was never part of any retrieved chunk, close enough to believe and wrong enough to send someone down the wrong path.
 
 Both look identical to a correct citation until you check them against what was actually retrieved.
 
@@ -1106,11 +1106,11 @@ def verify_citations(answer_text, retrieved_ids):
     return fabricated
 \`\`\`
 
-If \`fabricated\` is non-empty, the answer contains at least one reference to code that was never actually shown to the model, a strong signal to flag or reject the answer rather than display it as trustworthy.
+If \`fabricated\` is non-empty, the answer references code that was never shown to the model. That's a strong signal to flag or reject the answer instead of displaying it as trustworthy.
 
 ## The other edge: no citations at all
 
-An answer with zero citations is its own kind of failure: either the model ignored the "always cite" instruction, or it's answering from general knowledge instead of your actual code. Either way, that answer shouldn't be shown to a user as grounded fact without a warning.
+An answer with zero citations is its own kind of failure. Either the model ignored the "always cite" instruction, or it's answering from general knowledge instead of your code. Either way, don't show that answer to a user as grounded fact without a warning.
 
 \`\`\`python
 def classify_answer(answer_text, retrieved_ids):
@@ -1124,11 +1124,11 @@ def classify_answer(answer_text, retrieved_ids):
 
 ## Why it matters
 
-For a codebase assistant, a wrong citation is worse than no citation: it sends a developer confidently to the wrong function, wasting their time under the belief the tool is reliable. Verifying every citation against the actual retrieved set before showing an answer is the cheapest trust-repair step available, and it costs nothing beyond a set difference.
+For a codebase assistant, a wrong citation is worse than no citation. It sends a developer to the wrong function while they trust the tool, so they lose time before they realize it. Checking every citation against the retrieved set before you show an answer is the cheapest way to keep that trust, and it costs nothing beyond a set difference.
 
 ## The mental model to keep
 
-Extraction tells you what the model *claimed*. Verification tells you whether the claim is *true*. Never ship the first without the second; a codebase assistant that can't tell you when it's guessing is more dangerous than one that admits it doesn't know.`,
+Extraction tells you what the model *claimed*. Verification tells you whether the claim is *true*. Never ship the first without the second. A codebase assistant that can't tell you when it's guessing is more dangerous than one that admits it doesn't know.`,
       starter_code: `import re
 
 CITATION_RE = re.compile(r"\\[([\\w./-]+):(\\d+)-(\\d+)\\]")
@@ -1259,7 +1259,7 @@ main()
       order: 8,
       title: "Shipping the Codebase Assistant",
       concept: "putting the pipeline together",
-      explanation: `Every piece exists: ingestion, function-level chunking, tagged metadata, hybrid retrieval, a citation-forcing prompt, budget limits, and a hallucination guard. This lesson wires them into one pipeline and calls it done.
+      explanation: `Every piece exists now: ingestion, function-level chunking, tagged metadata, hybrid retrieval, a citation-forcing prompt, a budget limit, and a hallucination guard. This lesson wires them into one pipeline and calls it done.
 
 ## The full pipeline, end to end
 
@@ -1281,15 +1281,15 @@ def answer_question(question, corpus, client):
     return answer_text, status
 \`\`\`
 
-Eight lessons compress into roughly ten lines here, because each one only had to solve one small, correct piece; the pipeline is just calling them in order.
+Eight lessons compress into roughly ten lines here, because each one solved one small piece correctly. The pipeline just calls them in order.
 
 ## What "shipped" means for this project
 
-1. It runs on a real repo, top to bottom, with one function call.
+1. It runs on a real repo, top to bottom, from one function call.
 2. A question with no relevant code in the repo gets \`NO_CITATIONS\`, not a confident guess.
-3. Every answer that does get shown carries citations you've verified are real.
+3. Every answer that gets shown carries citations you've verified are real.
 
-If those three hold, you have a genuinely useful tool, not a demo that only works on the one example you tested with.
+If those three hold, you have a tool that works, not a demo that only works on the one example you tested.
 
 ## A quick pre-ship checklist
 
@@ -1303,11 +1303,11 @@ If those three hold, you have a genuinely useful tool, not a demo that only work
 
 ## Why it matters
 
-A tool that answers questions about a codebase is only as trustworthy as its weakest link. Skip the budget step and it crashes on big repos; skip the verification step and it lies convincingly. Shipping means every link holds, not just the happy path you tried in lesson 1.
+A tool that answers questions about a codebase is only as trustworthy as its weakest link. Skip the budget step and it crashes on big repos. Skip the verification step and it lies convincingly. Shipping means every link holds, not just the happy path you tried in lesson 1.
 
 ## You're done, and it's in your Portfolio
 
-Finishing this lesson saves **Codebase Assistant** to your Portfolio automatically: a real tool that ingests a repository, retrieves relevant code, and answers with receipts. That's the shelf you're building toward, one verified, cited answer at a time.`,
+Finishing this lesson saves **Codebase Assistant** to your Portfolio: a tool that reads a repository, retrieves relevant code, and answers with receipts. That's the shelf you're building toward, one verified, cited answer at a time.`,
       starter_code: `CORPUS = [
     {"id": "src/app.py:3-5", "path": "src/app.py", "start_line": 3, "end_line": 5,
      "text": "def load_config(path):\\n    with open(path) as f:\\n        return f.read()"},

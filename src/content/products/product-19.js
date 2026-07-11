@@ -3,7 +3,7 @@ export default {
     id: "prod-19",
     title: "Guardrails & Moderation Filter",
     description:
-      "Build a reusable safety layer that screens every AI feature's input and output before it reaches a person, catching harmful requests, unsafe replies, and prompt-injection attempts. You'll wire a blocklist, a classifier-based moderation gate, an injection detector, and a config-driven policy into one drop-in guard() function.",
+      "Build a reusable safety layer that screens every AI feature's input and output before it reaches a person. It stops harmful requests and unsafe replies, and it catches prompt-injection attempts hidden inside documents. You'll wire a blocklist, a classifier-based moderation gate, an injection detector, and a config-driven policy into one drop-in guard() function.",
     difficulty: "advanced",
     category: "production_ops",
     estimated_time: 135,
@@ -21,7 +21,7 @@ export default {
       order: 1,
       title: "What Are Guardrails?",
       concept: "the guardrails loop",
-      explanation: `Ship an AI feature to real users and two things happen immediately: someone pastes something harmful and asks the model to help with it, and the model itself occasionally produces something you didn't want said. **Guardrails** are the screening layer that sits around your AI feature and catches both directions before they reach a person.
+      explanation: `Ship an AI feature to real users and two things happen fast. Someone pastes something harmful and asks the model to help. And the model itself, now and then, says something you never wanted said. **Guardrails** are the screening layer wrapped around your feature that catches both directions before they reach a person.
 
 ## The four pieces you're building
 
@@ -170,11 +170,11 @@ main()
       order: 2,
       title: "The Smallest Filter: A Blocklist",
       concept: "keyword blocklist pre-filter",
-      explanation: `A classifier call costs money and a network round trip. The cheapest possible filter costs neither: a **blocklist**, a plain Python collection of terms you never want to reach the model (or leave it), checked with nothing more than string matching. It's the smallest thing that actually works, and you can ship it in the next five minutes.
+      explanation: `A classifier call costs money and a network round trip. The cheapest filter costs neither: a **blocklist** is a plain Python collection of terms you never want reaching the model, or leaving it, checked with nothing more than string matching. It's the smallest thing that works, and you could ship it in five minutes.
 
 ## What a blocklist actually is
 
-A blocklist is a set of banned words or phrases. Screening text against it is a lookup, not an API call: instant, free, and completely deterministic. That's exactly why it's lesson 2, not lesson 5: you get a real, working first layer of defense before you've written a single line that touches the network.
+A blocklist is a set of banned words or phrases. Screening text against it is a lookup, not an API call, so it runs instantly and gives the same answer every time. That's why it lands in lesson 2 instead of lesson 5: you get a working first layer of defense before you write a single line that touches the network.
 
 \`\`\`python
 BLOCKED_TERMS = {"malware", "ransomware", "ddos"}
@@ -213,7 +213,7 @@ def screen_input(text):
 
 ## The mental model
 
-A blocklist is the bouncer checking IDs at the door: fast, free, and it only catches people who are obviously on the list. It doesn't replace judgment further inside, it just filters the easy cases before anyone smarter has to look. Below, build whole-word blocklist matching yourself.`,
+A blocklist is the bouncer checking IDs at the door. It's fast and cheap, and it only catches the people already on the list. It doesn't replace the judgment happening further inside; it filters the easy cases so nobody smarter has to. Below, build whole-word blocklist matching yourself.`,
       starter_code: `# Whole-word blocklist matching, no substring false positives.
 import re
 
@@ -357,7 +357,7 @@ def input_gate(text):
 
 ## Why this runs before the real call
 
-Input moderation is a **gate**, not an afterthought: it runs before the expensive, user-facing model call, so a blocked request never reaches (and never pays for) the feature itself. That ordering matters for both cost and safety; checking after the fact means you already spent the tokens and possibly already generated the harmful continuation.
+Input moderation is a **gate**. It runs before the expensive, user-facing model call, so a blocked request never reaches the feature itself and never pays for it. The ordering matters for cost and for safety. Check after the fact and you've already spent the tokens, and maybe already generated the harmful continuation.
 
 ## The mental model
 
@@ -464,7 +464,7 @@ main()
       order: 4,
       title: "Checking the Output Too",
       concept: "output moderation",
-      explanation: `A clean, friendly input can still produce a bad output. The model might slip past its own guidelines under a clever jailbreak, hallucinate a fake but plausible-looking piece of personal data, or simply drift into a tone you don't want live in front of a user. Input moderation can't catch any of that, because the problem happens *after* the input was already fine. That's why every serious guardrails system checks **both directions**.
+      explanation: `A clean, friendly input can still produce a bad output. A clever jailbreak might walk the model past its own guidelines. It might hallucinate a fake but convincing piece of personal data. Input moderation catches none of this, because the problem shows up *after* the input already looked fine. That's why a serious guardrails system checks **both directions**.
 
 ## The two gates
 
@@ -656,7 +656,7 @@ This is the same trick as the blocklist from lesson 2, applied to a different th
 
 ## Why this matters
 
-Prompt injection is the guardrails category people forget, because it doesn't look like "bad content," it looks like a totally normal request to summarize a document. Any feature that ingests outside text (search results, browsing, file upload, email) needs this defense, or user-supplied documents become a way to remote-control your bot.
+Prompt injection is the guardrails category people forget. It doesn't read like "bad content." It reads like an ordinary request to summarize a document. Any feature that pulls in outside text (search results, browsing, file upload, email) needs this defense, or a user-supplied document becomes a way to remote-control your bot.
 
 ## The mental model
 
@@ -805,7 +805,7 @@ The \`policy.get(cat, default)\` line is the most important line in this lesson.
 
 ## Why config beats hardcoded logic
 
-Three concrete wins: you can unit-test the policy table itself without mocking any API; you can diff it in a pull request and see exactly what changed; and you can load it from a JSON file or a database, so tuning a threshold in production doesn't require redeploying code. None of this is exotic engineering, it's just refusing to let "business rules" and "plumbing code" live in the same function.
+Three concrete wins. You can unit-test the policy table without mocking any API. You can diff it in a pull request and see exactly what changed. And you can load it from a JSON file or a database, so tuning a threshold in production doesn't mean redeploying code. None of that is exotic engineering. It's just refusing to let business rules and plumbing code share a function.
 
 ## The mental model
 
@@ -957,7 +957,7 @@ def safe_classify(text, tries=2):
                 return {"_error": True}   # fail closed: treat as unknown/blocked
 \`\`\`
 
-**Fail closed, not open.** If the safety check can't run, the safe default is to block or flag, not silently let the content through. A moderation layer that fails open the moment the network stutters isn't a moderation layer, it's a placebo.
+**Fail closed, not open.** If the safety check can't run, the safe default is to block or flag rather than quietly let the content through. A moderation layer that fails open the moment the network stutters hands you the feeling of safety with none of the substance.
 
 ## Caching identical checks
 
@@ -990,7 +990,7 @@ def normalize(text):
 
 ## Why this matters
 
-A guardrails layer that only works when the network is perfect and users type exactly the test cases you imagined isn't a guardrails layer, it's a demo. Fail-closed defaults, caching, and text normalization are what separate "passed my test suite" from "survived actual adversarial users," and adversarial users are exactly who a safety layer exists for.
+A guardrails layer that only works when the network is perfect and users type exactly the cases you imagined will pass every test and still fall over in production. Fail-closed defaults, caching, and text normalization separate "passed my test suite" from "survived real adversarial users," and adversarial users are exactly who a safety layer exists for.
 
 ## The mental model
 
@@ -1125,7 +1125,7 @@ def guard(user_input, call_model_fn):
     return {"status": "ok", "reason": None, "reply": reply}
 \`\`\`
 
-Notice what this buys you: any feature, a chatbot, a summarizer, a code generator, calls \`guard(user_text, my_model_call)\` instead of calling the model directly, and every one of them gets the same four-layer protection for free. Add a new feature next month and you don't rebuild moderation, you just call \`guard()\`.
+The payoff is reuse. Any feature, whether a chatbot, a summarizer, or a code generator, calls \`guard(user_text, my_model_call)\` instead of the model directly, and each one gets the same four-layer protection for free. Add a feature next month and you don't rebuild moderation. You call \`guard()\`.
 
 ## What "shipped" means for a safety layer
 
@@ -1137,7 +1137,7 @@ The same three tests from the playbook, adapted:
 
 ## A policy is never really "done"
 
-Ship this and you're not finished forever, you're finished for now. Real traffic will surface categories your classifier calls wrong, phrases your injection list missed, and terms your blocklist over- or under-catches. That's exactly why the policy lives in a config, not scattered through your code: tightening \`harassment\` from \`flag\` to \`block\` next month is a one-line change, not a rewrite.
+Shipping this finishes the layer for now, not forever. Real traffic will surface categories your classifier calls wrong, phrases your injection list missed, and terms your blocklist over- or under-catches. That's why the policy lives in a config instead of scattered through your code: tightening \`harassment\` from \`flag\` to \`block\` next month is a one-line change.
 
 ## Into your Portfolio
 
