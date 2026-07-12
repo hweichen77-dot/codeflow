@@ -71,11 +71,19 @@ export default function HeroSection() {
             </button>
             <button
               style={btnGhost}
-              onClick={() => { track("cta_click", { cta: "download_desktop", location: "hero" }); window.open("https://github.com/hweichen77-dot/codeflow/releases/latest", "_blank", "noopener,noreferrer"); }}
+              onClick={() => { track("cta_click", { cta: "download_desktop", location: "hero", platform: "mac" }); window.location.href = "https://github.com/hweichen77-dot/codeflow/releases/download/v2.2.2/CodeFlow_2.2.2_universal.dmg"; }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = "#756C5C")}
               onMouseLeave={e => (e.currentTarget.style.borderColor = "#34302A")}
             >
-              Download for desktop
+              Download for Mac
+            </button>
+            <button
+              style={btnGhost}
+              onClick={() => { track("cta_click", { cta: "download_desktop", location: "hero", platform: "windows" }); window.location.href = "https://github.com/hweichen77-dot/codeflow/releases/download/v2.2.2/CodeFlow_2.2.2_x64_en-US.msi"; }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = "#756C5C")}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = "#34302A")}
+            >
+              Download for Windows
             </button>
             <button
               style={btnText}
