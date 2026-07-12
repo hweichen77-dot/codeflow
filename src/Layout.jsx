@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { useAuth } from "@/lib/AuthContext";
+import { isDesktop } from "@/lib/desktopAuth";
 import { PageTransition } from "@/lib/motion";
 import MilestoneBurst from "@/components/retention/MilestoneBurst";
 import FirstWinOnboarding from "@/components/retention/FirstWinOnboarding";
@@ -36,7 +37,7 @@ export default function Layout({ children, currentPageName }) {
       ],
     },
   ];
-  const navLinks = navGroups.flatMap((g) => g.links);
+  const showFullNav = Boolean(user) || isDesktop;
 
   const isActive = (page) => currentPageName === page;
 
@@ -84,6 +85,7 @@ export default function Layout({ children, currentPageName }) {
             </span>
           </Link>
 
+          {showFullNav && (
           <div className="hidden md:flex items-center gap-0">
             {navGroups.map((group, gi) => (
               <React.Fragment key={group.name}>
@@ -132,8 +134,9 @@ export default function Layout({ children, currentPageName }) {
               </React.Fragment>
             ))}
           </div>
+          )}
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className={showFullNav ? "hidden md:flex items-center gap-3" : "flex items-center gap-2"}>
             {user ? (
               <>
                 {[{ label: "Portfolio", page: "Portfolio" }].map((p) => (
@@ -162,6 +165,7 @@ export default function Layout({ children, currentPageName }) {
                 </button>
               </>
             ) : (
+              <>
               <button
                 onClick={() => navigate("/login")}
                 className="font-sans text-xs tracking-widest uppercase px-5 py-2 transition-all duration-150"
@@ -177,9 +181,20 @@ export default function Layout({ children, currentPageName }) {
               >
                 Sign In →
               </button>
+              <button
+                onClick={() => navigate("/login")}
+                className="font-sans text-xs tracking-widest uppercase px-5 py-2 transition-all duration-150"
+                style={{ color: "#15130E", border: "1px solid #E8A33C", background: "#E8A33C" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ""; }}
+              >
+                Start
+              </button>
+              </>
             )}
           </div>
 
+          {showFullNav && (
           <button
             className="md:hidden font-sans text-xs tracking-widest uppercase p-2 transition-colors"
             style={{ color: mobileOpen ? "#E8A33C" : "#ECE7DC" }}
@@ -190,9 +205,10 @@ export default function Layout({ children, currentPageName }) {
           >
             {mobileOpen ? "[ X ]" : "[ = ]"}
           </button>
+          )}
         </div>
 
-        {mobileOpen && (
+        {showFullNav && mobileOpen && (
           <div
             id="mobile-nav-menu"
             className="md:hidden px-8 py-4 space-y-1"
