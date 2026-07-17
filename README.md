@@ -21,7 +21,9 @@ Four project-based tracks:
 - AP Computer Science A: the full AP CSA curriculum (Java)
 - Competitive Coding: algorithmic problem solving (C++)
 
-Together they cover 22 projects, 300+ lessons, and 300+ coding challenges. Every challenge has a runnable reference solution that's verified in CI.
+Together they cover 61 projects, 486 lessons, 480 coding challenges, and 18 competitive problems. Every challenge has a runnable reference solution that's verified in CI.
+
+The AI Engineering track is split into six areas: Foundations, Prompting, Chatbots & Agents, RAG & Search, Vision & Multimodal, and Production & Ops.
 
 ## In-browser code runners
 
