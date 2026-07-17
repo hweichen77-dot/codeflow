@@ -46,7 +46,7 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route path="/" element={
           isAuthenticated ? (
-            <LayoutWrapper currentPageName="Home"><HomeDashboard /></LayoutWrapper>
+            <LayoutWrapper currentPageName="Dashboard"><HomeDashboard /></LayoutWrapper>
           ) : isDesktop ? (
             <Navigate to="/login" replace />
           ) : (
