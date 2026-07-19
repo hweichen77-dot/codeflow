@@ -43,3 +43,5 @@ AGENTS.md
 .codex/
 .claude-mem/
 .aider*
+.vercel
+.env*

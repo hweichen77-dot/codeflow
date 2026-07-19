@@ -111,7 +111,7 @@ const Gate = () => {
   }
 
   return (
-    <Router basename={import.meta.env.BASE_URL}>
+    <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
       <NavigationTracker />
       <AuthenticatedApp />
       <FeedbackWidget />

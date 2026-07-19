@@ -1,7 +1,6 @@
 src-tauri
 node_modules
 dist
-website
 .git
 .github
 *.log

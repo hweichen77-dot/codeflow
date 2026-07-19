@@ -169,7 +169,7 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
     <a class="nl" href="#tracks">Tracks</a>
     <a class="nl" href="/teachers">For teachers</a>
     <a class="nl" href="#download">Download</a>
-    <a class="btn btn-p" href="https://hweichen77-dot.github.io/compilearn/" rel="noopener">Open app &rarr;</a>
+    <a class="btn btn-p" href="/app/" rel="noopener">Open app &rarr;</a>
   </div>
 </div></nav>
 
@@ -189,8 +189,8 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
     <span class="node ap">Competitive C++</span>
   </div>
   <div class="cta-row">
-    <a class="btn btn-p" href="#download" style="font-size:16px;padding:13px 26px">Download for desktop</a>
-    <a class="btn btn-g" href="https://hweichen77-dot.github.io/compilearn/" rel="noopener">Open in browser</a>
+    <a id="hero-dl" class="btn btn-p" href="#download" style="font-size:16px;padding:13px 26px">Download for desktop</a>
+    <a class="btn btn-g" href="/app/" rel="noopener">Open in browser</a>
   </div>
   <div class="stats">
     <div><b>3</b><span>languages, in-browser</span></div>
@@ -235,7 +235,7 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
       <div><b>Real attacks</b><span>Genuine jailbreaks and injections, scored automatically.</span></div>
       <div><b>You vs. the room</b><span>One prompt is your whole defense. Make it unbreakable.</span></div>
     </div>
-    <div class="cta-row" style="justify-content:flex-start;margin-top:26px"><a class="btn btn-g" href="https://hweichen77-dot.github.io/compilearn/" rel="noopener">Play it live in the app &rarr;</a></div>
+    <div class="cta-row" style="justify-content:flex-start;margin-top:26px"><a class="btn btn-g" href="/app/" rel="noopener">Play it live in the app &rarr;</a></div>
   </section>
 </div></div>
 
@@ -261,11 +261,11 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
     </div>
     <div class="dl-card">
       <div class="os">Windows</div>
-      <div class="meta">64-bit · Windows 10/11 · .msi</div>
-      <a class="btn btn-g" href="https://github.com/hweichen77-dot/compilearn/releases/download/v2.6.0/Compilearn_2.6.0_x64_en-US.msi" rel="noopener">Download for Windows</a>
+      <div class="meta">64-bit · Windows 10/11 · .exe</div>
+      <a class="btn btn-g" href="https://github.com/hweichen77-dot/compilearn/releases/download/v2.6.0/Compilearn_2.6.0_x64-setup.exe" rel="noopener">Download for Windows</a>
     </div>
   </div>
-  <p class="dl-note">Builds are published from source on GitHub. Looking for another version or the <code>.exe</code>? <a href="https://github.com/hweichen77-dot/compilearn/releases/latest" rel="noopener">See all releases &rarr;</a></p>
+  <p class="dl-note">Builds are published from source on GitHub. Looking for another version or the <code>.msi</code>? <a href="https://github.com/hweichen77-dot/compilearn/releases/latest" rel="noopener">See all releases &rarr;</a></p>
 </div></section>
 
 <section id="about"><div class="wrap">
@@ -287,7 +287,7 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
 <section class="final"><div class="wrap">
   <h2>Start coding in the next 30 seconds.</h2>
   <p>Free, runs in your browser, no signup to begin. Open a lesson and run your first line.</p>
-  <a class="btn btn-p" href="https://hweichen77-dot.github.io/compilearn/" rel="noopener" style="font-size:17px;padding:15px 32px">Open the app</a>
+  <a class="btn btn-p" href="/app/" rel="noopener" style="font-size:17px;padding:15px 32px">Open the app</a>
 </div></section>
 
 <footer><div class="wrap">
@@ -298,7 +298,7 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
     </div>
     <div class="foot-col">
       <div class="h">Product</div>
-      <a href="https://hweichen77-dot.github.io/compilearn/" rel="noopener">Open app</a>
+      <a href="/app/" rel="noopener">Open app</a>
       <a href="#playground">Playground</a>
       <a href="#tracks">Tracks</a>
       <a href="#download">Download</a>
@@ -320,6 +320,14 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
   var t=document.getElementById('tick');
   var h=items.map(function(x){return '<span>'+x+' <span class="d">/</span></span>'}).join('');
   t.innerHTML=h+h;
+
+  var REL="https://github.com/hweichen77-dot/compilearn/releases/download/v2.6.0/";
+  var dl=document.getElementById('hero-dl');
+  if(dl){
+    var ua=(navigator.userAgent||"")+" "+((navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||"");
+    if(/Win/i.test(ua)){dl.href=REL+"Compilearn_2.6.0_x64-setup.exe";dl.textContent="Download for Windows";}
+    else if(/Mac/i.test(ua)){dl.href=REL+"Compilearn_2.6.0_universal.dmg";dl.textContent="Download for macOS";}
+  }
 
   var atks=[
     function(s){return /never|not reveal|don'?t reveal|do not|refuse|only/.test(s)},
