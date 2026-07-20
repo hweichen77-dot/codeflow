@@ -45,11 +45,11 @@ export default class RouteErrorBoundary extends React.Component {
 
     return (
       <div className="flex items-center justify-center px-6" style={{ minHeight: '60vh' }}>
-        <div className="w-full max-w-md p-10 text-center" style={{ border: '1px solid #262219', background: '#131009' }}>
+        <div className="w-full max-w-md p-10 text-center" style={{ border: '1px solid #17201C', background: '#070B0A' }}>
           <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#FF6B5C', fontFamily: LABEL }}>
             THIS PAGE HIT A SNAG
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F2EDE2', margin: '0 0 10px', lineHeight: 1.15 }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#ECF3EF', margin: '0 0 10px', lineHeight: 1.15 }}>
             Couldn&apos;t load this page.
           </h1>
           <p className="font-display text-sm mb-7" style={{ color: '#FFFFFF' }}>
@@ -58,7 +58,7 @@ export default class RouteErrorBoundary extends React.Component {
           <button
             onClick={this.handleRetry}
             className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
-            style={{ background: '#E8A33C', color: '#15130E', fontWeight: 700, fontFamily: LABEL }}
+            style={{ background: '#5ED29C', color: '#070B0A', fontWeight: 700, fontFamily: LABEL }}
           >
             Try again
           </button>

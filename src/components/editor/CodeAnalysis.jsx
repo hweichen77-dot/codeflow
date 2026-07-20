@@ -12,12 +12,12 @@ export default function CodeAnalysis({ hint, onDismiss, onExplain }) {
           transition={{ duration: 0.2 }}
           className="flex items-start gap-3 px-4 py-3"
           style={{
-            background: "#15130E",
-            borderTop: "1px solid #262219",
-            borderLeft: "2px solid #E0B341",
+            background: "#070B0A",
+            borderTop: "1px solid #17201C",
+            borderLeft: "2px solid #5ED29C",
           }}
         >
-          <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#E0B341" }}>AI</span>
+          <span className="font-sans text-xs flex-shrink-0 mt-0.5" style={{ color: "#5ED29C" }}>AI</span>
           <p className="font-sans text-xs flex-1 leading-relaxed" style={{ color: "#FFFFFF" }}>
             {hint}
           </p>
@@ -25,18 +25,18 @@ export default function CodeAnalysis({ hint, onDismiss, onExplain }) {
             <button
               onClick={onExplain}
               className="font-sans text-xs px-2 py-1 transition-colors"
-              style={{ color: "#FFFFFF", border: "1px solid #262219" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#E0B341"}
-              onMouseLeave={e => e.currentTarget.style.color = "#BBB3A4"}
+              style={{ color: "#FFFFFF", border: "1px solid #17201C" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#5ED29C"}
+              onMouseLeave={e => e.currentTarget.style.color = "#B7C6BE"}
             >
               how?
             </button>
             <button
               onClick={onDismiss}
               className="font-sans text-xs"
-              style={{ color: "#ECE7DC" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#BBB3A4"}
-              onMouseLeave={e => e.currentTarget.style.color = "#ECE7DC"}
+              style={{ color: "#ECF3EF" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#B7C6BE"}
+              onMouseLeave={e => e.currentTarget.style.color = "#ECF3EF"}
             >
               ×
             </button>

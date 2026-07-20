@@ -44,14 +44,14 @@ export default function Layout({ children, currentPageName }) {
   if (currentPageName === "Home") return <>{children}</>;
 
   return (
-    <div style={{ background: "#15130E", minHeight: "100vh" }}>
+    <div style={{ background: "#070B0A", minHeight: "100vh" }}>
       <div className="cf-grain" aria-hidden="true" />
       {user && <MilestoneBurst />}
       {user && <FirstWinOnboarding />}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] font-sans text-xs tracking-widest uppercase px-4 py-2"
-        style={{ background: "#E8A33C", color: "#15130E" }}
+        style={{ background: "#5ED29C", color: "#070B0A" }}
       >
         Skip to content
       </a>
@@ -61,7 +61,7 @@ export default function Layout({ children, currentPageName }) {
         style={{
           background: scrolled ? "rgba(21,19,14,0.95)" : "transparent",
           backdropFilter: scrolled ? "blur(12px)" : "none",
-          borderBottom: scrolled ? "1px solid #2a231a" : "1px solid transparent",
+          borderBottom: scrolled ? "1px solid #17201C" : "1px solid transparent",
           height: scrolled ? "52px" : "64px",
         }}
       >
@@ -75,9 +75,9 @@ export default function Layout({ children, currentPageName }) {
                 fontFamily: "'Spline Sans Mono Variable', ui-monospace, monospace",
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "#E8A33C",
-                background: "rgba(232,163,60,0.1)",
-                border: "1px solid rgba(232,163,60,0.24)",
+                color: "#5ED29C",
+                background: "rgba(94,210,156,0.1)",
+                border: "1px solid rgba(94,210,156,0.24)",
                 width: "26px",
                 height: "26px",
                 lineHeight: 1,
@@ -87,7 +87,7 @@ export default function Layout({ children, currentPageName }) {
             </span>
             <span
               className="inline-flex items-center transition-colors duration-200"
-              style={{ color: "#F2EDE2", fontFamily: "'Bricolage Grotesque Variable', system-ui, sans-serif", fontWeight: 700, fontSize: "17px", letterSpacing: "-0.01em", lineHeight: 1 }}
+              style={{ color: "#ECF3EF", fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 700, fontSize: "17px", letterSpacing: "-0.01em", lineHeight: 1 }}
             >
               Compilearn
             </span>
@@ -98,7 +98,7 @@ export default function Layout({ children, currentPageName }) {
             {navGroups.map((group, gi) => (
               <React.Fragment key={group.name}>
                 {gi > 0 && (
-                  <span aria-hidden="true" className="mx-2 lg:mx-3 w-px h-4" style={{ background: "#2a231a" }} />
+                  <span aria-hidden="true" className="mx-2 lg:mx-3 w-px h-4" style={{ background: "#17201C" }} />
                 )}
                 {group.links.map((link) => (
                   <Link
@@ -107,19 +107,19 @@ export default function Layout({ children, currentPageName }) {
                     aria-label={link.badge ? `${link.label} — ${link.badge}` : undefined}
                     className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 lg:px-4 py-2 transition-all duration-150 relative inline-flex items-center gap-1.5"
                     style={{
-                      color: isActive(link.page) ? "#E8A33C" : "#a99f8f",
+                      color: isActive(link.page) ? "#5ED29C" : "#B7C6BE",
                     }}
                     onMouseEnter={e => {
-                      if (!isActive(link.page)) e.currentTarget.style.color = "#f4b95a";
+                      if (!isActive(link.page)) e.currentTarget.style.color = "#7FE0B0";
                     }}
                     onMouseLeave={e => {
-                      if (!isActive(link.page)) e.currentTarget.style.color = "#a99f8f";
+                      if (!isActive(link.page)) e.currentTarget.style.color = "#B7C6BE";
                     }}
                   >
                     {isActive(link.page) && (
                       <span
                         className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px w-4"
-                        style={{ background: "#E8A33C" }}
+                        style={{ background: "#5ED29C" }}
                       />
                     )}
                     {link.label}
@@ -130,8 +130,8 @@ export default function Layout({ children, currentPageName }) {
                         style={{
                           fontSize: "8px",
                           letterSpacing: "0.06em",
-                          color: "#F2EDE2",
-                          border: "1px solid #2a231a",
+                          color: "#ECF3EF",
+                          border: "1px solid #17201C",
                         }}
                       >
                         {link.badge}
@@ -152,22 +152,22 @@ export default function Layout({ children, currentPageName }) {
                     key={p.page}
                     to={createPageUrl(p.page)}
                     className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 py-2 transition-all duration-150"
-                    style={{ color: isActive(p.page) ? "#E8A33C" : "#a99f8f" }}
-                    onMouseEnter={e => { if (!isActive(p.page)) e.currentTarget.style.color = "#f4b95a"; }}
-                    onMouseLeave={e => { if (!isActive(p.page)) e.currentTarget.style.color = "#a99f8f"; }}
+                    style={{ color: isActive(p.page) ? "#5ED29C" : "#B7C6BE" }}
+                    onMouseEnter={e => { if (!isActive(p.page)) e.currentTarget.style.color = "#7FE0B0"; }}
+                    onMouseLeave={e => { if (!isActive(p.page)) e.currentTarget.style.color = "#B7C6BE"; }}
                   >
                     {p.label}
                   </Link>
                 ))}
-                <span className="font-sans text-xs whitespace-nowrap" style={{ color: "#F2EDE2" }}>
+                <span className="font-sans text-xs whitespace-nowrap" style={{ color: "#ECF3EF" }}>
                   {user.name?.split(" ")[0] || user.email?.split("@")[0]}
                 </span>
                 <button
                   onClick={logout}
                   className="font-sans text-xs tracking-widest uppercase whitespace-nowrap px-3 py-2 transition-all duration-150"
-                  style={{ color: "#F2EDE2", border: "1px solid #2a231a" }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "#a99f8f"; e.currentTarget.style.borderColor = "#2a231a"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "#a99f8f"; e.currentTarget.style.borderColor = "#2a231a"; }}
+                  style={{ color: "#ECF3EF", border: "1px solid #17201C" }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "#B7C6BE"; e.currentTarget.style.borderColor = "#17201C"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "#B7C6BE"; e.currentTarget.style.borderColor = "#17201C"; }}
                 >
                   Exit
                 </button>
@@ -177,13 +177,13 @@ export default function Layout({ children, currentPageName }) {
               <button
                 onClick={() => navigate("/login")}
                 className="font-sans text-xs tracking-widest uppercase px-5 py-2 transition-all duration-150"
-                style={{ color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10" }}
+                style={{ color: "#5ED29C", border: "1px solid #5ED29C33", background: "#5ED29C10" }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = "#E8A33C20";
+                  e.currentTarget.style.background = "#5ED29C20";
                   e.currentTarget.style.transform = "translateY(-1px)";
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = "#E8A33C10";
+                  e.currentTarget.style.background = "#5ED29C10";
                   e.currentTarget.style.transform = "";
                 }}
               >
@@ -192,7 +192,7 @@ export default function Layout({ children, currentPageName }) {
               <button
                 onClick={() => navigate("/login")}
                 className="font-sans text-xs tracking-widest uppercase px-5 py-2 transition-all duration-150"
-                style={{ color: "#15130E", border: "1px solid #E8A33C", background: "#E8A33C" }}
+                style={{ color: "#070B0A", border: "1px solid #5ED29C", background: "#5ED29C" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = ""; }}
               >
@@ -205,7 +205,7 @@ export default function Layout({ children, currentPageName }) {
           {showFullNav && (
           <button
             className="md:hidden font-sans text-xs tracking-widest uppercase p-2 transition-colors"
-            style={{ color: mobileOpen ? "#E8A33C" : "#F2EDE2" }}
+            style={{ color: mobileOpen ? "#5ED29C" : "#ECF3EF" }}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileOpen}
@@ -220,11 +220,11 @@ export default function Layout({ children, currentPageName }) {
           <div
             id="mobile-nav-menu"
             className="md:hidden px-8 py-4 space-y-1"
-            style={{ background: "#15130E", borderTop: "1px solid #2a231a" }}
+            style={{ background: "#070B0A", borderTop: "1px solid #17201C" }}
           >
             {navGroups.map((group) => (
               <div key={group.name} className="mb-2">
-                <div className="font-sans text-[10px] tracking-[0.18em] uppercase px-4 pt-2 pb-1" style={{ color: "#6f665a" }}>
+                <div className="font-sans text-[10px] tracking-[0.18em] uppercase px-4 pt-2 pb-1" style={{ color: "#7C8D85" }}>
                   {group.name}
                 </div>
                 {group.links.map((link) => (
@@ -234,7 +234,7 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setMobileOpen(false)}
                     aria-label={link.badge ? `${link.label} — ${link.badge}, optional advanced track` : undefined}
                     className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase px-4 py-3 transition-colors"
-                    style={{ color: isActive(link.page) ? "#E8A33C" : "#a99f8f" }}
+                    style={{ color: isActive(link.page) ? "#5ED29C" : "#B7C6BE" }}
                   >
                     {link.label}
                     {link.badge && (
@@ -244,8 +244,8 @@ export default function Layout({ children, currentPageName }) {
                         style={{
                           fontSize: "8px",
                           letterSpacing: "0.06em",
-                          color: "#F2EDE2",
-                          border: "1px solid #2a231a",
+                          color: "#ECF3EF",
+                          border: "1px solid #17201C",
                         }}
                       >
                         {link.badge}
@@ -255,21 +255,21 @@ export default function Layout({ children, currentPageName }) {
                 ))}
               </div>
             ))}
-            <div style={{ borderTop: "1px solid #2a231a", paddingTop: "0.75rem", marginTop: "0.75rem" }}>
+            <div style={{ borderTop: "1px solid #17201C", paddingTop: "0.75rem", marginTop: "0.75rem" }}>
               {user ? (
                 <>
                 <Link
                   to={createPageUrl("Portfolio")}
                   onClick={() => setMobileOpen(false)}
                   className="block font-sans text-xs tracking-widest uppercase px-4 py-3 transition-colors"
-                  style={{ color: "#F2EDE2" }}
+                  style={{ color: "#ECF3EF" }}
                 >
                   Portfolio
                 </Link>
                 <button
                   onClick={() => { setMobileOpen(false); logout(); }}
                   className="font-sans text-xs tracking-widest uppercase w-full text-left px-4 py-3"
-                  style={{ color: "#F2EDE2" }}
+                  style={{ color: "#ECF3EF" }}
                 >
                   Sign Out
                 </button>
@@ -278,7 +278,7 @@ export default function Layout({ children, currentPageName }) {
                 <button
                   onClick={() => { setMobileOpen(false); navigate("/login"); }}
                   className="font-sans text-xs tracking-widest uppercase px-4 py-3"
-                  style={{ color: "#E8A33C" }}
+                  style={{ color: "#5ED29C" }}
                 >
                   Sign In →
                 </button>

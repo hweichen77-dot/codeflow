@@ -22,19 +22,19 @@ import WeeklyRecapModal from "../components/retention/WeeklyRecapModal";
 import "@/styles/landing.css";
 
 const C = {
-  bg: "#15130E",
-  card: "#17130E",
-  cardHover: "#1F1B12",
-  border: "#2A231A",
+  bg: "#070B0A",
+  card: "#0C1210",
+  cardHover: "#111917",
+  border: "#17201C",
   borderHi: "#3A3020",
-  amber: "#E8A33C",
-  amberBright: "#F4B95A",
-  gold: "#F4B95A",
+  amber: "#5ED29C",
+  amberBright: "#7FE0B0",
+  gold: "#7FE0B0",
   ember: "#FF7A3D",
   emerald: "#5FBF7E",
-  white: "#F2EDE2",
-  text: "#F2EDE2",
-  dim: "#A99F8F",
+  white: "#ECF3EF",
+  text: "#ECF3EF",
+  dim: "#B7C6BE",
 };
 
 export default function Dashboard() {
@@ -246,7 +246,7 @@ export default function Dashboard() {
               {lvl.max === Infinity ? "Max level" : `${toNext} XP to next`}
             </span>
           </div>
-          <div className="h-2.5 w-full rounded-full overflow-hidden" style={{ background: "#0F0D08" }}>
+          <div className="h-2.5 w-full rounded-full overflow-hidden" style={{ background: "#050807" }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${lvlPct}%` }}
@@ -266,7 +266,7 @@ export default function Dashboard() {
         {heroProject && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="mt-8 rounded-2xl p-6 lg:p-8 relative overflow-hidden"
-            style={{ background: "linear-gradient(135deg, #1F1B12 0%, #17140E 100%)", border: `1px solid ${C.borderHi}` }}>
+            style={{ background: "linear-gradient(135deg, #111917 0%, #0C1210 100%)", border: `1px solid ${C.borderHi}` }}>
             <div className="absolute -right-16 -top-16 w-52 h-52 rounded-full" style={{ background: `radial-gradient(circle, ${C.amber}22, transparent 70%)` }} />
             <div className="relative flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
               <div className="flex-1">
@@ -275,7 +275,7 @@ export default function Dashboard() {
                   {heroProject.title || heroProject.name || "Your next project"}
                 </h2>
                 <div className="mt-3 flex items-center gap-3">
-                  <div className="h-1.5 w-40 rounded-full overflow-hidden" style={{ background: "#0F0D08" }}>
+                  <div className="h-1.5 w-40 rounded-full overflow-hidden" style={{ background: "#050807" }}>
                     <motion.div initial={{ width: 0 }} animate={{ width: `${heroPct}%` }} transition={{ duration: 0.9, delay: 0.5 }}
                       className="h-full rounded-full" style={{ background: C.emerald }} />
                   </div>
@@ -334,7 +334,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0" style={{ width: "180px" }}>
-                      <div className="flex-1 rounded-full overflow-hidden" style={{ height: "5px", background: "#0F0D08" }}>
+                      <div className="flex-1 rounded-full overflow-hidden" style={{ height: "5px", background: "#050807" }}>
                         <AnimatedBar pct={p.pct} color={isDone ? C.amber : "#9A6A1F"} style={{ height: "100%", borderRadius: "3px" }} />
                       </div>
                       <span className="font-mono text-xs tabular-nums w-10 text-right" style={{ color: C.dim }}>{p.pct}%</span>
@@ -393,7 +393,7 @@ function LessonRow({ index, lesson, done, isNext }) {
             <Zap size={11} /> Up next
           </span>
         ) : (
-          <div className="h-1 w-16 rounded-full overflow-hidden shrink-0" style={{ background: "#0F0D08" }}>
+          <div className="h-1 w-16 rounded-full overflow-hidden shrink-0" style={{ background: "#050807" }}>
             <div className="h-full rounded-full" style={{ width: "0%", background: C.amber }} />
           </div>
         )}

@@ -1,32 +1,32 @@
 
 export const trace = Object.freeze({
-  bg: '#15130E',
-  raised: '#1C1A14',
-  surface: '#221F18',
-  terminal: '#131009',
+  bg: '#070B0A',
+  raised: '#0C1210',
+  surface: '#111917',
+  terminal: '#070B0A',
 
-  border: '#262219',
-  borderStrong: '#34302A',
+  border: '#17201C',
+  borderStrong: '#26302B',
   borderActive: '#46413A',
 
-  text: '#ECE7DC',
-  dim: '#A39B8C',
+  text: '#ECF3EF',
+  dim: '#B7C6BE',
   faint: '#FFFFFF',
   muted: '#4A453C',
 
-  lime: '#E8A33C',
+  lime: '#5ED29C',
   limeDim: '#C78A2E',
-  limeFaint: '#E8A33C14',
-  ok: '#E8A33C',
-  okWash: '#E8A33C12',
+  limeFaint: '#5ED29C14',
+  ok: '#5ED29C',
+  okWash: '#5ED29C12',
   fail: '#FF6B5C',
   failWash: '#FF6B5C14',
-  warn: '#E0B341',
+  warn: '#5ED29C',
   info: '#C2643C',
 
   mono: "'Spline Sans Mono Variable', ui-monospace, monospace",
-  serif: "'Bricolage Grotesque Variable', system-ui, sans-serif",
-  sans: "'Hanken Grotesk Variable', system-ui, sans-serif",
+  serif: "'Inter', system-ui, sans-serif",
+  sans: "'Inter', system-ui, sans-serif",
 })
 
 export const traceStyles = Object.freeze({

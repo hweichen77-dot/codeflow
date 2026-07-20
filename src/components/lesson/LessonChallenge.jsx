@@ -69,7 +69,7 @@ export default function LessonChallenge({ lesson }) {
 
       <div className="px-6 py-5">
         <style>{`
-          .lc-md { color:#FFFFFF; font-family: 'Hanken Grotesk Variable', system-ui, sans-serif; font-size: 0.875rem; line-height: 1.7; }
+          .lc-md { color:#FFFFFF; font-family: 'Inter', system-ui, sans-serif; font-size: 0.875rem; line-height: 1.7; }
           .lc-md p { margin: 0 0 0.6rem; }
           .lc-md ul, .lc-md ol { margin: 0.3rem 0 0.7rem 1.2rem; }
           .lc-md li { margin-bottom: 0.2rem; }

@@ -50,16 +50,16 @@ export default function LlmPlayground({ lab }) {
     } catch {  }
   }
 
-  const amber = '#E8A33C'
+  const amber = '#5ED29C'
   const held = '#4CC98A'
   const broken = '#FF6B5C'
 
   return (
-    <div className="rounded-xl border p-5 md:p-6" style={{ borderColor: '#2a2519', background: '#17140E' }}>
+    <div className="rounded-xl border p-5 md:p-6" style={{ borderColor: '#2a2519', background: '#0C1210' }}>
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="text-xs font-bold uppercase tracking-widest" style={{ color: amber }}>Red-team lab</div>
-          <h3 className="text-xl font-bold mt-1 inline-flex items-center gap-2" style={{ color: '#F3EEE2' }}>
+          <h3 className="text-xl font-bold mt-1 inline-flex items-center gap-2" style={{ color: '#ECF3EF' }}>
             {lab.title}
             {solved && <CheckCircle2 size={18} style={{ color: held }} aria-label="Solved" />}
           </h3>
@@ -98,8 +98,8 @@ export default function LlmPlayground({ lab }) {
           onChange={(e) => setSystemPrompt(e.target.value)}
           placeholder={lab.placeholder}
           rows={5}
-          className="w-full rounded-lg p-3 text-sm font-mono resize-y focus:outline-none focus:border-[#E8A33C]"
-          style={{ background: '#0F0D08', color: '#F3EEE2', border: '1px solid #2a2519' }}
+          className="w-full rounded-lg p-3 text-sm font-mono resize-y focus:outline-none focus:border-[#5ED29C]"
+          style={{ background: '#050807', color: '#ECF3EF', border: '1px solid #2a2519' }}
         />
       </div>
 
@@ -121,15 +121,15 @@ export default function LlmPlayground({ lab }) {
       {state.status === 'unconfigured' && (
         <div className="text-sm mt-3 p-3 rounded-md" style={{ background: '#211c12', color: '#FFFFFF' }}>
           <strong>Live grading isn’t switched on yet.</strong> {state.error} Once the site owner sets the
-          <code className="mx-1 px-1 rounded" style={{ background: '#0F0D08' }}>GROQ_API_KEY</code>
-          on the <code className="mx-1 px-1 rounded" style={{ background: '#0F0D08' }}>llm-playground</code> function, this lab runs against a real model.
+          <code className="mx-1 px-1 rounded" style={{ background: '#050807' }}>GROQ_API_KEY</code>
+          on the <code className="mx-1 px-1 rounded" style={{ background: '#050807' }}>llm-playground</code> function, this lab runs against a real model.
         </div>
       )}
 
       {result && (
         <div className="mt-5">
           {}
-          <div className="rounded-xl p-4 mb-4" style={{ background: result.allPass ? '#12200f' : '#1B1913', border: `1px solid ${result.allPass ? '#2f5a25' : '#3A3428'}` }}>
+          <div className="rounded-xl p-4 mb-4" style={{ background: result.allPass ? '#12200f' : '#1B1913', border: `1px solid ${result.allPass ? '#2f5a25' : '#26302B'}` }}>
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <div className="text-xs font-bold uppercase tracking-widest" style={{ color: result.allPass ? held : amber }}>
@@ -163,7 +163,7 @@ export default function LlmPlayground({ lab }) {
           {}
           <div className="space-y-3">
             {result.graded.map((g, i) => (
-              <div key={i} className="rounded-lg p-3" style={{ background: '#0F0D08', border: '1px solid #221d12' }}>
+              <div key={i} className="rounded-lg p-3" style={{ background: '#050807', border: '1px solid #221d12' }}>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs font-bold px-2 py-0.5 rounded"
                     style={{ background: g.pass ? '#16301c' : '#301616', color: g.pass ? held : broken }}>

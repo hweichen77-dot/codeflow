@@ -42,10 +42,10 @@ export default function Playground() {
   return (
     <Stagger className="max-w-6xl mx-auto px-5 pt-24 pb-16" as="div">
       <StaggerItem className="mb-8" as="header">
-        <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E8A33C' }}>
+        <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#5ED29C' }}>
           Prompt-security playground
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold mt-2" style={{ color: '#F3EEE2' }}>
+        <h1 className="text-3xl md:text-4xl font-bold mt-2" style={{ color: '#ECF3EF' }}>
           Can your prompt survive the attacks?
         </h1>
         <p className="mt-3 max-w-2xl text-sm md:text-base leading-relaxed" style={{ color: '#FFFFFF' }}>
@@ -59,7 +59,7 @@ export default function Playground() {
             <span className="font-sans text-[11px] tracking-[0.16em] uppercase" style={{ color: KIT.dim }}>
               Labs solved
             </span>
-            <span className="font-sans text-xs" style={{ color: '#E8A33C' }}>
+            <span className="font-sans text-xs" style={{ color: '#5ED29C' }}>
               {solvedCount}/{LABS.length}
             </span>
           </div>
@@ -84,7 +84,7 @@ export default function Playground() {
                   background: on ? '#211c12' : 'transparent',
                 }}
               >
-                <div className="text-sm font-semibold inline-flex items-center gap-1.5" style={{ color: on ? '#F3EEE2' : '#D6CDB8' }}>
+                <div className="text-sm font-semibold inline-flex items-center gap-1.5" style={{ color: on ? '#ECF3EF' : '#D6CDB8' }}>
                   {done && <CheckCircle2 size={13} style={{ color: KIT.emerald }} />}
                   {lab.title}
                 </div>

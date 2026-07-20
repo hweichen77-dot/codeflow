@@ -104,8 +104,8 @@ const Gate = () => {
 
   if (isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#15130E" }}>
-        <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#262219", borderTopColor: "#E8A33C" }}></div>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#070B0A" }}>
+        <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#17201C", borderTopColor: "#5ED29C" }}></div>
       </div>
     );
   }

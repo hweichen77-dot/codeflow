@@ -11,7 +11,7 @@ import { Stagger, StaggerItem } from "@/lib/motion";
 import { PrimaryButton } from "@/components/ui/kit";
 import { Reveal, GlowCard } from "@/components/landing/primitives";
 
-const eyebrow = { color: "#f4b95a", fontFamily: font.mono, fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 };
+const eyebrow = { color: "#7FE0B0", fontFamily: font.mono, fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 };
 
 const CAPSTONES = [
   {
@@ -35,8 +35,8 @@ const CAPSTONES = [
 ];
 
 const DIFF_COLOR = {
-  Beginner: { color: "#E8A33C", border: "#E8A33C33", bg: "#E8A33C10" },
-  Intermediate: { color: "#f4b95a", border: "#f4b95a33", bg: "#f4b95a10" },
+  Beginner: { color: "#5ED29C", border: "#5ED29C33", bg: "#5ED29C10" },
+  Intermediate: { color: "#7FE0B0", border: "#7FE0B033", bg: "#7FE0B010" },
   Advanced: { color: "#FF6B5C", border: "#FF6B5C33", bg: "#FF6B5C10" },
 };
 
@@ -96,24 +96,24 @@ export default function AITrack() {
   }));
 
   return (
-    <div className="min-h-screen" style={{ background: "#0c0a08" }}>
-      <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #2a231a" }}>
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
+    <div className="min-h-screen" style={{ background: "#050807" }}>
+      <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #17201C" }}>
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #5ED29C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
           <Reveal>
             <div style={{ ...eyebrow, marginBottom: 14 }}>AI TRACK</div>
             <h1
-              style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#F2EDE2", lineHeight: 1.08, margin: "0 0 20px" }}
+              style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#ECF3EF", lineHeight: 1.08, margin: "0 0 20px" }}
             >
               Learn to build<br />
               <span className="cl-grad">with AI.</span>
             </h1>
-            <p style={{ fontFamily: font.body, color: "#a99f8f", fontSize: 18, maxWidth: 560, lineHeight: 1.55 }}>
+            <p style={{ fontFamily: font.body, color: "#B7C6BE", fontSize: 18, maxWidth: 560, lineHeight: 1.55 }}>
               A full progression from "what is a model" to building and deploying AI-powered applications, with working code at every step.
             </p>
-            <div className="mt-6 inline-flex items-center gap-2 px-3 py-2" style={{ border: "1px solid #2a231a", background: "#17130e", borderRadius: 10 }}>
+            <div className="mt-6 inline-flex items-center gap-2 px-3 py-2" style={{ border: "1px solid #17201C", background: "#0C1210", borderRadius: 10 }}>
               <span style={{ ...eyebrow, fontSize: 11 }}>Prerequisite</span>
-              <span style={{ fontFamily: font.body, fontSize: 13, color: "#F2EDE2" }}>
+              <span style={{ fontFamily: font.body, fontSize: 13, color: "#ECF3EF" }}>
                 Assumes a basic understanding of Python (variables, loops, functions). New to Python? Start with AP CS Principles.
               </span>
             </div>
@@ -128,10 +128,10 @@ export default function AITrack() {
 
           <div
             className="grid gap-8 px-6 py-3 mb-px"
-            style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #2a231a" }}
+            style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #17201C" }}
           >
             {["MOD", "PROJECT", "LEVEL", "TIME"].map(h => (
-              <div key={h} style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: "#6f665a" }}>{h}</div>
+              <div key={h} style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: "#7C8D85" }}>{h}</div>
             ))}
           </div>
 
@@ -148,41 +148,41 @@ export default function AITrack() {
             const rowInner = (
                 <div
                   className="grid gap-8 px-6 py-6 transition-all duration-200"
-                  style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #1C1A14", opacity: gated ? 0.55 : 1 }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#17130e"; e.currentTarget.style.paddingLeft = "1.75rem"; if (gated) e.currentTarget.style.opacity = "0.8"; }}
+                  style={{ gridTemplateColumns: "3rem 1fr auto auto", borderBottom: "1px solid #0C1210", opacity: gated ? 0.55 : 1 }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#0C1210"; e.currentTarget.style.paddingLeft = "1.75rem"; if (gated) e.currentTarget.style.opacity = "0.8"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; if (gated) e.currentTarget.style.opacity = "0.55"; }}
                 >
                   <div className="flex items-center" style={{ minWidth: "3rem" }}>
                     {pct > 0 ? (
-                      <ProgressRing percent={pct} size={38} color="#E8A33C" />
+                      <ProgressRing percent={pct} size={38} color="#5ED29C" />
                     ) : (
-                      <span style={{ fontFamily: font.mono, fontWeight: 700, fontSize: "1.5rem", color: "#6f665a", letterSpacing: "-0.05em" }}>
+                      <span style={{ fontFamily: font.mono, fontWeight: 700, fontSize: "1.5rem", color: "#7C8D85", letterSpacing: "-0.05em" }}>
                         {item.number}
                       </span>
                     )}
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="font-display font-bold text-base transition-colors duration-150 group-hover:text-white" style={{ color: done ? "#E8A33C" : "#F2EDE2", letterSpacing: "-0.02em" }}>
+                      <span className="font-display font-bold text-base transition-colors duration-150 group-hover:text-white" style={{ color: done ? "#5ED29C" : "#ECF3EF", letterSpacing: "-0.02em" }}>
                         {item.title}
                       </span>
                       {done && (
-                        <span style={{ fontFamily: font.mono, fontSize: 11, color: "#E8A33C", border: "1px solid #E8A33C33", background: "#E8A33C10", padding: "1px 8px", borderRadius: 6 }}>
+                        <span style={{ fontFamily: font.mono, fontSize: 11, color: "#5ED29C", border: "1px solid #5ED29C33", background: "#5ED29C10", padding: "1px 8px", borderRadius: 6 }}>
                           DONE
                         </span>
                       )}
                       {gated && (
-                        <span style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#f4b95a", border: "1px solid #f4b95a33", background: "#f4b95a10", padding: "1px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>
+                        <span style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#7FE0B0", border: "1px solid #7FE0B033", background: "#7FE0B010", padding: "1px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>
                           Finish Foundations first
                         </span>
                       )}
                     </div>
-                    <p style={{ fontFamily: font.body, fontSize: 14, color: "#a99f8f", marginBottom: 12, lineHeight: 1.5 }}>
+                    <p style={{ fontFamily: font.body, fontSize: 14, color: "#B7C6BE", marginBottom: 12, lineHeight: 1.5 }}>
                       {item.description}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {item.concepts.map(c => (
-                        <span key={c} style={{ fontFamily: font.mono, fontSize: 11, color: "#a99f8f", border: "1px solid #2a231a", borderRadius: 6, padding: "1px 8px" }}>
+                        <span key={c} style={{ fontFamily: font.mono, fontSize: 11, color: "#B7C6BE", border: "1px solid #17201C", borderRadius: 6, padding: "1px 8px" }}>
                           {c}
                         </span>
                       ))}
@@ -195,7 +195,7 @@ export default function AITrack() {
                       {item.difficulty}
                     </span>
                   </div>
-                  <div className="text-right" style={{ fontFamily: font.mono, fontSize: 13, color: "#6f665a" }}>
+                  <div className="text-right" style={{ fontFamily: font.mono, fontSize: 13, color: "#7C8D85" }}>
                     {item.time}
                   </div>
                 </div>
@@ -241,7 +241,7 @@ export default function AITrack() {
               const dc = DIFF_COLOR[cap.level];
               return (
                 <StaggerItem key={cap.title} as="div">
-                <GlowCard style={{ height: "100%", background: "#17130e", border: "1px solid #2a231a", borderRadius: 16, padding: 28 }}>
+                <GlowCard style={{ height: "100%", background: "#0C1210", border: "1px solid #17201C", borderRadius: 16, padding: 28 }}>
                   <span
                     style={{ display: "inline-block", fontFamily: font.mono, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: dc.color, border: `1px solid ${dc.border}`, background: dc.bg, borderRadius: 6, padding: "3px 10px", marginBottom: 20 }}
                   >
@@ -249,18 +249,18 @@ export default function AITrack() {
                   </span>
                   <h3
                     className="font-display font-bold text-xl mb-3"
-                    style={{ color: "#F2EDE2", letterSpacing: "-0.02em" }}
+                    style={{ color: "#ECF3EF", letterSpacing: "-0.02em" }}
                   >
                     {cap.title}
                   </h3>
-                  <p style={{ fontFamily: font.body, fontSize: 14, lineHeight: 1.55, color: "#a99f8f", marginBottom: 20 }}>
+                  <p style={{ fontFamily: font.body, fontSize: 14, lineHeight: 1.55, color: "#B7C6BE", marginBottom: 20 }}>
                     {cap.description}
                   </p>
                   <div className="space-y-1.5">
                     {cap.skills.map(s => (
                       <div key={s} className="flex items-center gap-2">
-                        <span style={{ color: "#E8A33C", fontFamily: font.mono, fontSize: 12 }}>&rarr;</span>
-                        <span style={{ fontFamily: font.mono, fontSize: 12, color: "#a99f8f" }}>{s}</span>
+                        <span style={{ color: "#5ED29C", fontFamily: font.mono, fontSize: 12 }}>&rarr;</span>
+                        <span style={{ fontFamily: font.mono, fontSize: 12, color: "#B7C6BE" }}>{s}</span>
                       </div>
                     ))}
                   </div>
@@ -272,14 +272,14 @@ export default function AITrack() {
         </div>
 
         <Reveal>
-        <div className="text-center py-12 px-6" style={{ background: "#17130e", border: "1px solid #2a231a", borderRadius: 16 }}>
+        <div className="text-center py-12 px-6" style={{ background: "#0C1210", border: "1px solid #17201C", borderRadius: 16 }}>
           <div style={{ ...eyebrow, marginBottom: 18 }}>READY?</div>
           <h2
-            style={{ fontFamily: font.display, fontSize: "2rem", fontWeight: 700, letterSpacing: "-0.03em", color: "#F2EDE2", margin: "0 0 16px" }}
+            style={{ fontFamily: font.display, fontSize: "2rem", fontWeight: 700, letterSpacing: "-0.03em", color: "#ECF3EF", margin: "0 0 16px" }}
           >
             Start building with AI.
           </h2>
-          <p style={{ fontFamily: font.body, fontSize: 16, color: "#a99f8f", marginBottom: 32 }}>
+          <p style={{ fontFamily: font.body, fontSize: 16, color: "#B7C6BE", marginBottom: 32 }}>
             The projects are in the Projects section. Filter by category "AI/ML".
           </p>
           <div className="flex justify-center">
@@ -292,7 +292,7 @@ export default function AITrack() {
       {nudge && (
         <div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-3 shadow-lg"
-          style={{ fontFamily: font.mono, fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: "#f4b95a", border: "1px solid #f4b95a55", background: "#17130e", borderRadius: 10 }}
+          style={{ fontFamily: font.mono, fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: "#7FE0B0", border: "1px solid #7FE0B055", background: "#0C1210", borderRadius: 10 }}
           role="status"
         >
           Finish the Foundations modules to unlock "{nudge}"

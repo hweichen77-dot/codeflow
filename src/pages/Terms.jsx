@@ -10,7 +10,7 @@ const SERIF = font.display
 function Section({ title, children }) {
   return (
     <section className="mb-10">
-      <h2 style={{ fontFamily: SERIF, fontSize: '1.35rem', fontWeight: 700, color: '#F2EDE2', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
+      <h2 style={{ fontFamily: SERIF, fontSize: '1.35rem', fontWeight: 700, color: '#ECF3EF', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
         {title}
       </h2>
       <div className="font-display text-sm space-y-3" style={{ color: '#FFFFFF', lineHeight: 1.7 }}>
@@ -22,13 +22,13 @@ function Section({ title, children }) {
 
 export default function Terms() {
   return (
-    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-20" style={{ background: '#15130E' }}>
+    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-20" style={{ background: '#070B0A' }}>
       <Stagger className="max-w-2xl mx-auto" as="div">
         <StaggerItem as="div">
-          <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#E8A33C', fontFamily: LABEL }}>
+          <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#5ED29C', fontFamily: LABEL }}>
             TERMS
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F2EDE2', margin: '0 0 8px', lineHeight: 1.08 }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#ECF3EF', margin: '0 0 8px', lineHeight: 1.08 }}>
             Terms of Service
           </h1>
           <p className="font-sans text-xs mb-12" style={{ color: '#FFFFFF', fontFamily: LABEL }}>
@@ -54,7 +54,7 @@ export default function Terms() {
         <StaggerItem as="div"><Section title="Age & students">
           <p>
             Compilearn is built for learners, including high-school students. You must be at
-            least <strong style={{ color: '#ECE7DC' }}>13 years old</strong> to use it. If you are
+            least <strong style={{ color: '#ECF3EF' }}>13 years old</strong> to use it. If you are
             under 18, you may use Compilearn only with the consent and supervision of a parent,
             guardian, or teacher, who agrees to these terms on your behalf.
           </p>
@@ -65,8 +65,8 @@ export default function Terms() {
             request; such data is used only to provide the service and is never sold. Parents,
             guardians, and schools may request access to or
             deletion of a minor&apos;s data by emailing{' '}
-            <a href="mailto:jason.huang317235@gmail.com" style={{ color: '#E8A33C' }}>jason.huang317235@gmail.com</a>.
-            See our <Link to={createPageUrl('Privacy')} style={{ color: '#E8A33C' }}>Privacy Policy</Link> for details.
+            <a href="mailto:jason.huang317235@gmail.com" style={{ color: '#5ED29C' }}>jason.huang317235@gmail.com</a>.
+            See our <Link to={createPageUrl('Privacy')} style={{ color: '#5ED29C' }}>Privacy Policy</Link> for details.
           </p>
         </Section></StaggerItem>
 
@@ -129,8 +129,8 @@ export default function Terms() {
         <StaggerItem as="div"><Section title="Changes & contact">
           <p>
             We may update these terms; continued use means you accept the changes. Questions?{' '}
-            <a href="mailto:jason.huang317235@gmail.com" style={{ color: '#E8A33C' }}>jason.huang317235@gmail.com</a>.
-            See also our <Link to={createPageUrl('Privacy')} style={{ color: '#E8A33C' }}>Privacy Policy</Link>.
+            <a href="mailto:jason.huang317235@gmail.com" style={{ color: '#5ED29C' }}>jason.huang317235@gmail.com</a>.
+            See also our <Link to={createPageUrl('Privacy')} style={{ color: '#5ED29C' }}>Privacy Policy</Link>.
           </p>
         </Section></StaggerItem>
       </Stagger>

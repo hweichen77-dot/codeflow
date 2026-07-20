@@ -8,7 +8,7 @@ export const LEVELS = [
   { level: 4, name: "Developer", min: 300, max: 500, color: "#f59e0b" },
   { level: 5, name: "Engineer", min: 500, max: 800, color: "#f97316" },
   { level: 6, name: "Architect", min: 800, max: 1200, color: "#FF6B5C" },
-  { level: 7, name: "Master", min: 1200, max: Infinity, color: "#E8A33C" },
+  { level: 7, name: "Master", min: 1200, max: Infinity, color: "#5ED29C" },
 ];
 
 export function getLevel(xp) {
@@ -23,7 +23,7 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
   return (
     <div
       className="flex items-center gap-4 px-5 py-3"
-      style={{ background: "#131009", border: "1px solid #262219", borderRadius: "4px" }}
+      style={{ background: "#070B0A", border: "1px solid #17201C", borderRadius: "4px" }}
     >
       <div
         className="font-sans font-bold text-center flex-shrink-0"
@@ -46,7 +46,7 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
             {totalXP} / {lvl.max === Infinity ? "∞" : lvl.max} XP
           </div>
         </div>
-        <div style={{ height: "3px", background: "#262219", borderRadius: "2px", overflow: "hidden" }}>
+        <div style={{ height: "3px", background: "#17201C", borderRadius: "2px", overflow: "hidden" }}>
           <motion.div
             initial={{ width: "0%" }}
             animate={{ width: `${pct}%` }}
@@ -61,7 +61,7 @@ export default function XPLevelBar({ totalXP = 0, earnedThisLesson = 0 }) {
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
           className="font-sans text-xs flex-shrink-0"
-          style={{ color: "#E8A33C", background: "#E8A33C10", border: "1px solid #E8A33C33", padding: "3px 8px" }}
+          style={{ color: "#5ED29C", background: "#5ED29C10", border: "1px solid #5ED29C33", padding: "3px 8px" }}
         >
           +{earnedThisLesson} this lesson
         </motion.div>

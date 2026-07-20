@@ -4,8 +4,8 @@ import { Stagger, StaggerItem } from "@/lib/motion";
 
 function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subKey = null }) {
   return (
-    <Stagger style={{ border: "1px solid #262219" }} as="div">
-      <div className="px-5 py-3" style={{ borderBottom: "1px solid #262219", background: "#131009" }}>
+    <Stagger style={{ border: "1px solid #17201C" }} as="div">
+      <div className="px-5 py-3" style={{ borderBottom: "1px solid #17201C", background: "#070B0A" }}>
         <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#FFFFFF" }}>
           {items.length} items
         </span>
@@ -16,11 +16,11 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
           <StaggerItem
             key={item.id}
             className="flex items-center justify-between px-5 py-4"
-            style={{ borderBottom: "1px solid #1C1A14" }}
+            style={{ borderBottom: "1px solid #0C1210" }}
             as="div"
           >
             <div className="flex items-center gap-4">
-              <span className="font-sans text-xs w-6 text-right flex-shrink-0" style={{ color: "#ECE7DC" }}>
+              <span className="font-sans text-xs w-6 text-right flex-shrink-0" style={{ color: "#ECF3EF" }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
               <div>
@@ -38,7 +38,7 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
                 <span className="font-sans text-xs animate-pulse" style={{ color: "#C2643C" }}> running...</span>
               )}
               {status === "done" && (
-                <span className="font-sans text-xs" style={{ color: "#E8A33C" }}>✓ done</span>
+                <span className="font-sans text-xs" style={{ color: "#5ED29C" }}>✓ done</span>
               )}
               {status === "error" && (
                 <span className="font-sans text-xs" style={{ color: "#FF6B5C" }}>✗ error</span>
@@ -51,9 +51,9 @@ function ItemList({ items, statuses, running, onRunOne, labelKey = "title", subK
                   onClick={() => onRunOne(item)}
                   disabled={status === "running"}
                   className="font-sans text-xs tracking-widest uppercase px-3 py-1.5 transition-all"
-                  style={{ color: "#FFFFFF", border: "1px solid #262219", background: "transparent", cursor: "pointer" }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "#E8A33C"; e.currentTarget.style.borderColor = "#E8A33C33"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "#C9C1B2"; e.currentTarget.style.borderColor = "#262219"; }}
+                  style={{ color: "#FFFFFF", border: "1px solid #17201C", background: "transparent", cursor: "pointer" }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "#5ED29C"; e.currentTarget.style.borderColor = "#5ED29C33"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "#CBD6D0"; e.currentTarget.style.borderColor = "#17201C"; }}
                 >
                   {status === "already_expanded" ? "Re-expand" : "Expand"}
                 </button>
@@ -198,7 +198,7 @@ export default function LessonExpander() {
 
   if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#15130E" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#070B0A" }}>
         <p className="font-sans text-sm" style={{ color: "#FFFFFF" }}>Admin access required.</p>
       </div>
     );
@@ -210,13 +210,13 @@ export default function LessonExpander() {
   const totalCount = isLessonsTab ? lessons.length : projects.length;
 
   return (
-    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-16" style={{ background: "#15130E" }}>
+    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-16" style={{ background: "#070B0A" }}>
       <Stagger className="max-w-4xl mx-auto" as="div">
         <StaggerItem className="mb-8" as="div">
-          <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
+          <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#5ED29C" }}>
             ADMIN TOOL
           </span>
-          <h1 className="font-display font-bold text-3xl mt-2 mb-1" style={{ color: "#F2EDE2" }}>
+          <h1 className="font-display font-bold text-3xl mt-2 mb-1" style={{ color: "#ECF3EF" }}>
             AI Content Expander
           </h1>
           <p className="font-display text-sm" style={{ color: "#FFFFFF" }}>
@@ -224,15 +224,15 @@ export default function LessonExpander() {
           </p>
         </StaggerItem>
 
-        <StaggerItem className="flex gap-0 mb-6" style={{ borderBottom: "1px solid #262219" }} as="div">
+        <StaggerItem className="flex gap-0 mb-6" style={{ borderBottom: "1px solid #17201C" }} as="div">
           {["lessons", "projects", "enrich"].map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
               style={{
-                color: tab === t ? "#E8A33C" : "#BBB3A4",
-                borderBottom: tab === t ? "2px solid #E8A33C" : "2px solid transparent",
+                color: tab === t ? "#5ED29C" : "#B7C6BE",
+                borderBottom: tab === t ? "2px solid #5ED29C" : "2px solid transparent",
                 background: "transparent",
                 marginBottom: "-1px",
               }}
@@ -244,14 +244,14 @@ export default function LessonExpander() {
 
         {tab === "enrich" && loaded && (
           <div>
-            <div className="flex items-center gap-4 mb-6 p-5" style={{ border: "1px solid #262219", background: "#131009" }}>
+            <div className="flex items-center gap-4 mb-6 p-5" style={{ border: "1px solid #17201C", background: "#070B0A" }}>
               <button
                 onClick={runAllEnrich}
                 disabled={enrichRunning}
                 className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
                 style={{
-                  background: enrichRunning ? "#262219" : "#cc66ff",
-                  color: enrichRunning ? "#BBB3A4" : "#15130E",
+                  background: enrichRunning ? "#17201C" : "#cc66ff",
+                  color: enrichRunning ? "#B7C6BE" : "#070B0A",
                   border: "1px solid transparent", fontWeight: 700,
                   cursor: enrichRunning ? "not-allowed" : "pointer",
                 }}
@@ -274,14 +274,14 @@ export default function LessonExpander() {
         )}
 
         {tab !== "enrich" && (
-        <div className="flex items-center gap-4 mb-6 p-5" style={{ border: "1px solid #262219", background: "#131009" }}>
+        <div className="flex items-center gap-4 mb-6 p-5" style={{ border: "1px solid #17201C", background: "#070B0A" }}>
           <button
             onClick={isLessonsTab ? runAllLessons : runAllProjects}
             disabled={running || !loaded}
             className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
             style={{
-              background: running ? "#262219" : "#E8A33C",
-              color: running ? "#BBB3A4" : "#15130E",
+              background: running ? "#17201C" : "#5ED29C",
+              color: running ? "#B7C6BE" : "#070B0A",
               border: "1px solid transparent",
               fontWeight: 700,
               cursor: running ? "not-allowed" : "pointer",
@@ -294,14 +294,14 @@ export default function LessonExpander() {
 
           {isLessonsTab && Object.keys(lessonStatuses).length > 0 && (
             <div className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
-              <span style={{ color: "#E8A33C" }}>{lessonDone} done</span>
+              <span style={{ color: "#5ED29C" }}>{lessonDone} done</span>
               {lessonErrors > 0 && <span style={{ color: "#FF6B5C", marginLeft: "12px" }}>{lessonErrors} errors</span>}
               {" / "}{lessons.length} total
             </div>
           )}
           {!isLessonsTab && Object.keys(projectStatuses).length > 0 && (
             <div className="font-sans text-xs" style={{ color: "#FFFFFF" }}>
-              <span style={{ color: "#E8A33C" }}>{projectDone} done</span>
+              <span style={{ color: "#5ED29C" }}>{projectDone} done</span>
               {projectErrors > 0 && <span style={{ color: "#FF6B5C", marginLeft: "12px" }}>{projectErrors} errors</span>}
               {" / "}{projects.length} total
             </div>

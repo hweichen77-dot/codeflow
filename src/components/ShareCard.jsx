@@ -14,7 +14,7 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
     const node = cardRef.current;
     if (!node) return null;
     const { default: html2canvas } = await import("html2canvas");
-    const canvas = await html2canvas(node, { backgroundColor: "#15130E", scale: 2, useCORS: true, logging: false });
+    const canvas = await html2canvas(node, { backgroundColor: "#070B0A", scale: 2, useCORS: true, logging: false });
     return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
   };
 
@@ -55,7 +55,7 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
 
   const stat = (value, label, color) => (
     <div style={{ flex: 1 }}>
-      <div style={{ fontFamily: DISPLAY, fontSize: "64px", fontWeight: 800, letterSpacing: "-0.03em", color: color || "#F2EDE2", lineHeight: 1 }}>
+      <div style={{ fontFamily: DISPLAY, fontSize: "64px", fontWeight: 800, letterSpacing: "-0.03em", color: color || "#ECF3EF", lineHeight: 1 }}>
         {value}
       </div>
       <div style={{ fontFamily: BODY, fontSize: "18px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#FFFFFF", marginTop: "10px" }}>
@@ -73,12 +73,12 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
         className="font-sans text-xs tracking-widest uppercase transition-all"
         style={{
           display: "inline-flex", alignItems: "center", gap: "8px",
-          padding: "10px 18px", border: "1px solid #34302A", background: "transparent",
-          color: busy ? "#8F8779" : "#E8A33C", fontFamily: BODY, cursor: busy ? "default" : "pointer",
+          padding: "10px 18px", border: "1px solid #26302B", background: "transparent",
+          color: busy ? "#8EA098" : "#5ED29C", fontFamily: BODY, cursor: busy ? "default" : "pointer",
           borderRadius: "2px",
         }}
-        onMouseEnter={(e) => { if (!busy) e.currentTarget.style.borderColor = "#E8A33C"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#34302A"; }}
+        onMouseEnter={(e) => { if (!busy) e.currentTarget.style.borderColor = "#5ED29C"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#26302B"; }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
@@ -92,32 +92,32 @@ export default function ShareCard({ name, level, levelName, totalXP, lessons, ch
         <div
           ref={cardRef}
           style={{
-            width: "1200px", height: "630px", background: "#15130E",
+            width: "1200px", height: "630px", background: "#070B0A",
             padding: "72px 80px", boxSizing: "border-box", position: "relative",
             display: "flex", flexDirection: "column", justifyContent: "space-between",
-            borderTop: "4px solid #E8A33C",
+            borderTop: "4px solid #5ED29C",
           }}
         >
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <span style={{ height: "2px", width: "52px", background: "#E8A33C", display: "inline-block" }} />
-              <span style={{ fontFamily: BODY, fontSize: "20px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#D4882E", fontWeight: 600 }}>
+              <span style={{ height: "2px", width: "52px", background: "#5ED29C", display: "inline-block" }} />
+              <span style={{ fontFamily: BODY, fontSize: "20px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#2E8B7A", fontWeight: 600 }}>
                 Compilearn
               </span>
             </div>
-            <div style={{ fontFamily: DISPLAY, fontSize: "76px", fontWeight: 800, letterSpacing: "-0.035em", color: "#F2EDE2", lineHeight: 1.02, marginTop: "32px" }}>
+            <div style={{ fontFamily: DISPLAY, fontSize: "76px", fontWeight: 800, letterSpacing: "-0.035em", color: "#ECF3EF", lineHeight: 1.02, marginTop: "32px" }}>
               {name || "Learner"}
             </div>
-            <div style={{ fontFamily: MONO, fontSize: "24px", color: "#E8A33C", marginTop: "14px" }}>
+            <div style={{ fontFamily: MONO, fontSize: "24px", color: "#5ED29C", marginTop: "14px" }}>
               Level {level} · {levelName} · {totalXP} XP
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "32px", borderTop: "1px solid #262219", paddingTop: "40px" }}>
-            {stat(lessons, "Lessons", "#F2EDE2")}
-            {stat(challenges, "Challenges", "#F2EDE2")}
-            {stat(`${streak}`, "Day streak", "#E8A33C")}
-            {stat(`${overallPct}%`, "Curriculum", "#F2EDE2")}
+          <div style={{ display: "flex", gap: "32px", borderTop: "1px solid #17201C", paddingTop: "40px" }}>
+            {stat(lessons, "Lessons", "#ECF3EF")}
+            {stat(challenges, "Challenges", "#ECF3EF")}
+            {stat(`${streak}`, "Day streak", "#5ED29C")}
+            {stat(`${overallPct}%`, "Curriculum", "#ECF3EF")}
           </div>
 
           <div style={{ fontFamily: BODY, fontSize: "18px", color: "#FFFFFF", position: "absolute", right: "80px", bottom: "40px" }}>

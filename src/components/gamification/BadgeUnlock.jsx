@@ -32,17 +32,17 @@ export default function BadgeUnlock({ completedCount }) {
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
           className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-6 py-4"
           style={{
-            background: "#131009",
-            border: "1px solid #E8A33C",
-            boxShadow: "0 0 40px rgba(232,163,60,0.15)",
+            background: "#070B0A",
+            border: "1px solid #5ED29C",
+            boxShadow: "0 0 40px rgba(94,210,156,0.15)",
           }}
         >
           <span style={{ fontSize: "2rem" }}>{newBadge.icon}</span>
           <div>
-            <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
+            <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#5ED29C" }}>
               Badge Unlocked!
             </div>
-            <div className="font-display font-bold text-sm" style={{ color: "#ECE7DC" }}>
+            <div className="font-display font-bold text-sm" style={{ color: "#ECF3EF" }}>
               {newBadge.label}
             </div>
             <div className="font-sans text-xs" style={{ color: "#FFFFFF" }}>

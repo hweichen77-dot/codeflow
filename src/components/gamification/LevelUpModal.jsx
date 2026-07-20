@@ -16,7 +16,7 @@ export default function LevelUpModal({ show, level, onClose }) {
         particleCount: 80,
         spread: 70,
         origin: { y: 0.55 },
-        colors: [lvl.color, "#ffffff", "#E8A33C"],
+        colors: [lvl.color, "#ffffff", "#5ED29C"],
       });
     };
     burst();
@@ -60,7 +60,7 @@ export default function LevelUpModal({ show, level, onClose }) {
               width: "100%",
               textAlign: "center",
               padding: "48px 40px 40px",
-              background: "#15130E",
+              background: "#070B0A",
               border: `1px solid ${lvl.color}55`,
               boxShadow: `0 0 80px ${lvl.color}22`,
             }}
@@ -130,7 +130,7 @@ export default function LevelUpModal({ show, level, onClose }) {
             <button
               onClick={onClose}
               className="font-sans text-xs tracking-widest uppercase px-8 py-4 transition-all duration-150"
-              style={{ background: lvl.color, color: "#15130E", fontWeight: 700, width: "100%" }}
+              style={{ background: lvl.color, color: "#070B0A", fontWeight: 700, width: "100%" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow = `0 8px 32px ${lvl.color}33`;

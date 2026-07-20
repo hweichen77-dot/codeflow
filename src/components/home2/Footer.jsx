@@ -10,7 +10,7 @@ const idx = {
   fontFamily: body,
   fontSize: "0.72rem",
   letterSpacing: "0.18em",
-  color: "#D4882E",
+  color: "#2E8B7A",
   textTransform: "uppercase",
   fontWeight: 500,
   marginBottom: "14px",
@@ -18,8 +18,8 @@ const idx = {
 
 function Wordmark() {
   return (
-    <div style={{ display: "flex", alignItems: "baseline", gap: "10px", fontFamily: display, fontWeight: 800, fontSize: "1.18rem", letterSpacing: "-0.02em", color: "#ECE7DC" }}>
-      <span style={{ width: "9px", height: "9px", background: "#E8A33C", borderRadius: "1px", transform: "translateY(-1px)" }} />
+    <div style={{ display: "flex", alignItems: "baseline", gap: "10px", fontFamily: display, fontWeight: 800, fontSize: "1.18rem", letterSpacing: "-0.02em", color: "#ECF3EF" }}>
+      <span style={{ width: "9px", height: "9px", background: "#5ED29C", borderRadius: "1px", transform: "translateY(-1px)" }} />
       Compilearn
     </div>
   );
@@ -30,8 +30,8 @@ function FootLink({ children, ...props }) {
     <a
       {...props}
       style={{ fontFamily: body, color: "#FFFFFF", textDecoration: "none", fontSize: "0.9rem", display: "block", marginBottom: "8px" }}
-      onMouseEnter={e => (e.currentTarget.style.color = "#E8A33C")}
-      onMouseLeave={e => (e.currentTarget.style.color = "#A39B8C")}
+      onMouseEnter={e => (e.currentTarget.style.color = "#5ED29C")}
+      onMouseLeave={e => (e.currentTarget.style.color = "#B7C6BE")}
     >
       {children}
     </a>
@@ -43,8 +43,8 @@ function FootRouterLink({ to, children }) {
     <Link
       to={to}
       style={{ fontFamily: body, color: "#FFFFFF", textDecoration: "none", fontSize: "0.9rem", display: "block", marginBottom: "8px" }}
-      onMouseEnter={e => (e.currentTarget.style.color = "#E8A33C")}
-      onMouseLeave={e => (e.currentTarget.style.color = "#A39B8C")}
+      onMouseEnter={e => (e.currentTarget.style.color = "#5ED29C")}
+      onMouseLeave={e => (e.currentTarget.style.color = "#B7C6BE")}
     >
       {children}
     </Link>
@@ -84,14 +84,14 @@ export default function Footer() {
         <div style={{
           marginTop: "64px",
           paddingTop: "24px",
-          borderTop: "1px solid #221F18",
+          borderTop: "1px solid #111917",
           fontFamily: body,
           fontSize: "0.72rem",
           color: "#FFFFFF",
           letterSpacing: "0.04em",
         }}>
           © 2026 Compilearn, learn by building.
-          <div style={{ marginTop: "10px", color: "#8F8779", lineHeight: 1.6 }}>
+          <div style={{ marginTop: "10px", color: "#8EA098", lineHeight: 1.6 }}>
             Independent project, not affiliated with or endorsed by the College Board. AP® and Advanced Placement® are registered trademarks of the College Board. AI output can be inaccurate — verify before relying on it.
           </div>
         </div>

@@ -6,14 +6,14 @@ export default function ProjectBrief({ brief }) {
   if (!brief) return null;
 
   return (
-    <div className="mb-6" style={{ border: "1px solid #262219", background: "#131009", borderLeft: "2px solid #E8A33C" }}>
+    <div className="mb-6" style={{ border: "1px solid #17201C", background: "#070B0A", borderLeft: "2px solid #5ED29C" }}>
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between px-5 py-4 transition-all"
         style={{ background: "transparent", border: "none", cursor: "pointer" }}
       >
         <div className="text-left">
-          <div className="font-sans text-xs tracking-widest uppercase mb-1" style={{ color: "#E8A33C" }}>PROJECT BRIEF</div>
+          <div className="font-sans text-xs tracking-widest uppercase mb-1" style={{ color: "#5ED29C" }}>PROJECT BRIEF</div>
           <div className="font-display text-sm" style={{ color: "#FFFFFF", fontWeight: 500 }}>{brief.tagline}</div>
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
@@ -27,15 +27,15 @@ export default function ProjectBrief({ brief }) {
       </button>
 
       {open && (
-        <div className="px-5 pb-5" style={{ borderTop: "1px solid #262219" }}>
+        <div className="px-5 pb-5" style={{ borderTop: "1px solid #17201C" }}>
           <p className="font-display text-sm leading-relaxed mt-4 mb-5" style={{ color: "#FFFFFF" }}>{brief.overview}</p>
 
           <div className="grid md:grid-cols-2 gap-5">
-            <Section icon={<Target size={13} />} label="What you'll build" accent="#E8A33C">
+            <Section icon={<Target size={13} />} label="What you'll build" accent="#5ED29C">
               <ul className="space-y-1.5">
                 {brief.whatYouBuild?.map((w, i) => (
                   <li key={i} className="font-display text-sm flex gap-2" style={{ color: "#FFFFFF" }}>
-                    <span style={{ color: "#E8A33C" }}>, </span> {w}
+                    <span style={{ color: "#5ED29C" }}>, </span> {w}
                   </li>
                 ))}
               </ul>

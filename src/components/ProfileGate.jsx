@@ -16,11 +16,11 @@ export default function ProfileGate() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-6"
-      style={{ background: '#15130E' }}
+      style={{ background: '#070B0A' }}
     >
       <div
         className="w-full max-w-md p-10"
-        style={{ border: '1px solid #262219', background: '#131009' }}
+        style={{ border: '1px solid #17201C', background: '#070B0A' }}
       >
         <div
           className="font-sans text-xs tracking-widest uppercase mb-3"
@@ -34,7 +34,7 @@ export default function ProfileGate() {
             fontSize: '2.25rem',
             fontWeight: 800,
             letterSpacing: '-0.025em',
-            color: '#F2EDE2',
+            color: '#ECF3EF',
             lineHeight: 1.12,
             margin: '0 0 12px',
           }}
@@ -63,20 +63,20 @@ export default function ProfileGate() {
             placeholder="Ada Lovelace"
             className="w-full px-4 py-3 mb-6 font-display text-base outline-none"
             style={{
-              background: '#15130E',
-              border: '1px solid #34302A',
-              color: '#ECE7DC',
+              background: '#070B0A',
+              border: '1px solid #26302B',
+              color: '#ECF3EF',
             }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = '#E8A33C'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = '#34302A'; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = '#5ED29C'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = '#26302B'; }}
           />
           <button
             type="submit"
             disabled={!name.trim()}
             className="w-full font-sans text-sm tracking-widest uppercase px-8 py-4 transition-all duration-150"
             style={{
-              background: name.trim() ? '#E8A33C' : '#262219',
-              color: name.trim() ? '#15130E' : '#BBB3A4',
+              background: name.trim() ? '#5ED29C' : '#17201C',
+              color: name.trim() ? '#070B0A' : '#B7C6BE',
               fontWeight: 700,
               cursor: name.trim() ? 'pointer' : 'not-allowed',
               fontFamily: font.body,
@@ -84,7 +84,7 @@ export default function ProfileGate() {
             onMouseEnter={(e) => {
               if (!name.trim()) return;
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(232,163,60,0.2)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(94,210,156,0.2)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = '';

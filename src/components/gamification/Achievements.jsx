@@ -55,7 +55,7 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
 
       <div
         className="grid grid-cols-2 sm:grid-cols-4 gap-0"
-        style={{ border: "1px solid #262219" }}
+        style={{ border: "1px solid #17201C" }}
       >
         {achievements.map((a, i) => {
           const cols = 4;
@@ -69,9 +69,9 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
               transition={{ delay: i * 0.04 }}
               className="p-5 flex flex-col items-center text-center"
               style={{
-                borderRight: (i % cols !== cols - 1) ? "1px solid #262219" : "none",
-                borderBottom: row < lastRow ? "1px solid #262219" : "none",
-                background: a.unlocked ? "#131009" : "transparent",
+                borderRight: (i % cols !== cols - 1) ? "1px solid #17201C" : "none",
+                borderBottom: row < lastRow ? "1px solid #17201C" : "none",
+                background: a.unlocked ? "#070B0A" : "transparent",
                 opacity: a.unlocked ? 1 : 0.4,
               }}
               title={a.desc}
@@ -87,13 +87,13 @@ export default function Achievements({ progress = [], projects = [], streak = 0,
               </div>
               <div
                 className="font-display text-sm font-bold mb-1"
-                style={{ color: a.unlocked ? "#ECE7DC" : "#BBB3A4", letterSpacing: "-0.01em" }}
+                style={{ color: a.unlocked ? "#ECF3EF" : "#B7C6BE", letterSpacing: "-0.01em" }}
               >
                 {a.title}
               </div>
               <div
                 className="font-sans"
-                style={{ fontSize: "0.65rem", color: a.unlocked ? "#C9C1B2" : "#BBB3A4", lineHeight: 1.4 }}
+                style={{ fontSize: "0.65rem", color: a.unlocked ? "#CBD6D0" : "#B7C6BE", lineHeight: 1.4 }}
               >
                 {a.unlocked ? a.desc : "LOCKED"}
               </div>

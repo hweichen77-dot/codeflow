@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Compilearn",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "identifier": "com.compilearn.app",
   "build": {
     "frontendDist": "../dist",
@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' https://*.supabase.co https://godbolt.org https://us.i.posthog.com https://*.posthog.com https://*.sentry.io https://*.ingest.sentry.io; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
+      "csp": "default-src 'self'; connect-src 'self' https://*.supabase.co https://godbolt.org https://us.i.posthog.com https://*.posthog.com https://*.sentry.io https://*.ingest.sentry.io https://stream.mux.com https://*.mux.com; media-src 'self' blob: https://stream.mux.com https://*.mux.com; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
     }
   },
   "bundle": {

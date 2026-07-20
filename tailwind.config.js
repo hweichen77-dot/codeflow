@@ -4,9 +4,11 @@ module.exports = {
   theme: {
   	extend: {
   		fontFamily: {
-  			sans: ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
+  			sans: ['"Inter"', 'system-ui', 'sans-serif'],
   			mono: ['"Spline Sans Mono"', 'ui-monospace', 'monospace'],
-  			display: ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+  			display: ['"Inter"', 'system-ui', 'sans-serif'],
+  			jakarta: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+  			serif: ['"Instrument Serif"', 'Georgia', 'serif'],
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

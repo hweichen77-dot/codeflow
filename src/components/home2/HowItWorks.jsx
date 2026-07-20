@@ -35,14 +35,14 @@ const tracks = [
 
 export default function HowItWorks() {
   return (
-    <section id="how" style={{ borderBottom: "1px solid #221F18" }}>
+    <section id="how" style={{ borderBottom: "1px solid #111917" }}>
       <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "96px 2rem" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
           <span style={{
             fontFamily: body,
             fontSize: "0.72rem",
             letterSpacing: "0.18em",
-            color: "#D4882E",
+            color: "#2E8B7A",
             textTransform: "uppercase",
             fontWeight: 500,
           }}>
@@ -53,7 +53,7 @@ export default function HowItWorks() {
             fontWeight: 720,
             letterSpacing: "-0.025em",
             fontSize: "clamp(1.9rem, 3.5vw, 2.8rem)",
-            color: "#ECE7DC",
+            color: "#ECF3EF",
             margin: 0,
           }}>
             Four tracks, one engine
@@ -84,22 +84,22 @@ function TrackRow({ n, title, desc, badge, clay, last }) {
         alignItems: "center",
         padding: "32px 0",
         paddingLeft: hover ? "12px" : "0",
-        borderTop: "1px solid #221F18",
-        borderBottom: last ? "1px solid #221F18" : "none",
+        borderTop: "1px solid #111917",
+        borderBottom: last ? "1px solid #111917" : "none",
         transition: "padding .2s",
       }}
     >
       <div style={{
         fontFamily: body,
         fontSize: "0.92rem",
-        color: hover ? "#E8A33C" : "#756C5C",
+        color: hover ? "#5ED29C" : "#7C8D85",
         width: "2.4em",
         transition: "color .15s",
       }}>
         {n}
       </div>
       <div>
-        <div style={{ fontFamily: display, fontWeight: 700, fontSize: "1.22rem", letterSpacing: "-0.01em", color: "#ECE7DC" }}>
+        <div style={{ fontFamily: display, fontWeight: 700, fontSize: "1.22rem", letterSpacing: "-0.01em", color: "#ECF3EF" }}>
           {title}
         </div>
         <div style={{ fontFamily: body, color: "#FFFFFF", fontSize: "0.92rem", marginTop: "3px", maxWidth: "60ch" }}>
@@ -111,8 +111,8 @@ function TrackRow({ n, title, desc, badge, clay, last }) {
         fontSize: "0.68rem",
         textTransform: "uppercase",
         letterSpacing: "0.08em",
-        color: clay ? "#C2643C" : "#A39B8C",
-        border: clay ? "1px solid rgba(194,100,60,0.4)" : "1px solid #34302A",
+        color: clay ? "#C2643C" : "#B7C6BE",
+        border: clay ? "1px solid rgba(194,100,60,0.4)" : "1px solid #26302B",
         padding: "4px 10px",
         borderRadius: "2px",
         whiteSpace: "nowrap",

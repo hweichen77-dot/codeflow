@@ -34,11 +34,11 @@ export default class ErrorBoundary extends React.Component {
     return (
       <div
         className="min-h-screen flex items-center justify-center px-6"
-        style={{ background: '#15130E' }}
+        style={{ background: '#070B0A' }}
       >
         <div
           className="w-full max-w-md p-10 text-center"
-          style={{ border: '1px solid #262219', background: '#131009' }}
+          style={{ border: '1px solid #17201C', background: '#070B0A' }}
         >
           <div
             className="font-sans text-xs tracking-widest uppercase mb-3"
@@ -52,7 +52,7 @@ export default class ErrorBoundary extends React.Component {
               fontSize: '1.8rem',
               fontWeight: 800,
               letterSpacing: '-0.02em',
-              color: '#F2EDE2',
+              color: '#ECF3EF',
               margin: '0 0 12px',
               lineHeight: 1.15,
             }}
@@ -69,14 +69,14 @@ export default class ErrorBoundary extends React.Component {
             <button
               onClick={this.handleReset}
               className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
-              style={{ background: '#E8A33C', color: '#15130E', fontWeight: 700, fontFamily: LABEL }}
+              style={{ background: '#5ED29C', color: '#070B0A', fontWeight: 700, fontFamily: LABEL }}
             >
               Try again
             </button>
             <button
               onClick={this.handleReload}
               className="font-sans text-xs tracking-widest uppercase px-6 py-3 transition-all"
-              style={{ color: '#FFFFFF', border: '1px solid #34302A', fontFamily: LABEL }}
+              style={{ color: '#FFFFFF', border: '1px solid #26302B', fontFamily: LABEL }}
             >
               Go home
             </button>

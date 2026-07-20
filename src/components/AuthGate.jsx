@@ -7,9 +7,9 @@ const LABEL = font.body;
 const SERIF = font.display;
 
 const field = {
-  background: '#15130E',
-  border: '1px solid #34302A',
-  color: '#ECE7DC',
+  background: '#070B0A',
+  border: '1px solid #26302B',
+  color: '#ECF3EF',
 };
 
 function Input({ label, ...props }) {
@@ -25,8 +25,8 @@ function Input({ label, ...props }) {
         {...props}
         className="w-full px-4 py-3 font-display text-base outline-none"
         style={field}
-        onFocus={(e) => { e.currentTarget.style.borderColor = '#E8A33C'; }}
-        onBlur={(e) => { e.currentTarget.style.borderColor = '#34302A'; }}
+        onFocus={(e) => { e.currentTarget.style.borderColor = '#5ED29C'; }}
+        onBlur={(e) => { e.currentTarget.style.borderColor = '#26302B'; }}
       />
     </label>
   );
@@ -72,12 +72,12 @@ export default function AuthGate() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#15130E' }}>
-      <div className="w-full max-w-md p-10" style={{ border: '1px solid #262219', background: '#131009' }}>
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#070B0A' }}>
+      <div className="w-full max-w-md p-10" style={{ border: '1px solid #17201C', background: '#070B0A' }}>
         <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#FFFFFF', fontFamily: LABEL }}>
           CODEFLOW
         </div>
-        <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#F2EDE2', lineHeight: 1.12, margin: '0 0 10px' }}>
+        <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#ECF3EF', lineHeight: 1.12, margin: '0 0 10px' }}>
           {titles[mode]}
         </h1>
         <p className="font-display text-sm mb-7" style={{ color: '#FFFFFF', fontWeight: 400 }}>
@@ -85,7 +85,7 @@ export default function AuthGate() {
         </p>
 
         {!supabaseConfigured && mode !== 'guest' && (
-          <div className="font-sans text-xs mb-6 px-3 py-2" style={{ color: '#E0B341', background: '#E0B34110', border: '1px solid #E0B34133' }}>
+          <div className="font-sans text-xs mb-6 px-3 py-2" style={{ color: '#5ED29C', background: '#5ED29C10', border: '1px solid #5ED29C33' }}>
             Accounts aren't set up on this build yet. Use <strong>Continue as guest</strong> to start now.
           </div>
         )}
@@ -99,9 +99,9 @@ export default function AuthGate() {
                   onClick={google}
                   disabled={busy}
                   className="w-full font-sans text-sm tracking-widest uppercase px-8 py-3.5 mb-5 transition-all duration-150 flex items-center justify-center gap-3"
-                  style={{ background: '#15130E', color: '#ECE7DC', border: '1px solid #34302A', fontFamily: LABEL, cursor: busy ? 'not-allowed' : 'pointer' }}
-                  onMouseEnter={(e) => { if (!busy) e.currentTarget.style.borderColor = '#E8A33C'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#34302A'; }}
+                  style={{ background: '#070B0A', color: '#ECF3EF', border: '1px solid #26302B', fontFamily: LABEL, cursor: busy ? 'not-allowed' : 'pointer' }}
+                  onMouseEnter={(e) => { if (!busy) e.currentTarget.style.borderColor = '#5ED29C'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#26302B'; }}
                 >
                   <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
                     <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
@@ -119,9 +119,9 @@ export default function AuthGate() {
                 )}
 
                 <div className="flex items-center gap-3 my-5">
-                  <div style={{ flex: 1, height: '1px', background: '#262219' }} />
+                  <div style={{ flex: 1, height: '1px', background: '#17201C' }} />
                   <span className="font-sans text-xs" style={{ color: '#FFFFFF', fontFamily: LABEL }}>or</span>
-                  <div style={{ flex: 1, height: '1px', background: '#262219' }} />
+                  <div style={{ flex: 1, height: '1px', background: '#17201C' }} />
                 </div>
               </>
             )}
@@ -130,7 +130,7 @@ export default function AuthGate() {
               type="button"
               onClick={() => { setMode('guest'); setError(''); }}
               className="w-full font-sans text-xs tracking-widest uppercase px-8 py-3"
-              style={{ background: 'transparent', color: '#E8A33C', border: '1px solid #262219', fontFamily: LABEL, cursor: 'pointer' }}
+              style={{ background: 'transparent', color: '#5ED29C', border: '1px solid #17201C', fontFamily: LABEL, cursor: 'pointer' }}
             >
               Continue as guest →
             </button>
@@ -159,8 +159,8 @@ export default function AuthGate() {
               disabled={!name.trim()}
               className="w-full font-sans text-sm tracking-widest uppercase px-8 py-4 transition-all duration-150"
               style={{
-                background: name.trim() ? '#E8A33C' : '#262219',
-                color: name.trim() ? '#15130E' : '#8F8779',
+                background: name.trim() ? '#5ED29C' : '#17201C',
+                color: name.trim() ? '#070B0A' : '#8EA098',
                 fontWeight: 700, cursor: name.trim() ? 'pointer' : 'not-allowed', fontFamily: LABEL,
               }}
             >

@@ -55,9 +55,9 @@ export default function FeedbackWidget() {
           left: '20px',
           bottom: '20px',
           padding: '12px 16px',
-          background: open ? '#262219' : '#E8A33C',
-          color: open ? '#E8A33C' : '#15130E',
-          border: '1px solid #E8A33C55',
+          background: open ? '#17201C' : '#5ED29C',
+          color: open ? '#5ED29C' : '#070B0A',
+          border: '1px solid #5ED29C55',
           fontWeight: 700,
           fontFamily: LABEL,
           boxShadow: '0 6px 24px rgba(0,0,0,0.5)',
@@ -75,7 +75,7 @@ export default function FeedbackWidget() {
             left: '20px',
             bottom: '72px',
             width: 'min(360px, calc(100vw - 40px))',
-            background: '#131009',
+            background: '#070B0A',
             border: '1px solid #2A261E',
             boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
           }}
@@ -99,9 +99,9 @@ export default function FeedbackWidget() {
                     fontSize: '10px',
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
-                    color: kind === k.key ? '#15130E' : '#8F8779',
-                    background: kind === k.key ? '#E8A33C' : 'transparent',
-                    border: '1px solid #34302A',
+                    color: kind === k.key ? '#070B0A' : '#8EA098',
+                    background: kind === k.key ? '#5ED29C' : 'transparent',
+                    border: '1px solid #26302B',
                     fontFamily: LABEL,
                   }}
                 >
@@ -124,13 +124,13 @@ export default function FeedbackWidget() {
                   : 'What would make Compilearn better?'
               }
               className="w-full px-3 py-2 font-display text-sm outline-none mb-3"
-              style={{ background: '#15130E', border: '1px solid #34302A', color: '#ECE7DC', resize: 'vertical' }}
+              style={{ background: '#070B0A', border: '1px solid #26302B', color: '#ECF3EF', resize: 'vertical' }}
             />
 
             <div className="flex items-center justify-between">
               <span
                 className="font-sans text-xs"
-                style={{ color: status === 'error' ? '#E8735A' : '#8F8779', fontFamily: LABEL }}
+                style={{ color: status === 'error' ? '#E8735A' : '#8EA098', fontFamily: LABEL }}
                 role="status"
               >
                 {status === 'sent' ? 'Thanks — sent!' : status === 'error' ? "Couldn't send — try again" : ''}
@@ -140,8 +140,8 @@ export default function FeedbackWidget() {
                 disabled={!text.trim() || status === 'sending'}
                 className="font-sans text-xs tracking-widest uppercase px-5 py-2.5 transition-all"
                 style={{
-                  background: text.trim() && status !== 'sending' ? '#E8A33C' : '#262219',
-                  color: text.trim() && status !== 'sending' ? '#15130E' : '#8F8779',
+                  background: text.trim() && status !== 'sending' ? '#5ED29C' : '#17201C',
+                  color: text.trim() && status !== 'sending' ? '#070B0A' : '#8EA098',
                   fontWeight: 700,
                   cursor: text.trim() && status !== 'sending' ? 'pointer' : 'not-allowed',
                   fontFamily: LABEL,

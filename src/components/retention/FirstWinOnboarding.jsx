@@ -63,7 +63,7 @@ export default function FirstWinOnboarding() {
             className="relative w-full max-w-lg rounded-3xl p-7 sm:p-8"
             style={{
               outline: "none",
-              background: "linear-gradient(135deg, #1F1B12 0%, #17140E 100%)",
+              background: "linear-gradient(135deg, #111917 0%, #0C1210 100%)",
               border: `1px solid ${KIT.borderHi}`,
               boxShadow: `0 30px 90px -24px ${KIT.amber}55, 0 0 0 1px ${KIT.border}`,
             }}

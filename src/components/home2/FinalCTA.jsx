@@ -9,7 +9,7 @@ const body = font.body;
 export default function FinalCTA() {
   const navigate = useNavigate();
   return (
-    <section style={{ background: "#131009", borderBottom: "1px solid #221F18" }}>
+    <section style={{ background: "#070B0A", borderBottom: "1px solid #111917" }}>
       <div className="cf-cta" style={{
         maxWidth: "1180px",
         margin: "0 auto",
@@ -21,13 +21,13 @@ export default function FinalCTA() {
       }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-            <span style={{ height: "1px", width: "46px", background: "#E8A33C" }} />
+            <span style={{ height: "1px", width: "46px", background: "#5ED29C" }} />
             <span style={{
               fontFamily: body,
               fontSize: "0.72rem",
               letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "#D4882E",
+              color: "#2E8B7A",
               fontWeight: 500,
             }}>
               No. 05, Start now
@@ -37,7 +37,7 @@ export default function FinalCTA() {
             fontFamily: display,
             fontWeight: 740,
             fontSize: "clamp(2.2rem, 5vw, 3.6rem)",
-            color: "#ECE7DC",
+            color: "#ECF3EF",
             letterSpacing: "-0.03em",
             lineHeight: 1.02,
             margin: 0,
@@ -57,8 +57,8 @@ export default function FinalCTA() {
                 fontFamily: body,
                 fontWeight: 600,
                 fontSize: "0.95rem",
-                background: "#E8A33C",
-                color: "#15130E",
+                background: "#5ED29C",
+                color: "#070B0A",
                 border: "1px solid transparent",
                 borderRadius: "2px",
                 padding: "14px 28px",
@@ -82,13 +82,13 @@ export default function FinalCTA() {
                 cursor: "pointer",
                 textDecoration: "underline",
                 textUnderlineOffset: "4px",
-                textDecorationColor: "#34302A",
+                textDecorationColor: "#26302B",
                 padding: "14px 4px",
                 transition: "color .15s",
               }}
               onClick={() => { track("cta_click", { cta: "browse_projects", location: "final_cta" }); navigate("/ProjectDetail?id=ai-01"); }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#E8A33C"; e.currentTarget.style.textDecorationColor = "#E8A33C"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "#A39B8C"; e.currentTarget.style.textDecorationColor = "#34302A"; }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#5ED29C"; e.currentTarget.style.textDecorationColor = "#5ED29C"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "#B7C6BE"; e.currentTarget.style.textDecorationColor = "#26302B"; }}
             >
               Browse projects
             </button>

@@ -36,7 +36,7 @@ export default function LessonPointsSummary({
         particleCount: 80,
         spread: 70,
         origin: { y: 0.7 },
-        colors: ["#E8A33C", "#C2643C", "#f59e0b", "#f97316"],
+        colors: ["#5ED29C", "#C2643C", "#f59e0b", "#f97316"],
         ticks: 200,
       });
     }
@@ -132,7 +132,7 @@ export default function LessonPointsSummary({
               fontFamily: trace.mono,
               fontSize: "0.8125rem",
               fontWeight: 700,
-              color: "#15130E",
+              color: "#070B0A",
               background: trace.lime,
               border: "none",
               borderRadius: "4px",

@@ -19,42 +19,76 @@
 <link rel="canonical" href="https://codeflow.app/" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="preload" href="./fonts/bricolage-400800.woff2" as="font" type="font/woff2" crossorigin />
-<link rel="preload" href="./fonts/hanken-400.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="./fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="./fonts/inter-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="stylesheet" href="./fonts/fonts.css" />
 <style>
 :root{
-  --bg:#0B0906; --panel:#15100B; --line:#29211A; --line2:#3A2E22;
-  --ink:#F4EEE2; --dim:#EFE7D8; --amber:#E8A33C; --amber-hi:#F6BE63; --ember:#E0714A;
-  --green:#63C486; --coral:#E8705F;
-  --display:'Bricolage Grotesque',system-ui,sans-serif;
-  --body:'Hanken Grotesk',system-ui,sans-serif;
+  --bg:#070B0A; --panel:#15100B; --line:#29211A; --line2:#3A2E22;
+  --ink:#F4EEE2; --dim:#EFE7D8; --amber:#5ED29C; --amber-hi:#7FE0B0; --ember:#E0714A;
+  --green:#63C486; --coral:#2E8B7A;
+  --display:'Inter',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --jakarta:'Plus Jakarta Sans',system-ui,sans-serif;
+  --serif:'Instrument Serif',Georgia,serif;
   --mono:'Spline Sans Mono',ui-monospace,monospace;
   --w:1180px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;
-  background-image:radial-gradient(1100px 620px at 78% -8%,rgba(232,163,60,.10),transparent 62%),radial-gradient(760px 520px at 4% 32%,rgba(224,113,74,.07),transparent 60%);}
+  background-image:radial-gradient(1100px 620px at 78% -8%,rgba(94,210,156,.10),transparent 62%),radial-gradient(760px 520px at 4% 32%,rgba(46,140,120,.07),transparent 60%);}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:var(--w);margin:0 auto;padding:0 26px}
 .grad{background:linear-gradient(104deg,var(--amber-hi),var(--amber) 42%,var(--ember));-webkit-background-clip:text;background-clip:text;color:transparent}
-::selection{background:rgba(232,163,60,.28);color:#fff}
+::selection{background:rgba(94,210,156,.28);color:#fff}
 :focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:4px}
 
 nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:linear-gradient(180deg,rgba(11,9,6,.86),rgba(11,9,6,.55));border-bottom:1px solid var(--line)}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
 .mark{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.02em}
-.mark .sq{font-family:var(--mono);color:var(--amber);border:1px solid var(--line2);background:rgba(232,163,60,.08);width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:14px}
+.mark .sq{font-family:var(--mono);color:var(--amber);border:1px solid var(--line2);background:rgba(94,210,156,.08);width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:14px}
 .nav-links{display:flex;align-items:center;gap:26px;font-size:14.5px;color:var(--ink)}
 .nav-links a:hover{color:var(--amber-hi)}
 .btn{font-family:var(--body);font-weight:600;font-size:15px;border-radius:10px;padding:12px 22px;cursor:pointer;border:1px solid transparent;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,box-shadow .2s,border-color .2s,color .2s}
-.btn-p{background:var(--amber);color:#1c1305;box-shadow:0 8px 30px -10px rgba(232,163,60,.7)}
-.btn-p:hover{transform:translateY(-2px);box-shadow:0 14px 40px -12px rgba(232,163,60,.85)}
+.btn-p{background:var(--amber);color:#1c1305;box-shadow:0 8px 30px -10px rgba(94,210,156,.7)}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 14px 40px -12px rgba(94,210,156,.85)}
 .btn-g{border:1px solid var(--line2);color:var(--ink)}
 .btn-g:hover{border-color:var(--amber);color:var(--amber-hi)}
 @media(max-width:720px){.nav-links .nl{display:none}}
 
+.vhero{position:relative;min-height:92vh;overflow:hidden;display:flex;align-items:center}
+.vhero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.6}
+.vhero .ov-l{position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,11,10,.9) 0%,rgba(7,11,10,.4) 26%,transparent 55%)}
+.page-amb{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(1200px 720px at 86% 3%,rgba(94,210,156,.14),transparent 58%),
+    radial-gradient(1000px 640px at 3% 45%,rgba(46,140,120,.11),transparent 58%),
+    radial-gradient(1100px 660px at 60% 98%,rgba(94,210,156,.12),transparent 58%)}
+nav,.vhero,.ticker,.pg-sec,section,footer,.wrap{position:relative;z-index:1}
+.vhero .ov-b{position:absolute;inset:0;background:linear-gradient(0deg,#070B0A 2%,rgba(7,11,10,.35) 32%,transparent 66%)}
+.vhero .glow{position:absolute;left:50%;top:6%;transform:translateX(-50%);width:900px;max-width:120vw;height:360px;opacity:.7;pointer-events:none}
+.vhero .gl{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.10)}
+@media(max-width:768px){.vhero .gl{display:none}}
+.vhero .inner{position:relative;z-index:5}
+.eyebrow{font-family:var(--jakarta);font-weight:700;font-size:11px;letter-spacing:.15em;color:var(--amber);text-transform:uppercase}
+.vhero h1{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:-.02em;line-height:.98;font-size:clamp(40px,7vw,72px);max-width:16ch;margin:14px 0 0;text-wrap:balance}
+.vhero h1 .dot{color:var(--amber)}
+.vhero .vsub{color:rgba(255,255,255,.72);font-size:14px;line-height:1.6;max-width:512px;margin:22px 0 0}
+.glass{position:relative;width:200px;height:200px;border-radius:20px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;
+  background:rgba(255,255,255,.01);background-blend-mode:luminosity;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.1);transform:translateY(-50px);margin-bottom:2px}
+.glass::before{content:"";position:absolute;inset:0;padding:1.4px;border-radius:20px;
+  background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.05));
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;pointer-events:none}
+.glass .tag{font-size:14px;color:rgba(255,255,255,.8)}
+.glass h3{font-size:18px;font-weight:600;line-height:1.3;color:#fff}
+.glass h3 i{font-family:var(--serif);font-style:italic;font-size:22px}
+.glass p{font-size:11px;line-height:1.4;color:rgba(255,255,255,.65)}
+.vhero .cta-row{justify-content:flex-start;margin-top:26px}
+.vhero .stats{justify-content:flex-start;margin-top:34px}
+.font-serif-var{--serif:'Instrument Serif',Georgia,serif}
 .hero{padding:88px 0 40px;text-align:center}
 .hero h1{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height:.98;font-size:clamp(44px,7.4vw,88px);max-width:15ch;margin:0 auto;text-wrap:balance}
 .hero .sub{color:var(--dim);font-size:clamp(16.5px,1.35vw,19px);line-height:1.6;max-width:58ch;margin:24px auto 0;font-weight:400}
@@ -62,7 +96,7 @@ nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:linea
 .path{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:24px auto 0;max-width:700px}
 .path.tags{margin-top:11px;gap:10px}
 .node{font-family:var(--mono);font-size:13px;color:var(--ink);border:1px solid var(--line2);border-radius:8px;padding:6px 12px;background:rgba(255,255,255,.03);white-space:nowrap}
-.node.ap{border-color:rgba(232,163,60,.42);color:var(--amber-hi);background:rgba(232,163,60,.06)}
+.node.ap{border-color:rgba(94,210,156,.42);color:var(--amber-hi);background:rgba(94,210,156,.06)}
 .arw{color:var(--amber);opacity:.7;font-family:var(--mono);font-size:13px}
 @media(max-width:560px){.arw{display:none}}
 .cta-row{display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;margin-top:32px}
@@ -81,7 +115,7 @@ section{padding:84px 0}
 .sec-h{font-family:var(--display);font-weight:700;letter-spacing:-.028em;line-height:1.04;font-size:clamp(28px,3.9vw,44px);max-width:20ch;text-wrap:balance}
 .sec-l{color:var(--dim);font-size:17px;line-height:1.6;max-width:56ch;margin-top:16px}
 
-.pg-sec{background:radial-gradient(1000px 460px at 50% -6%,rgba(232,163,60,.09),transparent 60%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pg-sec{background:radial-gradient(1000px 460px at 50% -6%,rgba(94,210,156,.09),transparent 60%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .console{margin:32px 0 0;border:1px solid var(--line2);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#16110B,#100C07);box-shadow:0 50px 120px -50px rgba(0,0,0,.9)}
 .con-bar{display:flex;align-items:center;gap:9px;padding:13px 18px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.28)}
 .dot{width:11px;height:11px;border-radius:50%}
@@ -98,7 +132,7 @@ section{padding:84px 0}
 .prompt-box .k{color:var(--amber)}
 .runrow{display:flex;align-items:center;gap:14px;margin-top:16px}
 .run{font-family:var(--body);font-weight:600;font-size:14.5px;background:var(--amber);color:#1c1305;border:none;border-radius:10px;padding:11px 20px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:transform .15s,box-shadow .2s}
-.run:hover{transform:translateY(-1px);box-shadow:0 10px 26px -10px rgba(232,163,60,.8)}
+.run:hover{transform:translateY(-1px);box-shadow:0 10px 26px -10px rgba(94,210,156,.8)}
 .run:disabled{opacity:.55;cursor:default}
 .run .sp{width:13px;height:13px;border:2px solid rgba(28,19,5,.35);border-top-color:#1c1305;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -123,7 +157,7 @@ section{padding:84px 0}
 .tracks-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:40px}
 .trk{background:linear-gradient(180deg,var(--panel),#110C08);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;gap:15px;align-items:flex-start;transition:border-color .2s,transform .2s}
 .trk:hover{border-color:var(--line2);transform:translateY(-3px)}
-.trk .g{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font-family:var(--mono);font-size:14px;font-weight:600;background:rgba(232,163,60,.1);border:1px solid rgba(232,163,60,.24);color:var(--amber-hi);flex:0 0 auto}
+.trk .g{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font-family:var(--mono);font-size:14px;font-weight:600;background:rgba(94,210,156,.1);border:1px solid rgba(94,210,156,.24);color:var(--amber-hi);flex:0 0 auto}
 .trk h4{font-family:var(--display);font-weight:700;font-size:17px;margin-bottom:3px}
 .trk p{color:var(--dim);font-size:13px;line-height:1.5}
 .trk .ct{color:var(--amber);font-size:11px;font-family:var(--mono);margin-top:8px;display:block}
@@ -137,13 +171,20 @@ section{padding:84px 0}
 .dl-note a{color:var(--amber-hi);border-bottom:1px solid var(--line2)}
 @media(max-width:640px){.dl{grid-template-columns:1fr}}
 
-.about-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:44px;margin-top:36px;align-items:start}
-.about-grid p{color:var(--dim);font-size:16px;line-height:1.65;margin-bottom:16px}
-.about-grid p b{color:var(--ink);font-weight:600}
-.stat{border-top:1px solid var(--line);padding:16px 0}
-.stat .big{font-family:var(--display);font-weight:700;font-size:32px;letter-spacing:-.02em}
+.about-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:56px;margin-top:44px;align-items:start}
+.manifesto{display:flex;flex-direction:column;gap:28px}
+.mani{position:relative;padding-left:22px;color:var(--ink);font-size:19px;line-height:1.55;font-weight:400}
+.mani::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:3px;border-radius:2px;background:var(--amber);box-shadow:0 0 18px rgba(94,210,156,.55)}
+.mani b{font-weight:700;color:var(--amber-hi)}
+.stat{position:relative;border-top:1px solid var(--line);padding:20px 0}
+.stat::after{content:"";position:absolute;top:0;left:0;height:1px;width:0;background:linear-gradient(90deg,var(--amber),transparent);transition:width 1.05s cubic-bezier(.16,1,.3,1) .1s}
+.stat.in::after{width:100%}
+.stat .big{font-family:var(--display);font-weight:800;font-size:38px;letter-spacing:-.02em;color:var(--ink)}
 .stat .cap{color:var(--dim);font-size:13px;font-family:var(--mono);margin-top:4px}
-@media(max-width:760px){.about-grid{grid-template-columns:1fr;gap:24px}}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+.reveal.in{opacity:1;transform:none}
+@media(max-width:760px){.about-grid{grid-template-columns:1fr;gap:30px}}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.stat::after{transition:none}}
 
 .final{text-align:center;padding:100px 0}
 .final h2{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height:1;font-size:clamp(36px,6vw,72px);text-wrap:balance;max-width:16ch;margin:0 auto}
@@ -161,6 +202,7 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
 </style>
 </head>
 <body>
+<div class="page-amb"></div>
 
 <nav><div class="wrap nav-in">
   <a class="mark" href="/"><span class="sq">&gt;_</span>Compilearn</a>
@@ -168,29 +210,26 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
     <a class="nl" href="#playground">Playground</a>
     <a class="nl" href="#tracks">Tracks</a>
     <a class="nl" href="/teachers">For teachers</a>
-    <a class="nl" href="#download">Download</a>
+    <a class="nl" href="https://github.com/hweichen77-dot/compilearn/releases/latest" rel="noopener">Download</a>
     <a class="btn btn-p" href="/app/login" rel="noopener">Open app &rarr;</a>
   </div>
 </div></nav>
 
-<header class="hero"><div class="wrap">
-  <h1>Learn to build AI by <span class="grad">building&nbsp;products.</span></h1>
-  <p class="sub">From your first line of code to shipping real AI apps, all in the browser. A live tutor explains every break, and <b>480+ lessons</b> are free to start.</p>
-  <div class="path">
-    <span class="node">AI basics</span><span class="arw">&rarr;</span>
-    <span class="node">Prompting</span><span class="arw">&rarr;</span>
-    <span class="node">Agents</span><span class="arw">&rarr;</span>
-    <span class="node">RAG</span><span class="arw">&rarr;</span>
-    <span class="node">Vision</span><span class="arw">&rarr;</span>
-    <span class="node">Production</span>
-  </div>
-  <div class="path tags">
-    <span class="node ap">AP Computer Science</span>
-    <span class="node ap">Competitive C++</span>
-  </div>
+<header class="vhero">
+  <video id="bgv" muted autoplay loop playsinline></video>
+  <div class="ov-l"></div><div class="ov-b"></div>
+  <svg class="glow" viewBox="0 0 900 360" fill="none" aria-hidden="true">
+    <defs><filter id="hglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="25"/></filter></defs>
+    <ellipse cx="450" cy="180" rx="380" ry="90" fill="#0e5c46" filter="url(#hglow)"/>
+    <ellipse cx="450" cy="180" rx="240" ry="55" fill="#5ED29C" opacity=".45" filter="url(#hglow)"/>
+  </svg>
+  <div class="gl" style="left:25%"></div><div class="gl" style="left:50%"></div><div class="gl" style="left:75%"></div>
+  <div class="wrap inner">
+    <h1>Launch your coding career<span class="dot">.</span></h1>
+    <p class="vsub">Master in-demand coding skills by building and shipping real AI products, from your first prompt to a deployed app. Guided tracks, a live playground, no fluff.</p>
   <div class="cta-row">
-    <a class="btn btn-p" href="https://github.com/hweichen77-dot/compilearn/releases/download/v2.6.0/Compilearn_2.6.0_universal.dmg" rel="noopener" style="font-size:16px;padding:13px 26px">Download for macOS</a>
-    <a class="btn btn-p" href="https://github.com/hweichen77-dot/compilearn/releases/download/v2.6.0/Compilearn_2.6.0_x64-setup.exe" rel="noopener" style="font-size:16px;padding:13px 26px">Download for Windows</a>
+    <a class="btn btn-p" href="https://github.com/hweichen77-dot/compilearn/releases/download/v2.7.0/Compilearn_2.7.0_universal.dmg" rel="noopener" style="font-size:16px;padding:13px 26px">Download for macOS</a>
+    <a class="btn btn-p" href="https://github.com/hweichen77-dot/compilearn/releases/download/v2.7.0/Compilearn_2.7.0_x64-setup.exe" rel="noopener" style="font-size:16px;padding:13px 26px">Download for Windows</a>
   </div>
   <div class="stats">
     <div><b>3</b><span>languages, in-browser</span></div>
@@ -250,36 +289,18 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
   </div>
 </div></section>
 
-<section id="download"><div class="wrap">
-  <h2 class="sec-h">Prefer a desktop app? Get it free.</h2>
-  <p class="sec-l">Everything on the web works offline in the desktop build too. Same lessons, same real code execution.</p>
-  <div class="dl">
-    <div class="dl-card">
-      <div class="os">macOS</div>
-      <div class="meta">Universal · Apple Silicon + Intel · .dmg</div>
-      <a class="btn btn-p" href="https://github.com/hweichen77-dot/compilearn/releases/download/v2.6.0/Compilearn_2.6.0_universal.dmg" rel="noopener">Download for macOS</a>
-    </div>
-    <div class="dl-card">
-      <div class="os">Windows</div>
-      <div class="meta">64-bit · Windows 10/11 · .exe</div>
-      <a class="btn btn-g" href="https://github.com/hweichen77-dot/compilearn/releases/download/v2.6.0/Compilearn_2.6.0_x64-setup.exe" rel="noopener">Download for Windows</a>
-    </div>
-  </div>
-  <p class="dl-note">Builds are published from source on GitHub. Looking for another version or the <code>.msi</code>? <a href="https://github.com/hweichen77-dot/compilearn/releases/latest" rel="noopener">See all releases &rarr;</a></p>
-</div></section>
-
 <section id="about"><div class="wrap">
-  <h2 class="sec-h">Built for people who learn by doing.</h2>
+  <h2 class="sec-h reveal">Built for people who learn by doing.</h2>
   <div class="about-grid">
-    <div>
-      <p>Compilearn started from a simple frustration: most "learn to code" sites are <b>videos you watch and quizzes you forget</b>. We wanted the opposite, a place where you write and run real code from the very first lesson.</p>
-      <p>It is built by a small team that cares about <b>craft and honesty</b>. The curriculum is open, the code execution is real, and every answer key is checked by a machine before it ships. No fluff, no fake progress bars, no dark patterns.</p>
-      <p>Today it covers AI engineering, the full AP Computer Science Principles and AP CS A curricula, and competitive programming, with more on the way.</p>
+    <div class="manifesto">
+      <p class="mani reveal">Most "learn to code" sites are <b>videos you watch and quizzes you forget</b>. Compilearn is the opposite — you write and run real code from lesson one.</p>
+      <p class="mani reveal">The curriculum is open. Code execution is real. Every answer key is <b>machine-checked before it ships</b>. No fluff, no fake progress bars, no dark patterns.</p>
+      <p class="mani reveal">Today it spans AI engineering, the full AP CS Principles and AP CS A curricula, and competitive programming — <b>more shipping every week</b>.</p>
     </div>
     <div>
-      <div class="stat"><div class="big">480+</div><div class="cap">lessons, every solution autograded</div></div>
-      <div class="stat"><div class="big">3</div><div class="cap">languages run for real: Python, Java, C++</div></div>
-      <div class="stat"><div class="big">100%</div><div class="cap">open curriculum, free to learn</div></div>
+      <div class="stat reveal"><div class="big"><span class="count" data-to="480" data-suffix="+">0</span></div><div class="cap">lessons, every solution autograded</div></div>
+      <div class="stat reveal"><div class="big"><span class="count" data-to="3">0</span></div><div class="cap">languages run for real: Python, Java, C++</div></div>
+      <div class="stat reveal"><div class="big"><span class="count" data-to="100" data-suffix="%">0</span></div><div class="cap">open curriculum, free to learn</div></div>
     </div>
   </div>
 </div></section>
@@ -301,7 +322,7 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
       <a href="/app/login" rel="noopener">Open app</a>
       <a href="#playground">Playground</a>
       <a href="#tracks">Tracks</a>
-      <a href="#download">Download</a>
+      <a href="https://github.com/hweichen77-dot/compilearn/releases/latest" rel="noopener">Download</a>
     </div>
     <div class="foot-col">
       <div class="h">About</div>
@@ -353,6 +374,32 @@ footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-siz
   }
   runBtn.addEventListener('click',run);
   setTimeout(function(){if(!reduce)run()},900);
+})();
+</script>
+<script src="./hls.min.js"></script>
+<script>
+(function(){
+  var v=document.getElementById('bgv');if(!v)return;
+  var src='https://stream.mux.com/tLkHO1qZoaaQOUeVWo8hEBeGQfySP02EPS02BmnNFyXys.m3u8';
+  if(window.Hls&&Hls.isSupported()){var hls=new Hls({enableWorker:false});hls.loadSource(src);hls.attachMedia(v);}
+  else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=src;}
+})();
+</script>
+<script>
+(function(){
+  var rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  function count(el){
+    var to=+el.dataset.to,suf=el.dataset.suffix||'';
+    if(rm){el.textContent=to+suf;return;}
+    var dur=1100,t0=null;
+    function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/dur,1);var e=1-Math.pow(1-p,3);el.textContent=Math.round(to*e)+suf;if(p<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);
+  }
+  function fire(el){el.classList.add('in');[].forEach.call(el.querySelectorAll('.count'),count);}
+  if(rm||!('IntersectionObserver'in window)){els.forEach(fire);return;}
+  var io=new IntersectionObserver(function(ents){ents.forEach(function(en){if(en.isIntersecting){fire(en.target);io.unobserve(en.target);}});},{threshold:.25,rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(e){io.observe(e);});
 })();
 </script>
 </body>

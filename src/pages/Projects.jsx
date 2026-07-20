@@ -15,7 +15,7 @@ const DIFFICULTY_LABEL = {
   advanced: "02",
 };
 
-function Label({ children, color = "#6f665a", className = "", style }) {
+function Label({ children, color = "#7C8D85", className = "", style }) {
   return (
     <span
       className={`text-[11px] tracking-[0.18em] uppercase ${className}`}
@@ -96,30 +96,30 @@ export default function Projects() {
   ].filter((s) => s.items.length > 0);
 
   return (
-    <div className="min-h-screen" style={{ background: "#0c0a08" }}>
+    <div className="min-h-screen" style={{ background: "#050807" }}>
       <style>{`
         .cl-row { transition: transform .25s cubic-bezier(.16,1,.3,1), border-color .25s, box-shadow .25s; }
-        .cl-row:hover { border-color: #3a3428 !important; box-shadow: 0 14px 44px -14px rgba(232,163,60,0.35); }
+        .cl-row:hover { border-color: #26302B !important; box-shadow: 0 14px 44px -14px rgba(94,210,156,0.35); }
         @media (prefers-reduced-motion: reduce) { .cl-row { transition: none; } }
       `}</style>
       <div
         className="relative px-8 lg:px-16 pt-28 pb-16"
-        style={{ borderBottom: "1px solid #2a231a" }}
+        style={{ borderBottom: "1px solid #17201C" }}
       >
         <div
           className="absolute top-0 left-0 right-0 h-px"
-          style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }}
+          style={{ background: "linear-gradient(90deg, transparent, #5ED29C, transparent)" }}
         />
         <div className="max-w-7xl mx-auto">
           <div className="mb-3">
-            <Label color="#E8A33C">Projects</Label>
+            <Label color="#5ED29C">Projects</Label>
           </div>
           <h1
-            style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#F2EDE2", lineHeight: 1.12, margin: "0 0 16px" }}
+            style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.025em", color: "#ECF3EF", lineHeight: 1.12, margin: "0 0 16px" }}
           >
             Choose your module.
           </h1>
-          <p className="text-base" style={{ fontFamily: font.body, color: "#a99f8f", fontWeight: 400 }}>
+          <p className="text-base" style={{ fontFamily: font.body, color: "#B7C6BE", fontWeight: 400 }}>
             Each project is a chapter. New here? Start at the top and work down, each one builds on the last.
           </p>
         </div>
@@ -130,7 +130,7 @@ export default function Projects() {
           <div className="relative flex-1 min-w-48 max-w-xs">
             <span
               className="absolute left-4 top-1/2 -translate-y-1/2 text-xs pointer-events-none"
-              style={{ fontFamily: font.mono, color: "#6f665a" }}
+              style={{ fontFamily: font.mono, color: "#7C8D85" }}
             >
               /search
             </span>
@@ -141,14 +141,14 @@ export default function Projects() {
               className="w-full text-sm py-3 pl-16 pr-4 bg-transparent outline-none transition-colors duration-150"
               style={{
                 fontFamily: font.body,
-                border: "1px solid #2a231a",
+                border: "1px solid #17201C",
                 borderRadius: "12px",
-                background: "#17130e",
-                color: "#F2EDE2",
-                caretColor: "#E8A33C",
+                background: "#0C1210",
+                color: "#ECF3EF",
+                caretColor: "#5ED29C",
               }}
-              onFocus={e => (e.currentTarget.style.borderColor = "#E8A33C")}
-              onBlur={e => (e.currentTarget.style.borderColor = "#2a231a")}
+              onFocus={e => (e.currentTarget.style.borderColor = "#5ED29C")}
+              onBlur={e => (e.currentTarget.style.borderColor = "#17201C")}
             />
           </div>
 
@@ -161,9 +161,9 @@ export default function Projects() {
                 style={{
                   fontFamily: font.mono,
                   borderRadius: "10px",
-                  border: `1px solid ${category === cat.value ? "#E8A33C" : "#2a231a"}`,
-                  color: category === cat.value ? "#f4b95a" : "#a99f8f",
-                  background: category === cat.value ? "rgba(232,163,60,0.10)" : "transparent",
+                  border: `1px solid ${category === cat.value ? "#5ED29C" : "#17201C"}`,
+                  color: category === cat.value ? "#7FE0B0" : "#B7C6BE",
+                  background: category === cat.value ? "rgba(94,210,156,0.10)" : "transparent",
                 }}
               >
                 {cat.label}
@@ -178,7 +178,7 @@ export default function Projects() {
               <div
                 key={i}
                 className="h-24 animate-pulse"
-                style={{ background: "#17130e", border: "1px solid #2a231a", borderRadius: "16px" }}
+                style={{ background: "#0C1210", border: "1px solid #17201C", borderRadius: "16px" }}
               />
             ))}
           </div>
@@ -186,7 +186,7 @@ export default function Projects() {
           <div>
             <div
               className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-3 mb-2"
-              style={{ borderBottom: "1px solid #2a231a" }}
+              style={{ borderBottom: "1px solid #17201C" }}
             >
               {["LVL", "PROJECT", "LESSONS", "STATUS"].map(h => (
                 <Label key={h}>{h}</Label>
@@ -199,8 +199,8 @@ export default function Projects() {
                   className="flex items-baseline gap-3 px-6 pt-8 pb-3 mb-3"
                   style={{ borderBottom: "1px solid #1F1C15" }}
                 >
-                  <Label color="#a99f8f">{section.label}</Label>
-                  <span className="text-xs" style={{ fontFamily: font.mono, color: "#6f665a" }}>
+                  <Label color="#B7C6BE">{section.label}</Label>
+                  <span className="text-xs" style={{ fontFamily: font.mono, color: "#7C8D85" }}>
                     {section.items.length}
                   </span>
                 </div>
@@ -217,14 +217,14 @@ export default function Projects() {
                     const rowInner = (
                       <GlowCard
                         className="cl-row grid grid-cols-[3rem_1fr_auto_auto] items-center gap-8 px-6 py-6"
-                        style={{ background: "#17130e", border: "1px solid #2a231a", borderRadius: "16px", opacity: gated ? 0.55 : 1 }}
+                        style={{ background: "#0C1210", border: "1px solid #17201C", borderRadius: "16px", opacity: gated ? 0.55 : 1 }}
                       >
                         <div
                           className="font-bold"
                           style={{
                             fontFamily: font.mono,
                             fontSize: "1.5rem",
-                            color: "#6f665a",
+                            color: "#7C8D85",
                             letterSpacing: "-0.05em",
                           }}
                         >
@@ -235,15 +235,15 @@ export default function Projects() {
                           <div className="flex items-center gap-3 mb-1">
                             <div
                               className="font-display font-bold text-lg leading-snug transition-colors duration-200 group-hover:text-white"
-                              style={{ color: "#F2EDE2", letterSpacing: "-0.02em" }}
+                              style={{ color: "#ECF3EF", letterSpacing: "-0.02em" }}
                             >
                               {project.title}
                             </div>
                             {gated && (
                               <Label
-                                color="#f4b95a"
+                                color="#7FE0B0"
                                 className="px-2 py-0.5 whitespace-nowrap"
-                                style={{ border: "1px solid rgba(232,163,60,0.25)", background: "rgba(232,163,60,0.08)", borderRadius: "8px" }}
+                                style={{ border: "1px solid rgba(94,210,156,0.25)", background: "rgba(94,210,156,0.08)", borderRadius: "8px" }}
                               >
                                 Finish Foundations first
                               </Label>
@@ -252,7 +252,7 @@ export default function Projects() {
                           {project.description && (
                             <div
                               className="text-sm line-clamp-1"
-                              style={{ fontFamily: font.body, color: "#a99f8f", fontWeight: 400 }}
+                              style={{ fontFamily: font.body, color: "#B7C6BE", fontWeight: 400 }}
                             >
                               {project.description}
                             </div>
@@ -265,12 +265,12 @@ export default function Projects() {
                                     key={di}
                                     className="w-1.5 h-1.5 rounded-sm transition-all duration-200"
                                     style={{
-                                      background: di < Math.round(pct / 10) ? "#E8A33C" : "#2a231a",
+                                      background: di < Math.round(pct / 10) ? "#5ED29C" : "#17201C",
                                     }}
                                   />
                                 ))}
                               </div>
-                              <span className="text-xs" style={{ fontFamily: font.mono, color: "#f4b95a" }}>
+                              <span className="text-xs" style={{ fontFamily: font.mono, color: "#7FE0B0" }}>
                                 {pct}%
                               </span>
                             </div>
@@ -279,11 +279,11 @@ export default function Projects() {
 
                         <div
                           className="text-sm text-right"
-                          style={{ fontFamily: font.mono, color: "#a99f8f" }}
+                          style={{ fontFamily: font.mono, color: "#B7C6BE" }}
                         >
                           {project.lessons_count ? `${project.lessons_count}` : ", "}
                           {project.estimated_time ? (
-                            <div className="text-xs" style={{ fontFamily: font.mono, color: "#6f665a" }}>
+                            <div className="text-xs" style={{ fontFamily: font.mono, color: "#7C8D85" }}>
                               {project.estimated_time}min
                             </div>
                           ) : null}
@@ -291,7 +291,7 @@ export default function Projects() {
 
                         <div>
                           {gated && (
-                            <Label color="#f4b95a" className="px-3 py-1" style={{ border: "1px solid rgba(232,163,60,0.25)", background: "rgba(232,163,60,0.08)", borderRadius: "8px" }}>
+                            <Label color="#7FE0B0" className="px-3 py-1" style={{ border: "1px solid rgba(94,210,156,0.25)", background: "rgba(94,210,156,0.08)", borderRadius: "8px" }}>
                               LOCKED
                             </Label>
                           )}
@@ -301,12 +301,12 @@ export default function Projects() {
                             </Label>
                           )}
                           {!gated && status === "in_progress" && (
-                            <Label color="#E8A33C" className="px-3 py-1" style={{ border: "1px solid rgba(232,163,60,0.3)", background: "rgba(232,163,60,0.08)", borderRadius: "8px" }}>
+                            <Label color="#5ED29C" className="px-3 py-1" style={{ border: "1px solid rgba(94,210,156,0.3)", background: "rgba(94,210,156,0.08)", borderRadius: "8px" }}>
                               ACTIVE
                             </Label>
                           )}
                           {!gated && status === "not_started" && (
-                            <Label color="#a99f8f" className="px-3 py-1" style={{ border: "1px solid #2a231a", borderRadius: "8px" }}>
+                            <Label color="#B7C6BE" className="px-3 py-1" style={{ border: "1px solid #17201C", borderRadius: "8px" }}>
                               START
                             </Label>
                           )}
@@ -349,7 +349,7 @@ export default function Projects() {
             {filtered.length === 0 && (
               <div className="text-center py-24">
                 <Label className="block mb-4">No results</Label>
-                <p className="font-display text-base" style={{ color: "#a99f8f" }}>
+                <p className="font-display text-base" style={{ color: "#B7C6BE" }}>
                   No projects match your filter.
                 </p>
               </div>
@@ -361,7 +361,7 @@ export default function Projects() {
       {nudge && (
         <div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 text-xs tracking-widest uppercase px-5 py-3 shadow-lg"
-          style={{ fontFamily: font.mono, color: "#f4b95a", border: "1px solid rgba(232,163,60,0.4)", background: "#17130e", borderRadius: "12px" }}
+          style={{ fontFamily: font.mono, color: "#7FE0B0", border: "1px solid rgba(94,210,156,0.4)", background: "#0C1210", borderRadius: "12px" }}
           role="status"
         >
           Finish the Foundations modules to unlock "{nudge}"

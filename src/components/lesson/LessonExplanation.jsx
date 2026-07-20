@@ -72,25 +72,25 @@ export default function LessonExplanation({ explanation, concept }) {
     <div className="lesson-doc">
       <style>{`
         .lesson-doc {
-          color: #ECE7DC;
+          color: #ECF3EF;
           line-height: 1.75;
-          font-family: 'Hanken Grotesk Variable', system-ui, sans-serif;
+          font-family: 'Inter', system-ui, sans-serif;
         }
         .lesson-doc h1 {
-          font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+          font-family: 'Inter', system-ui, sans-serif;
           font-size: 1.6rem;
           font-weight: 700;
-          color: #ECE7DC;
+          color: #ECF3EF;
           margin-bottom: 1.25rem;
           margin-top: 0;
           letter-spacing: -0.005em;
           line-height: 1.3;
         }
         .lesson-doc h2 {
-          font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+          font-family: 'Inter', system-ui, sans-serif;
           font-size: 1.15rem;
           font-weight: 600;
-          color: #ECE7DC;
+          color: #ECF3EF;
           margin-top: 2rem;
           margin-bottom: 0.6rem;
           letter-spacing: 0;
@@ -98,26 +98,26 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc h2:first-child { margin-top: 0; }
         .lesson-doc h3 {
-          font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+          font-family: 'Inter', system-ui, sans-serif;
           font-size: 1rem;
           font-weight: 600;
-          color: #ECE7DC;
+          color: #ECF3EF;
           margin-top: 1.5rem;
           margin-bottom: 0.4rem;
         }
         .lesson-doc p {
           font-size: 0.9375rem;
-          color: #ECE7DC;
+          color: #ECF3EF;
           margin-bottom: 0.85rem;
           line-height: 1.75;
           font-weight: 400;
         }
         .lesson-doc a {
-          color: #E8A33C;
+          color: #5ED29C;
           text-decoration: underline;
           text-underline-offset: 2px;
         }
-        .lesson-doc a:hover { color: #E8A33C; }
+        .lesson-doc a:hover { color: #5ED29C; }
         .lesson-doc ul {
           margin: 0.5rem 0 1rem 1.25rem;
           padding-left: 0;
@@ -130,7 +130,7 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc li {
           font-size: 0.9375rem;
-          color: #ECE7DC;
+          color: #ECF3EF;
           margin-bottom: 0.3rem;
           padding-left: 0;
           position: relative;
@@ -142,7 +142,7 @@ export default function LessonExplanation({ explanation, concept }) {
         }
         .lesson-doc strong, .lesson-doc b {
           font-weight: 700;
-          color: #F2EDE2;
+          color: #ECF3EF;
         }
         .lesson-doc em {
           font-style: italic;
@@ -150,24 +150,24 @@ export default function LessonExplanation({ explanation, concept }) {
         .lesson-doc code {
           font-family: 'Spline Sans Mono Variable', ui-monospace, monospace;
           font-size: 0.82em;
-          background: #221F18;
-          color: #E8A33C;
+          background: #111917;
+          color: #5ED29C;
           padding: 2px 6px;
           border-radius: 3px;
-          border: 1px solid #262219;
+          border: 1px solid #17201C;
         }
         .lesson-doc blockquote {
-          border-left: 2px solid #E8A33C;
+          border-left: 2px solid #5ED29C;
           padding: 0.75rem 1.25rem;
           margin: 1.25rem 0;
-          background: #1C1A14;
+          background: #0C1210;
           color: #FFFFFF;
           font-style: normal;
         }
         .lesson-doc blockquote p { margin-bottom: 0; color: #FFFFFF; }
         .lesson-doc hr {
           border: none;
-          border-top: 1px solid #262219;
+          border-top: 1px solid #17201C;
           margin: 1.75rem 0;
         }
         .lesson-doc table {
@@ -177,20 +177,20 @@ export default function LessonExplanation({ explanation, concept }) {
           font-size: 0.875rem;
         }
         .lesson-doc th {
-          background: #221F18;
-          border: 1px solid #262219;
+          background: #111917;
+          border: 1px solid #17201C;
           padding: 0.5rem 0.75rem;
           font-weight: 700;
           text-align: left;
-          color: #ECE7DC;
+          color: #ECF3EF;
         }
         .lesson-doc td {
-          border: 1px solid #262219;
+          border: 1px solid #17201C;
           padding: 0.45rem 0.75rem;
-          color: #ECE7DC;
+          color: #ECF3EF;
         }
         .lesson-doc tbody tr:nth-child(even) td {
-          background: #131009;
+          background: #070B0A;
         }
       `}</style>
 

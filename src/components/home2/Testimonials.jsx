@@ -6,14 +6,14 @@ const body = font.body;
 
 export default function Testimonials() {
   return (
-    <section style={{ borderBottom: "1px solid #221F18" }}>
+    <section style={{ borderBottom: "1px solid #111917" }}>
       <div style={{ maxWidth: "1180px", margin: "0 auto", padding: "96px 2rem" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "48px" }}>
           <span style={{
             fontFamily: body,
             fontSize: "0.72rem",
             letterSpacing: "0.18em",
-            color: "#D4882E",
+            color: "#2E8B7A",
             textTransform: "uppercase",
             fontWeight: 500,
           }}>
@@ -28,7 +28,7 @@ export default function Testimonials() {
           alignItems: "start",
         }}>
           <figure style={{ margin: 0 }}>
-            <span style={{ fontFamily: display, color: "#34302A", fontSize: "3rem", lineHeight: 0.6, display: "block" }}>
+            <span style={{ fontFamily: display, color: "#26302B", fontSize: "3rem", lineHeight: 0.6, display: "block" }}>
               &#8220;
             </span>
             <blockquote style={{
@@ -37,12 +37,12 @@ export default function Testimonials() {
               fontSize: "clamp(1.5rem, 2.6vw, 2.1rem)",
               lineHeight: 1.25,
               letterSpacing: "-0.02em",
-              color: "#ECE7DC",
+              color: "#ECF3EF",
               margin: "8px 0 24px",
             }}>
               Most people who try to learn to code never ship anything. We're
               building a place where you learn by{" "}
-              <em style={{ fontStyle: "italic", color: "#E8A33C", fontWeight: 500 }}>building real things</em>.
+              <em style={{ fontStyle: "italic", color: "#5ED29C", fontWeight: 500 }}>building real things</em>.
             </blockquote>
             <figcaption style={{ fontFamily: body, fontSize: "0.8rem", color: "#FFFFFF", letterSpacing: "0.04em" }}>
               The Compilearn mission
@@ -67,7 +67,7 @@ export default function Testimonials() {
 
 function SmallQuote({ quote, who }) {
   return (
-    <figure style={{ margin: 0, borderTop: "1px solid #221F18", paddingTop: "24px" }}>
+    <figure style={{ margin: 0, borderTop: "1px solid #111917", paddingTop: "24px" }}>
       <blockquote style={{
         fontFamily: body,
         fontSize: "1.05rem",

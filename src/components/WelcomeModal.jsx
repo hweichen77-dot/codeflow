@@ -53,11 +53,11 @@ export default function WelcomeModal() {
       style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) dismiss(false) }}
     >
-      <div ref={dialogRef} tabIndex={-1} className="w-full max-w-lg p-10" style={{ border: '1px solid #2A261E', background: '#131009', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', outline: 'none' }}>
-        <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#E8A33C', fontFamily: LABEL }}>
+      <div ref={dialogRef} tabIndex={-1} className="w-full max-w-lg p-10" style={{ border: '1px solid #2A261E', background: '#070B0A', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', outline: 'none' }}>
+        <div className="font-sans text-xs tracking-widest uppercase mb-3" style={{ color: '#5ED29C', fontFamily: LABEL }}>
           WELCOME TO CODEFLOW
         </div>
-        <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#F2EDE2', lineHeight: 1.12, margin: '0 0 8px' }}>
+        <h1 style={{ fontFamily: SERIF, fontSize: '2.1rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#ECF3EF', lineHeight: 1.12, margin: '0 0 8px' }}>
           Hey {firstName}, here&apos;s the idea.
         </h1>
         <p className="font-display text-sm mb-7" style={{ color: '#FFFFFF' }}>
@@ -71,7 +71,7 @@ export default function WelcomeModal() {
                 {s.n}
               </span>
               <div>
-                <div className="font-display text-sm font-medium" style={{ color: '#F2EDE2' }}>{s.t}</div>
+                <div className="font-display text-sm font-medium" style={{ color: '#ECF3EF' }}>{s.t}</div>
                 <div className="font-sans text-xs mt-1" style={{ color: '#FFFFFF', fontFamily: LABEL, lineHeight: 1.5 }}>{s.d}</div>
               </div>
             </div>
@@ -83,7 +83,7 @@ export default function WelcomeModal() {
             type="button"
             onClick={() => dismiss(false)}
             className="font-sans text-xs tracking-widest uppercase px-5 py-3 transition-all"
-            style={{ color: '#FFFFFF', border: '1px solid #34302A', fontFamily: LABEL }}
+            style={{ color: '#FFFFFF', border: '1px solid #26302B', fontFamily: LABEL }}
           >
             I&apos;ll look around
           </button>
@@ -91,7 +91,7 @@ export default function WelcomeModal() {
             type="button"
             onClick={() => dismiss(true)}
             className="font-sans text-sm tracking-widest uppercase px-7 py-3 transition-all"
-            style={{ background: '#E8A33C', color: '#15130E', fontWeight: 700, fontFamily: LABEL }}
+            style={{ background: '#5ED29C', color: '#070B0A', fontWeight: 700, fontFamily: LABEL }}
           >
             Start learning →
           </button>

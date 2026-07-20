@@ -13,14 +13,14 @@ import ComparisonTable from "@/components/lesson/blocks/ComparisonTable";
 import Reflection from "@/components/lesson/blocks/Reflection";
 
 const C = {
-  bg: "#15130E",
-  surface: "#17130e",
-  border: "#2a231a",
-  text: "#F2EDE2",
-  muted: "#a99f8f",
-  dim: "#6f665a",
-  amber: "#E8A33C",
-  amber2: "#f4b95a",
+  bg: "#070B0A",
+  surface: "#0C1210",
+  border: "#17201C",
+  text: "#ECF3EF",
+  muted: "#B7C6BE",
+  dim: "#7C8D85",
+  amber: "#5ED29C",
+  amber2: "#7FE0B0",
   green: "#5fbf7e",
 };
 
@@ -65,7 +65,7 @@ function InlineCheck({ question, options, correct, explain }) {
             const isPick = pick === i;
             const isAns = i === correct;
             let border = C.border, color = C.muted, bg = "transparent";
-            if (done && isAns) { border = C.amber; color = C.amber2; bg = "#E8A33C10"; }
+            if (done && isAns) { border = C.amber; color = C.amber2; bg = "#5ED29C10"; }
             else if (done && isPick) { border = "#c46a4a"; color = "#e08a68"; bg = "#c46a4a10"; }
             return (
               <button
@@ -93,13 +93,13 @@ function ReadingBox({ children }) {
   return (
     <div className="lesson-doc px-7 py-6" style={{ background: C.surface, color: C.text, border: `1px solid ${C.border}`, borderRadius: 14 }}>
       <style>{`
-        .lesson-doc h2 { font-family:'Bricolage Grotesque Variable', system-ui, sans-serif; font-weight:800; font-size:1.35rem; letter-spacing:-0.02em; margin:1.6rem 0 0.7rem; color:#F2EDE2; }
-        .lesson-doc p { font-family:'Hanken Grotesk Variable', system-ui, sans-serif; font-size:0.95rem; line-height:1.7; margin:0 0 0.9rem; color:#d8cfbf; }
+        .lesson-doc h2 { font-family:'Inter', system-ui, sans-serif; font-weight:800; font-size:1.35rem; letter-spacing:-0.02em; margin:1.6rem 0 0.7rem; color:#ECF3EF; }
+        .lesson-doc p { font-family:'Inter', system-ui, sans-serif; font-size:0.95rem; line-height:1.7; margin:0 0 0.9rem; color:#d8cfbf; }
         .lesson-doc ul,.lesson-doc ol { margin:0 0 0.9rem 1.2rem; }
-        .lesson-doc li { font-family:'Hanken Grotesk Variable', system-ui, sans-serif; font-size:0.95rem; line-height:1.6; margin-bottom:0.35rem; color:#d8cfbf; }
-        .lesson-doc strong { color:#F2EDE2; font-weight:700; }
+        .lesson-doc li { font-family:'Inter', system-ui, sans-serif; font-size:0.95rem; line-height:1.6; margin-bottom:0.35rem; color:#d8cfbf; }
+        .lesson-doc strong { color:#ECF3EF; font-weight:700; }
         .lesson-doc em { color:#c9c0b0; }
-        .lesson-doc code { font-family:'Spline Sans Mono Variable', ui-monospace, monospace; font-size:0.82rem; background:#221c14; padding:1px 5px; border-radius:4px; color:#f4b95a; }
+        .lesson-doc code { font-family:'Spline Sans Mono Variable', ui-monospace, monospace; font-size:0.82rem; background:#221c14; padding:1px 5px; border-radius:4px; color:#7FE0B0; }
       `}</style>
       <ReactMarkdown remarkGfm={remarkGfm} remarkPlugins={[remarkGfm]}>{children}</ReactMarkdown>
     </div>

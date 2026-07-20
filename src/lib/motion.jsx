@@ -69,7 +69,7 @@ export function StaggerItem({ children, className, style, as = "div" }) {
   );
 }
 
-export function HoverCard({ children, className, style, glow = "#E8A33C", lift = -4, as = "div", ...rest }) {
+export function HoverCard({ children, className, style, glow = "#5ED29C", lift = -4, as = "div", ...rest }) {
   const rm = useReducedMotion();
   const M = resolveMotionComp(as);
   return (
@@ -87,7 +87,7 @@ export function HoverCard({ children, className, style, glow = "#E8A33C", lift =
   );
 }
 
-export function AnimatedBar({ pct = 0, className, style, color = "#E8A33C", duration = 1 }) {
+export function AnimatedBar({ pct = 0, className, style, color = "#5ED29C", duration = 1 }) {
   const rm = useReducedMotion();
   return (
     <motion.div

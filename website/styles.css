@@ -1,26 +1,26 @@
 @import url('./fonts/fonts.css');
 
 :root{
-  --bg:        oklch(0.165 0.008 75);
-  --bg-raised: oklch(0.205 0.010 75);
-  --bg-inset:  oklch(0.235 0.012 75);
-  --terminal:  oklch(0.145 0.010 70);
-  --line:      oklch(0.300 0.010 75);
-  --line-soft: oklch(0.250 0.008 75);
-  --ink:       oklch(0.940 0.010 80);
-  --ink-2:     oklch(0.760 0.012 78);
-  --ink-3:     oklch(0.560 0.012 76);
-  --amber:     oklch(0.820 0.130 78);
-  --amber-dim: oklch(0.700 0.110 70);
-  --clay:      oklch(0.640 0.120 42);
-  --amber-wash:oklch(0.820 0.130 78 / 0.10);
-  --green:     oklch(0.78 0.07 150);
+  --bg:        oklch(0.135 0.012 160);
+  --bg-raised: oklch(0.175 0.014 160);
+  --bg-inset:  oklch(0.205 0.014 160);
+  --terminal:  oklch(0.115 0.012 162);
+  --line:      oklch(0.300 0.012 160);
+  --line-soft: oklch(0.240 0.010 160);
+  --ink:       oklch(0.945 0.012 165);
+  --ink-2:     oklch(0.800 0.018 165);
+  --ink-3:     oklch(0.680 0.020 165);
+  --amber:     oklch(0.810 0.150 158);
+  --amber-dim: oklch(0.720 0.130 158);
+  --clay:      oklch(0.660 0.110 195);
+  --amber-wash:oklch(0.810 0.150 158 / 0.10);
+  --green:     oklch(0.80 0.14 158);
 
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
   --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px; --space-24:96px;
 
-  --display:'Bricolage Grotesque', system-ui, sans-serif;
-  --body:'Hanken Grotesk', system-ui, sans-serif;
+  --display:'Inter', system-ui, sans-serif;
+  --body:'Inter', system-ui, sans-serif;
   --mono:'Spline Sans Mono', ui-monospace, monospace;
 }
 *{box-sizing:border-box; margin:0; padding:0}

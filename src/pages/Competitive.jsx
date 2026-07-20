@@ -7,7 +7,7 @@ import { Stagger, StaggerItem } from "@/lib/motion";
 import { Reveal } from "@/components/landing/primitives";
 import { COMPETITIVE, COMPETITIVE_TOPICS, COMPETITIVE_DIFFICULTIES } from "@/content";
 
-const eyebrow = { color: "#f4b95a", fontFamily: font.mono, fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 };
+const eyebrow = { color: "#7FE0B0", fontFamily: font.mono, fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 };
 
 const DIFF_NUM = { easy: "01", medium: "02", hard: "03" };
 const TOPIC_LABEL = Object.fromEntries(COMPETITIVE_TOPICS.map((t) => [t.key, t.label]));
@@ -34,32 +34,32 @@ export default function Competitive() {
   const chipStyle = (activeSel) => ({
     fontFamily: font.mono, fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase",
     padding: "8px 16px", borderRadius: 8,
-    border: `1px solid ${activeSel ? "#E8A33C" : "#2a231a"}`,
-    color: activeSel ? "#E8A33C" : "#a99f8f",
-    background: activeSel ? "#E8A33C10" : "transparent",
+    border: `1px solid ${activeSel ? "#5ED29C" : "#17201C"}`,
+    color: activeSel ? "#5ED29C" : "#B7C6BE",
+    background: activeSel ? "#5ED29C10" : "transparent",
   });
 
   return (
-    <div className="min-h-screen" style={{ background: "#0c0a08" }}>
-      <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #2a231a" }}>
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #E8A33C, transparent)" }} />
+    <div className="min-h-screen" style={{ background: "#050807" }}>
+      <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: "1px solid #17201C" }}>
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #5ED29C, transparent)" }} />
         <div className="max-w-7xl mx-auto">
           <Reveal>
             <div style={{ ...eyebrow, marginBottom: 12 }}>COMPETITIVE</div>
-            <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#F2EDE2", lineHeight: 1.08, margin: "0 0 16px" }}>
+            <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#ECF3EF", lineHeight: 1.08, margin: "0 0 16px" }}>
               Write the <span className="cl-grad">algorithm</span> yourself.
             </h1>
-            <p style={{ fontFamily: font.body, color: "#a99f8f", fontSize: 18, maxWidth: 620, lineHeight: 1.55 }}>
+            <p style={{ fontFamily: font.body, color: "#B7C6BE", fontSize: 18, maxWidth: 620, lineHeight: 1.55 }}>
               Hard C++ problems, like the ones on USACO and Codeforces. A lot of them are the algorithms that make AI work.
             </p>
             <div
               className="mt-6 flex items-start gap-3 px-4 py-3 max-w-2xl"
-              style={{ border: "1px solid #2a231a", background: "#17130e", borderRadius: 12 }}
+              style={{ border: "1px solid #17201C", background: "#0C1210", borderRadius: 12 }}
             >
-              <span style={{ ...eyebrow, color: "#E8A33C", fontSize: 11, marginTop: 1, whiteSpace: "nowrap" }}>
+              <span style={{ ...eyebrow, color: "#5ED29C", fontSize: 11, marginTop: 1, whiteSpace: "nowrap" }}>
                 Optional · Advanced
               </span>
-              <p style={{ fontFamily: font.body, fontSize: 13, lineHeight: 1.55, color: "#a99f8f" }}>
+              <p style={{ fontFamily: font.body, fontSize: 13, lineHeight: 1.55, color: "#B7C6BE" }}>
                 Not for beginners. These are hard C++ problems for people who can already code. It's a big
                 jump from the Python AI track.
               </p>
@@ -71,13 +71,13 @@ export default function Competitive() {
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
         <div className="flex flex-wrap items-center gap-4 mb-6">
           <div className="relative flex-1 min-w-48 max-w-xs">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ fontFamily: font.mono, fontSize: 12, color: "#6f665a" }}>/search</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ fontFamily: font.mono, fontSize: 12, color: "#7C8D85" }}>/search</span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="filter problems..."
               className="w-full py-3 pl-16 pr-4 bg-transparent outline-none"
-              style={{ fontFamily: font.mono, fontSize: 14, border: "1px solid #2a231a", borderRadius: 10, color: "#F2EDE2", caretColor: "#E8A33C" }}
+              style={{ fontFamily: font.mono, fontSize: 14, border: "1px solid #17201C", borderRadius: 10, color: "#ECF3EF", caretColor: "#5ED29C" }}
             />
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -108,17 +108,17 @@ export default function Competitive() {
         </div>
 
         {filtered.length > 0 && (
-          <div className="grid items-center gap-8 px-6 py-3 mb-px" style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #2a231a" }}>
+          <div className="grid items-center gap-8 px-6 py-3 mb-px" style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #17201C" }}>
             {["LVL", "PROBLEM", "TOPIC", "LANG"].map((h) => (
-              <div key={h} style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: "#6f665a" }}>{h}</div>
+              <div key={h} style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: "#7C8D85" }}>{h}</div>
             ))}
           </div>
         )}
 
         {filtered.length === 0 ? (
           <div className="text-center py-24">
-            <div style={{ fontFamily: font.mono, fontSize: 12, letterSpacing: "0.16em", textTransform: "uppercase", color: "#6f665a", marginBottom: 16 }}>NO RESULTS</div>
-            <p style={{ fontFamily: font.body, fontSize: 16, color: "#a99f8f" }}>No problems match your filter.</p>
+            <div style={{ fontFamily: font.mono, fontSize: 12, letterSpacing: "0.16em", textTransform: "uppercase", color: "#7C8D85", marginBottom: 16 }}>NO RESULTS</div>
+            <p style={{ fontFamily: font.body, fontSize: 16, color: "#B7C6BE" }}>No problems match your filter.</p>
           </div>
         ) : (
           <Stagger as="div">
@@ -127,28 +127,28 @@ export default function Competitive() {
                 <Link to={createPageUrl(`CompetitiveDetail?id=${p.id}`)}>
                   <div
                     className="grid items-center gap-8 px-6 py-5 transition-all duration-200 group"
-                    style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #1C1A14" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "#17130e"; e.currentTarget.style.paddingLeft = "1.75rem"; }}
+                    style={{ gridTemplateColumns: "2.5rem 1fr auto auto", borderBottom: "1px solid #0C1210" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#0C1210"; e.currentTarget.style.paddingLeft = "1.75rem"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.paddingLeft = "1.5rem"; }}
                   >
-                    <div style={{ fontFamily: font.mono, fontWeight: 700, fontSize: "1.25rem", color: "#6f665a", letterSpacing: "-0.05em" }}>
+                    <div style={{ fontFamily: font.mono, fontWeight: 700, fontSize: "1.25rem", color: "#7C8D85", letterSpacing: "-0.05em" }}>
                       {DIFF_NUM[p.difficulty] || "01"}
                     </div>
                     <div>
-                      <div className="font-display font-bold text-base leading-snug mb-0.5 group-hover:text-white transition-colors duration-150" style={{ color: "#F2EDE2", letterSpacing: "-0.02em" }}>
+                      <div className="font-display font-bold text-base leading-snug mb-0.5 group-hover:text-white transition-colors duration-150" style={{ color: "#ECF3EF", letterSpacing: "-0.02em" }}>
                         {p.title}
                       </div>
-                      <div className="line-clamp-1" style={{ fontFamily: font.body, fontSize: 13, color: "#a99f8f" }}>
+                      <div className="line-clamp-1" style={{ fontFamily: font.body, fontSize: 13, color: "#B7C6BE" }}>
                         {p.algorithm_focus}
                       </div>
                     </div>
                     <div>
-                      <span style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#a99f8f", border: "1px solid #2a231a", borderRadius: 6, padding: "3px 10px" }}>
+                      <span style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#B7C6BE", border: "1px solid #17201C", borderRadius: 6, padding: "3px 10px" }}>
                         {TOPIC_LABEL[p.topic] || p.topic}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span style={{ fontFamily: font.mono, fontSize: 13, color: "#E8A33C" }}>C++</span>
+                      <span style={{ fontFamily: font.mono, fontSize: 13, color: "#5ED29C" }}>C++</span>
                     </div>
                   </div>
                 </Link>

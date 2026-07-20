@@ -5,20 +5,20 @@ import { font } from "@/lib/tokens";
 import { Stagger, StaggerItem, HoverCard, AnimatedBar, Pulse, CountUp } from "@/lib/motion";
 
 export const KIT = {
-  bg: "#15130E",
+  bg: "#070B0A",
   card: "#1B1913",
   cardHi: "#221F17",
   border: "#2A261D",
-  borderHi: "#3A3428",
-  amber: "#E8A33C",
+  borderHi: "#26302B",
+  amber: "#5ED29C",
   amberBright: "#F5B942",
-  gold: "#F2C94C",
-  goldGrad: "linear-gradient(135deg, #F2C94C 0%, #E8A33C 55%, #B4741E 100%)",
+  gold: "#7FE0B0",
+  goldGrad: "linear-gradient(135deg, #7FE0B0 0%, #5ED29C 55%, #2E8B7A 100%)",
   mono: "'Spline Sans Mono Variable', ui-monospace, monospace",
   ember: "#FF7A3D",
   emerald: "#4CC98A",
   white: "#FFFFFF",
-  text: "#F2EDE2",
+  text: "#ECF3EF",
   dim: "#B9B1A2",
 };
 
@@ -79,7 +79,7 @@ export function StatGrid({ children, cols = 4, className = "" }) {
   );
 }
 
-export function ProgressBar({ pct = 0, color, height = 10, track = "#0F0D08", glow = true, className = "", style }) {
+export function ProgressBar({ pct = 0, color, height = 10, track = "#050807", glow = true, className = "", style }) {
   const fill = color || KIT.goldGrad;
   return (
     <div className={`w-full rounded-full overflow-hidden ${className}`} style={{ height, background: track, ...style }}>
@@ -107,7 +107,7 @@ export function PrimaryButton({ children, to, onClick, arrow = true, className =
 export function HeroCard({ eyebrow, title, children, className = "", style }) {
   return (
     <div className={`rounded-2xl p-6 lg:p-8 relative overflow-hidden ${className}`}
-      style={{ background: "linear-gradient(135deg, #1F1B12 0%, #17140E 100%)", border: `1px solid ${KIT.borderHi}`, ...style }}>
+      style={{ background: "linear-gradient(135deg, #111917 0%, #0C1210 100%)", border: `1px solid ${KIT.borderHi}`, ...style }}>
       <div className="absolute -right-16 -top-16 w-52 h-52 rounded-full pointer-events-none"
         style={{ background: `radial-gradient(circle, ${KIT.amber}22, transparent 70%)` }} />
       <div className="relative">

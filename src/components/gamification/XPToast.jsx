@@ -32,8 +32,8 @@ export default function XPToastContainer() {
             exit={{ opacity: 0, x: 60, scale: 0.85 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
             style={{
-              background: "#131009",
-              border: "1px solid #E8A33C33",
+              background: "#070B0A",
+              border: "1px solid #5ED29C33",
               padding: "10px 16px",
               display: "flex",
               alignItems: "center",
@@ -43,7 +43,7 @@ export default function XPToastContainer() {
           >
             <span style={{ fontSize: "1.25rem" }}>{toast.emoji}</span>
             <div>
-              <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#E8A33C" }}>
+              <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#5ED29C" }}>
                 +{toast.xp} XP
               </div>
               <div className="font-display text-xs" style={{ color: "#FFFFFF", fontWeight: 400 }}>
