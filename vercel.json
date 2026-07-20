@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "VITE_BASE=/app/ npx vite build --outDir dist/app && cp website/index.html website/teachers.html website/styles.css dist/ && cp -r website/fonts dist/fonts && cp dist/app/index.html dist/404.html",
+  "buildCommand": "VITE_BASE=/app/ npx vite build --outDir dist/app && cp website/index.html website/teachers.html website/styles.css website/hls.min.js dist/ && cp -r website/fonts dist/fonts && cp dist/app/index.html dist/404.html",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
