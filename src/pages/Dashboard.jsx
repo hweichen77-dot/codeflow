@@ -59,14 +59,12 @@ export default function Dashboard() {
     UserChallenges.list(supabaseUser.id).then(items => {
       const completed = items.filter(i => i.status === "completed").length;
       const inProgress = items.filter(i => i.status === "in_progress").length;
-      const completedDates = items.filter(i => i.completed_at).map(i => new Date(i.completed_at).toDateString());
-      const uniqueDates = [...new Set(completedDates)].sort().reverse();
+      const completedDays = new Set(items.filter(i => i.completed_at).map(i => new Date(i.completed_at).toDateString()));
       let streak = 0;
-      const today = new Date();
-      for (let i = 0; i < uniqueDates.length; i++) {
-        const expected = new Date(today);
-        expected.setDate(today.getDate() - i);
-        if (uniqueDates[i] === expected.toDateString()) streak++; else break;
+      const cursor = new Date();
+      while (completedDays.has(cursor.toDateString())) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
       }
       setChallengeStats({
         completed: Math.max(local.completed, completed),

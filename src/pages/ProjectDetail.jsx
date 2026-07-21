@@ -178,6 +178,7 @@ export default function ProjectDetail() {
       const progressData = {
         completed: true,
         user_code: code,
+        points_earned: activeLesson?.xp_reward || 10,
         completed_date: new Date().toISOString(),
         wrong_attempts: wrongAttempts.current,
         hints_used: showHints ? (activeLesson?.hints?.length || 0) : 0,

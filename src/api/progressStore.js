@@ -132,17 +132,16 @@ export function getChallengeStats() {
   const rows = readArr(CHALLENGES_KEY)
   const completed = rows.filter((r) => r.status === 'completed').length
   const inProgress = rows.filter((r) => r.status === 'in_progress').length
-  const completedDates = rows
-    .filter((r) => r.completed_at)
-    .map((r) => new Date(r.completed_at).toDateString())
-  const uniqueDates = [...new Set(completedDates)].sort().reverse()
+  const completedDays = new Set(
+    rows
+      .filter((r) => r.completed_at)
+      .map((r) => new Date(r.completed_at).toDateString())
+  )
   let streak = 0
-  const today = new Date()
-  for (let i = 0; i < uniqueDates.length; i++) {
-    const expected = new Date(today)
-    expected.setDate(today.getDate() - i)
-    if (uniqueDates[i] === expected.toDateString()) streak++
-    else break
+  const cursor = new Date()
+  while (completedDays.has(cursor.toDateString())) {
+    streak++
+    cursor.setDate(cursor.getDate() - 1)
   }
   return { completed, inProgress, streak }
 }
