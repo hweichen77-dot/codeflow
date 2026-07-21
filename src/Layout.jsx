@@ -175,10 +175,10 @@ export default function Layout({ children, currentPageName }) {
       </a>
 
       <header
-        className="fixed top-0 left-0 right-0 z-50 flex items-center px-4 sm:px-6"
+        className="fixed top-0 left-0 right-0 z-50 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-4 sm:px-6"
         style={{ height: TOPBAR, background: "var(--bg-base)", borderBottom: "1px solid var(--border-subtle)" }}
       >
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex min-w-0 items-center gap-1">
           <Link to="/" className="flex items-center gap-2.5 pr-2">
             <span
               className="inline-flex items-center justify-center"
@@ -198,11 +198,11 @@ export default function Layout({ children, currentPageName }) {
           <div className="hidden lg:flex">{navItem(NAV[0])}</div>
         </div>
 
-        <nav aria-label="Primary" className="hidden min-w-0 flex-1 items-center justify-center overflow-hidden lg:flex" style={{ height: TOPBAR }}>
+        <nav aria-label="Primary" className="hidden min-w-0 items-center justify-center overflow-hidden lg:flex" style={{ height: TOPBAR }}>
           {NAV.slice(1).map((item, idx) => navItem(item, idx === 3))}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
           <button
             onClick={() => setPaletteOpen(true)}
             className="flex items-center gap-2 px-2.5 sm:px-3 h-8 transition-colors"

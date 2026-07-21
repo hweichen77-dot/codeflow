@@ -316,6 +316,10 @@ export default function HomeLanding() {
         </Marquee>
       </div>
 
+      <Reveal>
+        <LivePlayground />
+      </Reveal>
+
       <Section id="tracks" className="py-24">
         <Reveal>
           <h2 className="u-display text-[clamp(28px,3.8vw,44px)] font-extrabold leading-tight tracking-tight text-white">
@@ -355,10 +359,6 @@ export default function HomeLanding() {
           ))}
         </Stagger>
       </Section>
-
-      <Reveal>
-        <LivePlayground />
-      </Reveal>
 
       <Section className="grid items-center gap-12 py-24 lg:grid-cols-2">
         <Reveal>
