@@ -85,7 +85,7 @@ function HeroVisual() {
         {"\n\n"}
         <span className="text-[var(--run)]">▸ running on a real model…</span>
         {"\n"}
-        <span className="text-white/70">Your range stops one short — use</span>
+        <span className="text-white/70">Your range stops one short, so use</span>
         {"\n"}
         <span className="text-white/70">range(len(x)+1). Here's why…</span>
       </code>
@@ -106,7 +106,7 @@ const TRACKS = [
   {
     key: "projects",
     label: "AI Projects",
-    body: "Build real things — chatbots, graders, search apps — one guided step at a time.",
+    body: "Build real things: chatbots, graders, search apps, one guided step at a time.",
     tag: "22 projects",
     span: "md:col-span-2",
     to: "Projects",
@@ -122,7 +122,7 @@ const TRACKS = [
   {
     key: "csa",
     label: "AP CSA",
-    body: "Java from the ground up — with MCQ drills and free-response prep for the exam.",
+    body: "Java from the ground up, with MCQ drills and free-response prep for the exam.",
     tag: "80 lessons",
     span: "md:col-span-6",
     to: "APCS",
@@ -153,7 +153,7 @@ function TrackCard({ t }) {
 }
 
 const STEPS = [
-  ["01", "Write a prompt", "Open a lesson and write your instructions — no install, no account to begin."],
+  ["01", "Write a prompt", "Open a lesson and write your instructions. No install, no account to begin."],
   ["02", "Run on a real LLM", "Your code and prompts execute against an actual language model, live in the browser."],
   ["03", "Get auto-graded", "Challenges and the playground score your work against real rubrics. A win is a real win."],
   ["04", "Level up", "Build a streak, climb the tracks, and ship projects you can actually show off."],
@@ -219,7 +219,7 @@ export default function HomeLanding() {
             <Reveal delay={0.08}>
               <p className="measure mt-6 text-lg leading-relaxed text-white/70">
                 Go from your first prompt to a deployed app. Guided tracks, a live
-                playground, an AI tutor that reads your actual code — no fluff.
+                playground, an AI tutor that reads your actual code, no fluff.
               </p>
             </Reveal>
             <Reveal delay={0.14}>
@@ -342,7 +342,7 @@ export default function HomeLanding() {
             <p className="measure mt-4 text-lg text-white/70">
               When something breaks, the tutor looks at the exact code you wrote,
               explains the failure in plain English, then points at the one line to
-              change. No forum, no waiting — the teacher who's there when nobody else is.
+              change. No forum, no waiting. The teacher who's there when nobody else is.
             </p>
           </div>
         </Reveal>
@@ -385,7 +385,7 @@ export default function HomeLanding() {
           <div className="flex flex-col gap-8">
             {[
               ["A tutor that makes you think it through instead of handing over the answer. That's the difference between learning and copying.", "how we teach"],
-              ["Run real Python, Java, and C++ right in the browser. No setup, no toy sandboxes — the same code you'd write for a real project.", "what you'll use"],
+              ["Run real Python, Java, and C++ right in the browser. No setup, no toy sandboxes. The same code you'd write for a real project.", "what you'll use"],
             ].map(([q, who], i) => (
               <Reveal key={who} delay={0.08 + i * 0.08}>
                 <figure className="m-0 border-t border-white/10 pt-6">
@@ -465,11 +465,11 @@ function SiteFooter() {
         </div>
       </div>
       <div className="mx-auto mt-16 max-w-6xl border-t border-white/10 pt-6 text-xs text-white/60">
-        © 2026 Compilearn — learn by building.
+        © 2026 Compilearn. Learn by building.
         <p className="mt-2 leading-relaxed text-white/60">
           Independent project, not affiliated with or endorsed by the College Board. AP®
           and Advanced Placement® are registered trademarks of the College Board. AI
-          output can be inaccurate — verify before relying on it.
+          output can be inaccurate, so verify before relying on it.
         </p>
       </div>
     </footer>
