@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { PageTransition } from "@/lib/motion";
 import MilestoneBurst from "@/components/retention/MilestoneBurst";
 import FirstWinOnboarding from "@/components/retention/FirstWinOnboarding";
+import InventoryStrip from "@/components/gamification/InventoryStrip";
 
 const NAV = [
   { label: "Home", page: "Home", icon: Home },
@@ -189,6 +190,7 @@ export default function Layout({ children, currentPageName }) {
 
           {user ? (
             <>
+              <InventoryStrip compact initial={(user.name?.[0] || user.email?.[0] || "").toUpperCase()} />
               <span className="hidden sm:inline text-xs t-body">
                 {user.name?.split(" ")[0] || user.email?.split("@")[0]}
               </span>

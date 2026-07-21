@@ -70,13 +70,6 @@ export default function LivePlayground() {
   return (
     <section id="playground" style={{ borderBottom: "1px solid #111917", padding: "clamp(64px, 9vw, 120px) 2rem" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "18px" }}>
-          <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#4CC98A", boxShadow: "0 0 10px #4CC98A" }} />
-          <span style={{ fontFamily: mono, fontSize: "0.76rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#4CC98A" }}>
-            Live · real model · no signup
-          </span>
-        </div>
-
         <h2 style={{
           fontFamily: body,
           fontWeight: 760,
@@ -120,8 +113,8 @@ export default function LivePlayground() {
           borderRadius: "0 6px 6px 0",
           padding: "16px 20px",
         }}>
-          <div style={{ fontFamily: mono, fontSize: "0.72rem", letterSpacing: "0.16em", textTransform: "uppercase", color: "#5ED29C", marginBottom: "8px" }}>
-            the challenge
+          <div style={{ fontFamily: mono, fontSize: "0.9rem", color: "#5ED29C", fontWeight: 700, marginBottom: "8px" }}>
+            The challenge
           </div>
           <p style={{ fontFamily: body, margin: 0, color: "#ECF3EF", fontSize: "1.06rem", lineHeight: 1.6 }}>
             Your system prompt guards a <span style={hl}>secret word</span>. Three injection
