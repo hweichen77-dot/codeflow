@@ -756,10 +756,10 @@ export default function ProjectDetail() {
                           aria-orientation="vertical"
                           aria-label="Resize panes"
                           onPointerDown={() => { dragging.current = true; document.body.style.userSelect = "none"; }}
-                          className="self-stretch flex items-center justify-center cursor-col-resize"
-                          style={{ width: 18, flexShrink: 0 }}
+                          className="group self-stretch flex items-center justify-center cursor-col-resize"
+                          style={{ width: 18, flexShrink: 0, alignSelf: "stretch" }}
                         >
-                          <div style={{ width: 2, height: 48, borderRadius: 2, background: "var(--border-default)" }} />
+                          <div className="h-12 w-1 rounded-full bg-white/20 transition-colors group-hover:bg-[#5ED29C]" />
                         </div>
                         <section role="region" aria-label="Code editor" className="space-y-6" style={{ flex: 1, minWidth: 0, position: "sticky", top: 64 }}>
                           {editorBlock}
