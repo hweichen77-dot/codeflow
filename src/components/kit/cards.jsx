@@ -23,7 +23,7 @@ export function BentoCard({ title, body, img, span = "", className, children }) 
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
       onMouseMove={trackPointer}
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6",
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6",
         "transition-colors hover:border-[#5ED29C]/40",
         span,
         className
@@ -31,7 +31,7 @@ export function BentoCard({ title, body, img, span = "", className, children }) 
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       <div className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[radial-gradient(400px_circle_at_var(--x,50%)_var(--y,0%),rgba(94,210,156,.12),transparent_70%)]" />
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-1 flex-col">
         {title && (
           <h3 className="text-base font-medium" style={{ color: "var(--text-strong)" }}>
             {title}

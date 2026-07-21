@@ -3,6 +3,8 @@ import Hls from "hls.js";
 import { ArrowRight, Play } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api/apiClient";
 import {
   GridBackdrop,
   HeroGlow,
@@ -97,19 +99,12 @@ const TRACKS = [
   {
     key: "ai",
     label: "AI Track",
-    body: "From your first API call to shipping in production. Six modules, built to be done in order.",
-    tag: "310+ lessons",
+    body: "From your first API call to shipping real apps in production, built to be done in order.",
+    tag: "AI Track",
     span: "md:col-span-4 md:row-span-2",
     big: true,
     to: "AITrack",
-    modules: [
-      "The first API call",
-      "Prompting & context",
-      "Agents & tools",
-      "RAG & retrieval",
-      "Vision & multimodal",
-      "Shipping to production",
-    ],
+    modules: ["Your First API Call", "Prompt Engineering", "Build a Chatbot", "Embeddings & Semantic Search", "Build a RAG System", "AI Agents & Tool Use", "Shipping to production"],
   },
   {
     key: "projects",
@@ -148,8 +143,11 @@ function TrackChip({ children }) {
   );
 }
 
-function TrackCard({ t }) {
+function TrackCard({ t, modules }) {
   const navigate = useNavigate();
+  const mods = modules && modules.length ? modules : t.modules;
+  const shown = t.big ? (mods || []).slice(0, 12) : [];
+  const extra = t.big ? (mods || []).length - shown.length : 0;
   return (
     <BentoCard span={t.span} className="cursor-pointer" >
       <div onClick={() => navigate(createPageUrl(t.to))} className="flex h-full flex-col">
@@ -165,12 +163,15 @@ function TrackCard({ t }) {
 
         {t.big ? (
           <ol className="mt-6 flex flex-1 flex-col justify-between border-l border-white/10 py-2 pl-5">
-            {t.modules.map((m, i) => (
-              <li key={m} className="flex items-baseline gap-3 u-mono text-[13px] text-white/80">
+            {shown.map((m, i) => (
+              <li key={m + i} className="flex items-baseline gap-3 u-mono text-[12.5px] text-white/80">
                 <span className="text-[#5ED29C]">{String(i + 1).padStart(2, "0")}</span>
-                <span>{m}</span>
+                <span className="min-w-0 truncate">{m}</span>
               </li>
             ))}
+            {extra > 0 && (
+              <li className="u-mono text-[12.5px] text-white/50 pl-8">+ {extra} more modules</li>
+            )}
           </ol>
         ) : (
           <div className="mt-4 flex flex-1 flex-wrap content-start gap-2">
@@ -181,7 +182,7 @@ function TrackCard({ t }) {
         )}
 
         <div className="mt-auto flex items-center gap-2 pt-5">
-          <span className="u-mono text-xs text-[#5ED29C]">{t.tag}</span>
+          <span className="u-mono text-xs text-[#5ED29C]">{t.big && mods && mods.length ? `${mods.length} modules` : t.tag}</span>
           <ArrowRight size={14} className="text-white/60 transition-transform group-hover:translate-x-1" />
         </div>
       </div>
@@ -214,6 +215,13 @@ function Section({ id, children, className = "" }) {
 
 export default function HomeLanding() {
   const navigate = useNavigate();
+  const { data: projects = [] } = useQuery({
+    queryKey: ["all-projects"],
+    queryFn: () => api.entities.Project.list("order"),
+  });
+  const aiTitles = projects
+    .filter((p) => (p.track || "ai") === "ai" && p.kind !== "product")
+    .map((p) => p.title);
   const vref = useRef(null);
   useEffect(() => {
     const v = vref.current;
@@ -318,7 +326,7 @@ export default function HomeLanding() {
         <div className="mt-12">
           <BentoGrid>
             {TRACKS.map((t) => (
-              <TrackCard key={t.key} t={t} />
+              <TrackCard key={t.key} t={t} modules={t.key === "ai" ? aiTitles : null} />
             ))}
           </BentoGrid>
         </div>

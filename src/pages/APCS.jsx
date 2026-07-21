@@ -48,14 +48,6 @@ export default function APCS() {
   const active = TRACKS.find((t) => t.key === track);
   const trackProjects = projects.filter((p) => p.track === track);
 
-  const units = [];
-  const byUnit = new Map();
-  for (const p of trackProjects) {
-    const u = p.unit || "Modules";
-    if (!byUnit.has(u)) { byUnit.set(u, []); units.push(u); }
-    byUnit.get(u).push(p);
-  }
-
   return (
     <CatalogPage>
       <CatalogHero
@@ -84,31 +76,26 @@ export default function APCS() {
             {active.label} curriculum is coming soon.
           </div>
         ) : (
-          units.map((unit) => (
-            <Reveal key={unit} className="mb-12 last:mb-0">
-              <h2 className="u-display t-strong mb-5" style={{ fontSize: 15, margin: "0 0 20px" }}>{unit}</h2>
-              <CardGrid>
-                {byUnit.get(unit).map((p, i) => {
-                  const pct = modulePct(p.id);
-                  const done = pct === 100;
-                  return (
-                    <CourseCard
-                      key={p.id}
-                      to={createPageUrl(`ProjectDetail?id=${p.id}`)}
-                      accent={ACCENT}
-                      index={String(i + 1).padStart(2, "0")}
-                      title={p.title}
-                      description={p.description}
-                      tags={p.tags}
-                      status={done ? "completed" : pct > 0 ? "in_progress" : "not_started"}
-                      progressPct={pct}
-                      meta={[p.difficulty, active.label]}
-                    />
-                  );
-                })}
-              </CardGrid>
-            </Reveal>
-          ))
+          <CardGrid>
+            {trackProjects.map((p, i) => {
+              const pct = modulePct(p.id);
+              const done = pct === 100;
+              return (
+                <CourseCard
+                  key={p.id}
+                  to={createPageUrl(`ProjectDetail?id=${p.id}`)}
+                  accent={ACCENT}
+                  index={String(i + 1).padStart(2, "0")}
+                  title={p.title}
+                  description={p.description}
+                  tags={p.tags}
+                  status={done ? "completed" : pct > 0 ? "in_progress" : "not_started"}
+                  progressPct={pct}
+                  meta={[p.unit || p.difficulty, active.label]}
+                />
+              );
+            })}
+          </CardGrid>
         )}
       </div>
     </CatalogPage>
