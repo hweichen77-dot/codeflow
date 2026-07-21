@@ -153,9 +153,10 @@ export default function Layout({ children, currentPageName }) {
       </a>
 
       <header
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 sm:px-6"
         style={{ height: TOPBAR, background: "var(--bg-base)", borderBottom: "1px solid var(--border-subtle)" }}
       >
+       <div className="flex w-full max-w-[1600px] items-center justify-between">
         <div className="flex items-center gap-5">
           <Link to="/" className="flex items-center gap-2.5">
             <span
@@ -189,8 +190,8 @@ export default function Layout({ children, currentPageName }) {
                     className="group relative flex items-center gap-2 px-3"
                     style={{ height: TOPBAR }}
                   >
-                    <Icon size={15} className={active ? "shrink-0 text-[#5ED29C]" : "shrink-0 text-white/55 transition-colors group-hover:text-white/90"} />
-                    <span className={`u-mono text-[13px] transition-colors ${active ? "font-semibold text-white" : "text-white/55 group-hover:text-white/90"}`}>
+                    <Icon size={15} className={active ? "shrink-0 text-[#5ED29C]" : "shrink-0 text-white transition-colors group-hover:text-white/90"} />
+                    <span className={`u-mono text-[13px] transition-colors ${active ? "font-semibold text-white" : "text-white group-hover:text-white/90"}`}>
                       {item.label}
                     </span>
                     <span aria-hidden className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-[#5ED29C] transition-opacity duration-200" style={{ opacity: active ? 1 : 0 }} />
@@ -206,7 +207,7 @@ export default function Layout({ children, currentPageName }) {
             onClick={() => setPaletteOpen(true)}
             className="flex items-center gap-2 px-2.5 sm:px-3 h-8 transition-colors"
             aria-label="Search (Command K)"
-            style={{ border: "1px solid var(--border-subtle)", borderRadius: 8, color: "var(--text-muted)", background: "var(--bg-raised)" }}
+            style={{ border: "1px solid var(--border-subtle)", borderRadius: 8, color: "var(--text-strong)", background: "var(--bg-raised)" }}
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border-default)")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border-subtle)")}
           >
@@ -244,6 +245,7 @@ export default function Layout({ children, currentPageName }) {
             </button>
           )}
         </div>
+       </div>
       </header>
 
 
