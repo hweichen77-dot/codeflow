@@ -135,8 +135,7 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  const TOPBAR = 50;
-  const SIDEBAR = 208;
+  const TOPBAR = 56;
 
   return (
     <div style={{ background: "var(--bg-base)", minHeight: "100vh" }}>
@@ -157,22 +156,50 @@ export default function Layout({ children, currentPageName }) {
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6"
         style={{ height: TOPBAR, background: "var(--bg-base)", borderBottom: "1px solid var(--border-subtle)" }}
       >
-        <Link to="/" className="flex items-center gap-2.5">
-          <span
-            className="inline-flex items-center justify-center"
-            style={{
-              fontFamily: "'Spline Sans Mono Variable', ui-monospace, monospace", fontSize: 13, fontWeight: 700,
-              color: "var(--accent)", background: "rgba(94,210,156,0.10)",
-              border: "1px solid rgba(94,210,156,0.28)", width: 26, height: 26,
-              borderRadius: 6, lineHeight: 1,
-            }}
-          >
-            {">_"}
-          </span>
-          <span className="t-strong" style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 16, letterSpacing: "-0.02em" }}>
-            Compilearn
-          </span>
-        </Link>
+        <div className="flex items-center gap-5">
+          <Link to="/" className="flex items-center gap-2.5">
+            <span
+              className="inline-flex items-center justify-center"
+              style={{
+                fontFamily: "'Spline Sans Mono Variable', ui-monospace, monospace", fontSize: 13, fontWeight: 700,
+                color: "var(--accent)", background: "rgba(94,210,156,0.10)",
+                border: "1px solid rgba(94,210,156,0.28)", width: 26, height: 26,
+                borderRadius: 6, lineHeight: 1,
+              }}
+            >
+              {">_"}
+            </span>
+            <span className="t-strong" style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 16, letterSpacing: "-0.02em" }}>
+              Compilearn
+            </span>
+          </Link>
+
+          <nav aria-label="Primary" className="hidden lg:flex items-center" style={{ height: TOPBAR }}>
+            {[...NAV, { label: "Portfolio", page: "Portfolio", icon: User }].map((item, idx) => {
+              const Icon = item.icon;
+              const active = isActive(item.page);
+              return (
+                <React.Fragment key={item.page}>
+                  {(idx === 4 || item.page === "Portfolio") && (
+                    <div className="mx-2 h-5 w-px self-center" style={{ background: "var(--border-subtle)" }} />
+                  )}
+                  <Link
+                    to={createPageUrl(item.page)}
+                    aria-current={active ? "page" : undefined}
+                    className="group relative flex items-center gap-2 px-3"
+                    style={{ height: TOPBAR }}
+                  >
+                    <Icon size={15} className={active ? "shrink-0 text-[#5ED29C]" : "shrink-0 text-white/55 transition-colors group-hover:text-white/90"} />
+                    <span className={`u-mono text-[13px] transition-colors ${active ? "font-semibold text-white" : "text-white/55 group-hover:text-white/90"}`}>
+                      {item.label}
+                    </span>
+                    <span aria-hidden className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-[#5ED29C] transition-opacity duration-200" style={{ opacity: active ? 1 : 0 }} />
+                  </Link>
+                </React.Fragment>
+              );
+            })}
+          </nav>
+        </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
           <button
@@ -219,59 +246,10 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </header>
 
-      <nav
-        aria-label="Primary"
-        className="hidden lg:flex flex-col fixed left-0 bottom-0 z-40 py-4 px-3"
-        style={{ top: TOPBAR, width: SIDEBAR, borderRight: "1px solid var(--border-subtle)", background: "var(--bg-base)" }}
-      >
-        {NAV.map((item, idx) => {
-          const Icon = item.icon;
-          const active = isActive(item.page);
-          return (
-            <React.Fragment key={item.page}>
-              {idx === 4 && (
-                <div className="my-3 mx-4 h-px" style={{ background: "var(--border-subtle)" }} />
-              )}
-              <Link
-                to={createPageUrl(item.page)}
-                aria-current={active ? "page" : undefined}
-                className="group relative flex items-center gap-3 h-9 pl-4 pr-3 mb-0.5"
-              >
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-1/2 w-0.5 -translate-y-1/2 rounded-full bg-[#5ED29C] transition-all duration-200"
-                  style={{ height: active ? 16 : 0 }}
-                />
-                <Icon size={16} className={active ? "shrink-0 text-[#5ED29C]" : "shrink-0 text-white/55 transition-colors group-hover:text-white/90"} />
-                <span className={`u-mono text-[13px] transition-colors ${active ? "font-semibold text-white" : "text-white/55 group-hover:text-white/90"}`}>
-                  {item.label}
-                </span>
-              </Link>
-            </React.Fragment>
-          );
-        })}
-        <div className="flex-1" />
-        <Link
-          to={createPageUrl("Portfolio")}
-          aria-current={isActive("Portfolio") ? "page" : undefined}
-          className="group relative flex items-center gap-3 h-9 pl-4 pr-3"
-        >
-          <span
-            aria-hidden
-            className="absolute left-0 top-1/2 w-0.5 -translate-y-1/2 rounded-full bg-[#5ED29C] transition-all duration-200"
-            style={{ height: isActive("Portfolio") ? 16 : 0 }}
-          />
-          <User size={16} className={isActive("Portfolio") ? "shrink-0 text-[#5ED29C]" : "shrink-0 text-white/55 transition-colors group-hover:text-white/90"} />
-          <span className={`u-mono text-[13px] transition-colors ${isActive("Portfolio") ? "font-semibold text-white" : "text-white/55 group-hover:text-white/90"}`}>
-            Portfolio
-          </span>
-        </Link>
-      </nav>
 
       <main
         id="main-content"
         style={{ paddingTop: TOPBAR, paddingBottom: 0 }}
-        className="lg:pl-[208px]"
       >
         <div className="pb-16 lg:pb-0">
           <PageTransition pageKey={currentPageName}>{children}</PageTransition>
