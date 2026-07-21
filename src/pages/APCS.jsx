@@ -10,7 +10,7 @@ const ACCENT = TRACK_ACCENT.apcsp;
 
 const TRACKS = [
   { key: "apcsp", label: "AP CSP", lang: "Python · pseudocode",
-    blurb: "The five Big Ideas of computing — creative development, data, algorithms & programming, systems & networks, and the impact of computing. Runnable Python plus exam-style practice." },
+    blurb: "The five Big Ideas of computing: creative development, data, algorithms and programming, systems and networks, and the impact of computing. Runnable Python plus exam-style practice." },
   { key: "apcsa", label: "AP CSA", lang: "Java",
     blurb: "Object-oriented Java across all ten units, from primitive types to recursion. Every concept comes with autograded Java drills and FRQ-style practice." },
 ];

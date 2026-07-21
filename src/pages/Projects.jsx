@@ -129,7 +129,7 @@ export default function Projects() {
     <CatalogPage>
       <CatalogHero
         title="Choose your module."
-        lead="Each project is a chapter. New here? Start at the top and work down — each one builds on the last."
+        lead="Each project is a chapter. New here? Start at the top and work down, each one builds on the last."
         accent={TRACK_ACCENT.projects}
       />
 

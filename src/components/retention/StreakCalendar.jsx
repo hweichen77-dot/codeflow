@@ -125,7 +125,7 @@ export default function StreakCalendar() {
 
       <div className="mt-4 text-xs" style={{ color: daily.met ? C.green : streak.atRisk ? C.amber : C.t62 }}>
         {daily.met
-          ? "Today's target met — streak locked in."
+          ? "Today's target met, streak locked in."
           : streak.atRisk
           ? `Earn ${(daily.goal - daily.done) * 10}+ XP today to keep your ${streak.current}-day streak.`
           : `Hit ${daily.goal} lesson${daily.goal > 1 ? "s" : ""} (~${daily.goal * 10} XP) today to advance your streak.`}

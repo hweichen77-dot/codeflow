@@ -111,7 +111,7 @@ export default function DailyGoal() {
           style={{ color: KIT.emerald, fontWeight: 600 }}
         >
           <Check size={14} />
-          Target hit — streak locked in for today.
+          Target hit, streak locked in for today.
         </div>
       )}
 

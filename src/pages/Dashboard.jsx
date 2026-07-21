@@ -203,7 +203,7 @@ export default function Dashboard() {
           </div>
           <div>
             <h2 className="u-display" style={{ fontSize: "1.05rem", fontWeight: 700, color: C.white, margin: "0 0 4px" }}>Rank ladder</h2>
-            <p className="text-xs mb-4" style={{ color: C.dim }}>Each rank costs more XP than the last — harder content pays out more, so the climb accelerates.</p>
+            <p className="text-xs mb-4" style={{ color: C.dim }}>Each rank costs more XP than the last. Harder content pays out more, so the climb accelerates.</p>
             <div className="flex flex-col gap-1.5">
               {RANKS.map((r) => {
                 const isCurrent = r.tier === rank.tier;

@@ -133,7 +133,7 @@ export default function FeedbackWidget() {
                 style={{ color: status === 'error' ? '#E8735A' : '#8EA098', fontFamily: LABEL }}
                 role="status"
               >
-                {status === 'sent' ? 'Thanks — sent!' : status === 'error' ? "Couldn't send — try again" : ''}
+                {status === 'sent' ? 'Thanks, sent!' : status === 'error' ? "Couldn't send, try again" : ''}
               </span>
               <button
                 type="submit"

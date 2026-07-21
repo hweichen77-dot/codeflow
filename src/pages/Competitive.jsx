@@ -36,7 +36,7 @@ export default function Competitive() {
       <CatalogHero
         title="Write the algorithm yourself."
         lead="Hard C++ problems, like the ones on USACO and Codeforces. A lot of them are the algorithms that make AI work."
-        note="Not for beginners. These are hard C++ problems for people who can already code — a big jump from the Python AI track."
+        note="Not for beginners. These are hard C++ problems for people who can already code, a big jump from the Python AI track."
         accent={ACCENT}
       />
 

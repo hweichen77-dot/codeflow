@@ -337,7 +337,7 @@ export default function ProjectDetail() {
   if (!project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "var(--bg-base)" }}>
-        <div className="u-mono t-body text-xs">404 — not found</div>
+        <div className="u-mono t-body text-xs">404 · not found</div>
         <Link to={createPageUrl("Projects")}>
           <button className="u-mono text-xs px-5 py-2" style={{ color: "var(--accent)", border: "1px solid var(--accent)", borderRadius: 8 }}>
             ← Back to Projects

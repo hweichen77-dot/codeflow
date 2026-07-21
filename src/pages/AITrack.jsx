@@ -15,7 +15,7 @@ const CAPSTONES = [
   {
     level: "Beginner",
     title: "Personal AI Writing Assistant",
-    description: "A web page with tone controls — formal, shorter, funnier — that rewrites text using an LLM. First real deployed app.",
+    description: "A web page with tone controls (formal, shorter, funnier) that rewrites text using an LLM. First real deployed app.",
     skills: ["Frontend", "API security", "Prompt chaining"],
   },
   {

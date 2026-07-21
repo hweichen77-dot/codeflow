@@ -196,7 +196,7 @@ export default function CheckBlock({ questions, sectionNumber, onComplete }) {
           style={{ padding: "14px 28px", borderTop: `1px solid ${trace.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
           <span style={{ fontSize: "0.8125rem", color: '#FFFFFF' }}>
-            {correctCount === totalQuestions ? "Perfect score!" : `Keep practicing — review the explanations above.`}
+            {correctCount === totalQuestions ? "Perfect score!" : `Keep practicing, review the explanations above.`}
           </span>
           <span style={{ fontSize: "0.8125rem", color: trace.lime, fontWeight: 700 }}>
             {correctCount}/{totalQuestions} correct
