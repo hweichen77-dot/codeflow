@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "@/styles/landing.css";
 import { font } from "@/lib/tokens";
-import { api } from "@/api/apiClient";
+import { api, aiAvailable } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/kit";
 import CodeEditor from "../components/editor/CodeEditor";
 import AIChatbot from "../components/chat/AIChatbot";
 import ProblemStatement from "../components/challenge/ProblemStatement";
-import { gradePython } from "../lib/pyRunner";
+import { gradePython, runPython } from "../lib/pyRunner";
 import { markChallengeComplete } from "../api/progressStore";
 
 const DIFF_NUM = { beginner: "01", easy: "01", intermediate: "02", medium: "02", advanced: "03", hard: "03" };
@@ -26,6 +26,8 @@ export default function ChallengeDetail() {
   const [showSolution, setShowSolution] = useState(false);
   const [showPrimer, setShowPrimer] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitResults, setSubmitResults] = useState(null);
   const [passed, setPassed] = useState(false);
 
   const { data: challenge, isLoading } = useQuery({
@@ -41,28 +43,50 @@ export default function ChallengeDetail() {
     if (challenge?.starter_code) setCode(challenge.starter_code);
   }, [challenge?.id]);
 
+  const samples = (challenge?.test_cases || []).slice(0, 3);
+
   const handleRun = async () => {
     setIsRunning(true);
-    setPassed(false);
     setOutput("Running…");
     try {
-      const { output: out, passed: ok, results, isError } = await gradePython(code, challenge.test_cases);
-      let text = out || "(no output)";
-      if (results.length > 0) {
-        const lines = results.map((r, i) =>
-          `Test ${i + 1}: ${r.ok ? "PASS" : "FAIL"}` +
-          (r.ok ? "" : `\n  expected: ${r.expected}\n  got:      ${r.got}`)
-        );
-        text += `\n\n${lines.join("\n")}`;
+      if (samples.length === 0) {
+        const r = await runPython(code, "");
+        setOutput(r.isError ? "Error: " + r.output : (r.empty ? "(no output)" : r.output));
+      } else {
+        const blocks = [];
+        for (let i = 0; i < samples.length; i++) {
+          const tc = samples[i];
+          const stdin = tc.input && tc.input !== "(no input)" ? tc.input : "";
+          const r = await runPython(code, stdin);
+          const shown = r.isError ? "Error: " + r.output : (r.empty ? "(no output)" : r.output);
+          blocks.push(`Sample ${i + 1}${stdin ? `  input: ${stdin.replace(/\n/g, " ")}` : ""}\n${shown}`);
+        }
+        setOutput(blocks.join("\n\n"));
       }
-      setOutput(text);
-      const didPass = ok && !isError;
-      setPassed(didPass);
-      if (didPass && challengeId) markChallengeComplete(challengeId);
     } catch (e) {
       setOutput("Error: " + String(e?.message || e));
     }
     setIsRunning(false);
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setPassed(false);
+    setSubmitResults(null);
+    try {
+      const { passed: ok, results, isError } = await gradePython(code, challenge.test_cases);
+      const rows = results.map((r, i) => ({
+        ...r,
+        name: (challenge.test_cases?.[i]?.description) || `Test ${i + 1}`,
+      }));
+      const didPass = ok && !isError;
+      setSubmitResults({ passed: didPass, total: rows.length, results: rows });
+      setPassed(didPass);
+      if (didPass && challengeId) markChallengeComplete(challengeId);
+    } catch (e) {
+      setSubmitResults({ passed: false, total: 0, results: [], error: String(e?.message || e) });
+    }
+    setIsSubmitting(false);
   };
 
   if (isLoading) {
@@ -212,11 +236,15 @@ export default function ChallengeDetail() {
         <StaggerItem as="div">
           <CodeEditor
             code={code}
-            onChange={setCode}
+            onChange={(v) => { setCode(v); if (submitResults) setSubmitResults(null); }}
             onRun={handleRun}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            submitResults={submitResults}
             output={output}
             isRunning={isRunning}
             filename={`challenge.py`}
+            lessonTitle={challenge.title}
           />
         </StaggerItem>
 
@@ -242,7 +270,8 @@ export default function ChallengeDetail() {
           )}
         </AnimatePresence>
 
-        <StaggerItem as="div" className="flex flex-wrap gap-3">
+        <StaggerItem as="div" className="flex flex-wrap items-center gap-3">
+          <span className="font-sans text-xs" style={{ color: "#ECF3EF" }}>Stuck?</span>
           {challenge.hints && challenge.hints.length > 0 && (
             <button
               onClick={() => setShowHints(!showHints)}
@@ -253,7 +282,7 @@ export default function ChallengeDetail() {
                 background: showHints ? "#5ED29C10" : "transparent",
               }}
             >
-              {showHints ? ", Hints" : "+ Hints"}
+              {showHints ? "01 · Hint ▾" : "01 · Hint"}
             </button>
           )}
           {challenge.solution_code && (
@@ -264,7 +293,18 @@ export default function ChallengeDetail() {
               onMouseEnter={e => e.currentTarget.style.color = "#CBD6D0"}
               onMouseLeave={e => e.currentTarget.style.color = "#ECF3EF"}
             >
-              {showSolution ? ", Solution" : "Show Solution"}
+              {showSolution ? "02 · Reveal solution ▾" : "02 · Reveal solution"}
+            </button>
+          )}
+          {aiAvailable && (
+            <button
+              onClick={() => document.querySelector('button[aria-label="Open AI tutor chat"]')?.click()}
+              className="cl-lift font-sans text-xs tracking-widest uppercase px-4 py-2.5 rounded-[10px] transition-all duration-150"
+              style={{ color: "#5ED29C", border: "1px solid #5ED29C33", background: "#5ED29C10" }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "#5ED29C66"}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "#5ED29C33"}
+            >
+              03 · Ask AI
             </button>
           )}
         </StaggerItem>
@@ -323,6 +363,9 @@ export default function ChallengeDetail() {
       <AIChatbot
         context={challenge?.description || ""}
         lessonTitle={challenge?.title || "Challenge"}
+        lessonId={challengeId || ""}
+        currentCode={code}
+        lastOutput={output || ""}
       />
     </div>
   );

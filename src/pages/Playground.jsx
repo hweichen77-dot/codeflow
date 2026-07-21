@@ -42,10 +42,7 @@ export default function Playground() {
   return (
     <Stagger className="max-w-6xl mx-auto px-5 pt-24 pb-16" as="div">
       <StaggerItem className="mb-8" as="header">
-        <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#5ED29C' }}>
-          Prompt-security playground
-        </div>
-        <h1 className="text-3xl md:text-4xl font-bold mt-2" style={{ color: '#ECF3EF' }}>
+        <h1 className="text-3xl md:text-4xl font-bold" style={{ color: '#ECF3EF' }}>
           Can your prompt survive the attacks?
         </h1>
         <p className="mt-3 max-w-2xl text-sm md:text-base leading-relaxed" style={{ color: '#FFFFFF' }}>
@@ -56,7 +53,7 @@ export default function Playground() {
 
         <div className="mt-6 max-w-md">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-sans text-[11px] tracking-[0.16em] uppercase" style={{ color: KIT.dim }}>
+            <span className="font-sans text-[11px] tracking-[0.16em]" style={{ color: '#ECF3EF' }}>
               Labs solved
             </span>
             <span className="font-sans text-xs" style={{ color: '#5ED29C' }}>
