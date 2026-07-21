@@ -7,7 +7,7 @@ import {
   RETENTION_CHANGED_EVENT,
 } from "@/lib/retention";
 import { getStreakInfo } from "@/lib/progressStats";
-import { Card, Eyebrow, ProgressBar, KIT } from "@/components/ui/kit";
+import { Card, ProgressBar, KIT } from "@/components/ui/kit";
 import { CountUp, Pulse } from "@/lib/motion";
 
 export default function DailyGoal() {
@@ -53,7 +53,9 @@ export default function DailyGoal() {
   return (
     <Card className="p-5" accent={met ? KIT.emerald : KIT.amber}>
       <div className="flex items-center justify-between">
-        <Eyebrow>Today</Eyebrow>
+        <span className="u-display" style={{ fontSize: "0.95rem", fontWeight: 700, color: KIT.white }}>
+          Daily target
+        </span>
         {}
         <div className="inline-flex items-center gap-1.5" title="Daily goal (lessons)">
           <button
@@ -95,7 +97,7 @@ export default function DailyGoal() {
           <span style={{ color: KIT.dim, fontWeight: 700 }}>/{goal}</span>
         </span>
         <span className="text-xs" style={{ color: KIT.dim }}>
-          lessons today
+          lessons · ≈{goal * 10} XP target
         </span>
       </div>
 
@@ -109,7 +111,7 @@ export default function DailyGoal() {
           style={{ color: KIT.emerald, fontWeight: 600 }}
         >
           <Check size={14} />
-          Goal met — nice.
+          Target hit — streak locked in for today.
         </div>
       )}
 
@@ -143,7 +145,7 @@ export default function DailyGoal() {
       {}
       {atRisk && (
         <div className="mt-2 text-xs" style={{ color: KIT.amber }}>
-          Do one lesson to keep your {current}-day streak.
+          Earn ~{(goal - done) * 10} more XP today to keep your {current}-day streak.
         </div>
       )}
     </Card>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Shield, Flame, BookOpen, FolderGit2, ArrowRight, Zap } from "lucide-react";
+import { Flame, BookOpen, FolderGit2, ArrowRight, Zap } from "lucide-react";
 import { font } from "@/lib/tokens";
 import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
@@ -11,14 +11,19 @@ import { useAuth } from "../lib/AuthContext";
 import { UserChallenges } from "../api/supabaseClient";
 import { getChallengeStats } from "../api/progressStore";
 import { getLessonPath } from "../content";
-import { createPageUrl } from "../utils";
-import { AnimatedBar } from "@/lib/motion";
 import LevelUpModal from "../components/gamification/LevelUpModal";
 import { getStreakInfo } from "../lib/progressStats";
 import { shouldShowWeeklyRecap } from "../lib/retention";
 import DailyGoal from "../components/retention/DailyGoal";
 import ReviewSection from "../components/retention/ReviewSection";
 import WeeklyRecapModal from "../components/retention/WeeklyRecapModal";
+import RankWheel from "../components/gamification/RankWheel";
+import AvatarFrame from "../components/gamification/AvatarFrame";
+import SkillMap from "../components/gamification/SkillMap";
+import StreakCalendar from "../components/retention/StreakCalendar";
+import ActivityFeed from "../components/retention/ActivityFeed";
+import { RANKS, rankInfo, cacheXp } from "../components/gamification/rank";
+import { CountUp } from "@/components/kit";
 import "@/styles/landing.css";
 
 const C = {
@@ -97,6 +102,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user || progress.length === 0) return;
     const xp = progress.filter(p => p.completed).reduce((s, p) => s + (p.points_earned || 10), 0);
+    cacheXp(xp);
     const currentLevel = getLevel(xp).level;
     const key = namespacedKey("codeflow_last_level");
     let lastSeen = 0;
@@ -115,9 +121,6 @@ export default function Dashboard() {
   const totalXP = completedProgress.length
     ? completedProgress.reduce((s, p) => s + (p.points_earned || 10), 0)
     : completedLessons * 10;
-  const lvl = getLevel(totalXP);
-  const lvlPct = lvl.max === Infinity ? 100 : Math.min(100, Math.round(((totalXP - lvl.min) / (lvl.max - lvl.min)) * 100));
-  const toNext = lvl.max === Infinity ? 0 : Math.max(0, lvl.max - totalXP);
   const streak = Math.max(getStreak(), challengeStats.streak);
   const streakInfo = getStreakInfo();
   const welcomeSub = streakInfo.atRisk && streakInfo.current > 0
@@ -151,18 +154,13 @@ export default function Dashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
-  const projectStats = projects.map((proj) => {
-    const ls = lessonsByProject(proj.id);
-    const total = ls.length || proj.lessons_count || 0;
-    const done = ls.filter(l => completedLessonIds.has(l.id)).length;
-    return { id: proj.id, title: proj.title || proj.name || "Project", total, done, pct: total ? Math.round((done / total) * 100) : 0 };
-  });
+  const rank = rankInfo(totalXP);
 
   const stats = [
-    { key: "level", label: "Level", value: lvl.name, sub: `${totalXP} XP total`, icon: Shield, accent: C.gold, badge: lvl.level },
-    { key: "streak", label: "Day streak", value: String(streak), sub: streak > 0 ? "Don't break it" : "Start one today", icon: Flame, accent: C.ember, pulse: true },
-    { key: "lessons", label: "Lessons done", value: String(completedLessons), sub: "keep going", icon: BookOpen, accent: C.amber },
-    { key: "projects", label: "Projects done", value: String(completedProjects), sub: `${projects.length} total`, icon: FolderGit2, accent: C.emerald },
+    { key: "xp", label: "Total XP", value: totalXP, count: true, sub: rank.isMax ? "max rank" : `${rank.toNext} to next rank`, icon: Zap, accent: C.gold },
+    { key: "streak", label: "Day streak", value: streak, count: true, sub: streak > 0 ? "keep it lit" : "start one today", icon: Flame, accent: "#F5A524", pulse: true },
+    { key: "lessons", label: "Lessons done", value: completedLessons, count: true, sub: "keep going", icon: BookOpen, accent: C.amber },
+    { key: "projects", label: "Projects done", value: completedProjects, count: true, sub: `${projects.length} total`, icon: FolderGit2, accent: C.emerald },
   ];
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } } };
@@ -185,18 +183,48 @@ export default function Dashboard() {
 
       <div className="relative max-w-5xl mx-auto px-6 lg:px-8 pt-24 pb-20">
         {}
-        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <div className="font-sans text-xs tracking-[0.2em] uppercase mb-3" style={{ color: C.amber }}>{greeting}</div>
-          <h1 style={{ fontFamily: font.display, fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 800, letterSpacing: "-0.03em", color: C.white, lineHeight: 1.1, margin: 0 }}>
-            Welcome back, <span className="cl-grad">{firstName}</span>.
-          </h1>
-          <p className="mt-3 text-base" style={{ color: C.dim, fontFamily: font.display }}>
-            {welcomeSub}
-          </p>
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-center gap-4">
+          <AvatarFrame tier={rank.tier} initial={firstName} size={64} />
+          <div className="min-w-0">
+            <div className="text-sm mb-1" style={{ color: C.dim, fontFamily: font.display }}>{greeting}</div>
+            <h1 style={{ fontFamily: font.display, fontSize: "clamp(1.9rem, 4.5vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", color: C.white, lineHeight: 1.08, margin: 0 }}>
+              Welcome back, <span className="cl-grad">{firstName}</span>.
+            </h1>
+          </div>
+        </motion.div>
+        <p className="mt-3 text-base" style={{ color: C.dim, fontFamily: font.display }}>{welcomeSub}</p>
+
+        {}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="mt-10 grid gap-5 lg:grid-cols-[auto_1fr] items-center rounded-2xl p-6"
+          style={{ background: "linear-gradient(135deg, #111917 0%, #0C1210 100%)", border: `1px solid ${C.border}` }}>
+          <div className="flex justify-center">
+            <RankWheel totalXP={totalXP} size={172} />
+          </div>
+          <div>
+            <h2 className="u-display" style={{ fontSize: "1.05rem", fontWeight: 700, color: C.white, margin: "0 0 4px" }}>Rank ladder</h2>
+            <p className="text-xs mb-4" style={{ color: C.dim }}>Each rank costs more XP than the last — harder content pays out more, so the climb accelerates.</p>
+            <div className="flex flex-col gap-1.5">
+              {RANKS.map((r) => {
+                const isCurrent = r.tier === rank.tier;
+                const reached = totalXP >= r.min;
+                return (
+                  <div key={r.tier} className="flex items-center gap-3 rounded-lg px-3 py-2"
+                    style={{ background: isCurrent ? `${r.color}14` : "transparent", border: `1px solid ${isCurrent ? r.color + "55" : "transparent"}` }}>
+                    <span className="u-mono text-center shrink-0" style={{ width: 20, fontSize: "0.72rem", color: reached ? r.color : C.dim }}>{r.tier}</span>
+                    <span className="flex-1 text-sm" style={{ color: reached ? C.white : C.dim, fontWeight: isCurrent ? 700 : 500 }}>{r.name}</span>
+                    <span className="u-mono tabular-nums shrink-0" style={{ fontSize: "0.72rem", color: reached ? r.color : C.dim }}>
+                      {r.min === 0 ? "0" : `${r.min.toLocaleString()}`}{r.max === Infinity ? "+" : ""} XP
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </motion.div>
 
         {}
-        <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
+        <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
           {stats.map((s) => {
             const Icon = s.icon;
             return (
@@ -210,7 +238,7 @@ export default function Dashboard() {
                 onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = C.border; }}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="font-sans text-[11px] tracking-[0.14em] uppercase" style={{ color: C.dim }}>{s.label}</span>
+                  <span className="text-xs" style={{ color: C.dim }}>{s.label}</span>
                   {s.pulse ? (
                     <motion.span
                       animate={{ scale: [1, 1.18, 1], opacity: [0.85, 1, 0.85], filter: [`drop-shadow(0 0 2px ${s.accent}88)`, `drop-shadow(0 0 10px ${s.accent})`, `drop-shadow(0 0 2px ${s.accent}88)`] }}
@@ -220,16 +248,12 @@ export default function Dashboard() {
                       <Icon size={18} style={{ color: s.accent }} />
                     </motion.span>
                   ) : (
-                    <span className="relative inline-flex items-center justify-center">
-                      <Icon size={18} style={{ color: s.accent }} />
-                      {s.badge != null && (
-                        <span className="absolute -top-2 -right-2 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center"
-                          style={{ background: s.accent, color: C.bg }}>{s.badge}</span>
-                      )}
-                    </span>
+                    <Icon size={18} style={{ color: s.accent }} />
                   )}
                 </div>
-                <div style={{ fontFamily: font.display, fontSize: "1.7rem", fontWeight: 800, color: C.white, lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontFamily: font.display, fontSize: "1.7rem", fontWeight: 800, color: C.white, lineHeight: 1 }}>
+                  {s.count ? <CountUp to={s.value} /> : s.value}
+                </div>
                 <div className="mt-1.5 text-xs" style={{ color: C.dim }}>{s.sub}</div>
               </motion.div>
             );
@@ -237,28 +261,8 @@ export default function Dashboard() {
         </motion.div>
 
         {}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-8 rounded-2xl p-5" style={{ background: C.card, border: `1px solid ${C.border}` }}>
-          <div className="flex items-center justify-between mb-3">
-            <span className="font-sans text-xs tracking-[0.14em] uppercase" style={{ color: C.dim }}>
-              Level {lvl.level} · {lvl.name}
-            </span>
-            <span className="font-sans text-xs" style={{ color: C.amber }}>
-              {lvl.max === Infinity ? "Max level" : `${toNext} XP to next`}
-            </span>
-          </div>
-          <div className="h-2.5 w-full rounded-full overflow-hidden" style={{ background: "#050807" }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${lvlPct}%` }}
-              transition={{ duration: 1.1, ease: "easeOut", delay: 0.2 }}
-              className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, ${C.amber}, ${C.gold})`, boxShadow: `0 0 12px ${C.amber}66` }}
-            />
-          </div>
-        </motion.div>
-
-        {}
-        <div className="mt-8">
+        <div className="mt-6 grid gap-5 lg:grid-cols-2">
+          <StreakCalendar />
           <DailyGoal />
         </div>
 
@@ -270,7 +274,7 @@ export default function Dashboard() {
             <div className="absolute -right-16 -top-16 w-52 h-52 rounded-full" style={{ background: `radial-gradient(circle, ${C.amber}22, transparent 70%)` }} />
             <div className="relative flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
               <div className="flex-1">
-                <div className="font-sans text-[11px] tracking-[0.16em] uppercase mb-2" style={{ color: C.amber }}>Continue learning</div>
+                <div className="text-sm mb-2" style={{ color: C.amber, fontWeight: 600 }}>Continue learning</div>
                 <h2 style={{ fontFamily: font.display, fontSize: "clamp(1.5rem, 3vw, 2.1rem)", fontWeight: 800, color: C.white, letterSpacing: "-0.02em", margin: 0 }}>
                   {heroProject.title || heroProject.name || "Your next project"}
                 </h2>
@@ -290,9 +294,9 @@ export default function Dashboard() {
         {}
         {heroLessons.length > 0 && (
           <div className="mt-10">
-            <div className="font-sans text-xs tracking-[0.16em] uppercase mb-4" style={{ color: C.dim }}>
+            <h2 className="u-display mb-4" style={{ fontSize: "1.05rem", fontWeight: 700, color: C.white }}>
               {heroProject?.title || "Lessons"}
-            </div>
+            </h2>
             <div className="flex flex-col gap-1.5">
               {heroLessons.slice(0, 6).map((lesson, i) => {
                 const done = completedLessonIds.has(lesson.id);
@@ -305,46 +309,23 @@ export default function Dashboard() {
           </div>
         )}
         {}
-        <div className="mt-10">
-          <ReviewSection lessons={allLessons} progress={progress} />
-        </div>
-
-        {}
-        {projectStats.length > 0 && (
-          <div className="mt-12">
-            <div className="font-sans text-xs tracking-[0.16em] uppercase mb-4" style={{ color: C.dim }}>All projects</div>
-            <div style={{ borderTop: `1px solid ${C.border}` }}>
-              {projectStats.map((p, i) => {
-                const isDone = p.total > 0 && p.done === p.total;
-                return (
-                  <Link
-                    key={p.id}
-                    to={`${createPageUrl("ProjectDetail")}?id=${p.id}`}
-                    className="flex items-center gap-4 px-2 py-4 transition-colors duration-150"
-                    style={{ borderBottom: `1px solid ${C.border}` }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = C.card; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                  >
-                    <span className="font-mono text-xs tabular-nums w-7 shrink-0" style={{ color: isDone ? C.emerald : C.dim }}>
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate" style={{ color: isDone ? C.amber : C.white, fontFamily: font.display }}>
-                        {p.title}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0" style={{ width: "180px" }}>
-                      <div className="flex-1 rounded-full overflow-hidden" style={{ height: "5px", background: "#050807" }}>
-                        <AnimatedBar pct={p.pct} color={isDone ? C.amber : "#9A6A1F"} style={{ height: "100%", borderRadius: "3px" }} />
-                      </div>
-                      <span className="font-mono text-xs tabular-nums w-10 text-right" style={{ color: C.dim }}>{p.pct}%</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+        {projects.length > 0 && (
+          <div className="mt-14">
+            <h2 className="u-display" style={{ fontSize: "1.35rem", fontWeight: 800, color: C.white, letterSpacing: "-0.02em", margin: "0 0 4px" }}>
+              Skill map
+            </h2>
+            <p className="text-sm mb-6" style={{ color: C.dim }}>
+              Pick any unlocked path. Finish a unit to open the next.
+            </p>
+            <SkillMap projects={projects} lessons={allLessons} completedLessonIds={completedLessonIds} />
           </div>
         )}
+
+        {}
+        <div className="mt-14 grid gap-5 lg:grid-cols-2">
+          <ActivityFeed progress={progress} lessons={allLessons} />
+          <ReviewSection lessons={allLessons} progress={progress} />
+        </div>
       </div>
 
       {levelUp && <LevelUpModal level={levelUp} onClose={() => setLevelUp(null)} />}
