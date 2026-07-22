@@ -195,10 +195,10 @@ export default function Layout({ children, currentPageName }) {
               Compilearn
             </span>
           </Link>
-          <div className="hidden lg:flex">{navItem(NAV[0])}</div>
+          <div className="hidden xl:flex">{navItem(NAV[0])}</div>
         </div>
 
-        <nav aria-label="Primary" className="hidden min-w-0 items-center justify-center overflow-hidden lg:flex" style={{ height: TOPBAR }}>
+        <nav aria-label="Primary" className="hidden min-w-0 items-center justify-center overflow-hidden xl:flex" style={{ height: TOPBAR }}>
           {NAV.slice(1).map((item, idx) => navItem(item, idx === 3))}
         </nav>
 
@@ -222,12 +222,12 @@ export default function Layout({ children, currentPageName }) {
               <Link
                 to={createPageUrl("Portfolio")}
                 aria-current={isActive("Portfolio") ? "page" : undefined}
-                className="hidden sm:inline u-mono text-xs transition-colors"
+                className="hidden xl:inline u-mono text-xs transition-colors"
                 style={{ color: isActive("Portfolio") ? "var(--accent)" : "var(--text-strong)" }}
               >
                 Portfolio
               </Link>
-              <span className="hidden sm:inline text-xs t-body">
+              <span className="hidden lg:inline text-xs t-body">
                 {user.name?.split(" ")[0] || user.email?.split("@")[0]}
               </span>
               <button
@@ -260,11 +260,11 @@ export default function Layout({ children, currentPageName }) {
         id="main-content"
         style={{ paddingTop: TOPBAR, paddingBottom: 0 }}
       >
-        <div className="pb-16 lg:pb-0">
+        <div className="pb-16 xl:pb-0">
           <PageTransition pageKey={currentPageName}>{children}</PageTransition>
         </div>
         <footer
-          className="px-6 lg:px-10 py-6 flex flex-wrap items-center gap-x-5 gap-y-2 pb-24 lg:pb-6"
+          className="px-6 lg:px-10 py-6 flex flex-wrap items-center gap-x-5 gap-y-2 pb-24 xl:pb-6"
           style={{ borderTop: "1px solid var(--border-subtle)" }}
         >
           <Link
@@ -293,7 +293,7 @@ export default function Layout({ children, currentPageName }) {
 
       <nav
         aria-label="Primary mobile"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
+        className="xl:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
         style={{ height: 60, background: "var(--bg-base)", borderTop: "1px solid var(--border-subtle)" }}
       >
         {MOBILE_TABS.map((page) => {

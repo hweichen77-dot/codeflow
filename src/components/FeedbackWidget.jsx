@@ -53,7 +53,7 @@ export default function FeedbackWidget() {
         className="fixed z-[80] font-sans text-xs tracking-widest uppercase transition-all duration-150"
         style={{
           left: '20px',
-          bottom: '20px',
+          bottom: '76px',
           padding: '12px 16px',
           background: open ? '#17201C' : '#5ED29C',
           color: open ? '#5ED29C' : '#070B0A',
@@ -73,7 +73,7 @@ export default function FeedbackWidget() {
           className="fixed z-[80]"
           style={{
             left: '20px',
-            bottom: '72px',
+            bottom: '128px',
             width: 'min(360px, calc(100vw - 40px))',
             background: '#070B0A',
             border: '1px solid #2A261E',
