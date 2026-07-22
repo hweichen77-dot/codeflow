@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://hweichen77-dot.github.io/compilearn/sitemap.xml

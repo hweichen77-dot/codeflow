@@ -29,7 +29,19 @@ for (const asset of COPY_AS_IS) {
   if (fs.existsSync(src)) fs.copyFileSync(src, path.join(DIST, asset))
 }
 
+const ROOT_ASSETS = ['og-image.png', 'sitemap.xml', 'favicon.svg', 'manifest.json']
+for (const asset of ROOT_ASSETS) {
+  const src = path.join(DIST, 'app', asset)
+  if (fs.existsSync(src)) fs.copyFileSync(src, path.join(DIST, asset))
+  else console.warn(`[marketing] ${asset} missing from the app build`)
+}
+
 fs.cpSync(path.join(SITE, 'fonts'), path.join(DIST, 'fonts'), { recursive: true })
 fs.copyFileSync(path.join(DIST, 'app', 'index.html'), path.join(DIST, '404.html'))
+
+fs.writeFileSync(
+  path.join(DIST, 'robots.txt'),
+  `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`,
+)
 
 console.log(`[marketing] built ${HTML_PAGES.length} pages against ${SITE_URL}`)
