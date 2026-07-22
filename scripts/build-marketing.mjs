@@ -8,6 +8,7 @@ const SITE = path.join(ROOT, 'website')
 const DIST = path.join(ROOT, 'dist')
 
 const SITE_URL = (process.env.VITE_SITE_URL || 'https://compilearn.vercel.app').replace(/\/+$/, '')
+const VERSION = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version
 
 const HTML_PAGES = ['index.html', 'teachers.html']
 const COPY_AS_IS = ['styles.css', 'hls.min.js']
@@ -17,7 +18,7 @@ fs.mkdirSync(DIST, { recursive: true })
 for (const page of HTML_PAGES) {
   const src = path.join(SITE, page)
   if (!fs.existsSync(src)) continue
-  const html = fs.readFileSync(src, 'utf8').replaceAll('__SITE_URL__', SITE_URL)
+  const html = fs.readFileSync(src, 'utf8').replaceAll('__SITE_URL__', SITE_URL).replaceAll('__VERSION__', VERSION)
   if (html.includes('codeflow.app')) {
     throw new Error(`${page} still references the retired codeflow.app domain`)
   }
