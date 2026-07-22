@@ -50,5 +50,19 @@ $$;
 revoke all on function public.rl_prune() from public, anon, authenticated;
 grant execute on function public.rl_prune() to service_role;
 
-select cron.schedule('rate-limits-prune', '17 * * * *',
-  $$select public.rl_prune()$$);
+do $outer$
+begin
+  begin
+    execute 'create extension if not exists pg_cron';
+  exception when others then
+    raise notice 'pg_cron could not be enabled here: %', sqlerrm;
+  end;
+
+  if exists (select 1 from pg_namespace where nspname = 'cron') then
+    perform cron.schedule('rate-limits-prune', '17 * * * *', 'select public.rl_prune()');
+    raise notice 'scheduled rate-limits-prune';
+  else
+    raise notice 'cron schema is unavailable, so rate_limits rows must be pruned another way';
+  end if;
+end
+$outer$;
