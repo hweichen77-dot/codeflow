@@ -167,6 +167,7 @@ print("query:", query)
 print("closest index:", best_index)
 print("score:", round(best_score, 4))
 `,
+      illustrative: true,
       expected_output: `query: [1.   0.05]
 closest index: 0
 score: 0.9988`,
@@ -487,6 +488,7 @@ print("checked vectors:", len(vectors))
 print("exact best index:", best_index)
 print("exact best score:", round(best_score, 4))
 `,
+      illustrative: true,
       expected_output: `checked vectors: 20
 exact best index: 8
 exact best score: 0.974`,

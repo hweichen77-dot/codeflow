@@ -165,6 +165,7 @@ normalized = img / 255.0
 print("Normalized:")
 print(normalized)
 `,
+      illustrative: true,
       expected_output: `Shape: (2, 2)
 Normalized:
 [[0.        0.5019608]
@@ -504,6 +505,7 @@ kernel = np.array([[ 1,  1,  1],
 response = np.sum(patch * kernel)
 print("Filter response:", response)
 `,
+      illustrative: true,
       expected_output: `Filter response: 0`,
       hints: [
         "patch * kernel multiplies element by element, not matrix multiplication.",
