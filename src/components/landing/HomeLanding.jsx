@@ -263,14 +263,14 @@ export default function HomeLanding() {
           <div>
             <Reveal>
               <h1 className="u-display text-[clamp(40px,6.2vw,68px)] font-extrabold leading-[0.98] tracking-tight text-white">
-                Build real AI, then <GradientText brand>defend it</GradientText>.
+                Write the prompt. <GradientText brand>Survive the attacks</GradientText>.
               </h1>
             </Reveal>
             <Reveal delay={0.08}>
               <p className="measure mt-6 text-lg leading-relaxed text-white/70">
-                You don't watch tutorials. Each lesson you build a working system,
-                run it on a real model, and throw attacks at it until it holds up.
-                You finish with something you can ship.
+                Learn how AI works by defending one. You write the system prompt that
+                guards a rule, then real attacks try to break it. Beat the playground,
+                then build real projects. No signup to start.
               </p>
             </Reveal>
             <Reveal delay={0.14}>
