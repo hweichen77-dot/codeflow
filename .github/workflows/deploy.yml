@@ -42,6 +42,11 @@ jobs:
           # Inject production config from repo secrets so the GitHub Pages build
           # ships with Supabase/PostHog/Sentry live instead of dormant. All are
           # optional — missing ones leave that integration disabled, not broken.
+          #
+          # Pages is a mirror, not the canonical home. Pointing this at the real
+          # domain makes the mirror's canonical tags, sitemap and share links
+          # credit the main site instead of competing with it in search.
+          VITE_SITE_URL: ${{ vars.SITE_URL || 'https://compilearn.vercel.app' }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}

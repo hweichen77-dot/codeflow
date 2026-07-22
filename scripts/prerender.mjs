@@ -138,6 +138,11 @@ function run() {
     `\n</urlset>\n`
   fs.writeFileSync(path.join(DIST, 'sitemap.xml'), sitemap)
 
+  fs.writeFileSync(
+    path.join(DIST, 'robots.txt'),
+    `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`,
+  )
+
   console.log(`[prerender] wrote ${written} lesson pages + ${topWritten} top pages + sitemap (${urls.length} urls)`)
 }
 
