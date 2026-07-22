@@ -4,6 +4,14 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/(AITrack|APCS|ChallengeDetail|Challenges|Competitive|CompetitiveDetail|Dashboard|LessonDemo|LessonExpander|Playground|Portfolio|Privacy|ProjectDetail|Projects|Terms|login)",
+      "destination": "/app/$1",
+      "permanent": true
+    },
+    { "source": "/learn/:path*", "destination": "/app/learn/:path*", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/app/:path*", "destination": "/app" },
     { "source": "/((?!app/).*)", "destination": "/app" }
