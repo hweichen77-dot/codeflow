@@ -92,7 +92,12 @@ export default function Playground() {
         </nav>
 
         <div>
-          <LlmPlayground key={active.id} lab={active} />
+          <LlmPlayground
+            key={active.id}
+            lab={active}
+            labIndex={LABS.findIndex((l) => l.id === active.id) + 1}
+            labCount={LABS.length}
+          />
         </div>
       </StaggerItem>
     </Stagger>

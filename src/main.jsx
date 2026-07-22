@@ -14,11 +14,14 @@ import '@fontsource-variable/spline-sans-mono'
 import { MotionConfig } from 'framer-motion'
 import App from '@/App.jsx'
 import '@/index.css'
-import { initAnalytics } from '@/lib/analytics'
+import { initAnalytics, trackFunnel } from '@/lib/analytics'
 import { initMonitoring } from '@/lib/monitoring'
+import { captureAttribution } from '@/lib/attribution'
 
+captureAttribution()
 initMonitoring()
 initAnalytics()
+trackFunnel('landing', { path: window.location.pathname })
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <MotionConfig reducedMotion="user">

@@ -1,7 +1,19 @@
 const KEY = import.meta.env.VITE_POSTHOG_KEY || ''
 const HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com'
 
+import { getAttribution } from './attribution'
+
 export const OPT_OUT_KEY = 'codeflow.analyticsOptOut'
+
+function attributionProps() {
+  const a = getAttribution()
+  const out = {}
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'first_seen' || k === 'landing_path') continue
+    out[k] = v
+  }
+  return out
+}
 
 function signalsOptOut() {
   if (typeof window === 'undefined') return false
@@ -89,7 +101,20 @@ export function initAnalytics() {
 }
 
 export function track(event, props = {}) {
-  enqueue('capture', event, props)
+  enqueue('capture', event, { ...attributionProps(), ...props })
+}
+
+const FUNNEL = {
+  landing: 'funnel_landing',
+  playStart: 'funnel_play_start',
+  challengeComplete: 'funnel_challenge_complete',
+  signup: 'funnel_signup',
+}
+
+export function trackFunnel(step, props = {}) {
+  const event = FUNNEL[step]
+  if (!event) return
+  track(event, props)
 }
 
 export function identify(id, traits = {}) {

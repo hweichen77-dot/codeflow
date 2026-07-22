@@ -1,19 +1,28 @@
 import React, { useState } from 'react'
-import { Shield, ShieldAlert, Share2, Check, CheckCircle2 } from 'lucide-react'
+import { Shield, ShieldAlert, CheckCircle2 } from 'lucide-react'
 import { runPlayground, gradePlayground } from '@/lib/llmPlayground'
-import { markLabSolved, isLabSolved } from '@/lib/playgroundProgress'
-import { track } from '@/lib/analytics'
+import { markLabSolved, isLabSolved, getSolvedLabs } from '@/lib/playgroundProgress'
+import { track, trackFunnel } from '@/lib/analytics'
+import ShareResult from './ShareResult'
+import SaveProgressPrompt from './SaveProgressPrompt'
+import { submitLabScore } from '@/lib/leaderboard'
+import LabLeaderboard from './LabLeaderboard'
 
-export default function LlmPlayground({ lab }) {
+export default function LlmPlayground({ lab, labIndex, labCount }) {
   const [systemPrompt, setSystemPrompt] = useState('')
   const [state, setState] = useState({ status: 'idle' })
   const [result, setResult] = useState(null)
   const [showHint, setShowHint] = useState(false)
-  const [copied, setCopied] = useState(false)
   const [solved, setSolved] = useState(() => isLabSolved(lab.id))
+  const [hasRun, setHasRun] = useState(false)
+  const [boardKey, setBoardKey] = useState(0)
   const [justSolved, setJustSolved] = useState(false)
 
   const run = async () => {
+    if (!hasRun) {
+      setHasRun(true)
+      try { trackFunnel('playStart', { lab: lab.id }) } catch {  }
+    }
     setState({ status: 'running' })
     setResult(null)
     const res = await runPlayground({ systemPrompt, inputs: lab.inputs.map((i) => i.text) })
@@ -31,22 +40,12 @@ export default function LlmPlayground({ lab }) {
     }
     try {
       track('playground_run', { lab: lab.id, passed: graded.passed, total: graded.total })
-      if (graded.allPass) track('playground_solved', { lab: lab.id })
-    } catch {  }
-  }
-
-  const share = async () => {
-    const base = `${window.location.origin}${import.meta.env.BASE_URL || '/'}Playground`
-    const url = `${base}?lab=${lab.id}`
-    const { passed, total, allPass } = result
-    const text = allPass
-      ? `My prompt held all ${total} attacks on "${lab.title}" 🛡️ Can your prompt survive? ${url}`
-      : `My prompt held ${passed}/${total} attacks on "${lab.title}" 🛡️ Think you can beat it? ${url}`
-    try {
-      track('playground_share', { lab: lab.id, passed, total })
-      if (navigator.share) { await navigator.share({ title: 'Compilearn red-team lab', text, url }); return }
-      await navigator.clipboard.writeText(text)
-      setCopied(true); setTimeout(() => setCopied(false), 2000)
+      if (graded.allPass) {
+        track('playground_solved', { lab: lab.id, prompt_chars: systemPrompt.trim().length })
+        trackFunnel('challengeComplete', { lab: lab.id, prompt_chars: systemPrompt.trim().length })
+        submitLabScore({ labId: lab.id, promptChars: systemPrompt.trim().length, attacksHeld: graded.total })
+          .then(() => setBoardKey((k) => k + 1))
+      }
     } catch {  }
   }
 
@@ -58,7 +57,9 @@ export default function LlmPlayground({ lab }) {
     <div className="rounded-xl border p-5 md:p-6" style={{ borderColor: '#2a2519', background: '#0C1210' }}>
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: amber }}>Red-team lab</div>
+          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: amber }}>
+            {labIndex && labCount ? `Lab ${labIndex} of ${labCount}` : 'Red-team lab'}
+          </div>
           <h3 className="text-xl font-bold mt-1 inline-flex items-center gap-2" style={{ color: '#ECF3EF' }}>
             {lab.title}
             {solved && <CheckCircle2 size={18} style={{ color: held }} aria-label="Solved" />}
@@ -139,13 +140,12 @@ export default function LlmPlayground({ lab }) {
                   Held {result.passed}/{result.total} attacks
                 </div>
               </div>
-              <button type="button" onClick={share}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all"
-                style={{ background: amber, color: '#1a1509' }}>
-                {copied ? <><Check size={15} /> Copied</> : <><Share2 size={15} /> Share score</>}
-              </button>
+              <ShareResult lab={lab} passed={result.passed} total={result.total} allPass={result.allPass} />
             </div>
             {}
+            {result.allPass && (
+              <SaveProgressPrompt labId={lab.id} solvedCount={getSolvedLabs().length} totalLabs={labCount || 0} />
+            )}
             <div className="flex flex-wrap gap-2 mt-4">
               {result.graded.map((g, i) => (
                 <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold"
@@ -182,6 +182,8 @@ export default function LlmPlayground({ lab }) {
           </div>
         </div>
       )}
+
+      <LabLeaderboard lab={lab} refreshKey={boardKey} />
     </div>
   )
 }

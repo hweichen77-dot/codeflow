@@ -5,6 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
+import { createPageUrl } from './utils'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -48,7 +49,7 @@ const AuthenticatedApp = () => {
           isAuthenticated ? (
             <LayoutWrapper currentPageName="Dashboard"><HomeDashboard /></LayoutWrapper>
           ) : isDesktop ? (
-            <Navigate to="/login" replace />
+            <Navigate to={createPageUrl('Playground')} replace />
           ) : (
             <LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>
           )
