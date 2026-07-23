@@ -68,7 +68,7 @@ export default function LivePlayground() {
   const total = rows.length;
 
   return (
-    <section id="playground" style={{ borderBottom: "1px solid #111917", padding: "clamp(64px, 9vw, 120px) 2rem" }}>
+    <section id="playground" style={{ borderBottom: "1px solid #111917", padding: "clamp(36px, 5vw, 60px) 2rem clamp(64px, 9vw, 120px)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <h2 style={{
           fontFamily: body,

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowRight, Zap, Bell } from "lucide-react";
-import { isOnboarded, setOnboarded } from "@/lib/retention";
+import { isOnboarded } from "@/lib/retention";
 import { requestNotificationPermission } from "@/lib/notifications";
 import { KIT, PrimaryButton, Eyebrow } from "@/components/ui/kit";
 import { useDialogA11y } from "@/lib/useDialogA11y";
+import { useAuth } from "@/lib/AuthContext";
 
 const CHOICES = [
   {
@@ -23,14 +24,15 @@ const CHOICES = [
 ];
 
 export default function FirstWinOnboarding() {
+  const { user, completeOnboarding } = useAuth();
   const [open, setOpen] = useState(true);
   const reduce = useReducedMotion();
   const dialogRef = useDialogA11y(() => dismiss(), open);
 
-  if (isOnboarded()) return null;
+  if (user?.onboarded || isOnboarded()) return null;
 
   const dismiss = () => {
-    setOnboarded();
+    completeOnboarding();
     setOpen(false);
   };
 

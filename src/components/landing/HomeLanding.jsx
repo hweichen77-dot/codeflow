@@ -25,6 +25,10 @@ import LivePlayground from "@/components/landing/LivePlayground";
 
 const MUX = "https://stream.mux.com/tLkHO1qZoaaQOUeVWo8hEBeGQfySP02EPS02BmnNFyXys.m3u8";
 
+const V = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "";
+const DOWNLOAD_MAC = `https://github.com/hweichen77-dot/compilearn/releases/download/v${V}/Compilearn_${V}_universal.dmg`;
+const DOWNLOAD_WIN = `https://github.com/hweichen77-dot/compilearn/releases/download/v${V}/Compilearn_${V}_x64-setup.exe`;
+
 function Nav() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
@@ -231,15 +235,19 @@ export default function HomeLanding() {
   useEffect(() => {
     const v = vref.current;
     if (!v) return;
+    const tryPlay = () => { const p = v.play(); if (p) p.catch(() => {}); };
+    v.addEventListener("canplay", tryPlay);
     if (Hls.isSupported()) {
       const hls = new Hls({ enableWorker: false });
+      hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
       hls.loadSource(MUX);
       hls.attachMedia(v);
-      return () => hls.destroy();
+      return () => { v.removeEventListener("canplay", tryPlay); hls.destroy(); };
     }
     if (v.canPlayType("application/vnd.apple.mpegurl")) {
       v.src = MUX;
     }
+    return () => v.removeEventListener("canplay", tryPlay);
   }, []);
 
   return (
@@ -253,13 +261,14 @@ export default function HomeLanding() {
           autoPlay
           loop
           playsInline
-          className="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover opacity-25"
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-60"
         />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(90%_80%_at_50%_10%,rgba(7,11,10,.55)_0%,rgba(7,11,10,.85)_60%,#070B0A_100%)]" />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(85%_78%_at_50%_36%,rgba(7,11,10,.5)_0%,rgba(7,11,10,.3)_55%,transparent_100%)]" />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(0deg,#070B0A_3%,rgba(7,11,10,.3)_34%,transparent_70%)]" />
         <GridBackdrop />
         <HeroGlow color="#5ED29C" />
 
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 md:py-28 lg:grid-cols-[1.05fr_.95fr]">
+        <div className="relative z-10 mx-auto grid min-h-[72vh] max-w-6xl items-center gap-12 px-6 pt-12 pb-8 lg:grid-cols-[1.05fr_.95fr]">
           <div>
             <Reveal>
               <h1 className="u-display text-[clamp(40px,6.2vw,68px)] font-extrabold leading-[0.98] tracking-tight text-white">
@@ -298,6 +307,27 @@ export default function HomeLanding() {
                 </a>
               </div>
             </Reveal>
+            <Reveal delay={0.26}>
+              <div className="mt-6">
+                <div className="u-mono text-[12.5px] text-white/55">Or get the desktop app:</div>
+                <div className="mt-3 flex items-center gap-3">
+                  <a
+                    href={DOWNLOAD_MAC}
+                    rel="noopener"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:border-[#5ED29C]/60 whitespace-nowrap"
+                  >
+                    Download for macOS
+                  </a>
+                  <a
+                    href={DOWNLOAD_WIN}
+                    rel="noopener"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:border-[#5ED29C]/60 whitespace-nowrap"
+                  >
+                    Download for Windows
+                  </a>
+                </div>
+              </div>
+            </Reveal>
           </div>
 
           <Reveal delay={0.16}>
@@ -306,12 +336,12 @@ export default function HomeLanding() {
         </div>
       </section>
 
-      <div className="border-y border-white/10 bg-black/20 py-4">
+      <div className="border-y border-white/10 bg-black/20 py-2.5">
         <Marquee speed={34}>
           {MARQUEE_ITEMS.map((t) => (
-            <span key={t} className="u-mono text-[15px] text-white/60">
+            <span key={t} className="u-mono text-[15px] text-white">
               {t}
-              <span className="ml-6 text-[#5ED29C]/40">/</span>
+              <span className="ml-6 text-[#5ED29C]/60">/</span>
             </span>
           ))}
         </Marquee>

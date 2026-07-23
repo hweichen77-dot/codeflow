@@ -4,6 +4,7 @@ import { clearAllProgress } from '@/api/progressStore';
 import { auth as supaAuth } from '@/api/supabaseClient';
 import { activateSync, deactivateSync } from '@/api/cloudSync';
 import { namespacedKey } from '@/lib/progressStats';
+import { setOnboarded } from '@/lib/retention';
 import { identify, resetIdentity, track } from '@/lib/analytics';
 import { setMonitoringUser } from '@/lib/monitoring';
 import { isDesktop, startGoogleDesktop, initDeepLinkAuth } from '@/lib/desktopAuth';
@@ -13,7 +14,7 @@ const AuthContext = createContext();
 const profileFromSupabase = (sUser) => {
   if (!sUser) return null;
   const name = sUser.user_metadata?.name || sUser.email?.split('@')[0] || 'learner';
-  return { id: sUser.id, name, email: sUser.email, mode: 'email' };
+  return { id: sUser.id, name, email: sUser.email, mode: 'email', onboarded: sUser.user_metadata?.onboarded === true };
 };
 
 export const AuthProvider = ({ children }) => {
@@ -142,6 +143,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const completeOnboarding = async () => {
+    setOnboarded();
+    setUser(u => (u ? { ...u, onboarded: true } : u));
+    if (authMode === 'email') {
+      try { await supaAuth.updateUser({ onboarded: true }); } catch {  }
+    }
+  };
+
   const navigateToLogin = () => {
     if (typeof window !== 'undefined') {
       window.location.href = `${import.meta.env.BASE_URL || '/'}login`;
@@ -164,6 +173,7 @@ export const AuthProvider = ({ children }) => {
       resetPassword,
       signInGuest,
       signInLocal,
+      completeOnboarding,
       logout,
       navigateToLogin,
     }}>

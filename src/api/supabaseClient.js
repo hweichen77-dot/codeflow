@@ -13,6 +13,7 @@ const makeStub = () => ({
     signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
     signInWithOAuth: async () => ({ data: null, error: new Error('Supabase not configured') }),
     signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
+    updateUser: async () => ({ data: null, error: new Error('Supabase not configured') }),
     signOut: async () => ({ error: null }),
     resetPasswordForEmail: async () => ({ data: null, error: new Error('Supabase not configured') }),
   },
@@ -55,6 +56,7 @@ export const auth = {
           },
     }),
   signOut: () => supabase.auth.signOut(),
+  updateUser: (data) => supabase.auth.updateUser({ data }),
   getSession: () => supabase.auth.getSession(),
   onAuthStateChange: (cb) => supabase.auth.onAuthStateChange(cb),
   resetPassword: (email) =>
