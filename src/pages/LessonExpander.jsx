@@ -198,7 +198,7 @@ export default function LessonExpander() {
 
   if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#070B0A" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "transparent" }}>
         <p className="font-sans text-sm" style={{ color: "#FFFFFF" }}>Admin access required.</p>
       </div>
     );
@@ -210,7 +210,7 @@ export default function LessonExpander() {
   const totalCount = isLessonsTab ? lessons.length : projects.length;
 
   return (
-    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-16" style={{ background: "#070B0A" }}>
+    <div className="min-h-screen px-8 lg:px-16 pt-28 pb-16" style={{ background: "transparent" }}>
       <Stagger className="max-w-4xl mx-auto" as="div">
         <StaggerItem className="mb-8" as="div">
           <span className="font-sans text-xs tracking-widest uppercase" style={{ color: "#5ED29C" }}>

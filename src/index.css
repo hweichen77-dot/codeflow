@@ -126,6 +126,12 @@
 .reader-surface {
   font-family: 'Inter', system-ui, sans-serif;
 }
+.reader-surface section[aria-label="Lesson"] {
+  background: rgba(12, 18, 16, 0.86);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: clamp(18px, 3vw, 32px);
+}
 .reader-surface .font-display {
   font-family: 'Inter', system-ui, sans-serif !important;
   letter-spacing: -0.015em;

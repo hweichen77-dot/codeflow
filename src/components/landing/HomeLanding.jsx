@@ -1,22 +1,27 @@
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/apiClient";
-import FaultyTerminal from "@/components/kit/FaultyTerminal";
+import LiquidEther from "@/components/kit/LiquidEther";
 import {
   HeroGlow,
-  GradientText,
-  Typewriter,
+  ShinyText,
+  RotatingText,
   CountUp,
   Reveal,
   Stagger,
   Item,
   MagneticButton,
-  BentoGrid,
-  BentoCard,
+  StarBorder,
+  ClickSpark,
+  GlareHover,
+  MagicBentoGrid,
+  MagicBentoCard,
   SpotlightCard,
+  PixelCard,
   CodeWindow,
   Marquee,
 } from "@/components/kit";
@@ -30,6 +35,37 @@ const prefersReducedMotion =
 const V = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "";
 const DOWNLOAD_MAC = `https://github.com/hweichen77-dot/compilearn/releases/download/v${V}/Compilearn_${V}_universal.dmg`;
 const DOWNLOAD_WIN = `https://github.com/hweichen77-dot/compilearn/releases/download/v${V}/Compilearn_${V}_x64-setup.exe`;
+
+const NAV_LINKS = [
+  ["Tracks", "#tracks"],
+  ["Playground", "#playground"],
+];
+
+function NavLinks() {
+  const [hovered, setHovered] = useState(null);
+  return (
+    <div className="mr-3 hidden items-center sm:flex" onMouseLeave={() => setHovered(null)}>
+      {NAV_LINKS.map(([label, href], i) => (
+        <a
+          key={href}
+          href={href}
+          onMouseEnter={() => setHovered(i)}
+          onFocus={() => setHovered(i)}
+          className="relative px-4 py-1.5 text-sm font-medium text-white/80 transition-colors hover:text-white"
+        >
+          {hovered === i && (
+            <motion.span
+              layoutId="nav-pill"
+              className="absolute inset-0 -z-10 rounded-full bg-[#5ED29C]/15 ring-1 ring-inset ring-[#5ED29C]/35"
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 34 }}
+            />
+          )}
+          <span className="relative">{label}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
 
 function Nav() {
   const navigate = useNavigate();
@@ -63,13 +99,8 @@ function Nav() {
             Compilearn
           </span>
         </Link>
-        <div className="flex items-center gap-7">
-          <a href="#tracks" className="hidden text-sm font-medium text-white/70 transition-colors hover:text-white sm:block">
-            Tracks
-          </a>
-          <a href="#playground" className="hidden text-sm font-medium text-white/70 transition-colors hover:text-white sm:block">
-            Playground
-          </a>
+        <div className="flex items-center gap-4">
+          <NavLinks />
           <MagneticButton
             onClick={() => navigate("/login")}
             className="rounded-full bg-[#5ED29C] px-5 py-2 text-[13px] font-bold text-[#070B0A] shadow-[0_8px_30px_-10px_rgba(94,210,156,.7)]"
@@ -160,8 +191,13 @@ function TrackCard({ t, modules }) {
   const shown = t.big ? (mods || []).slice(0, 12) : [];
   const extra = t.big ? (mods || []).length - shown.length : 0;
   return (
-    <BentoCard span={t.span} className="cursor-pointer" >
-      <div onClick={() => navigate(createPageUrl(t.to))} className="flex h-full flex-col">
+    <MagicBentoCard
+      span={t.span}
+      onClick={() => navigate(createPageUrl(t.to))}
+      disableAnimations={prefersReducedMotion}
+      className="group flex cursor-pointer flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-[#5ED29C]/40"
+    >
+      <div className="relative z-[5] flex h-full flex-col">
         <div className="flex items-center gap-3">
           <span className="grid h-9 w-9 place-items-center rounded-lg border border-[#5ED29C]/25 bg-[#5ED29C]/10 u-mono text-xs font-semibold text-[#5ED29C]">
             {t.key === "ai" ? ">_" : t.key === "projects" ? "◍" : t.key === "csp" ? "CSP" : "CSA"}
@@ -197,7 +233,7 @@ function TrackCard({ t, modules }) {
           <ArrowRight size={14} className="text-white/60 transition-transform group-hover:translate-x-1" />
         </div>
       </div>
-    </BentoCard>
+    </MagicBentoCard>
   );
 }
 
@@ -239,26 +275,22 @@ export default function HomeLanding() {
       <Nav />
 
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-        <FaultyTerminal
-          className="h-full w-full opacity-70"
-          tint="#5ED29C"
-          scale={1.7}
-          gridMul={[2, 1]}
-          digitSize={1.3}
-          timeScale={0.4}
-          noiseAmp={1.2}
-          scanlineIntensity={0.6}
-          glitchAmount={1}
-          flickerAmount={0.7}
-          curvature={0.12}
-          mouseReact
-          mouseStrength={0.4}
-          brightness={1.5}
-          pause={prefersReducedMotion}
-          pageLoadAnimation={!prefersReducedMotion}
-        />
-        </div>
+        {prefersReducedMotion ? (
+          <div className="absolute inset-0 z-0 bg-[radial-gradient(75%_60%_at_50%_35%,rgba(94,210,156,.18)_0%,rgba(52,208,196,.08)_45%,transparent_100%)]" />
+        ) : (
+          <div className="absolute inset-0 z-0">
+            <LiquidEther
+              className="h-full w-full opacity-100"
+              colors={["#5ED29C", "#34D0C4", "#0EA86E"]}
+              mouseForce={30}
+              cursorSize={130}
+              resolution={0.5}
+              autoDemo
+              autoSpeed={0.6}
+              autoIntensity={2.8}
+            />
+          </div>
+        )}
         <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(90%_82%_at_42%_40%,rgba(7,11,10,.72)_0%,rgba(7,11,10,.42)_50%,transparent_100%)]" />
         <div className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(0deg,#070B0A_3%,rgba(7,11,10,.3)_34%,transparent_70%)]" />
         <HeroGlow color="#5ED29C" />
@@ -267,7 +299,16 @@ export default function HomeLanding() {
           <div>
             <Reveal>
               <h1 className="u-display text-[clamp(40px,6.2vw,68px)] font-extrabold leading-[0.98] tracking-tight text-white">
-                Write the prompt. <GradientText brand>Survive the attacks</GradientText>.
+                Write the prompt.{" "}
+                <ShinyText
+                  text="Survive the attacks"
+                  color="#5ED29C"
+                  shineColor="#EAFFF5"
+                  speed={4}
+                  spread={70}
+                  disabled={prefersReducedMotion}
+                />
+                .
               </h1>
             </Reveal>
             <Reveal delay={0.08}>
@@ -278,48 +319,95 @@ export default function HomeLanding() {
               </p>
             </Reveal>
             <Reveal delay={0.14}>
-              <div className="mt-6 text-base text-white/92">
-                Build{" "}
-                <Typewriter
-                  className="u-mono text-white"
-                  words={["a chatbot", "a RAG search app", "a prompt that resists injection", "an AI code reviewer"]}
+              <div className="mt-6 flex items-center gap-2 text-base text-white/92">
+                Build
+                <span className="u-mono text-[#F5A524]">&gt;_</span>
+                <RotatingText
+                  texts={["a chatbot", "a RAG search app", "a prompt that resists injection", "an AI code reviewer"]}
+                  auto={!prefersReducedMotion}
+                  rotationInterval={2200}
+                  staggerDuration={0.02}
+                  staggerFrom="last"
+                  splitLevelClassName="overflow-hidden"
+                  mainClassName="u-mono text-[#5ED29C]"
+                  transition={{ type: "spring", damping: 26, stiffness: 320 }}
                 />
               </div>
             </Reveal>
             <Reveal delay={0.2}>
               <div className="mt-9 flex flex-wrap items-center gap-4">
-                <MagneticButton
-                  onClick={() => navigate("/login")}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#5ED29C] px-7 py-3.5 text-[15px] font-bold text-[#070B0A] shadow-[0_10px_34px_-12px_rgba(94,210,156,.7)]"
+                {prefersReducedMotion ? (
+                  <MagneticButton
+                    onClick={() => navigate("/login")}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#5ED29C] px-7 py-3.5 text-[15px] font-bold text-[#070B0A] shadow-[0_10px_34px_-12px_rgba(94,210,156,.7)]"
+                  >
+                    Start building free <ArrowRight size={18} strokeWidth={2.4} />
+                  </MagneticButton>
+                ) : (
+                  <ClickSpark sparkColor="#5ED29C" sparkCount={10} sparkRadius={24} sparkSize={12} duration={500}>
+                    <StarBorder
+                      as="button"
+                      onClick={() => navigate("/login")}
+                      color="#5ED29C"
+                      speed="5s"
+                      thickness={2}
+                      className="star-brand text-[15px] shadow-[0_10px_34px_-12px_rgba(94,210,156,.7)]"
+                    >
+                      Start building free <ArrowRight size={18} strokeWidth={2.4} />
+                    </StarBorder>
+                  </ClickSpark>
+                )}
+                <GlareHover
+                  width="auto"
+                  height="auto"
+                  background="transparent"
+                  borderColor="transparent"
+                  borderRadius="9999px"
+                  glareColor="#5ED29C"
+                  glareOpacity={0.25}
+                  glareAngle={-30}
+                  glareSize={220}
+                  style={{ display: "inline-grid" }}
                 >
-                  Start building free <ArrowRight size={18} strokeWidth={2.4} />
-                </MagneticButton>
-                <a
-                  href="#playground"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-[15px] font-semibold text-white transition-colors hover:border-white/40"
-                >
-                  <Play size={15} /> Try the playground
-                </a>
+                  <a
+                    href="#playground"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-[15px] font-semibold text-white transition-colors hover:border-white/40"
+                  >
+                    <Play size={15} /> Try the playground
+                  </a>
+                </GlareHover>
               </div>
             </Reveal>
             <Reveal delay={0.26}>
               <div className="mt-6">
                 <div className="u-mono text-[12.5px] text-white/55">Or get the desktop app:</div>
                 <div className="mt-3 flex items-center gap-3">
-                  <a
-                    href={DOWNLOAD_MAC}
-                    rel="noopener"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:border-[#5ED29C]/60 whitespace-nowrap"
-                  >
-                    Download for macOS
-                  </a>
-                  <a
-                    href={DOWNLOAD_WIN}
-                    rel="noopener"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:border-[#5ED29C]/60 whitespace-nowrap"
-                  >
-                    Download for Windows
-                  </a>
+                  {[
+                    [DOWNLOAD_MAC, "Download for macOS"],
+                    [DOWNLOAD_WIN, "Download for Windows"],
+                  ].map(([href, label]) => (
+                    <GlareHover
+                      key={label}
+                      width="auto"
+                      height="auto"
+                      background="transparent"
+                      borderColor="transparent"
+                      borderRadius="9999px"
+                      glareColor="#5ED29C"
+                      glareOpacity={0.22}
+                      glareAngle={-30}
+                      glareSize={220}
+                      style={{ display: "inline-grid" }}
+                    >
+                      <a
+                        href={href}
+                        rel="noopener"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:border-[#5ED29C]/60 whitespace-nowrap"
+                      >
+                        {label}
+                      </a>
+                    </GlareHover>
+                  ))}
                 </div>
               </div>
             </Reveal>
@@ -359,11 +447,11 @@ export default function HomeLanding() {
           </p>
         </Reveal>
         <div className="mt-12">
-          <BentoGrid>
+          <MagicBentoGrid disableAnimations={prefersReducedMotion}>
             {TRACKS.map((t) => (
               <TrackCard key={t.key} t={t} modules={t.key === "ai" ? aiTitles : null} />
             ))}
-          </BentoGrid>
+          </MagicBentoGrid>
         </div>
       </Section>
 
@@ -376,11 +464,16 @@ export default function HomeLanding() {
         <Stagger className="mt-12 grid gap-4 md:grid-cols-4" gap={0.08}>
           {STEPS.map(([n, t, d]) => (
             <Item key={n}>
-              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-                <div className="u-mono text-sm tracking-widest text-[#5ED29C]">step {n}</div>
-                <h3 className="u-display mt-4 text-xl font-bold text-white">{t}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/60">{d}</p>
-              </div>
+              <PixelCard
+                variant="green"
+                className="h-full rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-[#5ED29C]/40"
+              >
+                <div className="relative z-[1] p-6">
+                  <div className="u-mono text-sm tracking-widest text-[#5ED29C]">step {n}</div>
+                  <h3 className="u-display mt-4 text-xl font-bold text-white">{t}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-white/70">{d}</p>
+                </div>
+              </PixelCard>
             </Item>
           ))}
         </Stagger>
@@ -388,7 +481,7 @@ export default function HomeLanding() {
 
       <Section className="grid items-center gap-12 py-24 lg:grid-cols-2">
         <Reveal>
-          <SpotlightCard className="border-white/10">
+          <SpotlightCard spotlightColor="rgba(94, 210, 156, 0.22)">
             <div className="flex flex-col gap-3">
               <div className="self-end rounded-2xl border border-[#5ED29C]/25 bg-[#5ED29C]/10 px-4 py-3 u-mono text-[13px] text-white/80">
                 for i in range(len(nums)):

@@ -13,7 +13,7 @@ export const TRACK_ACCENT = {
 
 export function CatalogPage({ children }) {
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
+    <div className="min-h-screen" style={{ background: "transparent" }}>
       {children}
     </div>
   );

@@ -91,7 +91,7 @@ export default function ChallengeDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#070B0A" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "transparent" }}>
         <div className="font-sans text-xs tracking-widest uppercase animate-pulse" style={{ color: "#ECF3EF" }}>
           Loading challenge...
         </div>
@@ -101,7 +101,7 @@ export default function ChallengeDetail() {
 
   if (!challenge) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#070B0A" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "transparent" }}>
         <div className="font-sans text-xs tracking-widest uppercase" style={{ color: "#ECF3EF" }}>404, NOT FOUND</div>
         <Link to={createPageUrl("Challenges")}>
           <button className="font-sans text-xs tracking-widest uppercase px-5 py-2" style={{ color: "#5ED29C", border: "1px solid #5ED29C33" }}>
@@ -113,7 +113,7 @@ export default function ChallengeDetail() {
   }
 
   return (
-    <div style={{ background: "#070B0A", minHeight: "100vh" }}>
+    <div style={{ background: "transparent", minHeight: "100vh" }}>
       <div className="relative pt-20" style={{ borderBottom: "1px solid #17201C" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #5ED29C, transparent)" }} />
 

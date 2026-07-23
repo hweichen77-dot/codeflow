@@ -40,7 +40,7 @@ export default function Portfolio() {
   const rank = rankInfo(readCachedXp());
 
   return (
-    <div className="min-h-screen" style={{ background: C.bg }}>
+    <div className="min-h-screen" style={{ background: "transparent" }}>
       <div className="relative px-8 lg:px-16 pt-28 pb-16" style={{ borderBottom: `1px solid ${C.border}` }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${C.green}, transparent)` }} />
         <div className="max-w-5xl mx-auto flex items-center gap-5">

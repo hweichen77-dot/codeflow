@@ -196,7 +196,7 @@ export default function LessonDemo() {
   const showFooter = isCheck && checked;
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-base)", paddingBottom: 140 }}>
+    <div className="min-h-screen" style={{ background: "transparent", paddingBottom: 140 }}>
       <div className="fixed top-[50px] left-0 right-0 lg:left-[208px] z-30" style={{ background: "var(--bg-base)" }}>
         <div className="mx-auto px-6 py-3" style={{ maxWidth: 760 }}>
           <div className="flex gap-1.5" role="progressbar" aria-valuenow={i + 1} aria-valuemin={1} aria-valuemax={STEPS.length} aria-label="Lesson progress">

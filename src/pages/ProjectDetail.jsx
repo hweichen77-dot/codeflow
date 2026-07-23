@@ -329,7 +329,7 @@ export default function ProjectDetail() {
 
   if (loadingProject || loadingLessons) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "transparent" }}>
         <div className="u-mono t-muted text-xs animate-pulse">Loading module…</div>
       </div>
     );
@@ -337,7 +337,7 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "var(--bg-base)" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "transparent" }}>
         <div className="u-mono t-body text-xs">404 · not found</div>
         <Link to={createPageUrl("Projects")}>
           <button className="u-mono text-xs px-5 py-2" style={{ color: "var(--accent)", border: "1px solid var(--accent)", borderRadius: 8 }}>
@@ -364,7 +364,7 @@ export default function ProjectDetail() {
 
   if (moduleGated) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-8 text-center" style={{ background: "var(--bg-base)" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-8 text-center" style={{ background: "transparent" }}>
         <div className="u-mono text-xs" style={{ color: "var(--accent)" }}>Module locked</div>
         <h1 className="u-display t-strong" style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", maxWidth: "32rem" }}>
           Finish the Foundations first.
@@ -617,7 +617,7 @@ export default function ProjectDetail() {
   );
 
   return (
-    <div style={{ background: "var(--bg-base)", minHeight: "100vh" }}>
+    <div style={{ background: "transparent", minHeight: "100vh" }}>
       <XPToastContainer />
       <BadgeUnlock completedCount={completedCount} />
       <LessonCompletionCelebration

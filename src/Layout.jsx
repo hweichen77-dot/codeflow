@@ -10,6 +10,12 @@ import { PageTransition } from "@/lib/motion";
 import MilestoneBurst from "@/components/retention/MilestoneBurst";
 import FirstWinOnboarding from "@/components/retention/FirstWinOnboarding";
 import InventoryStrip from "@/components/gamification/InventoryStrip";
+import FaultyTerminal from "@/components/kit/FaultyTerminal";
+
+const prefersReducedMotion =
+  typeof window !== "undefined" &&
+  window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const NAV = [
   { label: "Home", page: "Home", icon: Home },
@@ -161,6 +167,27 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div style={{ background: "var(--bg-base)", minHeight: "100vh" }}>
+      <div className="fixed inset-0 z-0" aria-hidden="true">
+        <FaultyTerminal
+          className="h-full w-full opacity-55"
+          tint="#5ED29C"
+          scale={1.7}
+          gridMul={[2, 1]}
+          digitSize={1.3}
+          timeScale={0.35}
+          noiseAmp={1.1}
+          scanlineIntensity={0.5}
+          glitchAmount={1}
+          flickerAmount={0.6}
+          curvature={0}
+          mouseReact={!prefersReducedMotion}
+          mouseStrength={0.5}
+          brightness={1.35}
+          pause={prefersReducedMotion}
+          pageLoadAnimation={!prefersReducedMotion}
+        />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_30%,rgba(7,11,10,.62)_0%,rgba(7,11,10,.4)_45%,rgba(7,11,10,.72)_100%)]" />
+      </div>
       <div className="cf-grain" aria-hidden="true" />
       {user && <MilestoneBurst />}
       {user && <FirstWinOnboarding />}
@@ -258,6 +285,7 @@ export default function Layout({ children, currentPageName }) {
 
       <main
         id="main-content"
+        className="relative z-10"
         style={{ paddingTop: TOPBAR, paddingBottom: 0 }}
       >
         <div className="pb-16 xl:pb-0">
