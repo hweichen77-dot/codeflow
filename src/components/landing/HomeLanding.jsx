@@ -6,6 +6,7 @@ import { createPageUrl } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/apiClient";
 import LiquidEther from "@/components/kit/LiquidEther";
+import HeroPlayground from "@/components/landing/HeroPlayground";
 import {
   HeroGlow,
   ShinyText,
@@ -22,7 +23,6 @@ import {
   MagicBentoCard,
   SpotlightCard,
   PixelCard,
-  CodeWindow,
   Marquee,
 } from "@/components/kit";
 import LivePlayground from "@/components/landing/LivePlayground";
@@ -113,29 +113,6 @@ function Nav() {
   );
 }
 
-function HeroVisual() {
-  return (
-    <CodeWindow file="tutor.py" className="w-full">
-      <code className="block">
-        <span className="text-white/45">from</span> <span className="text-[#34D0C4]">compilearn</span>{" "}
-        <span className="text-white/45">import</span> <span className="text-[#5ED29C]">ai</span>
-        {"\n\n"}
-        <span className="text-[#5ED29C]">reply</span> <span className="text-white/45">=</span> ai.<span className="text-[#34D0C4]">chat</span>(
-        {"\n"}    system=<span className="text-[#F5A524]">"You are a patient tutor."</span>,
-        {"\n"}    user=<span className="text-[#F5A524]">"Why is my loop off by one?"</span>,
-        {"\n"})
-        {"\n"}
-        <span className="text-[#5ED29C]">print</span>(reply)
-        {"\n\n"}
-        <span className="text-[var(--run)]">▸ running on a real model…</span>
-        {"\n"}
-        <span className="text-white/70">Your range stops one short, so use</span>
-        {"\n"}
-        <span className="text-white/70">range(len(x)+1). Here's why…</span>
-      </code>
-    </CodeWindow>
-  );
-}
 
 const TRACKS = [
   {
@@ -271,28 +248,31 @@ export default function HomeLanding() {
     .map((p) => p.title);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#070B0A] text-white" style={{ fontFamily: "var(--font-display)" }}>
+    <div className="relative min-h-screen overflow-x-hidden bg-[#070B0A] text-white" style={{ fontFamily: "var(--font-display)" }}>
+      {prefersReducedMotion ? (
+        <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(75%_55%_at_50%_20%,rgba(94,210,156,.16)_0%,rgba(52,208,196,.07)_45%,transparent_100%)]" />
+      ) : (
+        <div className="fixed inset-0 z-0">
+          <LiquidEther
+            className="h-full w-full opacity-100"
+            colors={["#5ED29C", "#34D0C4", "#0EA86E"]}
+            mouseForce={26}
+            cursorSize={130}
+            resolution={0.35}
+            BFECC={false}
+            iterationsPoisson={18}
+            autoDemo
+            autoSpeed={0.6}
+            autoIntensity={2.6}
+          />
+        </div>
+      )}
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[#070B0A]/55" />
+
+      <div className="relative z-10">
       <Nav />
 
       <section className="relative overflow-hidden">
-        {prefersReducedMotion ? (
-          <div className="absolute inset-0 z-0 bg-[radial-gradient(75%_60%_at_50%_35%,rgba(94,210,156,.18)_0%,rgba(52,208,196,.08)_45%,transparent_100%)]" />
-        ) : (
-          <div className="absolute inset-0 z-0">
-            <LiquidEther
-              className="h-full w-full opacity-100"
-              colors={["#5ED29C", "#34D0C4", "#0EA86E"]}
-              mouseForce={30}
-              cursorSize={130}
-              resolution={0.5}
-              autoDemo
-              autoSpeed={0.6}
-              autoIntensity={2.8}
-            />
-          </div>
-        )}
-        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(90%_82%_at_42%_40%,rgba(7,11,10,.72)_0%,rgba(7,11,10,.42)_50%,transparent_100%)]" />
-        <div className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(0deg,#070B0A_3%,rgba(7,11,10,.3)_34%,transparent_70%)]" />
         <HeroGlow color="#5ED29C" />
 
         <div className="relative z-10 mx-auto grid min-h-[72vh] max-w-6xl items-center gap-12 px-6 pt-12 pb-8 lg:grid-cols-[1.05fr_.95fr]">
@@ -414,7 +394,7 @@ export default function HomeLanding() {
           </div>
 
           <Reveal delay={0.16}>
-            <HeroVisual />
+            <HeroPlayground />
           </Reveal>
         </div>
       </section>
@@ -590,6 +570,7 @@ export default function HomeLanding() {
       </Section>
 
       <SiteFooter />
+      </div>
     </div>
   );
 }
